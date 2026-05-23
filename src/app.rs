@@ -78,6 +78,9 @@ pub fn App() -> Element {
     // ---- Plugins ---------------------------------------------------------
     let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
 
+    // ---- Active preset CSS ----------------------------------------------
+    let preset_css = use_signal(|| String::new());
+
     // ---- Preview / layout state -----------------------------------------
     let mut show_preview = use_signal(|| true);
     let active_preset = use_signal(|| None::<&'static str>);
@@ -320,6 +323,7 @@ pub fn App() -> Element {
         footer_license_label,
         footer_license_url,
         custom_js,
+        preset_css,
     };
 
     let current_config = ThemeConfig {
@@ -390,6 +394,7 @@ pub fn App() -> Element {
         plugins: crate::config::PluginConfig {
             custom_js: custom_js(),
         },
+        preset_css: preset_css(),
     };
 
     let generated_xml = render_theme(&current_config);
@@ -582,6 +587,7 @@ fn apply_theme_config_to_signals(signals: ThemeSignals, new_config: ThemeConfig)
         .set(new_config.footer.footer_license_url);
 
     signals.custom_js.clone().set(new_config.plugins.custom_js);
+    signals.preset_css.clone().set(new_config.preset_css);
 }
 
 fn menu_label(config: &ThemeConfig, index: usize) -> String {

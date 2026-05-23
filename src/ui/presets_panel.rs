@@ -65,6 +65,9 @@ pub struct ThemeSignals {
 
     // Plugins
     pub custom_js: Signal<String>,
+
+    // Active preset CSS (empty for hand-built themes and re-imported exports)
+    pub preset_css: Signal<String>,
 }
 
 impl ThemeSignals {
@@ -124,6 +127,9 @@ impl ThemeSignals {
         self.footer_license_url.clone().set(base.footer.footer_license_url.clone());
 
         self.custom_js.clone().set(base.plugins.custom_js.clone());
+        
+        // Carry the preset's optional CSS bundle into the live signals.
+        self.preset_css.clone().set(preset.preset_css.to_string());
     }
 
     pub fn swap_palette(&self, palette: &PresetPalette) {

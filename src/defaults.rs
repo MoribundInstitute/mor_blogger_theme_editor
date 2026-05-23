@@ -65,5 +65,6 @@ pub fn default_theme_config() -> ThemeConfig {
         plugins: PluginConfig {
             custom_js: String::new(),
         },
+        preset_css: String::new(),
     }
 }

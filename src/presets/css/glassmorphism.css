@@ -1,1 +1,136 @@
+/* ============================================================
+   Glassmorphism preset
+   Frosted, translucent panels floating over an aurora gradient
+   body background. Heavy use of backdrop-filter — requires a
+   browser that supports it (Safari 9+, Chrome 76+, Firefox 103+).
+   Falls back to solid panels in unsupporting browsers.
+   ============================================================ */
 
+/* The aurora wallpaper. The base theme's token-driven bg-base
+   sits underneath. We layer a soft radial-gradient blob on top
+   so the blur has something colorful to chew on. */
+body {
+  background-attachment: fixed !important;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(168, 85, 247, 0.55), transparent 38%),
+    radial-gradient(circle at 88% 24%, rgba(56, 189, 248, 0.45), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(244, 114, 182, 0.40), transparent 50%) !important;
+  background-color: var(--bg-base) !important;
+}
+
+/* Every major surface becomes glass. The trick is:
+   - low-alpha background so it's mostly see-through
+   - backdrop-filter for the actual blur effect
+   - 1px white-alpha border for the "edge of glass" highlight
+   - soft drop shadow to lift it off the wallpaper */
+.canvas-core,
+.terminal-post,
+.runelite-panel,
+.terminal-main-header,
+.terminal-footer,
+.mor-catalog-dropdown,
+.panel-content {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Slightly denser glass for panels you want to read text on. */
+.terminal-post {
+  background: rgba(255, 255, 255, 0.12) !important;
+  padding: 28px !important;
+  margin-bottom: 20px !important;
+}
+
+/* The header gets a thinner, more horizontal piece of glass. */
+.terminal-main-header {
+  border-radius: 0 0 18px 18px !important;
+  margin: 0 12px !important;
+}
+
+/* Buttons: pill-shaped glass capsules. */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-radius: 999px !important;
+  color: var(--fg-base) !important;
+  padding: 8px 18px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease !important;
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40) !important;
+}
+
+.pager-btn:active,
+.panel-toggle:active {
+  transform: translateY(0);
+}
+
+/* Post titles: stay solid, but pick up a tiny gradient lift. */
+.terminal-post .post-title,
+.terminal-post .post-title a {
+  background: linear-gradient(135deg, var(--fg-base) 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+/* Links inside the post body get the accent treatment with a
+   subtle underline that animates on hover. */
+.terminal-post .post-body a {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  transition: border-color 200ms ease;
+}
+
+.terminal-post .post-body a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Footer glass strip floats slightly above the bottom edge. */
+.terminal-footer {
+  margin: 12px !important;
+  padding: 16px 24px !important;
+}
+
+/* Graceful degradation: if backdrop-filter isn't supported, the
+   panels will look like flat-tinted boxes. The base bg color in
+   the palette is dark enough to keep text readable in that case. */
+@supports not (backdrop-filter: blur(1px)) {
+  .canvas-core,
+  .terminal-post,
+  .runelite-panel,
+  .terminal-main-header,
+  .terminal-footer {
+    background: var(--bg-panel) !important;
+  }
+}

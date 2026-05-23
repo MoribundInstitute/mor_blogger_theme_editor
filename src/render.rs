@@ -129,30 +129,38 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         "Optional JavaScript plugin will be included in the exported Blogger XML."
     };
 
+    // NOTE: Each preview-* element carries a second class corresponding to
+    // the production-template class name (e.g. preview-hero-card → terminal-post).
+    // The preview's own CSS in this file matches the `preview-*` selectors;
+    // preset CSS files (src/presets/css/*.css) target the production names.
+    // This lets one preset CSS work for both the live preview AND the
+    // exported Blogger theme without duplicating selectors.
     let modern_body = format!(
         r##"<div class="preview-shell preview-shell-modern">
-    <header class="preview-site-header">
-      <div class="preview-brand">
+    <header class="preview-site-header terminal-main-header">
+      <div class="preview-brand branding">
         <p class="preview-kicker">Blogger Theme Preview</p>
-        <h1 class="preview-site-title">{site_title}</h1>
+        <h1 class="preview-site-title institute-title">{site_title}</h1>
         <p class="preview-site-subtitle">{site_subtitle}</p>
       </div>
-      <nav class="preview-nav">{menu_links}</nav>
+      <nav class="preview-nav terminal-nav">{menu_links}</nav>
     </header>
 
     <main>
       <section class="preview-hero">
-        <article class="preview-hero-card">
-          <p class="preview-kicker">Featured Post</p>
-          <h2>Designing a better weblog shell</h2>
-          <p>This modern preview uses your current Blogger theme settings while keeping the exported Blogger XML separate.</p>
-          <div class="preview-hero-actions">
-            <a class="preview-button" href="#">Read Latest</a>
-            <a class="preview-button" href="#">Archive</a>
+        <article class="preview-hero-card terminal-post">
+          <p class="preview-kicker post-kicker">Featured Post</p>
+          <h2 class="post-title">Designing a better weblog shell</h2>
+          <div class="post-body">
+            <p>This modern preview uses your current Blogger theme settings while keeping the exported Blogger XML separate.</p>
+            <div class="preview-hero-actions">
+              <a class="preview-button pager-btn" href="#">Read Latest</a>
+              <a class="preview-button pager-btn" href="#">Archive</a>
+            </div>
           </div>
         </article>
 
-        <aside class="preview-side-card">
+        <aside class="preview-side-card runelite-panel sidebar-section">
           <p class="preview-kicker">Site Notes</p>
           <h3>Preview status</h3>
           <p>{plugin_note}</p>
@@ -165,25 +173,31 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </section>
 
       <section class="preview-card-grid">
-        <article class="preview-card">
+        <article class="preview-card terminal-post">
           <p class="preview-kicker">Recent Notes</p>
-          <h3>Readable post cards</h3>
-          <p>Use this space to judge contrast, line-height, borders, and card surfaces.</p>
+          <h3 class="post-title">Readable post cards</h3>
+          <div class="post-body">
+            <p>Use this space to judge contrast, line-height, borders, and card surfaces.</p>
+          </div>
         </article>
-        <article class="preview-card">
+        <article class="preview-card terminal-post">
           <p class="preview-kicker">Typography</p>
-          <h3>Font stack test</h3>
-          <p>Body, heading, and <code>mono</code> font choices render directly in this preview.</p>
+          <h3 class="post-title">Font stack test</h3>
+          <div class="post-body">
+            <p>Body, heading, and <code>mono</code> font choices render directly in this preview.</p>
+          </div>
         </article>
-        <article class="preview-card">
+        <article class="preview-card terminal-post">
           <p class="preview-kicker">About</p>
-          <h3>Browser-safe shell</h3>
-          <p>The exported Blogger XML remains separate; this is a friendlier visual preview.</p>
+          <h3 class="post-title">Browser-safe shell</h3>
+          <div class="post-body">
+            <p>The exported Blogger XML remains separate; this is a friendlier visual preview.</p>
+          </div>
         </article>
       </section>
     </main>
 
-    <footer class="preview-footer">
+    <footer class="preview-footer terminal-footer">
       <span>{footer_text}</span>
       <span>{site_title}</span>
     </footer>
@@ -198,59 +212,65 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
 
     let sidebars_body = format!(
         r##"<div class="preview-shell preview-shell-sidebars">
-    <header class="preview-site-header preview-site-header-with-toggles">
-      <button type="button" class="preview-panel-toggle" data-target="left">Browse</button>
-      <div class="preview-brand preview-brand-centered">
+    <header class="preview-site-header preview-site-header-with-toggles terminal-main-header">
+      <button type="button" class="preview-panel-toggle panel-toggle" data-target="left">Browse</button>
+      <div class="preview-brand preview-brand-centered branding">
         <p class="preview-kicker">Blogger Theme Preview</p>
-        <h1 class="preview-site-title">{site_title}</h1>
+        <h1 class="preview-site-title institute-title">{site_title}</h1>
         <p class="preview-site-subtitle">{site_subtitle}</p>
-        <nav class="preview-nav preview-nav-centered">{menu_links}</nav>
+        <nav class="preview-nav preview-nav-centered terminal-nav">{menu_links}</nav>
       </div>
-      <button type="button" class="preview-panel-toggle" data-target="right">Contents</button>
+      <button type="button" class="preview-panel-toggle panel-toggle" data-target="right">Contents</button>
     </header>
 
-    <main class="preview-sidebar-layout" id="preview-layout">
-      <aside class="preview-sidebar" data-side="left">
-        <div class="preview-sidebar-header">
+    <main class="preview-sidebar-layout terminal-workspace" id="preview-layout">
+      <aside class="preview-sidebar runelite-panel panel-left sidebar-section" data-side="left">
+        <div class="preview-sidebar-header panel-header">
           <strong>Browse</strong>
-          <button type="button" class="preview-sidebar-close" data-target="left">×</button>
+          <button type="button" class="preview-sidebar-close panel-toggle" data-target="left">×</button>
         </div>
-        <p>Use this panel for labels, archive links, profile widgets, blogrolls, or navigation blocks.</p>
-        <ul>
-          <li>Latest posts</li>
-          <li>Archive</li>
-          <li>Labels</li>
-          <li>Profile</li>
-        </ul>
+        <div class="panel-content">
+          <p>Use this panel for labels, archive links, profile widgets, blogrolls, or navigation blocks.</p>
+          <ul>
+            <li>Latest posts</li>
+            <li>Archive</li>
+            <li>Labels</li>
+            <li>Profile</li>
+          </ul>
+        </div>
       </aside>
 
-      <article class="preview-hero-card preview-sidebar-main-card">
-        <p class="preview-kicker">Featured Post</p>
-        <h2>Modern layout with closeable sidebars</h2>
-        <p>This preview keeps the clean modern look but restores the useful Blogger-style side panels on either end.</p>
-        <p>Click <strong>Browse</strong>, <strong>Contents</strong>, or either × button to test collapsed sidebars.</p>
-        <div class="preview-hero-actions">
-          <a class="preview-button" href="#">Read Latest</a>
-          <a class="preview-button" href="#">Archive</a>
+      <article class="preview-hero-card preview-sidebar-main-card terminal-post">
+        <p class="preview-kicker post-kicker">Featured Post</p>
+        <h2 class="post-title">Modern layout with closeable sidebars</h2>
+        <div class="post-body">
+          <p>This preview keeps the clean modern look but restores the useful Blogger-style side panels on either end.</p>
+          <p>Click <strong>Browse</strong>, <strong>Contents</strong>, or either × button to test collapsed sidebars.</p>
+          <div class="preview-hero-actions">
+            <a class="preview-button pager-btn" href="#">Read Latest</a>
+            <a class="preview-button pager-btn" href="#">Archive</a>
+          </div>
         </div>
       </article>
 
-      <aside class="preview-sidebar" data-side="right">
-        <div class="preview-sidebar-header">
+      <aside class="preview-sidebar runelite-panel panel-right sidebar-section" data-side="right">
+        <div class="preview-sidebar-header panel-header">
           <strong>Contents</strong>
-          <button type="button" class="preview-sidebar-close" data-target="right">×</button>
+          <button type="button" class="preview-sidebar-close panel-toggle" data-target="right">×</button>
         </div>
-        <p>{plugin_note}</p>
-        <ol>
-          <li>Featured post</li>
-          <li>Recent notes</li>
-          <li>Typography check</li>
-          <li>Footer</li>
-        </ol>
+        <div class="panel-content">
+          <p>{plugin_note}</p>
+          <ol>
+            <li>Featured post</li>
+            <li>Recent notes</li>
+            <li>Typography check</li>
+            <li>Footer</li>
+          </ol>
+        </div>
       </aside>
     </main>
 
-    <footer class="preview-footer">
+    <footer class="preview-footer terminal-footer">
       <span>{footer_text}</span>
       <span>{site_title}</span>
     </footer>

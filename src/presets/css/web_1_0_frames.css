@@ -1,1 +1,166 @@
+/* ============================================================
+   Web 1.0 Frames preset
+   The mid-1990s personal homepage: ridged grey panels, sharp
+   corners, "best viewed in Netscape" energy. No border-radius,
+   no smooth shadows, no animation. Every container looks like
+   a Windows 95 dialog.
+   ============================================================ */
 
+/* Force chunky ridged borders on every major surface */
+.canvas-core,
+.terminal-post,
+.runelite-panel,
+.terminal-main-header,
+.terminal-footer,
+.terminal-pager,
+.mor-catalog-dropdown,
+.panel-header,
+.panel-content {
+  border-style: ridge !important;
+  border-width: 3px !important;
+  border-color: var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Title bars on every panel — the signature blue gradient strip
+   you used to see on Win95 dialog titles. */
+.terminal-main-header,
+.panel-header,
+.mor-panel-heading {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+  color: #ffffff !important;
+  padding: 4px 8px !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #000040 !important;
+}
+
+.terminal-main-header .institute-title,
+.terminal-main-header .branding-link {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+/* The classic "outset" button — beveled highlight on top-left,
+   shadow on bottom-right. Looks pressable. */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: var(--bg-panel) !important;
+  color: var(--fg-base) !important;
+  border-style: outset !important;
+  border-width: 2px !important;
+  border-color: #ffffff #808080 #808080 #ffffff !important;
+  border-radius: 0 !important;
+  padding: 3px 12px !important;
+  font-family: inherit !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.pager-btn:active,
+.panel-toggle:active,
+.toc-jump-link:active,
+.back-to-top-btn:active,
+.mor-catalog-trigger:active {
+  /* Pressed state: invert the bevel direction. */
+  border-style: inset !important;
+  border-color: #808080 #ffffff #ffffff #808080 !important;
+  padding: 4px 11px 2px 13px !important;  /* nudge content for "pressed" feel */
+}
+
+/* Post bodies: clinical white "document" surface over the grey panel. */
+.terminal-post {
+  background: #ffffff !important;
+  color: #000000 !important;
+  margin: 8px !important;
+  padding: 12px !important;
+}
+
+.terminal-post .post-title,
+.terminal-post .post-title a {
+  color: #000000 !important;
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid #000000 !important;
+  padding-bottom: 4px !important;
+  text-shadow: none !important;
+}
+
+.terminal-post .post-body {
+  color: #000000 !important;
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+/* Links: unvisited blue, visited purple, the original web. */
+.terminal-post .post-body a,
+.panel-content a {
+  color: #0000ee !important;
+  text-decoration: underline !important;
+}
+
+.terminal-post .post-body a:visited,
+.panel-content a:visited {
+  color: #551a8b !important;
+}
+
+.terminal-post .post-body a:active,
+.panel-content a:active {
+  color: #ff0000 !important;
+}
+
+/* The body itself: tiled teal screensaver desktop. */
+body {
+  background-color: #008080 !important;
+}
+
+/* Footer: drop the slick monospace look, give it a status-bar feel. */
+.terminal-footer {
+  background: var(--bg-panel) !important;
+  color: var(--fg-base) !important;
+  border-top: 2px solid #ffffff !important;
+  border-bottom: 2px solid #808080 !important;
+  font-family: var(--font-body, 'MS Sans Serif', Tahoma, sans-serif) !important;
+  font-size: 0.85rem !important;
+  padding: 4px 8px !important;
+}
+
+/* Headings inside posts get the "MS Word document" look. */
+.terminal-post h1,
+.terminal-post h2,
+.terminal-post h3 {
+  font-family: 'Times New Roman', Times, serif !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+/* Kill all the modern glow/shadow effects from the base theme. */
+*,
+*::before,
+*::after {
+  text-shadow: none !important;
+}
+.terminal-post,
+.runelite-panel,
+.canvas-core {
+  box-shadow: none !important;
+}
+
+/* Optional: blinking text on the construction notice (footer).
+   Keep this subtle — only on a specific class so it doesn't
+   nuke the rest of the page with attention-deficit horror. */
+.terminal-footer .footer-sys-info::after {
+  content: " — UNDER CONSTRUCTION";
+  margin-left: 8px;
+  animation: web1-blink 1.2s steps(2, end) infinite;
+  color: #ff0000;
+  font-weight: 700;
+}
+
+@keyframes web1-blink {
+  50% { opacity: 0; }
+}

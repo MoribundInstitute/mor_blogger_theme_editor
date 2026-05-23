@@ -1,0 +1,28 @@
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+
+body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+

@@ -1,0 +1,61 @@
+/* Diagnostics footer below the workspace. Shows OK state or a list of
+   integrity errors/warnings about the embedded template.xml. */
+
+.diagnostics-panel {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.diagnostics-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--editor-good);
+}
+
+.diagnostics-ok-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: rgba(5, 165, 129, 0.15);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.diagnostics-problems {
+  border-left: 3px solid var(--editor-danger);
+  padding-left: 12px;
+}
+
+.diagnostics-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.diagnostics-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+.diagnostics-error {
+  color: var(--editor-danger);
+  padding: 2px 0;
+}
+
+.diagnostics-warning {
+  color: var(--editor-warning);
+  padding: 2px 0;
+}
+
+.diagnostics-prefix {
+  opacity: 0.65;
+  margin-right: 6px;
+}

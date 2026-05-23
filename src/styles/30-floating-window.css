@@ -1,0 +1,59 @@
+/* Floating editor window bar.
+   Only this bar is a valid drag target — JS in app.rs filters pointerdown
+   events so that drags starting on buttons/inputs/etc. are ignored.
+   The bar is rendered at the top of .editor-left-panel only when the
+   workbench layout is FloatingEditor. */
+
+.floating-editor-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -18px -18px 12px -18px;
+  padding: 8px 14px;
+  background:
+    linear-gradient(90deg, rgba(169, 170, 226, 0.08), transparent),
+    var(--editor-panel-raised);
+  border-bottom: 1px solid var(--editor-border);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.floating-editor-window-bar:active {
+  cursor: grabbing;
+}
+
+.floating-editor-grip {
+  color: var(--editor-muted-2);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.05rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+.floating-editor-title {
+  flex: 1 1 auto;
+  color: var(--editor-text);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.floating-editor-window-actions {
+  display: flex;
+  gap: 6px;
+  /* Buttons inside this container remain clickable because the global drag
+     listener ignores pointerdown events whose target matches
+     `button, input, textarea, select, a, label`. */
+}
+
+/* While a drag is in progress the body gets this class so the grabbing
+   cursor is enforced everywhere, even over normally-clickable surfaces. */
+.editor-floating-dragging,
+.editor-floating-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}

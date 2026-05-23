@@ -1,0 +1,1700 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false'
+      b:defaultwidgetversion='2'
+      b:layoutsVersion='3'
+      expr:dir='data:blog.languageDirection'
+      expr:lang='data:blog.locale'
+      xmlns='http://www.w3.org/1999/xhtml'
+      xmlns:b='http://www.google.com/2005/gml/b'
+      xmlns:data='http://www.google.com/2005/gml/data'
+      xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<head>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='IE=edge' http-equiv='X-UA-Compatible'/>
+  <meta content='true' name='HandheldFriendly'/>
+  <meta content='width' name='MobileOptimized'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+
+  <title><data:view.title.escaped/></title>
+  <b:include data='blog' name='all-head-content'/>
+
+  <meta content='{{META_DESCRIPTION}}' name='description'/>
+  <meta content='{{AUTHOR_NAME}}' name='author'/>
+  <meta content='{{SITE_TITLE}}' property='og:site_name'/>
+  <meta content='{{SITE_TITLE}}' property='og:title'/>
+  <meta content='{{META_DESCRIPTION}}' property='og:description'/>
+  <meta content='{{SOCIAL_CARD_IMAGE_URL}}' property='og:image'/>
+
+  <link href='{{FAVICON_URL}}' rel='icon' sizes='16x16' type='image/png'/>
+  <link href='{{FAVICON_URL}}' rel='icon' sizes='32x32' type='image/png'/>
+  <link href='{{FAVICON_URL}}' rel='apple-touch-icon' sizes='180x180'/>
+
+  <b:skin><![CDATA[
+:root {
+  /* Terminal Palette */
+  --bg-base: {{COLOR_BG_BASE}};
+  --bg-panel: {{COLOR_BG_PANEL}};
+  --bg-highlight: {{COLOR_BG_ELEVATED}};
+  --bg-soft: {{COLOR_BG_PANEL}};
+  --bg-elevated: {{COLOR_BG_ELEVATED}};
+
+  --fg-base: {{COLOR_FG_BASE}};
+  --fg-dim: {{COLOR_FG_MUTED}};
+  --fg-muted: {{COLOR_FG_MUTED}};
+  --accent: {{COLOR_ACCENT}};
+
+  --border-color: {{COLOR_BORDER}};
+  --border-soft: {{COLOR_BORDER}};
+
+  --font-mono: "IM Fell English", Georgia, "Times New Roman", serif;
+
+  --sidebar-width: 300px;
+  --header-z: 1100;
+  --overlay-z: 1200;
+  --dropdown-z: 1300;
+
+  --glow: 0 0 4px {{COLOR_ACCENT}};
+  --glow-strong: 0 0 8px {{COLOR_ACCENT}};
+  --shadow-elevated: 0 18px 45px rgba(0, 0, 0, 0.65);
+
+  {{BACKGROUND_TILE_CSS}}
+}
+
+
+
+/* ==========================================================
+   01-Reset-Base.css
+   ========================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+
+body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
+
+
+/* ==========================================================
+   02-Typography-Links-Glow.css
+   ========================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+p,
+a,
+li,
+button,
+input {
+  text-shadow: var(--glow);
+}
+
+a {
+  color: var(--fg-base);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fg-dim);
+}
+
+a:hover,
+a:focus-visible {
+  background: var(--fg-base);
+  color: var(--bg-base);
+  text-shadow: none;
+  outline: none;
+}
+
+
+
+/* ==========================================================
+   03-Buttons.css
+   ========================================================== */
+
+button {
+  background: transparent;
+  color: var(--fg-base);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  padding: 4px 8px;
+  line-height: 1.2;
+  text-shadow: var(--glow);
+}
+
+button:hover,
+button:focus {
+  background: var(--fg-base);
+  color: var(--bg-base);
+  text-shadow: none;
+  outline: none;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 2px var(--fg-dim);
+}
+
+.panel-toggle {
+  min-width: 92px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.panel-header .panel-toggle {
+  min-width: auto;
+  padding: 2px 7px;
+}
+
+
+
+/* ==========================================================
+   04-Main-Header.css
+   ========================================================== */
+
+.terminal-main-header {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-base);
+  position: relative;
+  z-index: var(--header-z);
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 20px 9px;
+  line-height: 1.2;
+  border-bottom: 1px dashed var(--border-color);
+  background: var(--bg-highlight);
+}
+
+.header-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px 14px;
+  flex-wrap: wrap;
+  line-height: 1.2;
+}
+
+
+
+/* ==========================================================
+   05-Branding.css
+   ========================================================== */
+
+.branding {
+  min-width: 0;
+  text-align: center;
+}
+
+.branding-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: none;
+}
+
+.branding-link:hover,
+.branding-link:focus-visible {
+  background: transparent;
+  color: inherit;
+}
+
+.institute-logo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--glow);
+}
+
+.branding .institute-title {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  color: var(--fg-base);
+  text-shadow: var(--glow-strong);
+  white-space: nowrap;
+}
+
+.branding-link:hover .institute-logo,
+.branding-link:focus-visible .institute-logo {
+  border-color: var(--fg-dim);
+  box-shadow: var(--glow-strong);
+}
+
+.branding-link:hover .institute-title,
+.branding-link:focus-visible .institute-title {
+  color: var(--fg-base);
+  text-decoration: underline;
+}
+
+
+
+/* ==========================================================
+   06-Main-Navigation.css
+   ========================================================== */
+
+.terminal-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.terminal-nav a,
+.terminal-nav button {
+  color: var(--fg-dim);
+  border-bottom: none;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.terminal-nav > a {
+  border: none;
+}
+
+.terminal-nav > a:hover,
+.terminal-nav > a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}
+
+
+
+/* ==========================================================
+   07-Catalog-Mega-Dropdown.css
+   ========================================================== */
+
+.mor-catalog-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mor-catalog-trigger {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: transparent;
+  color: var(--fg-dim);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mor-catalog-trigger:hover,
+.mor-catalog-trigger:focus-visible,
+.mor-catalog-menu.is-open .mor-catalog-trigger {
+  background: var(--fg-base);
+  color: var(--bg-base);
+  text-shadow: none;
+  outline: none;
+}
+
+.mor-catalog-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--dropdown-z);
+
+  display: none;
+  grid-template-columns: minmax(230px, 280px) minmax(340px, 520px);
+  width: min(860px, calc(100vw - 2rem));
+  max-height: min(72vh, 680px);
+
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-elevated);
+  overflow: hidden;
+}
+
+.mor-catalog-menu.is-open .mor-catalog-dropdown,
+.mor-catalog-menu:focus-within .mor-catalog-dropdown {
+  display: grid;
+}
+
+.mor-catalog-menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 8px;
+}
+
+.mor-catalog-left,
+.mor-catalog-right {
+  padding: 0.85rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.mor-catalog-left {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+}
+
+.mor-catalog-right {
+  background: var(--bg-base);
+  min-width: 0;
+}
+
+.mor-catalog-category {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg-base);
+  cursor: pointer;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  font: inherit;
+}
+
+.mor-catalog-category:hover,
+.mor-catalog-category:focus-visible,
+.mor-catalog-category.is-active {
+  border-color: var(--fg-dim);
+  background: var(--bg-highlight);
+  color: var(--fg-base);
+  text-shadow: var(--glow-strong);
+  outline: none;
+}
+
+.mor-catalog-all {
+  display: block;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid var(--border-color);
+  border-bottom: none;
+  color: var(--fg-dim);
+}
+
+.mor-catalog-all:hover,
+.mor-catalog-all:focus-visible {
+  background: var(--fg-base);
+  color: var(--bg-base);
+}
+
+.mor-catalog-panel {
+  display: none;
+}
+
+.mor-catalog-panel.is-active {
+  display: grid;
+  gap: 0.2rem;
+  align-content: start;
+}
+
+.mor-catalog-panel a {
+  display: block;
+  padding: 0.55rem 0.75rem;
+  color: var(--fg-base);
+  border-bottom: none;
+  white-space: normal;
+}
+
+.mor-catalog-panel a:hover,
+.mor-catalog-panel a:focus-visible {
+  background: var(--fg-base);
+  color: var(--bg-base);
+  text-shadow: none;
+  outline: none;
+}
+
+.mor-catalog-panel .mor-panel-heading {
+  border: 1px solid var(--border-color);
+  background: var(--bg-highlight);
+  color: var(--fg-base);
+  font-weight: bold;
+  margin-bottom: 0.35rem;
+  text-shadow: var(--glow-strong);
+}
+
+.mor-catalog-panel .mor-panel-heading:hover,
+.mor-catalog-panel .mor-panel-heading:focus-visible {
+  background: var(--fg-base);
+  color: var(--bg-base);
+  text-shadow: none;
+}
+
+.mor-catalog-left::-webkit-scrollbar,
+.mor-catalog-right::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mor-catalog-left::-webkit-scrollbar-track,
+.mor-catalog-right::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+.mor-catalog-left::-webkit-scrollbar-thumb,
+.mor-catalog-right::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+
+.mor-catalog-left::-webkit-scrollbar-thumb:hover,
+.mor-catalog-right::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-dim);
+}
+
+
+
+/* ==========================================================
+   08-Command-Line-Search.css
+   ========================================================== */
+
+.terminal-search {
+  min-width: 0;
+}
+
+.terminal-search form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.terminal-search .prompt {
+  color: var(--fg-dim);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.terminal-search input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--fg-base);
+  font-family: var(--font-mono);
+  outline: none;
+  width: 180px;
+  padding: 3px 4px;
+  transition: width 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.terminal-search input:focus {
+  width: 240px;
+  border-bottom: 1px solid var(--fg-base);
+  box-shadow: 0 1px 0 var(--fg-base);
+}
+
+.terminal-search input::placeholder {
+  color: #555555;
+}
+
+.terminal-search button {
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+
+
+/* ==========================================================
+   09-Workspace-Layout.css
+   ========================================================== */
+
+.terminal-workspace {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100vw;
+  overflow: hidden;
+}
+
+
+
+/* ==========================================================
+   10-Side-Panels.css
+   ========================================================== */
+
+.runelite-panel {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.panel-right {
+  border-right: none;
+  border-left: 1px solid var(--border-color);
+}
+
+.panel-left.is-collapsed {
+  margin-left: calc(var(--sidebar-width) * -1);
+}
+
+.panel-right.is-collapsed {
+  margin-right: calc(var(--sidebar-width) * -1);
+}
+
+.panel-header {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  background: var(--bg-highlight);
+}
+
+.panel-header span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-content {
+  padding: 15px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-grow: 1;
+  min-height: 0;
+  font-size: 0.85rem;
+}
+
+
+
+/* ==========================================================
+   11-Main-Canvas.css
+   ========================================================== */
+
+.canvas-core {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.canvas-header {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.system-status {
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+}
+
+.canvas-content {
+  padding: 24px 20px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+
+
+/* ==========================================================
+   12-Terminal-Post-Styling.css
+   ========================================================== */
+
+.terminal-post {
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.post-title {
+  margin-top: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.post-title a {
+  color: var(--fg-base);
+  border-bottom: none;
+}
+
+.post-title a:hover,
+.post-title a:focus-visible {
+  background: transparent;
+  color: var(--fg-base);
+  text-shadow: var(--glow-strong);
+}
+
+.post-meta {
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.sys-tags a {
+  color: var(--fg-dim);
+}
+
+.post-body {
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+.post-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  background: var(--bg-soft);
+  padding: 12px;
+}
+
+.post-body code {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  padding: 1px 4px;
+}
+
+
+
+/* ==========================================================
+   13-Pagination.css
+   ========================================================== */
+
+.terminal-pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: flex-start;
+}
+
+.pager-btn {
+  color: var(--fg-dim);
+  border: none;
+}
+
+.pager-btn:hover,
+.pager-btn:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+
+
+/* ==========================================================
+   14-Widgets-Sidebars.css
+   ========================================================== */
+
+.widget {
+  margin-bottom: 25px;
+}
+
+.widget h2 {
+  margin-top: 0;
+  font-size: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+
+.sidebar-section .widget-content {
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+.sidebar-section .Label ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+
+.sidebar-section .Label li {
+  padding: 0;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-section .Label a {
+  color: var(--fg-dim);
+  border-bottom: none;
+}
+
+.sidebar-section .Label a:hover,
+.sidebar-section .Label a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}
+
+
+
+/* ==========================================================
+   15-Archive-Widget.css
+   ========================================================== */
+
+.sidebar-section .BlogArchive {
+  font-size: 0.75rem;
+}
+
+.sidebar-section .BlogArchive ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-section .BlogArchive .hierarchy-title {
+  color: var(--fg-dim);
+  margin-top: 10px;
+  border-bottom: 1px dotted var(--border-color);
+  padding-bottom: 2px;
+}
+
+.sidebar-section .BlogArchive ul.posts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 1px dashed var(--border-color);
+  margin-left: 4px;
+  margin-top: 6px;
+}
+
+.sidebar-section .BlogArchive ul.posts li {
+  padding: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* ==========================================================
+   16-Table-of-Contents.css
+   ========================================================== */
+
+#terminal-toc-wrapper {
+  font-size: 0.85rem;
+}
+
+#terminal-toc-list li {
+  line-height: 1.35;
+}
+
+.toc-jump-link {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+
+
+/* ==========================================================
+   17-Scrollbars.css
+   ========================================================== */
+
+.sidebar-section .widget-content::-webkit-scrollbar,
+.panel-content::-webkit-scrollbar,
+.canvas-core::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-track,
+.panel-content::-webkit-scrollbar-track,
+.canvas-core::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-thumb,
+.panel-content::-webkit-scrollbar-thumb,
+.canvas-core::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-thumb:hover,
+.panel-content::-webkit-scrollbar-thumb:hover,
+.canvas-core::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-dim);
+}
+
+
+
+/* ==========================================================
+   18-Footer.css
+   ========================================================== */
+
+.terminal-footer {
+  margin-top: 60px;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 30px;
+  padding-bottom: 20px;
+  font-size: 0.85rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.footer-col h4 {
+  color: var(--fg-base);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col li {
+  margin-bottom: 8px;
+}
+
+.footer-col a {
+  color: var(--fg-dim);
+  border-bottom: none;
+  display: inline-block;
+}
+
+.footer-col a:before {
+  content: "> ";
+  opacity: 0.5;
+}
+
+.footer-col a:hover,
+.footer-col a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}
+
+.footer-sys-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.footer-sys-info a {
+  color: var(--fg-dim);
+  border-bottom: 1px dotted var(--fg-dim);
+}
+
+.footer-sys-info a:hover,
+.footer-sys-info a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+
+
+/* ==========================================================
+   19-Responsive-Mobile-Tablet.css
+   ========================================================== */
+
+@media screen and (max-width: 900px) {
+  :root {
+    --sidebar-width: min(320px, 86vw);
+  }
+
+  html,
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  body {
+    display: block;
+  }
+
+  .terminal-main-header {
+    position: sticky;
+    top: 0;
+  }
+
+  .header-top-row {
+    min-height: 44px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .institute-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+
+  .branding .institute-title {
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .panel-toggle {
+    min-width: auto;
+    font-size: 0.8rem;
+    padding: 4px 6px;
+  }
+
+  .header-bottom-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .terminal-nav {
+    width: 100%;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 2px;
+  }
+
+  .terminal-nav a,
+  .terminal-nav button {
+    font-size: 0.85rem;
+  }
+
+  .mor-catalog-menu {
+    position: static;
+  }
+
+.mor-catalog-dropdown {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  top: 150px;
+  z-index: var(--dropdown-z);
+  grid-template-columns: 1fr;
+  width: auto;
+  max-height: calc(100vh - 170px);
+}
+
+  .mor-catalog-left {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 32vh;
+  }
+
+  .mor-catalog-right {
+    max-height: 40vh;
+  }
+
+  .terminal-search {
+    width: 100%;
+  }
+
+  .terminal-search form {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .terminal-search .prompt {
+    display: none;
+  }
+
+  .terminal-search input {
+    width: 100%;
+    flex: 1;
+  }
+
+  .terminal-search input:focus {
+    width: 100%;
+  }
+
+  .terminal-workspace {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .canvas-core {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .canvas-content {
+    padding: 16px 12px;
+    max-width: none;
+  }
+
+  .post-title {
+    font-size: 1.25rem;
+  }
+
+  .runelite-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    min-width: 0;
+    height: 100vh;
+    z-index: var(--overlay-z);
+    box-shadow: 2px 0 14px rgba(0, 0, 0, 0.65);
+    margin: 0;
+  }
+
+  .panel-left {
+    left: 0;
+    right: auto;
+    border-right: 1px solid var(--border-color);
+  }
+
+  .panel-right {
+    right: 0;
+    left: auto;
+    border-left: 1px solid var(--border-color);
+  }
+
+  .panel-left.is-collapsed {
+    margin-left: 0;
+    transform: translateX(-100%);
+  }
+
+  .panel-right.is-collapsed {
+    margin-right: 0;
+    transform: translateX(100%);
+  }
+
+  .panel-left:not(.is-collapsed),
+  .panel-right:not(.is-collapsed) {
+    transform: translateX(0);
+  }
+
+  .panel-content {
+    padding: 14px;
+  }
+
+  .sidebar-section .Label ul {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-section .widget-content {
+    max-height: 45vh;
+  }
+
+  .terminal-footer {
+    margin-top: 40px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .footer-sys-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+
+/* ==========================================================
+   20-Responsive-Very-Small-Screens.css
+   ========================================================== */
+
+@media screen and (max-width: 480px) {
+  .institute-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+  }
+
+  .branding .institute-title {
+    font-size: 0.8rem;
+    max-width: 38vw;
+  }
+
+  .header-top-row {
+    gap: 6px;
+  }
+
+  .panel-toggle {
+    font-size: 0.72rem;
+    padding: 4px 5px;
+  }
+
+  .terminal-nav {
+    font-size: 0.8rem;
+  }
+
+.mor-catalog-dropdown {
+  left: 6px;
+  right: 6px;
+  top: 140px;
+  max-height: calc(100vh - 155px);
+}
+
+  .mor-catalog-left,
+  .mor-catalog-right {
+    padding: 0.65rem;
+  }
+
+  .mor-catalog-category,
+  .mor-catalog-panel a,
+  .mor-catalog-all {
+    padding: 0.55rem 0.6rem;
+  }
+
+  .post-meta {
+    font-size: 0.78rem;
+  }
+}
+
+
+
+/* ==========================================================
+   21-Responsive-Desktop.css
+   ========================================================== */
+
+
+@media screen and (min-width: 901px) {
+  html,
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .terminal-main-header {
+    position: relative;
+  }
+
+  .runelite-panel {
+    position: relative;
+    transform: none;
+  }
+
+  .panel-left.is-collapsed {
+    margin-left: calc(var(--sidebar-width) * -1);
+  }
+
+  .panel-right.is-collapsed {
+    margin-right: calc(var(--sidebar-width) * -1);
+  }
+}
+
+/* ==========================================================
+   Preset CSS — injected per active preset.
+   Empty by default; populated when a preset with structural
+   CSS (Web 1.0 Frames, Glassmorphism, Cyberpunk, etc.) is active.
+   Loaded AFTER all base rules so preset selectors win.
+   ========================================================== */
+{{PRESET_CSS}}
+  ]]></b:skin>
+</head>
+
+<body>
+  <header class='terminal-main-header'>
+    <div class='header-top-row'>
+      <button class='panel-toggle' data-target='panel-left' type='button'>[ Browse ]</button>
+
+      <div class='branding'>
+        <a class='branding-link' href='{{HOME_URL}}'>
+          <img alt='{{SITE_TITLE}} logo' class='institute-logo' src='{{HEADER_LOGO_URL}}'/>
+          <span class='institute-title'>{{SITE_TITLE}}</span>
+        </a>
+      </div>
+
+      <button class='panel-toggle' data-target='panel-right' type='button'>[ Contents ]</button>
+    </div>
+
+    <div class='header-bottom-row'>
+      <nav class='terminal-nav'>
+        <a href='{{MENU_1_URL}}'>{{MENU_1_LABEL}}</a>
+        <a href='{{MENU_2_URL}}'>{{MENU_2_LABEL}}</a>
+        <a href='{{MENU_3_URL}}'>{{MENU_3_LABEL}}</a>
+        <a href='{{MENU_4_URL}}'>{{MENU_4_LABEL}}</a>
+
+        <span class='mor-catalog-menu'>
+          <button class='mor-catalog-trigger' type='button'>Catalog ▾</button>
+          <span class='mor-catalog-dropdown'>
+            <span class='mor-catalog-left'>
+              <button class='mor-catalog-category is-active' type='button'>000 General Works</button>
+              <button class='mor-catalog-category' type='button'>100 Philosophy</button>
+              <button class='mor-catalog-category' type='button'>200 Religion</button>
+              <button class='mor-catalog-category' type='button'>300 Social Sciences</button>
+              <a class='mor-catalog-all' href='/p/catalog.html'>View full catalog</a>
+            </span>
+            <span class='mor-catalog-right'>
+              <span class='mor-catalog-panel is-active'>
+                <a class='mor-panel-heading' href='/p/catalog.html'>Featured paths</a>
+                <a href='/search/label/learning'>Learning</a>
+                <a href='/search/label/notes'>Notes</a>
+                <a href='/search/label/projects'>Projects</a>
+              </span>
+            </span>
+          </span>
+        </span>
+      </nav>
+
+      <div class='terminal-search'>
+        <form action='/search' method='get'>
+          <span class='prompt'>&gt;</span>
+          <input name='q' placeholder='search archive...' type='search'/>
+          <button type='submit'>Run</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <div class='terminal-workspace'>
+    <aside class='runelite-panel panel-left sidebar-section' id='panel-left'>
+      <div class='panel-header'>
+        <span>Browse</span>
+        <button class='panel-toggle' data-target='panel-left' type='button'>×</button>
+      </div>
+      <div class='panel-content'>
+        <b:section class='sidebar-section' id='sidebar-left' maxwidgets='10' showaddelement='yes'>
+          <b:widget id='Label1' locked='false' title='Labels' type='Label' visible='true'/>
+          <b:widget id='BlogArchive1' locked='false' title='Archive' type='BlogArchive' visible='true'/>
+        </b:section>
+      </div>
+    </aside>
+
+    <main class='canvas-core'>
+      <div class='canvas-header'>
+        <span class='system-status'>{{SITE_SUBTITLE}}</span>
+        <span class='system-status'>system: online</span>
+      </div>
+
+     <b:section class='main-section' id='main' maxwidgets='1' showaddelement='no'>
+  <b:widget id='Blog1' locked='false' title='Blog Posts' type='Blog' visible='true'>
+   <b:includable id='main' var='this'>
+  <div class='blog-posts'>
+    <b:loop values='data:posts' var='post'>
+      <b:include data='post' name='post'/>
+    </b:loop>
+  </div>
+</b:includable>
+
+    <b:includable id='post' var='post'>
+      <article class='terminal-post'>
+        <h2 class='post-title'>
+          <a expr:href='data:post.url'><data:post.title/></a>
+        </h2>
+        <div class='post-body'>
+          <data:post.body/>
+        </div>
+      </article>
+    </b:includable>
+  </b:widget>
+</b:section>
+
+        <nav class='terminal-pager'>
+          <a class='pager-btn' href='/'>[ Home ]</a>
+          <a class='pager-btn' href='/search'>[ More Posts ]</a>
+        </nav>
+
+    <footer class='terminal-footer'>
+          <div class='footer-grid'>
+            <div class='footer-col'>
+              <h4>Navigate</h4>
+              <ul>
+                <li><a href='{{MENU_1_URL}}'>{{MENU_1_LABEL}}</a></li>
+                <li><a href='{{MENU_2_URL}}'>{{MENU_2_LABEL}}</a></li>
+                <li><a href='{{MENU_3_URL}}'>{{MENU_3_LABEL}}</a></li>
+                <li><a href='{{MENU_4_URL}}'>{{MENU_4_LABEL}}</a></li>
+              </ul>
+            </div>
+
+            <div class='footer-col'>
+              <h4>System</h4>
+              <ul>
+                <li><a href='/p/archive.html'>Archive</a></li>
+                <li><a href='/p/catalog.html'>Catalog</a></li>
+                <li><a href='{{LICENSE_URL}}'>License</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class='footer-sys-info'>
+            <span>{{FOOTER_TEXT}}</span>
+            <a href='{{FOOTER_LICENSE_URL}}'>{{FOOTER_LICENSE_LABEL}}</a>
+          </div>
+        </footer>
+</main>
+    <aside class='runelite-panel panel-right sidebar-section' id='panel-right'>
+      <div class='panel-header'>
+        <span>Contents</span>
+        <button class='panel-toggle' data-target='panel-right' type='button'>×</button>
+      </div>
+      <div class='panel-content'>
+        <div id='terminal-toc-wrapper'>
+          <strong>Table of Contents</strong>
+          <ul id='terminal-toc-list'>
+            <li><a class='toc-jump-link' href='#'>Current post headings appear here.</a></li>
+          </ul>
+        </div>
+
+        <b:section class='sidebar-section' id='sidebar-right' maxwidgets='10' showaddelement='yes'>
+          <b:widget id='HTML1' locked='false' title='Custom Widget' type='HTML' visible='true'/>
+        </b:section>
+      </div>
+    </aside>
+  </div>
+<script type='text/javascript'>
+  //<![CDATA[
+  document.addEventListener('DOMContentLoaded', () => {
+    /* =========================================================
+       01. Shared Helpers
+       ========================================================= */
+
+    const isMobile = () => window.innerWidth <= 900;
+
+    function isTypingInField() {
+      const activeTag = document.activeElement
+        ? document.activeElement.tagName.toLowerCase()
+        : '';
+
+      return activeTag === 'input' ||
+        activeTag === 'textarea' ||
+        activeTag === 'select';
+    }
+
+    /* =========================================================
+       02. Side Panels + Back to Top
+       ========================================================= */
+
+    const panelLeft = document.getElementById('panel-left');
+    const panelRight = document.getElementById('panel-right');
+    const canvasCore = document.querySelector('.canvas-core');
+
+    /*
+      Back-to-top button support.
+
+      Recommended footer button:
+      <button class='back-to-top-btn' type='button'>[Back to Top]</button>
+
+      This also supports your older button:
+      <button class='panel-toggle' onclick='window.scrollTo({top: 0, behavior: "smooth"})'>[SYS.REBOOT (Top)]</button>
+    */
+    const backToTopBtn =
+      document.querySelector('.back-to-top-btn') ||
+      document.querySelector('.footer-sys-info button[onclick*="scrollTo"]');
+
+    function scrollMainContentToTop() {
+      if (canvasCore) {
+        canvasCore.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      document.documentElement.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      document.body.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    function setInitialPanelState() {
+      if (!panelLeft || !panelRight) return;
+
+      if (isMobile()) {
+        panelLeft.classList.add('is-collapsed');
+        panelRight.classList.add('is-collapsed');
+      } else {
+        panelLeft.classList.remove('is-collapsed');
+        panelRight.classList.remove('is-collapsed');
+      }
+    }
+
+    function closeMobilePanels() {
+      if (!isMobile()) return;
+
+      if (panelLeft) panelLeft.classList.add('is-collapsed');
+      if (panelRight) panelRight.classList.add('is-collapsed');
+    }
+
+    setInitialPanelState();
+
+    if (backToTopBtn) {
+      backToTopBtn.removeAttribute('onclick');
+
+      backToTopBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        scrollMainContentToTop();
+      });
+    }
+
+    /* =========================================================
+       03. Catalog Mega Dropdown
+       ========================================================= */
+
+    const catalogMenu = document.querySelector('.mor-catalog-menu');
+    let catalogTrigger = null;
+
+    function openCatalogMenu() {
+      if (!catalogMenu) return;
+
+      catalogMenu.classList.add('is-open');
+
+      if (catalogTrigger) {
+        catalogTrigger.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function closeCatalogMenu() {
+      if (!catalogMenu) return;
+
+      catalogMenu.classList.remove('is-open');
+
+      if (catalogTrigger) {
+        catalogTrigger.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function toggleCatalogMenu() {
+      if (!catalogMenu) return;
+
+      if (catalogMenu.classList.contains('is-open')) {
+        closeCatalogMenu();
+      } else {
+        openCatalogMenu();
+      }
+    }
+
+    function setupCatalogMenu() {
+      if (!catalogMenu) return;
+
+      catalogTrigger = catalogMenu.querySelector('.mor-catalog-trigger');
+
+      const categoryButtons = catalogMenu.querySelectorAll('.mor-catalog-category');
+      const panels = catalogMenu.querySelectorAll('.mor-catalog-panel');
+
+      function showPanel(panelName) {
+        categoryButtons.forEach((button) => {
+          const isActive = button.getAttribute('data-catalog-panel') === panelName;
+          button.classList.toggle('is-active', isActive);
+        });
+
+        panels.forEach((panel) => {
+          const isActive = panel.getAttribute('data-catalog-panel-content') === panelName;
+          panel.classList.toggle('is-active', isActive);
+        });
+      }
+
+      if (catalogTrigger) {
+        catalogTrigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleCatalogMenu();
+        });
+      }
+
+      categoryButtons.forEach((button) => {
+        const panelName = button.getAttribute('data-catalog-panel');
+
+        button.addEventListener('mouseenter', () => {
+          showPanel(panelName);
+          openCatalogMenu();
+        });
+
+        button.addEventListener('focus', () => {
+          showPanel(panelName);
+          openCatalogMenu();
+        });
+
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          showPanel(panelName);
+          openCatalogMenu();
+        });
+      });
+    }
+
+    setupCatalogMenu();
+
+    /* =========================================================
+       04. Global Click Handling
+       ========================================================= */
+
+    document.addEventListener('click', (event) => {
+      const toggleBtn = event.target.closest('.panel-toggle');
+
+      if (toggleBtn) {
+        const targetId = toggleBtn.getAttribute('data-target');
+
+        /*
+          Ignore panel-toggle buttons that are not actual panel open/close buttons.
+          This prevents old utility buttons from accidentally acting like side-panel buttons.
+        */
+        if (targetId) {
+          const targetPanel = document.getElementById(targetId);
+
+          if (targetPanel) {
+            event.preventDefault();
+            targetPanel.classList.toggle('is-collapsed');
+          }
+        }
+      }
+
+      if (catalogMenu && !catalogMenu.contains(event.target)) {
+        closeCatalogMenu();
+      }
+    });
+
+    /* =========================================================
+       05. Keyboard Shortcuts
+       ========================================================= */
+
+    document.addEventListener('keydown', (event) => {
+      const key = event.key.toLowerCase();
+      const typing = isTypingInField();
+
+      /*
+        Ctrl+B = Browse panel
+        Ctrl+E = Contents panel
+        Home = scroll main content to top, unless typing in a field
+        Escape = close catalog menu and mobile side panels
+      */
+
+      if (event.ctrlKey && key === 'b') {
+        event.preventDefault();
+
+        if (panelLeft) {
+          panelLeft.classList.toggle('is-collapsed');
+        }
+      }
+
+      if (event.ctrlKey && key === 'e') {
+        event.preventDefault();
+
+        if (panelRight) {
+          panelRight.classList.toggle('is-collapsed');
+        }
+      }
+
+      if (key === 'home' && !typing) {
+        event.preventDefault();
+        scrollMainContentToTop();
+      }
+
+      if (key === 'escape') {
+        if (catalogMenu && catalogMenu.classList.contains('is-open')) {
+          closeCatalogMenu();
+
+          if (catalogTrigger) {
+            catalogTrigger.focus();
+          }
+        }
+
+        closeMobilePanels();
+      }
+    });
+
+    /* =========================================================
+       06. Resize Handling
+       ========================================================= */
+
+    let lastMobileState = isMobile();
+
+    window.addEventListener('resize', () => {
+      const currentMobileState = isMobile();
+
+      if (currentMobileState !== lastMobileState) {
+        lastMobileState = currentMobileState;
+        setInitialPanelState();
+        closeCatalogMenu();
+      }
+    });
+  });
+  //]]>
+  </script>
+
+  {{CUSTOM_PLUGIN_SCRIPTS}}
+</body>
+</html>

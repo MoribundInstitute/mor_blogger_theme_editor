@@ -1,0 +1,15 @@
+pub mod assets_panel;
+pub mod background_panel;
+pub mod buttons_panel;
+pub mod colors_panel;
+pub mod diagnostics_panel;
+pub mod export_panel;
+pub mod inputs;
+pub mod menu_panel;
+pub mod panels;
+pub mod plugins_panel;
+pub mod presets_panel;
+pub mod seo_panel;
+pub mod site_panel;
+pub mod typography_panel;
+pub mod layout;

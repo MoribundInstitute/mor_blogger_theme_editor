@@ -1,0 +1,56 @@
+/* Top-level shell, main workspace, footer, and the heading row used at the
+   top of the left editor panel. */
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: "IM Fell English", Georgia, "Times New Roman", serif;
+  background:
+    linear-gradient(180deg, rgba(169, 170, 226, 0.035), transparent 220px),
+    var(--editor-bg);
+  color: var(--editor-text);
+  overflow: hidden;
+}
+
+.editor-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  --editor-panel-width: 360px;
+  position: relative;
+}
+
+.editor-footer {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: var(--editor-bg-deep);
+  border-top: 1px solid var(--editor-border);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Header row shown at the top of the left editor panel
+   ("Blogger Theme Architect" title + hide button). */
+.editor-panel-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.editor-panel-title {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.15;
+  color: var(--editor-text);
+}
+
+.editor-panel-copy {
+  margin: 0 0 14px 0;
+  color: var(--editor-muted-2);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}

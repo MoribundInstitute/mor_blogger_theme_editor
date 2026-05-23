@@ -1,0 +1,55 @@
+
+.terminal-post {
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.post-title {
+  margin-top: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.post-title a {
+  color: var(--fg-base);
+  border-bottom: none;
+}
+
+.post-title a:hover,
+.post-title a:focus-visible {
+  background: transparent;
+  color: var(--fg-base);
+  text-shadow: var(--glow-strong);
+}
+
+.post-meta {
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.sys-tags a {
+  color: var(--fg-dim);
+}
+
+.post-body {
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+.post-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  background: var(--bg-soft);
+  padding: 12px;
+}
+
+.post-body code {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  padding: 1px 4px;
+}
+

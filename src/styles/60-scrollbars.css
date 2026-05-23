@@ -1,0 +1,20 @@
+/* Custom WebKit scrollbar styling. Affects all overflow containers
+   inside the editor shell. */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--editor-bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--editor-border);
+  border: 3px solid var(--editor-bg-deep);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--editor-accent-warm);
+}

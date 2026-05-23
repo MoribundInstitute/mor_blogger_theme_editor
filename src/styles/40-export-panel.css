@@ -1,0 +1,248 @@
+/* Export & Restore panels in the right-hand workspace, plus the secondary
+   export action bar that holds the Copy/Download/Restore buttons.
+   Responsive rules at the bottom collapse the layout on narrow widths. */
+
+.export-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* Header row. The newer markup uses .export-panel-header-split alongside
+   .export-panel-header so styles below cover both variants. */
+.export-panel-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--editor-border-soft);
+}
+
+.export-panel-header-split {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--editor-border-soft);
+}
+
+.export-panel-title {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.export-title-block,
+.export-panel-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 190px;
+}
+
+.export-panel-subtitle {
+  color: var(--editor-muted-2);
+  font-size: 0.76rem;
+  line-height: 1.2;
+}
+
+.export-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.export-toolbar-primary {
+  flex: 1 1 520px;
+  justify-content: flex-end;
+  row-gap: 6px;
+}
+
+.export-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--editor-border);
+  margin: 0 4px;
+}
+
+.export-status {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  color: var(--editor-good);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.85rem;
+}
+
+.export-error-banner {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: rgba(239, 83, 80, 0.08);
+  border: 1px solid rgba(239, 83, 80, 0.25);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.8rem;
+  color: var(--editor-danger);
+}
+
+.export-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--editor-border);
+  background: var(--editor-bg-deep);
+}
+
+.export-xml-textarea {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  font-family: "Courier New", Courier, monospace;
+  background: var(--editor-bg-deep);
+  color: var(--editor-good);
+  padding: 15px;
+  border: 0;
+  resize: none;
+  outline: none;
+}
+
+/* Secondary export action bar (Copy / Download / Restore drawer toggle, etc.) */
+.export-action-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 10px;
+  margin: 0 0 10px 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent),
+    var(--editor-panel-soft);
+  border: 1px solid var(--editor-border-soft);
+}
+
+.export-action-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.export-action-group-final {
+  margin-left: auto;
+}
+
+.export-action-bar .editor-button {
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+/* Restore Workspace drawer (Import XML target) */
+.restore-workspace-drawer {
+  flex: 0 0 auto;
+  margin-top: 14px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(169, 170, 226, 0.035), transparent),
+    var(--editor-panel-soft);
+  border: 1px dashed var(--editor-border);
+}
+
+.restore-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.restore-title {
+  margin: 0;
+  color: #6ee7ff;
+  font-size: 0.95rem;
+}
+
+.restore-copy {
+  margin: 0 0 10px 0;
+  color: var(--editor-muted-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.restore-textarea {
+  flex: 1;
+  height: 72px;
+  resize: vertical;
+}
+
+.restore-button {
+  white-space: nowrap;
+}
+
+.restore-status {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #ff00ff;
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* Responsive collapse for narrow workspace widths. */
+@media (max-width: 980px) {
+  .export-panel-header-split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-toolbar-primary {
+    justify-content: flex-start;
+  }
+
+  .export-action-bar {
+    align-items: stretch;
+  }
+
+  .export-action-group,
+  .export-action-group-final {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .export-action-group-final {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 680px) {
+  .export-panel {
+    padding: 12px;
+  }
+
+  .export-toolbar-primary,
+  .preview-toolbar-group,
+  .preview-template-mode-group,
+  .export-action-group {
+    gap: 5px;
+  }
+
+  .export-action-bar .editor-button,
+  .editor-mini-button {
+    padding: 5px 8px;
+    font-size: 0.76rem;
+  }
+
+  .preview-width-input {
+    width: 64px;
+  }
+}

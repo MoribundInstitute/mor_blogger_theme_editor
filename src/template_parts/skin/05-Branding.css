@@ -1,0 +1,56 @@
+
+.branding {
+  min-width: 0;
+  text-align: center;
+}
+
+.branding-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: none;
+}
+
+.branding-link:hover,
+.branding-link:focus-visible {
+  background: transparent;
+  color: inherit;
+}
+
+.institute-logo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--glow);
+}
+
+.branding .institute-title {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  color: var(--fg-base);
+  text-shadow: var(--glow-strong);
+  white-space: nowrap;
+}
+
+.branding-link:hover .institute-logo,
+.branding-link:focus-visible .institute-logo {
+  border-color: var(--fg-dim);
+  box-shadow: var(--glow-strong);
+}
+
+.branding-link:hover .institute-title,
+.branding-link:focus-visible .institute-title {
+  color: var(--fg-base);
+  text-decoration: underline;
+}
+

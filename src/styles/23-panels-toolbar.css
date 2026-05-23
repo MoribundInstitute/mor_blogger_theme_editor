@@ -1,0 +1,56 @@
+/* Workbench layout toolbar at the top of the left panel plus the compact
+   .editor-mini-button family used throughout the editor for small actions. */
+
+.editor-panel-toolbar {
+  padding: 10px;
+  margin: 0 0 14px 0;
+  background: var(--editor-panel-soft);
+  border: 1px solid var(--editor-border);
+}
+
+.editor-panel-toolbar-label {
+  margin: 0 0 8px 0;
+  color: var(--editor-accent-warm);
+  font-size: 0.85rem;
+}
+
+.editor-panel-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Compact button used in toolbars, headers, accordion triggers, and the
+   floating editor window bar. */
+.editor-mini-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 9px;
+  min-height: 26px;
+  background: var(--editor-panel-raised);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
+.editor-mini-button:hover {
+  border-color: var(--editor-accent);
+  color: var(--editor-accent);
+  background: #282132;
+}
+
+.editor-mini-button-active {
+  border-color: var(--editor-good);
+  color: var(--editor-good);
+  background: rgba(5, 165, 129, 0.11);
+}
+
+.editor-mini-button-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

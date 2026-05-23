@@ -1,0 +1,606 @@
+//! Theme presets.
+
+use crate::config::{
+    AssetConfig, BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig,
+    MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, SurfaceMode, ThemeConfig,
+    TypographyConfig,
+};
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct PresetPalette {
+    pub colors: ColorConfig,
+    pub background: BackgroundConfig,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Preset {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub description: &'static str,
+    pub base_config: ThemeConfig,
+    pub dark: PresetPalette,
+    pub light: PresetPalette,
+}
+
+pub fn all_presets() -> Vec<Preset> {
+    vec![
+        modern_editorial(),
+        terminal_classic(),
+        solarized(),
+        newspaper(),
+        cyberpunk(),
+        minimal(),
+    ]
+}
+
+// ---------------------------------------------------------------------------
+// Shared font stacks (same constants as typography_panel.rs).
+// ---------------------------------------------------------------------------
+
+const STACK_MONO: &str = "'Courier New', Courier, monospace";
+const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
+const STACK_SANS: &str =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
+const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
+const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
+
+// ---------------------------------------------------------------------------
+// Helper: build a gradient SurfaceFill in one line.
+// ---------------------------------------------------------------------------
+
+fn gradient(from: &str, to: &str, angle_deg: u16) -> SurfaceFill {
+    SurfaceFill {
+        mode: SurfaceMode::Gradient,
+        color: from.to_string(), // sensible fallback when toggling to solid
+        gradient_from: from.to_string(),
+        gradient_to: to.to_string(),
+        gradient_angle_deg: angle_deg,
+    }
+}
+
+fn build_base(
+    site: SiteConfig,
+    typography: TypographyConfig,
+    buttons: ButtonConfig,
+    seo: SeoConfig,
+    menu_links: Vec<MenuLink>,
+    footer: FooterConfig,
+) -> ThemeConfig {
+    ThemeConfig {
+        site,
+        typography,
+        buttons,
+        seo,
+        menu_links,
+        footer,
+        // Palette fields overwritten by swap_palette at apply time.
+        colors: ColorConfig {
+            bg_base: "#000".to_string(),
+            bg_panel: SurfaceFill::solid("#000"),
+            bg_elevated: SurfaceFill::solid("#000"),
+            fg_base: "#fff".to_string(),
+            fg_muted: "#aaa".to_string(),
+            accent: "#fff".to_string(),
+            border: "#444".to_string(),
+        },
+        background: BackgroundConfig {
+            mode: BackgroundMode::Solid { color: "#000".to_string() },
+        },
+        assets: AssetConfig {
+            favicon_url: String::new(),
+            social_card_image_url: String::new(),
+        },
+        plugins: PluginConfig { custom_js: String::new() },
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Preset: Modern Editorial — new startup default.
+// ---------------------------------------------------------------------------
+
+fn modern_editorial() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "Modern Editorial".to_string(),
+            site_subtitle: "A clean Blogger starter for posts, notes, and pages.".to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_SERIF.to_string(),
+            heading_font_stack: STACK_SYSTEM_UI.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "17px".to_string(),
+            scale_ratio: "1.25".to_string(),
+            line_height: "1.65".to_string(),
+            heading_weight: "700".to_string(),
+        },
+        ButtonConfig {
+            radius: "0px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "none".to_string(),
+        },
+        SeoConfig {
+            meta_description: "A modern Blogger theme generated with Blogger Theme Architect."
+                .to_string(),
+            meta_keywords: "blog, writing, theme, editorial".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: String::new(),
+        },
+        vec![
+            MenuLink { label: "Home".to_string(), url: "/".to_string() },
+            MenuLink { label: "Archive".to_string(), url: "/p/archive.html".to_string() },
+            MenuLink { label: "About".to_string(), url: "/p/about.html".to_string() },
+            MenuLink { label: "Contact".to_string(), url: "/p/contact.html".to_string() },
+        ],
+        FooterConfig {
+            footer_text: "Published with Blogger.".to_string(),
+            footer_license_label: "License".to_string(),
+            footer_license_url: String::new(),
+        },
+    );
+
+    Preset {
+        id: "modern_editorial",
+        name: "Modern Editorial",
+        description: "Clean hero, cards, and editorial contrast. The new default.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#18161f".to_string(),
+                bg_panel: SurfaceFill::solid("#211d2b"),
+                bg_elevated: SurfaceFill::solid("#2a2435"),
+                fg_base: "#f2eadf".to_string(),
+                fg_muted: "#b9aebf".to_string(),
+                accent: "#bc8d6b".to_string(),
+                border: "#4a3f59".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#18161f".to_string() },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#f5efe6".to_string(),
+                bg_panel: SurfaceFill::solid("#fffaf2"),
+                bg_elevated: SurfaceFill::solid("#ffffff"),
+                fg_base: "#241f2d".to_string(),
+                fg_muted: "#766b7f".to_string(),
+                accent: "#8a5a3c".to_string(),
+                border: "#d1c2b2".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#f5efe6".to_string() },
+            },
+        },
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset: Terminal Classic — solid panels, the original sidebar-era look.
+// ---------------------------------------------------------------------------
+
+fn terminal_classic() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "My Blogger Site".to_string(),
+            site_subtitle: "A high-contrast terminal-style weblog".to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_MONO.to_string(),
+            heading_font_stack: STACK_MONO.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "16px".to_string(),
+            scale_ratio: "1.2".to_string(),
+            line_height: "1.55".to_string(),
+            heading_weight: "700".to_string(),
+        },
+        ButtonConfig {
+            radius: "0px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "lowercase".to_string(),
+        },
+        SeoConfig {
+            meta_description: "A custom Blogger theme generated with Blogger Theme Architect."
+                .to_string(),
+            meta_keywords: "blog, writing, theme".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: String::new(),
+        },
+        vec![
+            MenuLink { label: "Home".to_string(), url: "/".to_string() },
+            MenuLink { label: "Archive".to_string(), url: "/p/archive.html".to_string() },
+            MenuLink { label: "About".to_string(), url: "/p/about.html".to_string() },
+            MenuLink { label: "Contact".to_string(), url: "/p/contact.html".to_string() },
+        ],
+        FooterConfig {
+            footer_text: "Powered by Blogger.".to_string(),
+            footer_license_label: "License".to_string(),
+            footer_license_url: String::new(),
+        },
+    );
+
+    Preset {
+        id: "terminal_classic",
+        name: "Terminal Classic",
+        description: "Warm tan accent on near-black. The original Blogger 1.0-ish look.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#0a0a0a".to_string(),
+                bg_panel: SurfaceFill::solid("#111111"),
+                bg_elevated: SurfaceFill::solid("#1a1a1a"),
+                fg_base: "#e0e0e0".to_string(),
+                fg_muted: "#a8a8a8".to_string(),
+                accent: "#bc8d6b".to_string(),
+                border: "#444444".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#0a0a0a".to_string() },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#f5f5f0".to_string(),
+                bg_panel: SurfaceFill::solid("#ffffff"),
+                bg_elevated: SurfaceFill::solid("#fafaf5"),
+                fg_base: "#1a1a1a".to_string(),
+                fg_muted: "#666666".to_string(),
+                accent: "#8b5a2b".to_string(),
+                border: "#cccccc".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#f5f5f0".to_string() },
+            },
+        },
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset: Solarized — subtle 180° gradient on panels.
+// ---------------------------------------------------------------------------
+
+fn solarized() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "Field Notes".to_string(),
+            site_subtitle: "Thinking out loud in low contrast".to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_SERIF.to_string(),
+            heading_font_stack: STACK_SANS.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "17px".to_string(),
+            scale_ratio: "1.25".to_string(),
+            line_height: "1.7".to_string(),
+            heading_weight: "600".to_string(),
+        },
+        ButtonConfig {
+            radius: "3px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "none".to_string(),
+        },
+        SeoConfig {
+            meta_description: "Notes, sketches, and unfinished thoughts.".to_string(),
+            meta_keywords: "notes, writing, essays".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: "https://creativecommons.org/licenses/by-sa/4.0/".to_string(),
+            author_name: String::new(),
+        },
+        vec![
+            MenuLink { label: "Notes".to_string(), url: "/".to_string() },
+            MenuLink { label: "Index".to_string(), url: "/p/index.html".to_string() },
+            MenuLink { label: "Colophon".to_string(), url: "/p/colophon.html".to_string() },
+            MenuLink { label: "RSS".to_string(), url: "/feeds/posts/default".to_string() },
+        ],
+        FooterConfig {
+            footer_text: "Words and pictures by the author.".to_string(),
+            footer_license_label: "CC BY-SA 4.0".to_string(),
+            footer_license_url: "https://creativecommons.org/licenses/by-sa/4.0/".to_string(),
+        },
+    );
+
+    Preset {
+        id: "solarized",
+        name: "Solarized",
+        description: "Muted teal palette with a soft vertical gradient.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#002b36".to_string(),
+                bg_panel: gradient("#073642", "#04303a", 180),
+                bg_elevated: gradient("#586e75", "#48595f", 180),
+                fg_base: "#eee8d5".to_string(),
+                fg_muted: "#93a1a1".to_string(),
+                accent: "#b58900".to_string(),
+                border: "#586e75".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Gradient {
+                    from: "#073642".to_string(),
+                    to: "#002b36".to_string(),
+                    angle_deg: 180,
+                },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#fdf6e3".to_string(),
+                bg_panel: gradient("#eee8d5", "#e6e0cb", 180),
+                bg_elevated: gradient("#ffffff", "#fbf6e9", 180),
+                fg_base: "#073642".to_string(),
+                fg_muted: "#586e75".to_string(),
+                accent: "#b58900".to_string(),
+                border: "#93a1a1".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Gradient {
+                    from: "#eee8d5".to_string(),
+                    to: "#fdf6e3".to_string(),
+                    angle_deg: 180,
+                },
+            },
+        },
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset: Newspaper — solid panels, print stays still.
+// ---------------------------------------------------------------------------
+
+fn newspaper() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "The Daily Record".to_string(),
+            site_subtitle: "Vol. 1 — Independent reporting and essays".to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_NEWSPAPER.to_string(),
+            heading_font_stack: STACK_NEWSPAPER.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "18px".to_string(),
+            scale_ratio: "1.333".to_string(),
+            line_height: "1.65".to_string(),
+            heading_weight: "700".to_string(),
+        },
+        ButtonConfig {
+            radius: "0px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "uppercase".to_string(),
+        },
+        SeoConfig {
+            meta_description: "Reporting and essays, published occasionally.".to_string(),
+            meta_keywords: "journalism, essays, longform".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: "The Editorial Board".to_string(),
+        },
+        vec![
+            MenuLink { label: "Front Page".to_string(), url: "/".to_string() },
+            MenuLink { label: "Opinion".to_string(), url: "/search/label/opinion".to_string() },
+            MenuLink { label: "Letters".to_string(), url: "/p/letters.html".to_string() },
+            MenuLink { label: "Masthead".to_string(), url: "/p/masthead.html".to_string() },
+        ],
+        FooterConfig {
+            footer_text: "© The Daily Record. All rights reserved.".to_string(),
+            footer_license_label: "Terms".to_string(),
+            footer_license_url: "/p/terms.html".to_string(),
+        },
+    );
+
+    Preset {
+        id: "newspaper",
+        name: "Newspaper",
+        description: "Black ink on cream paper. For longform writing.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#1a1a1a".to_string(),
+                bg_panel: SurfaceFill::solid("#222222"),
+                bg_elevated: SurfaceFill::solid("#2a2a2a"),
+                fg_base: "#f4ecd8".to_string(),
+                fg_muted: "#a8a094".to_string(),
+                accent: "#cc6666".to_string(),
+                border: "#444444".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#1a1a1a".to_string() },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#f4ecd8".to_string(),
+                bg_panel: SurfaceFill::solid("#fbf6e9"),
+                bg_elevated: SurfaceFill::solid("#ffffff"),
+                fg_base: "#1a1a1a".to_string(),
+                fg_muted: "#5c5550".to_string(),
+                accent: "#8b0000".to_string(),
+                border: "#c9bfa8".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#f4ecd8".to_string() },
+            },
+        },
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset: Cyberpunk — 135° gradients on panels, loud on purpose.
+// ---------------------------------------------------------------------------
+
+fn cyberpunk() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "NEON.LOG".to_string(),
+            site_subtitle: ">> uplink established <<".to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_MONO.to_string(),
+            heading_font_stack: STACK_MONO.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "15px".to_string(),
+            scale_ratio: "1.2".to_string(),
+            line_height: "1.5".to_string(),
+            heading_weight: "700".to_string(),
+        },
+        ButtonConfig {
+            radius: "0px".to_string(),
+            border_width: "2px".to_string(),
+            text_transform: "uppercase".to_string(),
+        },
+        SeoConfig {
+            meta_description: "Transmissions from the perimeter.".to_string(),
+            meta_keywords: "log, cyber, transmission".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: "operator".to_string(),
+        },
+        vec![
+            MenuLink { label: "feed".to_string(), url: "/".to_string() },
+            MenuLink { label: "logs".to_string(), url: "/search/label/log".to_string() },
+            MenuLink { label: "tags".to_string(), url: "/p/tags.html".to_string() },
+            MenuLink { label: "ping".to_string(), url: "/p/contact.html".to_string() },
+        ],
+        FooterConfig {
+            footer_text: "// signal integrity: nominal //".to_string(),
+            footer_license_label: "wtfpl".to_string(),
+            footer_license_url: "http://www.wtfpl.net/".to_string(),
+        },
+    );
+
+    Preset {
+        id: "cyberpunk",
+        name: "Cyberpunk",
+        description: "Magenta and cyan with diagonal neon gradients.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#0d0221".to_string(),
+                bg_panel: gradient("#1a0b3d", "#0d0221", 135),
+                bg_elevated: gradient("#2d1b69", "#1a0b3d", 135),
+                fg_base: "#00ffff".to_string(),
+                fg_muted: "#6ee7ff".to_string(),
+                accent: "#ff00ff".to_string(),
+                border: "#ff00ff".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Gradient {
+                    from: "#0d0221".to_string(),
+                    to: "#2d1b69".to_string(),
+                    angle_deg: 135,
+                },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#fff0fa".to_string(),
+                bg_panel: gradient("#ffffff", "#ffe5f5", 135),
+                bg_elevated: gradient("#ffe5f5", "#e0f7ff", 135),
+                fg_base: "#3d0066".to_string(),
+                fg_muted: "#6a4080".to_string(),
+                accent: "#cc00cc".to_string(),
+                border: "#cc00cc".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Gradient {
+                    from: "#fff0fa".to_string(),
+                    to: "#e0f7ff".to_string(),
+                    angle_deg: 135,
+                },
+            },
+        },
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset: Minimal — solid panels, restraint.
+// ---------------------------------------------------------------------------
+
+fn minimal() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "notes".to_string(),
+            site_subtitle: String::new(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_SYSTEM_UI.to_string(),
+            heading_font_stack: STACK_SYSTEM_UI.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "16px".to_string(),
+            scale_ratio: "1.125".to_string(),
+            line_height: "1.6".to_string(),
+            heading_weight: "600".to_string(),
+        },
+        ButtonConfig {
+            radius: "4px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "none".to_string(),
+        },
+        SeoConfig {
+            meta_description: String::new(),
+            meta_keywords: String::new(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: String::new(),
+        },
+        vec![
+            MenuLink { label: "Home".to_string(), url: "/".to_string() },
+            MenuLink { label: "Archive".to_string(), url: "/p/archive.html".to_string() },
+            MenuLink { label: "About".to_string(), url: "/p/about.html".to_string() },
+            MenuLink { label: String::new(), url: String::new() },
+        ],
+        FooterConfig {
+            footer_text: String::new(),
+            footer_license_label: String::new(),
+            footer_license_url: String::new(),
+        },
+    );
+
+    Preset {
+        id: "minimal",
+        name: "Minimal",
+        description: "System sans, tight scale, no decoration.",
+        base_config: base,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#111111".to_string(),
+                bg_panel: SurfaceFill::solid("#1a1a1a"),
+                bg_elevated: SurfaceFill::solid("#222222"),
+                fg_base: "#eeeeee".to_string(),
+                fg_muted: "#999999".to_string(),
+                accent: "#66aaff".to_string(),
+                border: "#333333".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#111111".to_string() },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#ffffff".to_string(),
+                bg_panel: SurfaceFill::solid("#ffffff"),
+                bg_elevated: SurfaceFill::solid("#fafafa"),
+                fg_base: "#111111".to_string(),
+                fg_muted: "#666666".to_string(),
+                accent: "#0066cc".to_string(),
+                border: "#e5e5e5".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid { color: "#ffffff".to_string() },
+            },
+        },
+    }
+}

@@ -1,0 +1,173 @@
+/* Reusable input building blocks: EditorCard, fields, selects, textareas,
+   color swatches, dropzones, notes, layout helpers, and main buttons.
+   Used by every panel in the left editor (Site, Palette, Typography, etc.). */
+
+.editor-card {
+  padding: 14px;
+  margin: 0 0 14px 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent),
+    var(--editor-panel-soft);
+  border: 1px solid var(--editor-border);
+}
+
+.editor-card-title {
+  margin: 0 0 12px 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--editor-border-soft);
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--editor-accent-warm);
+  letter-spacing: 0.01em;
+}
+
+.editor-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.editor-field-label {
+  font-size: 0.85rem;
+  color: var(--editor-muted);
+}
+
+.editor-mini-label {
+  font-size: 0.72rem;
+  color: var(--editor-muted-2);
+}
+
+.editor-field,
+.editor-select,
+.editor-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 9px;
+  background: var(--editor-bg-deep);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  font-family: inherit;
+}
+
+.editor-field:focus,
+.editor-select:focus,
+.editor-textarea:focus {
+  outline: none;
+  border-color: var(--editor-accent);
+  box-shadow: 0 0 0 1px var(--editor-focus);
+}
+
+.editor-field::placeholder,
+.editor-textarea::placeholder {
+  color: var(--editor-muted-2);
+  opacity: 0.85;
+}
+
+.editor-color-field {
+  height: 36px;
+  padding: 4px;
+}
+
+/* Layout helpers used inside cards */
+.editor-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.editor-row-stretch {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.editor-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-w-70 {
+  width: 70px;
+}
+
+/* Primary button variants used inside cards/panels */
+.editor-button {
+  padding: 8px 14px;
+  background: var(--editor-panel-raised);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.editor-button:hover {
+  border-color: var(--editor-accent);
+  background: #282132;
+}
+
+.editor-button-active {
+  border-color: var(--editor-accent);
+  color: var(--editor-accent);
+  background: rgba(169, 170, 226, 0.08);
+}
+
+.editor-button-small {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.editor-button-danger {
+  border-color: rgba(239, 83, 80, 0.45);
+  color: #ffd3d1;
+}
+
+/* Notes, dropzones, helper rows */
+.editor-note {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--editor-panel-raised);
+  border: 1px dashed var(--editor-border);
+}
+
+.editor-note-title {
+  margin: 0 0 6px 0;
+  color: var(--editor-accent);
+  font-size: 0.95rem;
+}
+
+.editor-note-body {
+  margin: 0;
+  color: var(--editor-muted-2);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.editor-dropzone {
+  padding: 18px;
+  border: 1px dashed var(--editor-muted-2);
+  text-align: center;
+  color: var(--editor-text);
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.editor-helper-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.editor-helper-text {
+  color: var(--editor-muted-2);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}

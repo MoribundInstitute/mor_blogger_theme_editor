@@ -1,0 +1,53 @@
+
+.runelite-panel {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.panel-right {
+  border-right: none;
+  border-left: 1px solid var(--border-color);
+}
+
+.panel-left.is-collapsed {
+  margin-left: calc(var(--sidebar-width) * -1);
+}
+
+.panel-right.is-collapsed {
+  margin-right: calc(var(--sidebar-width) * -1);
+}
+
+.panel-header {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  background: var(--bg-highlight);
+}
+
+.panel-header span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-content {
+  padding: 15px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-grow: 1;
+  min-height: 0;
+  font-size: 0.85rem;
+}
+

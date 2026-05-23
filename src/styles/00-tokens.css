@@ -1,0 +1,37 @@
+/* CSS custom properties (design tokens) for the Blogger Theme Architect editor UI.
+   These variables are used throughout all other stylesheets. */
+
+:root {
+  --editor-bg: #222129;
+  --editor-bg-deep: #111015;
+  --editor-panel: #18161f;
+  --editor-panel-soft: #15131b;
+  --editor-panel-raised: #201b29;
+  --editor-border: #4a3f59;
+  --editor-border-soft: #342d3f;
+  --editor-text: #f2eadf;
+  --editor-muted: #bc8d6b;
+  --editor-muted-2: #9a8da6;
+  --editor-accent: #a9aae2;
+  --editor-accent-warm: #bc8d6b;
+  --editor-good: #05a581;
+  --editor-danger: #ef5350;
+  --editor-warning: #ffb74d;
+  --editor-focus: rgba(169, 170, 226, 0.35);
+}
+
+/* Global box-sizing reset */
+* {
+  box-sizing: border-box;
+}
+
+/* Base document styles */
+html,
+body,
+#main,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--editor-bg);
+}

@@ -127,6 +127,7 @@ pub fn build_base(
             social_card_image_url: String::new(),
         },
         plugins: PluginConfig { custom_js: String::new() },
+        static_pages: crate::config::StaticPagesConfig::default(),
         preset_css: String::new(),
     }
 }

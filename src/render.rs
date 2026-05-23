@@ -285,6 +285,14 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
     let body_markup = match preview_mode {
         PreviewTemplateMode::Modern => modern_body,
         PreviewTemplateMode::Sidebars => sidebars_body,
+        PreviewTemplateMode::StaticArchive => format!(
+            "<div style='padding: 40px; color: {};'><h2>Archive Preview coming soon...</h2></div>", 
+            escape_attr(&config.colors.fg_base)
+        ),
+        PreviewTemplateMode::StaticCategories => format!(
+            "<div style='padding: 40px; color: {};'><h2>Categories Preview coming soon...</h2></div>",
+            escape_attr(&config.colors.fg_base)
+        ),
     };
 
     format!(

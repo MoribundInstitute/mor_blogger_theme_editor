@@ -65,6 +65,7 @@ pub fn default_theme_config() -> ThemeConfig {
         plugins: PluginConfig {
             custom_js: String::new(),
         },
+        static_pages: crate::config::StaticPagesConfig::default(),
         preset_css: String::new(),
     }
 }

@@ -74,6 +74,7 @@ pub fn LeftPanel(
     footer_license_url: Signal<String>,
 
     custom_js: Signal<String>,
+    static_pages: Signal<crate::config::StaticPagesConfig>,
 ) -> Element {
     let mut collapsed = is_collapsed;
 

@@ -68,6 +68,9 @@ pub struct ThemeSignals {
 
     // Active preset CSS (empty for hand-built themes and re-imported exports)
     pub preset_css: Signal<String>,
+
+    // Static Pages
+    pub static_pages: Signal<crate::config::StaticPagesConfig>,
 }
 
 impl ThemeSignals {

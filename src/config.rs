@@ -11,6 +11,7 @@ pub struct ThemeConfig {
     pub menu_links: Vec<MenuLink>,
     pub footer: FooterConfig,
     pub plugins: PluginConfig,
+    pub static_pages: StaticPagesConfig,
     /// CSS rules contributed by the active preset (if any). Appended to the
     /// exported theme's `<b:skin>` block AFTER the token-driven `:root`, so
     /// preset rules can override or extend the base style.
@@ -43,6 +44,7 @@ impl Default for ThemeConfig {
             ],
             footer: FooterConfig::default(),
             plugins: PluginConfig::default(),
+            static_pages: StaticPagesConfig::default(),
             preset_css: String::new(),
         }
     }
@@ -308,6 +310,83 @@ impl Default for PluginConfig {
     fn default() -> Self {
         Self {
             custom_js: String::new(),
+        }
+    }
+}
+
+// ==========================================
+// STATIC PAGES CONFIGURATION
+// ==========================================
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct StaticPagesConfig {
+    pub sync_with_global_theme: bool,
+    pub custom_colors: Option<ColorConfig>,
+    pub custom_typography: Option<TypographyConfig>,
+    pub archive: ArchivePageConfig,
+    pub categories: CategoriesPageConfig,
+}
+
+impl Default for StaticPagesConfig {
+    fn default() -> Self {
+        Self {
+            sync_with_global_theme: true,
+            custom_colors: None,
+            custom_typography: None,
+            archive: ArchivePageConfig::default(),
+            categories: CategoriesPageConfig::default(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct ArchivePageConfig {
+    pub kicker: String,
+    pub title: String,
+    pub description: String,
+    pub max_results: u32,
+}
+
+impl Default for ArchivePageConfig {
+    fn default() -> Self {
+        Self {
+            kicker: "THE_MORIBUND_INSTITUTE // ARCHIVE".to_string(),
+            title: "Chronological Archive".to_string(),
+            description: "A date-sorted index of Institute posts, lessons, wiki walks, commentaries, and assorted textual machinery.".to_string(),
+            max_results: 150,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct CategoriesPageConfig {
+    pub kicker: String,
+    pub title: String,
+    pub description: String,
+    pub enabled_sections: Vec<String>,
+}
+
+impl Default for CategoriesPageConfig {
+    fn default() -> Self {
+        Self {
+            kicker: "THE_MORIBUND_INSTITUTE // CATEGORIES".to_string(),
+            title: "Browse Categories".to_string(),
+            description: "A subject index for Institute posts, lessons, wiki walks, lexicographical rummaging, video commentary, and other classified whatnot.".to_string(),
+            enabled_sections: vec![
+                "000 General Works".to_string(),
+                "100 Philosophy".to_string(),
+                "200 Religion".to_string(),
+                "300 Social Sciences".to_string(),
+                "400 Language".to_string(),
+                "500 Science".to_string(),
+                "600 Technology".to_string(),
+                "700 Arts".to_string(),
+                "800 Literature".to_string(),
+                "900 History".to_string(),
+            ],
         }
     }
 }

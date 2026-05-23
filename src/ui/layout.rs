@@ -129,11 +129,12 @@ pub fn apply_preview_viewport(
     }
 }
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PreviewTemplateMode {
     Modern,
     Sidebars,
+    StaticArchive,
+    StaticCategories,
 }
 
 impl PreviewTemplateMode {
@@ -141,6 +142,8 @@ impl PreviewTemplateMode {
         match self {
             Self::Modern => "Modern",
             Self::Sidebars => "Sidebars",
+            Self::StaticArchive => "Static Archive",
+            Self::StaticCategories => "Static Categories",
         }
     }
 }

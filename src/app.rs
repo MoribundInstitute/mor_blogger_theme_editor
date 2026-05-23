@@ -78,6 +78,9 @@ pub fn App() -> Element {
     // ---- Plugins ---------------------------------------------------------
     let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
 
+    // ---- Static Pages ----------------------------------------------------
+    let static_pages = use_signal(|| defaults.static_pages.clone());
+
     // ---- Active preset CSS ----------------------------------------------
     let preset_css = use_signal(|| String::new());
 
@@ -260,7 +263,6 @@ pub fn App() -> Element {
         });
     });
 
-
     // ---- Persist selected workbench layout -------------------------------
     use_effect(move || {
         let storage_ready = layout_storage_ready();
@@ -323,6 +325,7 @@ pub fn App() -> Element {
         footer_license_label,
         footer_license_url,
         custom_js,
+        static_pages,
         preset_css,
     };
 
@@ -394,6 +397,7 @@ pub fn App() -> Element {
         plugins: crate::config::PluginConfig {
             custom_js: custom_js(),
         },
+        static_pages: static_pages(),
         preset_css: preset_css(),
     };
 
@@ -466,6 +470,7 @@ pub fn App() -> Element {
                     footer_license_url,
 
                     custom_js,
+                    static_pages,
                 }
 
                 RightPanel {
@@ -587,6 +592,7 @@ fn apply_theme_config_to_signals(signals: ThemeSignals, new_config: ThemeConfig)
         .set(new_config.footer.footer_license_url);
 
     signals.custom_js.clone().set(new_config.plugins.custom_js);
+    signals.static_pages.clone().set(new_config.static_pages);
     signals.preset_css.clone().set(new_config.preset_css);
 }
 

@@ -1,0 +1,48 @@
+<b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
+  <b:includable id='main' var='top'>
+    <div class='blog-posts'>
+      <b:loop values='data:posts' var='post'>
+        <b:include data='post' name='post'/>
+      </b:loop>
+    </div>
+    
+    <b:include name='postPagination'/>
+  </b:includable>
+
+  <b:includable id='post' var='post'>
+    <article class='terminal-post'>
+      <h2 class='post-title'>
+        <a expr:href='data:post.url'><data:post.title/></a>
+      </h2>
+      
+      <div class='post-meta'>
+        <span class='sys-tags'>
+          <b:if cond='data:post.labels'>
+            [ 
+            <b:loop values='data:post.labels' var='label'>
+              <a expr:href='data:label.url'><data:label.name/></a><b:if cond='not data:label.isLast'>, </b:if>
+            </b:loop>
+            ]
+          </b:if>
+        </span>
+        <span class='post-timestamp'> - <data:post.timestamp/></span>
+      </div>
+      
+      <div class='post-body'>
+        <data:post.body/>
+      </div>
+    </article>
+  </b:includable>
+
+  <b:includable id='postPagination'>
+    <nav class='terminal-pager'>
+      <b:if cond='data:newerPageUrl'>
+        <a class='pager-btn' expr:href='data:newerPageUrl'>[ Newer ]</a>
+      </b:if>
+      <a class='pager-btn' expr:href='data:blog.homepageUrl'>[ Home ]</a>
+      <b:if cond='data:olderPageUrl'>
+        <a class='pager-btn' expr:href='data:olderPageUrl'>[ Older ]</a>
+      </b:if>
+    </nav>
+  </b:includable>
+</b:widget>

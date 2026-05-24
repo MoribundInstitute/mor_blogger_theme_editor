@@ -1,0 +1,166 @@
+/* ============================================================
+   OSRS Classic Preset
+   Replicates the 2007 Old School RuneScape interface.
+   Thick black borders, muddy brown panels, red buttons, and 
+   gold text with harsh 1px black text-shadows.
+   ============================================================ */
+
+/* Global text shadow for that bitmap font engine look */
+body, h1, h2, h3, h4, p, a, span, div, li {
+  text-shadow: 1px 1px 0 #000000 !important;
+}
+
+/* Remove the base theme's vignette/glow */
+body::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* CONTAINER surfaces (Inventory/Bank background style) */
+.canvas-core,
+.terminal-post,
+.runelite-panel,
+.terminal-main-header,
+.terminal-footer,
+.mor-catalog-dropdown {
+  background: var(--bg-panel) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 4px !important;
+  /* Inner bevel effect typical of RS interfaces */
+  box-shadow: 
+    inset 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+/* CONTENT surfaces inside containers */
+.runelite-panel .panel-content,
+.canvas-core .panel-content {
+  background: var(--bg-elevated) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 2px !important;
+  margin: 6px !important;
+  padding: 12px !important;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Headings (Yellow/Gold) */
+h1, h2, h3, h4,
+.terminal-main-header .institute-title,
+.terminal-post .post-title,
+.terminal-post .post-title a {
+  color: var(--accent) !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: 1px 1px 0 #000000, 2px 2px 0px rgba(0,0,0,0.5) !important;
+}
+
+.terminal-post .post-title {
+  border-bottom: 2px solid var(--border-color) !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+}
+
+/* The classic red interface button */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: #5d1a14 !important; /* RS Button Red */
+  color: var(--accent) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 2px !important;
+  padding: 6px 14px !important;
+  font-weight: bold !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 100, 100, 0.15),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.5) !important;
+  cursor: pointer;
+  transition: background 100ms ease, box-shadow 100ms ease !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: #732219 !important; /* Slightly brighter red */
+  color: #ffffff !important; /* Text goes white on hover sometimes in UI */
+}
+
+.pager-btn:active,
+.panel-toggle:active,
+.toc-jump-link:active,
+.back-to-top-btn:active,
+.mor-catalog-trigger:active {
+  background: #4a1510 !important;
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6) !important;
+  transform: translateY(1px) !important;
+}
+
+/* Links */
+.terminal-post .post-body a,
+.panel-content a {
+  color: var(--accent) !important; /* Swaps cyan for the gold accent */
+  text-decoration: underline !important;
+}
+
+.terminal-post .post-body a:hover,
+.panel-content a:hover {
+  color: #ffffff !important;
+}
+
+/* Panel Headers */
+.panel-header,
+.mor-panel-heading {
+  background: #5d1a14 !important; /* Red banner */
+  color: var(--accent) !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  padding: 6px 10px !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  border-radius: 2px 2px 0 0 !important;
+  box-shadow: inset 1px 1px 0 rgba(255, 100, 100, 0.15) !important;
+}
+
+/* Form fields (Chatbox style) */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea,
+select {
+  background: #d8d0b8 !important; /* Tan parchment/chatbox input */
+  color: #000000 !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  padding: 6px 8px !important;
+  text-shadow: none !important;
+  font-weight: bold !important;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  background: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 14px !important;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-panel) !important;
+  border-left: 2px solid var(--border-color) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: #5d1a14 !important;
+  border: 2px solid var(--border-color) !important;
+  box-shadow: inset 1px 1px 0 rgba(255, 100, 100, 0.15) !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #732219 !important;
+}

@@ -30,7 +30,7 @@
   <link href='{{FAVICON_URL}}' rel='icon' sizes='16x16' type='image/png'/>
   <link href='{{FAVICON_URL}}' rel='icon' sizes='32x32' type='image/png'/>
   <link href='{{FAVICON_URL}}' rel='apple-touch-icon' sizes='180x180'/>
-
+{{GOOGLE_FONTS_LINK}}
   <b:skin><![CDATA[
 :root {
   /* Terminal Palette */
@@ -1263,9 +1263,11 @@ button:focus-visible {
    ========================================================== */
 {{PRESET_CSS}}
   ]]></b:skin>
+  {{ADS_HEAD_SCRIPT}}
 </head>
 
 <body>
+  {{ADS_CONSENT_BANNER}}
   <header class='terminal-main-header'>
     <div class='header-top-row'>
       <button class='panel-toggle' data-target='panel-left' type='button'>[ Browse ]</button>
@@ -1327,8 +1329,8 @@ button:focus-visible {
       </div>
       <div class='panel-content'>
         <b:section class='sidebar-section' id='sidebar-left' maxwidgets='10' showaddelement='yes'>
-          <b:widget id='Label1' locked='false' title='Labels' type='Label' visible='true'/>
-          <b:widget id='BlogArchive1' locked='false' title='Archive' type='BlogArchive' visible='true'/>
+          {{WIDGET_LABEL}}
+          {{WIDGET_BLOG_ARCHIVE}}
         </b:section>
       </div>
     </aside>
@@ -1339,33 +1341,9 @@ button:focus-visible {
         <span class='system-status'>system: online</span>
       </div>
 
-     <b:section class='main-section' id='main' maxwidgets='1' showaddelement='no'>
-  <b:widget id='Blog1' locked='false' title='Blog Posts' type='Blog' visible='true'>
-   <b:includable id='main' var='this'>
-  <div class='blog-posts'>
-    <b:loop values='data:posts' var='post'>
-      <b:include data='post' name='post'/>
-    </b:loop>
-  </div>
-</b:includable>
-
-    <b:includable id='post' var='post'>
-      <article class='terminal-post'>
-        <h2 class='post-title'>
-          <a expr:href='data:post.url'><data:post.title/></a>
-        </h2>
-        <div class='post-body'>
-          <data:post.body/>
-        </div>
-      </article>
-    </b:includable>
-  </b:widget>
-</b:section>
-
-        <nav class='terminal-pager'>
-          <a class='pager-btn' href='/'>[ Home ]</a>
-          <a class='pager-btn' href='/search'>[ More Posts ]</a>
-        </nav>
+   <b:section class='main-section' id='main' maxwidgets='1' showaddelement='no'>
+       {{WIDGET_BLOG}}
+     </b:section>
 
     <footer class='terminal-footer'>
           <div class='footer-grid'>
@@ -1409,8 +1387,10 @@ button:focus-visible {
         </div>
 
         <b:section class='sidebar-section' id='sidebar-right' maxwidgets='10' showaddelement='yes'>
-          <b:widget id='HTML1' locked='false' title='Custom Widget' type='HTML' visible='true'/>
+          {{WIDGET_HTML}}
+          {{WIDGET_ADSENSE_SIDEBAR}}
         </b:section>
+        <div class='mor-ad-slot mor-ad-slot-sidebar' data-mor-ad-placement='sidebar'></div>
       </div>
     </aside>
   </div>
@@ -1695,6 +1675,7 @@ button:focus-visible {
   //]]>
   </script>
 
+  {{ADS_RUNTIME_SCRIPT}}
   {{CUSTOM_PLUGIN_SCRIPTS}}
 </body>
 </html>

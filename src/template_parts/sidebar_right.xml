@@ -1,0 +1,103 @@
+<aside class='runelite-panel panel-right' id='panel-right'>
+  <div class='panel-header'>
+    <span>{{RIGHT_PANEL_TITLE}}</span>
+    <button class='panel-toggle' data-target='panel-right'>{{RIGHT_PANEL_CLOSE_LABEL}}</button>
+  </div>
+
+  <div class='panel-content' id='control-container'>
+    <b:section class='sidebar-section' id='sidebar-right' showaddelement='yes'>
+      <b:widget id='HTML1' locked='false' title='{{RIGHT_WIDGET_TITLE}}' type='HTML' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='content'><![CDATA[
+<div id="terminal-toc-wrapper">
+  <div id="toc-loading" style="color: var(--fg-dim); animation: blink 1s infinite;">{{TOC_LOADING_MESSAGE}}</div>
+  <ul id="terminal-toc-list" style="display:none; list-style: none; padding: 0; margin: 0;"></ul>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('terminal-toc-list');
+  const loading = document.getElementById('toc-loading');
+
+  const postBody = document.querySelector('.post-body');
+
+  if (!container || !loading) {
+    return;
+  }
+
+  if (!postBody) {
+    loading.innerText = "{{TOC_WAITING_MESSAGE}}";
+    loading.style.animation = "none";
+    return;
+  }
+
+  const headings = postBody.querySelectorAll('{{TOC_HEADING_SELECTOR}}');
+
+  if (headings.length === 0) {
+    loading.innerText = "{{TOC_EMPTY_MESSAGE}}";
+    loading.style.animation = "none";
+    return;
+  }
+
+  let html = '';
+
+  headings.forEach((heading, index) => {
+    if (!heading.id) {
+      let safeText = heading.innerText
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      heading.id = safeText ? safeText : 'section-' + index;
+    }
+
+    let level = parseInt(heading.tagName.substring(1), 10);
+    let indent = Math.max(0, (level - 2) * {{TOC_INDENT_STEP}});
+    let marker = level === 2 ? '{{TOC_PRIMARY_MARKER}}' : '{{TOC_CHILD_MARKER}}';
+
+    html += `<li style="margin-bottom: {{TOC_ITEM_MARGIN_BOTTOM}}; margin-left: ${indent}px; font-size: {{TOC_ITEM_FONT_SIZE}};">
+      <a href="#${heading.id}" class="toc-jump-link" style="color: var(--fg-base); text-decoration: none; transition: color 0.1s;">
+        <span style="color: var(--fg-dim);">${marker}</span> ${heading.innerText}
+      </a>
+    </li>`;
+  });
+
+  container.innerHTML = html;
+  loading.style.display = 'none';
+  container.style.display = 'block';
+});
+</script>
+
+<style>
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.toc-jump-link:hover {
+  background: var(--fg-base);
+  color: var(--bg-base) !important;
+}
+
+.toc-jump-link:hover span {
+  color: var(--bg-base) !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+</style>
+]]></b:widget-setting>
+        </b:widget-settings>
+
+        <b:includable id='main'>
+          <b:include name='widget-title'/>
+          <div class='widget-content'>
+            <data:content/>
+          </div>
+        </b:includable>
+      </b:widget>
+    </b:section>
+  </div>
+</aside>

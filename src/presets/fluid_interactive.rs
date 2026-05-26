@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_MONO, STACK_SYSTEM_UI};
@@ -39,10 +39,22 @@ pub fn fluid_interactive() -> Preset {
             author_name: String::new(),
         },
         vec![
-            MenuLink { label: "Home".to_string(),     url: "/".to_string() },
-            MenuLink { label: "Read".to_string(),     url: "/p/read.html".to_string() },
-            MenuLink { label: "Watch".to_string(),    url: "/p/watch.html".to_string() },
-            MenuLink { label: "Subscribe".to_string(),url: "/feeds/posts/default".to_string() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Read".to_string(),
+                url: "/p/read.html".to_string(),
+            },
+            MenuLink {
+                label: "Watch".to_string(),
+                url: "/p/watch.html".to_string(),
+            },
+            MenuLink {
+                label: "Subscribe".to_string(),
+                url: "/feeds/posts/default".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "Made with Blogger. Animated with CSS.".to_string(),
@@ -68,7 +80,9 @@ pub fn fluid_interactive() -> Preset {
                 border: "#2a3654".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#0a0e1a".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#0a0e1a".to_string(),
+                },
             },
         },
         light: PresetPalette {
@@ -82,7 +96,9 @@ pub fn fluid_interactive() -> Preset {
                 border: "#dce2ee".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#fafbff".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#fafbff".to_string(),
+                },
             },
         },
     }

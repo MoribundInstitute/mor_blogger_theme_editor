@@ -1,0 +1,7 @@
+<b:widget id='AdSense1' locked='false' title='' type='AdSense' version='2' visible='false'>
+  <b:includable id='main' var='top'>
+    <div class='widget-content'>
+      <data:adCode/>
+    </div>
+  </b:includable>
+</b:widget>

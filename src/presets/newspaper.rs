@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_MONO, STACK_NEWSPAPER};
@@ -35,23 +35,34 @@ pub fn newspaper() -> Preset {
             text_transform: "uppercase".to_string(),
         },
         SeoConfig {
-            meta_description:
-                "A longform blog published in the manner of a broadsheet newspaper.".to_string(),
+            meta_description: "A longform blog published in the manner of a broadsheet newspaper."
+                .to_string(),
             meta_keywords: "blog, longform, journalism, essays".to_string(),
             custom_robots: "index, follow".to_string(),
             license_url: String::new(),
             author_name: "The Editors".to_string(),
         },
         vec![
-            MenuLink { label: "Front Page".to_string(), url: "/".to_string() },
-            MenuLink { label: "Opinion".to_string(),    url: "/search/label/opinion".to_string() },
-            MenuLink { label: "Archive".to_string(),    url: "/p/archive.html".to_string() },
-            MenuLink { label: "Masthead".to_string(),   url: "/p/about.html".to_string() },
+            MenuLink {
+                label: "Front Page".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Opinion".to_string(),
+                url: "/search/label/opinion".to_string(),
+            },
+            MenuLink {
+                label: "Archive".to_string(),
+                url: "/p/archive.html".to_string(),
+            },
+            MenuLink {
+                label: "Masthead".to_string(),
+                url: "/p/about.html".to_string(),
+            },
         ],
         FooterConfig {
-            footer_text:
-                "© The Daily Folio. All rights reserved. Printed on the Internet."
-                    .to_string(),
+            footer_text: "© The Daily Folio. All rights reserved. Printed on the Internet."
+                .to_string(),
             footer_license_label: "Terms".to_string(),
             footer_license_url: "/p/terms.html".to_string(),
         },
@@ -76,7 +87,9 @@ pub fn newspaper() -> Preset {
                 border: "#3a3730".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#1a1814".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#1a1814".to_string(),
+                },
             },
         },
         light: PresetPalette {
@@ -92,7 +105,9 @@ pub fn newspaper() -> Preset {
                 border: "#c2b89e".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#f4ecd8".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#f4ecd8".to_string(),
+                },
             },
         },
     }

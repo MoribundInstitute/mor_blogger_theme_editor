@@ -3,33 +3,33 @@
    2024-era CSS in service of a blog that breathes. Animated
    gradient mesh background, scroll-driven reveals on posts,
    focus-within rings on cards, hover lifts, view transitions.
-   Degrades gracefully — old browsers see a static gradient
-   and flat (but still pleasant) panels.
+   Degrades gracefully (old browsers see a static gradient
+   and flat, but still pleasant, panels).
    ============================================================ */
 
 /* Kill the base theme's terminal vignette. */
 body::before {
-  background: none !important;
-  opacity: 0 !important;
+  background: none;
+  opacity: 0;
 }
 
-/* The animated gradient mesh — three soft color blobs that drift
+/* The animated gradient mesh: three soft color blobs that drift
    slowly behind everything. background-position animation is
-   cheap (GPU compositor-friendly). */
+   cheap and GPU compositor-friendly. */
 body {
   background:
     radial-gradient(circle at var(--blob-1-x, 20%) var(--blob-1-y, 30%),
-      color-mix(in srgb, var(--accent) 45%, transparent) 0,
-      transparent 38%),
+      color-mix(in srgb, var(--accent) 35%, transparent) 0,
+      transparent 45%),
     radial-gradient(circle at var(--blob-2-x, 80%) var(--blob-2-y, 20%),
-      color-mix(in srgb, #ff77c8 35%, transparent) 0,
-      transparent 42%),
+      color-mix(in srgb, #0077b6 30%, transparent) 0,
+      transparent 50%),
     radial-gradient(circle at var(--blob-3-x, 50%) var(--blob-3-y, 90%),
-      color-mix(in srgb, #ffd76e 30%, transparent) 0,
-      transparent 48%),
-    var(--bg-base) !important;
-  background-attachment: fixed !important;
-  animation: fluid-mesh-drift 24s ease-in-out infinite alternate !important;
+      color-mix(in srgb, #023e8a 35%, transparent) 0,
+      transparent 55%),
+    var(--bg-base);
+  background-attachment: fixed;
+  animation: fluid-mesh-drift 24s ease-in-out infinite alternate;
 }
 
 @keyframes fluid-mesh-drift {
@@ -59,38 +59,37 @@ body {
 @property --blob-3-x { syntax: '<percentage>'; inherits: false; initial-value: 50%; }
 @property --blob-3-y { syntax: '<percentage>'; inherits: false; initial-value: 90%; }
 
-/* Surfaces float on the mesh with a subtle backdrop blur — softer
-   than full glassmorphism, just enough to ground them. */
+/* Surfaces float on the mesh with a subtle backdrop blur,
+   softer than full glassmorphism, just enough to ground them. */
 .canvas-core,
 .terminal-post,
 .runelite-panel,
 .terminal-main-header,
 .terminal-footer,
-.mor-catalog-dropdown,
-.panel-content {
-  background: color-mix(in srgb, var(--bg-panel) 92%, transparent) !important;
-  backdrop-filter: blur(10px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent) !important;
-  border-radius: 20px !important;
+.mor-catalog-dropdown {
+  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border-radius: 20px;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 12px 32px rgba(0, 0, 0, 0.12) !important;
+    0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
-/* Posts get a hover lift + scroll-driven reveal. The reveal uses
+/* Posts get a hover lift and scroll-driven reveal. The reveal uses
    animation-timeline: view(), which animates an element as it
    enters the viewport. Old browsers ignore this gracefully. */
 .terminal-post {
-  padding: 28px 32px !important;
-  margin-bottom: 22px !important;
+  padding: 28px 32px;
+  margin-bottom: 22px;
   transition:
     transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
     box-shadow 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-color 320ms ease !important;
-  animation: fluid-post-reveal linear !important;
-  animation-timeline: view() !important;
-  animation-range: entry 0% entry 60% !important;
+    border-color 320ms ease;
+  animation: fluid-post-reveal linear;
+  animation-timeline: view();
+  animation-range: entry 0% entry 60%;
 }
 
 @keyframes fluid-post-reveal {
@@ -105,22 +104,21 @@ body {
 }
 
 .terminal-post:hover {
-  transform: translateY(-2px) !important;
+  transform: translateY(-2px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 18px 48px rgba(0, 0, 0, 0.18) !important;
-  border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
+    0 18px 48px rgba(0, 0, 0, 0.18);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 /* Focus-within ring: when any input inside a card receives focus,
    the whole card lights up. Modern keyboard-friendly UX. */
 .terminal-post:focus-within,
-.runelite-panel:focus-within,
-.panel-content:focus-within {
-  border-color: var(--accent) !important;
+.runelite-panel:focus-within {
+  border-color: var(--accent);
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent),
-    0 18px 48px rgba(0, 0, 0, 0.18) !important;
+    0 18px 48px rgba(0, 0, 0, 0.18);
 }
 
 /* Post titles: gradient text that subtly shifts hue on hover. */
@@ -130,57 +128,55 @@ body {
     linear-gradient(110deg,
       var(--fg-base) 0%,
       var(--fg-base) 50%,
-      var(--accent) 100%) !important;
-  background-size: 200% 100% !important;
-  background-position: 0% 0% !important;
-  -webkit-background-clip: text !important;
-          background-clip: text !important;
-  color: transparent !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.015em !important;
-  text-shadow: none !important;
-  transition: background-position 600ms ease !important;
+      var(--accent) 100%);
+  background-size: 200% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-shadow: none;
+  transition: background-position 600ms ease;
 }
 
 .terminal-post:hover .post-title,
 .terminal-post:hover .post-title a {
-  background-position: 100% 0% !important;
+  background-position: 100% 0%;
 }
 
-/* Body text — clean, no decoration. */
+/* Body text: clean, no decoration. */
 .terminal-post .post-body {
-  color: var(--fg-base) !important;
-  text-shadow: none !important;
-  font-size: 1.02rem !important;
+  color: var(--fg-base);
+  text-shadow: none;
+  font-size: 1.02rem;
 }
 
-/* Buttons: pill-shaped with a subtle gradient sweep on hover.
-   Uses a clip-path::after trick for the sweep so the gradient
-   moves but the button doesn't reflow. */
+/* Buttons: pill-shaped with a subtle gradient sweep on hover. */
 .pager-btn,
 .panel-toggle,
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  position: relative !important;
-  overflow: hidden !important;
-  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent) !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 999px !important;
-  padding: 9px 20px !important;
-  font-family: var(--font-body) !important;
-  font-weight: 600 !important;
-  font-size: 0.92rem !important;
-  text-transform: none !important;
-  text-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  color: var(--fg-base);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-transform: none;
+  text-shadow: none;
   cursor: pointer;
   transition:
     transform 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
     border-color 200ms ease,
     color 200ms ease,
-    box-shadow 200ms ease !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    box-shadow 200ms ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .pager-btn::before,
@@ -215,12 +211,12 @@ body {
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  transform: translateY(-1px) !important;
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  color: var(--accent);
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.12),
-    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent) !important;
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .pager-btn:active,
@@ -228,29 +224,27 @@ body {
 .toc-jump-link:active,
 .back-to-top-btn:active,
 .mor-catalog-trigger:active {
-  transform: translateY(0) !important;
+  transform: translateY(0);
 }
 
 /* Links in body copy: gradient underline that fills in on hover. */
 .terminal-post .post-body a,
 .panel-content a {
-  position: relative !important;
-  color: var(--fg-base) !important;
-  text-decoration: none !important;
-  background-image: linear-gradient(var(--accent), var(--accent)) !important;
-  background-repeat: no-repeat !important;
-  background-position: 0 100% !important;
-  background-size: 0% 2px !important;
-  padding-bottom: 1px !important;
+  position: relative;
+  color: var(--fg-base);
+  text-decoration: none;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  padding-bottom: 1px;
   transition:
     background-size 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    color 320ms ease !important;
+    color 320ms ease;
 }
 
 .terminal-post .post-body a:hover,
 .panel-content a:hover {
-  background-size: 100% 2px !important;
-  color: var(--accent) !important;
+  background-size: 100% 2px;
+  color: var(--accent);
 }
-
-/* Headers and side

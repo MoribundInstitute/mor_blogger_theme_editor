@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_MONO, STACK_SYSTEM_UI};
@@ -35,10 +35,22 @@ pub fn minimal() -> Preset {
             author_name: String::new(),
         },
         vec![
-            MenuLink { label: "Home".to_string(), url: "/".to_string() },
-            MenuLink { label: "Archive".to_string(), url: "/p/archive.html".to_string() },
-            MenuLink { label: "About".to_string(), url: "/p/about.html".to_string() },
-            MenuLink { label: String::new(), url: String::new() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Archive".to_string(),
+                url: "/p/archive.html".to_string(),
+            },
+            MenuLink {
+                label: "About".to_string(),
+                url: "/p/about.html".to_string(),
+            },
+            MenuLink {
+                label: String::new(),
+                url: String::new(),
+            },
         ],
         FooterConfig {
             footer_text: String::new(),
@@ -64,7 +76,9 @@ pub fn minimal() -> Preset {
                 border: "#333333".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#111111".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#111111".to_string(),
+                },
             },
         },
         light: PresetPalette {
@@ -78,7 +92,9 @@ pub fn minimal() -> Preset {
                 border: "#e5e5e5".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#ffffff".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#ffffff".to_string(),
+                },
             },
         },
     }

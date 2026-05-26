@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_MONO};
@@ -37,10 +37,22 @@ pub fn neon_cyberpunk() -> Preset {
             author_name: "operator".to_string(),
         },
         vec![
-            MenuLink { label: "feed".to_string(), url: "/".to_string() },
-            MenuLink { label: "logs".to_string(), url: "/search/label/log".to_string() },
-            MenuLink { label: "tags".to_string(), url: "/p/tags.html".to_string() },
-            MenuLink { label: "ping".to_string(), url: "/p/contact.html".to_string() },
+            MenuLink {
+                label: "feed".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "logs".to_string(),
+                url: "/search/label/log".to_string(),
+            },
+            MenuLink {
+                label: "tags".to_string(),
+                url: "/p/tags.html".to_string(),
+            },
+            MenuLink {
+                label: "ping".to_string(),
+                url: "/p/contact.html".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "// signal integrity: nominal //".to_string(),
@@ -66,7 +78,9 @@ pub fn neon_cyberpunk() -> Preset {
                 border: "#ff00ff".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#05010f".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#05010f".to_string(),
+                },
             },
         },
         // The "light" variant doesn't really work for cyberpunk — keep it
@@ -82,7 +96,9 @@ pub fn neon_cyberpunk() -> Preset {
                 border: "#d957d9".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#1a1525".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#1a1525".to_string(),
+                },
             },
         },
     }

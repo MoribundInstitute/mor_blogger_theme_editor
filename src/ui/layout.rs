@@ -61,7 +61,8 @@ impl WorkbenchLayout {
 }
 
 pub const WORKBENCH_LAYOUT_STORAGE_KEY: &str = "mor_blogger_theme_editor.workbench_layout";
-pub const FLOATING_EDITOR_POSITION_STORAGE_KEY: &str = "mor_blogger_theme_editor.floating_editor_position";
+pub const FLOATING_EDITOR_POSITION_STORAGE_KEY: &str =
+    "mor_blogger_theme_editor.floating_editor_position";
 
 /// Set the workbench layout from buttons/shortcuts.
 ///
@@ -120,10 +121,7 @@ pub fn clamp_preview_width(width: u32) -> u32 {
     width.clamp(240, 2400)
 }
 
-pub fn apply_preview_viewport(
-    viewport: PreviewViewport,
-    mut preview_width: Signal<u32>,
-) {
+pub fn apply_preview_viewport(viewport: PreviewViewport, mut preview_width: Signal<u32>) {
     if let Some(width) = viewport.width() {
         preview_width.set(width);
     }

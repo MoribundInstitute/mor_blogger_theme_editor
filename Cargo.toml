@@ -4,21 +4,36 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.77"
 
+[features]
+default = ["desktop"]
+desktop = ["dioxus/desktop"]
+web = ["dioxus/web"]
+
 [dependencies]
-dioxus = { version = "=0.5.6", features = ["web"] }
+# Restored the default features so rsx!, Signals, and Hooks work again
+dioxus = { version = "=0.5.6" }
 dioxus-html = "=0.5.6"
 dioxus-logger = "=0.5.1"
 log = "0.4"
 roxmltree = "0.20"
 base64 = "0.22"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 toml = "0.8"
+reqwest = { version = "0.11", features = ["json"] }
+rfd = "0.17.2"
 
+# Native Desktop Clipboard (Linux/Mac/Windows)
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+arboard = "3.3"
+
+# Browser-only WebAssembly dependencies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "=0.2.92"
 wasm-bindgen-futures = "=0.4.42"
 js-sys = "=0.3.69"
 
-[dependencies.web-sys]
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "=0.3.69"
 features = [
     "Window",

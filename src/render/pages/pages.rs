@@ -1,13 +1,12 @@
-use crate::config::{StaticPagesConfig, ThemeConfig};
+use crate::config::{ColorConfig, StaticPagesConfig, ThemeConfig};
 
-pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticPagesConfig) -> String {
+pub fn generate_archive_html(global_colors: &ColorConfig, pages_config: &StaticPagesConfig) -> String {
     let mut html = String::new();
 
-    // 1. Determine Styling Strategy
     if !pages_config.sync_with_global_theme {
-        let colors = pages_config.custom_colors.as_ref().unwrap_or(&global_config.colors);
+        let colors = pages_config.custom_colors.as_ref().unwrap_or(global_colors);
         html.push_str(&format!(
-            r#"<style>
+            r##"<style>
 .mor-archive-section {{
   --bg-panel: {bg_panel};
   --fg-base: {fg_base};
@@ -16,7 +15,7 @@ pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticP
   --accent: {accent};
 }}
 </style>
-"#,
+"##,
             bg_panel = colors.bg_panel.to_css(),
             fg_base = colors.fg_base,
             fg_muted = colors.fg_muted,
@@ -25,9 +24,8 @@ pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticP
         ));
     }
 
-    // 2. Inject HTML Content
     html.push_str(&format!(
-        r#"<div class="mor-archive-section">
+        r##"<div class="mor-archive-section">
   <section class="mor-archive-intro">
     <div class="mor-archive-kicker">{kicker}</div>
     <h2 class="mor-archive-title">{title}</h2>
@@ -38,14 +36,13 @@ pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticP
     <div class="mor-archive-status">Loading archive...</div>
   </div>
 </div>
-"#,
+"##,
         kicker = escape_html(&pages_config.archive.kicker),
         title = escape_html(&pages_config.archive.title),
         desc = escape_html(&pages_config.archive.description)
     ));
 
-    // 3. Inject the Archive JavaScript Data Fetcher
-    let js_template = r#"<script>
+    let js_template = r##"<script>
 (function () {
   async function loadStructuredArchive() {
     const container = document.getElementById("archive-container");
@@ -184,7 +181,7 @@ pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticP
     loadStructuredArchive();
   }
 })();
-</script>"#;
+</script>"##;
 
     let js_injected = js_template.replace(
         "{{MAX_RESULTS}}",
@@ -195,14 +192,13 @@ pub fn generate_archive_html(global_config: &ThemeConfig, pages_config: &StaticP
     html
 }
 
-pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &StaticPagesConfig) -> String {
+pub fn generate_categories_html(global_colors: &ColorConfig, pages_config: &StaticPagesConfig) -> String {
     let mut html = String::new();
 
-    // 1. Determine Styling Strategy
     if !pages_config.sync_with_global_theme {
-        let colors = pages_config.custom_colors.as_ref().unwrap_or(&global_config.colors);
+        let colors = pages_config.custom_colors.as_ref().unwrap_or(global_colors);
         html.push_str(&format!(
-            r#"<style>
+            r##"<style>
 .mor-category-section {{
   --bg-panel: {bg_panel};
   --fg-base: {fg_base};
@@ -211,7 +207,7 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
   --accent: {accent};
 }}
 </style>
-"#,
+"##,
             bg_panel = colors.bg_panel.to_css(),
             fg_base = colors.fg_base,
             fg_muted = colors.fg_muted,
@@ -220,7 +216,6 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
         ));
     }
 
-    // 2. Build Topic Nav Links and Category Groups based on User Input
     let mut topic_nav_links = String::new();
     let mut category_groups = String::new();
 
@@ -230,14 +225,14 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
         let url_encoded = section.replace(" ", "%20");
 
         topic_nav_links.push_str(&format!(
-            r#"      <a href="#{id}">{name}</a>
-"#,
+            r##"      <a href="#{id}">{name}</a>
+"##,
             id = section_id,
             name = escaped_name
         ));
 
         category_groups.push_str(&format!(
-            r#"  <section class="mor-category-group" id="{id}">
+            r##"  <section class="mor-category-group" id="{id}">
     <h2 class="mor-category-heading">
       <a href="/search/label/{url}">{name}</a>
     </h2>
@@ -245,16 +240,15 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
       <a href="/search/label/{url}">View all items labeled "{name}"</a>
     </div>
   </section>
-"#,
+"##,
             id = section_id,
             name = escaped_name,
             url = url_encoded
         ));
     }
 
-    // 3. Inject HTML Content
     html.push_str(&format!(
-        r#"<div class="mor-category-section">
+        r##"<div class="mor-category-section">
   <section class="mor-category-intro">
     <div class="mor-category-kicker">{kicker}</div>
     <h1 class="mor-category-title">{title}</h1>
@@ -322,7 +316,7 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
     Labels are intentionally broad. Use the topics for the main shelf, then use ordinary Blogger labels for narrower trails through the stacks.
   </p>
 </div>
-"#,
+"##,
         kicker = escape_html(&pages_config.categories.kicker),
         title = escape_html(&pages_config.categories.title),
         desc = escape_html(&pages_config.categories.description),
@@ -330,8 +324,7 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
         category_groups = category_groups
     ));
 
-    // 4. Inject the Categories JavaScript Alphabetizer
-    let js_template = r#"<script>
+    let js_template = r##"<script>
 (function () {
   const sections = [
     { id: "author-links", keyword: "Author" },
@@ -359,7 +352,7 @@ pub fn generate_categories_html(global_config: &ThemeConfig, pages_config: &Stat
     });
   });
 })();
-</script>"#;
+</script>"##;
 
     html.push_str(js_template);
 

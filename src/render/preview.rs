@@ -1,96 +1,21 @@
-use crate::config::{BackgroundMode, MenuLink, ThemeConfig};
+//! In-editor preview HTML. Produces the HTML that gets shown in the
+//! right-panel preview iframe. Distinct from `theme::render_theme`, which
+//! produces uploadable Blogger XML (different output format, different
+//! consumer, share only the helpers in `util`).
+
+use crate::config::{BackgroundMode, ThemeConfig};
 use crate::ui::layout::PreviewTemplateMode;
 
-const BASE_TEMPLATE: &str = include_str!("template.xml");
-
-pub fn render_theme(config: &ThemeConfig) -> String {
-    render_template(config, BASE_TEMPLATE)
-}
-
-pub fn render_template(config: &ThemeConfig, base_xml: &str) -> String {
-    let background_tile_css = match &config.background.mode {
-        BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
-        BackgroundMode::Gradient { from, to, angle_deg } => format!(
-            "background: linear-gradient({}deg, {}, {});",
-            angle_deg,
-            escape_attr(from),
-            escape_attr(to)
-        ),
-        BackgroundMode::Tile { url } if url.trim().is_empty() => String::new(),
-        BackgroundMode::Tile { url } => format!(
-            "background-image: url('{}');\n  background-repeat: repeat;",
-            escape_attr(url)
-        ),
-    };
-
-    let background_tile_url = match &config.background.mode {
-        BackgroundMode::Tile { url } => url.clone(),
-        _ => String::new(),
-    };
-
-    let heading_stack = if config.typography.heading_font_stack.trim().is_empty() {
-        config.typography.body_font_stack.clone()
-    } else {
-        config.typography.heading_font_stack.clone()
-    };
-
-    let custom_plugin_scripts = render_custom_plugin_scripts(&config.plugins.custom_js);
-
-    let menu_1 = menu_link_or_empty(config, 0);
-    let menu_2 = menu_link_or_empty(config, 1);
-    let menu_3 = menu_link_or_empty(config, 2);
-    let menu_4 = menu_link_or_empty(config, 3);
-
-    base_xml
-        .replace("{{SITE_TITLE}}", &config.site.site_title)
-        .replace("{{SITE_SUBTITLE}}", &config.site.site_subtitle)
-        .replace("{{HEADER_LOGO_URL}}", &config.site.header_logo_url)
-        .replace("{{HOME_URL}}", &config.site.home_url)
-        .replace("{{COLOR_BG_BASE}}", &config.colors.bg_base)
-        .replace("{{COLOR_BG_PANEL}}", &config.colors.bg_panel.to_css())
-        .replace("{{COLOR_BG_ELEVATED}}", &config.colors.bg_elevated.to_css())
-        .replace("{{COLOR_FG_BASE}}", &config.colors.fg_base)
-        .replace("{{COLOR_FG_MUTED}}", &config.colors.fg_muted)
-        .replace("{{COLOR_ACCENT}}", &config.colors.accent)
-        .replace("{{COLOR_BORDER}}", &config.colors.border)
-        .replace("{{BTN_RADIUS}}", &config.buttons.radius)
-        .replace("{{BTN_BORDER_WIDTH}}", &config.buttons.border_width)
-        .replace("{{BTN_TEXT_TRANSFORM}}", &config.buttons.text_transform)
-        .replace("{{FONT_BODY}}", &config.typography.body_font_stack)
-        .replace("{{FONT_HEADING}}", &heading_stack)
-        .replace("{{FONT_MONO}}", &config.typography.mono_font_stack)
-        .replace("{{BASE_SIZE}}", &config.typography.base_size)
-        .replace("{{SCALE_RATIO}}", &config.typography.scale_ratio)
-        .replace("{{LINE_HEIGHT}}", &config.typography.line_height)
-        .replace("{{HEADING_WEIGHT}}", &config.typography.heading_weight)
-        .replace("{{BACKGROUND_TILE_URL}}", &background_tile_url)
-        .replace("{{BACKGROUND_TILE_CSS}}", &background_tile_css)
-        .replace("{{FAVICON_URL}}", &config.assets.favicon_url)
-        .replace("{{SOCIAL_CARD_IMAGE_URL}}", &config.assets.social_card_image_url)
-        .replace("{{META_DESCRIPTION}}", &config.seo.meta_description)
-        .replace("{{META_KEYWORDS}}", &config.seo.meta_keywords)
-        .replace("{{CUSTOM_ROBOTS}}", &config.seo.custom_robots)
-        .replace("{{LICENSE_URL}}", &config.seo.license_url)
-        .replace("{{AUTHOR_NAME}}", &config.seo.author_name)
-        .replace("{{MENU_1_LABEL}}", &menu_1.label)
-        .replace("{{MENU_1_URL}}", &menu_1.url)
-        .replace("{{MENU_2_LABEL}}", &menu_2.label)
-        .replace("{{MENU_2_URL}}", &menu_2.url)
-        .replace("{{MENU_3_LABEL}}", &menu_3.label)
-        .replace("{{MENU_3_URL}}", &menu_3.url)
-        .replace("{{MENU_4_LABEL}}", &menu_4.label)
-        .replace("{{MENU_4_URL}}", &menu_4.url)
-        .replace("{{FOOTER_TEXT}}", &config.footer.footer_text)
-        .replace("{{FOOTER_LICENSE_LABEL}}", &config.footer.footer_license_label)
-        .replace("{{FOOTER_LICENSE_URL}}", &config.footer.footer_license_url)
-        .replace("{{CUSTOM_PLUGIN_SCRIPTS}}", &custom_plugin_scripts)
-        .replace("{{PRESET_CSS}}", &config.preset_css)
-}
+use super::util::{build_google_fonts_link, escape_attr, escape_html};
 
 pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMode) -> String {
     let background_tile_css = match &config.background.mode {
         BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
-        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+        BackgroundMode::Gradient {
+            from,
+            to,
+            angle_deg,
+        } => format!(
             "background: linear-gradient({}deg, {}, {});",
             angle_deg,
             escape_attr(from),
@@ -108,6 +33,12 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
     } else {
         config.typography.heading_font_stack.clone()
     };
+
+    let google_fonts_link = build_google_fonts_link(&[
+        &config.typography.body_font_stack,
+        &heading_stack,
+        &config.typography.mono_font_stack,
+    ]);
 
     let menu_links = config
         .menu_links
@@ -130,7 +61,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
     };
 
     // NOTE: Each preview-* element carries a second class corresponding to
-    // the production-template class name (e.g. preview-hero-card → terminal-post).
+    // the production-template class name (e.g. preview-hero-card -> terminal-post).
     // The preview's own CSS in this file matches the `preview-*` selectors;
     // preset CSS files (src/presets/css/*.css) target the production names.
     // This lets one preset CSS work for both the live preview AND the
@@ -206,21 +137,37 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         site_subtitle = escape_html(&config.site.site_subtitle),
         menu_links = menu_links,
         plugin_note = escape_html(plugin_note),
-        menu_count = config.menu_links.iter().filter(|link| !link.label.trim().is_empty()).count(),
+        menu_count = config
+            .menu_links
+            .iter()
+            .filter(|link| !link.label.trim().is_empty())
+            .count(),
         footer_text = escape_html(&config.footer.footer_text),
     );
 
     let sidebars_body = format!(
         r##"<div class="preview-shell preview-shell-sidebars">
     <header class="preview-site-header preview-site-header-with-toggles terminal-main-header">
-      <button type="button" class="preview-panel-toggle panel-toggle" data-target="left">Browse</button>
+      <button type="button" class="preview-panel-toggle panel-toggle" data-target="left" aria-label="Browse" title="Browse">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
+
       <div class="preview-brand preview-brand-centered branding">
         <p class="preview-kicker">Blogger Theme Preview</p>
         <h1 class="preview-site-title institute-title">{site_title}</h1>
         <p class="preview-site-subtitle">{site_subtitle}</p>
         <nav class="preview-nav preview-nav-centered terminal-nav">{menu_links}</nav>
       </div>
-      <button type="button" class="preview-panel-toggle panel-toggle" data-target="right">Contents</button>
+
+      <button type="button" class="preview-panel-toggle panel-toggle" data-target="right" aria-label="Contents" title="Contents">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+      </button>
     </header>
 
     <main class="preview-sidebar-layout terminal-workspace" id="preview-layout">
@@ -302,6 +249,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{site_title}</title>
+{google_fonts_link}
 <style>
 :root {{
   --bg-base: {bg_base};
@@ -418,7 +366,8 @@ code, pre, kbd, samp {{ font-family: var(--font-mono); }}
 
 .preview-nav a,
 .preview-button {{ padding: 0.58rem 0.8rem; }}
-.preview-panel-toggle {{ padding: 0.65rem 0.9rem; min-width: 96px; }}
+.preview-panel-toggle {{ padding: 8px; width: 44px; height: 44px; }}
+.preview-panel-toggle svg {{ width: 100%; height: 100%; display: block; }}
 .preview-sidebar-close {{ padding: 0.2rem 0.45rem; font-family: var(--font-mono); }}
 
 .preview-nav a:hover,
@@ -553,40 +502,7 @@ code, pre, kbd, samp {{ font-family: var(--font-mono); }}
         heading_weight = config.typography.heading_weight,
         background_tile_css = background_tile_css,
         body_markup = body_markup,
+        google_fonts_link = google_fonts_link,
         preset_css = config.preset_css,
     )
-}
-
-fn menu_link_or_empty(config: &ThemeConfig, index: usize) -> MenuLink {
-    config.menu_links.get(index).cloned().unwrap_or_else(|| MenuLink {
-        label: String::new(),
-        url: String::new(),
-    })
-}
-
-fn render_custom_plugin_scripts(custom_js: &str) -> String {
-    let trimmed = custom_js.trim();
-    if trimmed.is_empty() { return String::new(); }
-    if trimmed.contains("<script") && trimmed.contains("</script>") {
-        return trimmed.to_string();
-    }
-    let safe_js = trimmed.replace("]]>", "]]]]><![CDATA[>");
-    format!(
-        r#"<script type='text/javascript'>
-//<![CDATA[
-{}
-//]]>
-</script>"#,
-        safe_js
-    )
-}
-
-fn escape_attr(value: &str) -> String {
-    value.replace('&', "&amp;").replace('"', "&quot;").replace('\'', "&#39;")
-         .replace('<', "&lt;").replace('>', "&gt;")
-}
-
-fn escape_html(value: &str) -> String {
-    value.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
-         .replace('"', "&quot;").replace('\'', "&#39;")
 }

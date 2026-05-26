@@ -1,48 +1,113 @@
 <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='showDateHeader'>true</b:widget-setting>
+    <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+    <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+    <b:widget-setting name='showAuthor'>true</b:widget-setting>
+    <b:widget-setting name='showLabels'>true</b:widget-setting>
+    <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+    <b:widget-setting name='showLocation'>false</b:widget-setting>
+  </b:widget-settings>
+
   <b:includable id='main' var='top'>
     <div class='blog-posts'>
       <b:loop values='data:posts' var='post'>
         <b:include data='post' name='post'/>
       </b:loop>
     </div>
-    
     <b:include name='postPagination'/>
   </b:includable>
 
   <b:includable id='post' var='post'>
     <article class='terminal-post'>
+      <b:include data='post' name='postTitle'/>
+      <div class='post-meta'>
+        <b:if cond='data:post.dateHeader'>
+          <span class='published'><data:post.dateHeader/></span>
+        </b:if>
+        <b:include data='post' name='postTimestamp'/>
+        <b:include data='post' name='postLabels'/>
+      </div>
+      <b:include data='post' name='postBody'/>
+      <b:include data='post' name='postFooter'/>
+      <b:include data='post' name='postCommentsAndAd'/>
+    </article>
+  </b:includable>
+
+  <b:includable id='postTitle' var='post'>
+    <b:if cond='data:post.title'>
       <h2 class='post-title'>
         <a expr:href='data:post.url'><data:post.title/></a>
       </h2>
-      
-      <div class='post-meta'>
-        <span class='sys-tags'>
-          <b:if cond='data:post.labels'>
-            [ 
-            <b:loop values='data:post.labels' var='label'>
-              <a expr:href='data:label.url'><data:label.name/></a><b:if cond='not data:label.isLast'>, </b:if>
-            </b:loop>
-            ]
-          </b:if>
-        </span>
-        <span class='post-timestamp'> - <data:post.timestamp/></span>
-      </div>
-      
-      <div class='post-body'>
-        <data:post.body/>
-      </div>
-    </article>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='postBody' var='post'>
+    <div class='post-body'>
+      <data:post.body/>
+    </div>
+  </b:includable>
+
+  <b:includable id='postCommentsAndAd' var='post'>
+    <b:include data='post' name='comments'/>
   </b:includable>
 
   <b:includable id='postPagination'>
     <nav class='terminal-pager'>
       <b:if cond='data:newerPageUrl'>
-        <a class='pager-btn' expr:href='data:newerPageUrl'>[ Newer ]</a>
+        <a class='pager-btn' expr:href='data:newerPageUrl'>Previous Page</a>
       </b:if>
-      <a class='pager-btn' expr:href='data:blog.homepageUrl'>[ Home ]</a>
       <b:if cond='data:olderPageUrl'>
-        <a class='pager-btn' expr:href='data:olderPageUrl'>[ Older ]</a>
+        <a class='pager-btn' expr:href='data:olderPageUrl'>Next Page</a>
+      </b:if>
+      <b:if cond='data:blog.homepageUrl != data:blog.url'>
+        <a class='pager-btn' expr:href='data:blog.homepageUrl'>Home</a>
       </b:if>
     </nav>
+  </b:includable>
+
+  <b:includable id='comments' var='post'>
+    <b:if cond='data:post.allowComments'>
+      <section class='comments' expr:id='data:post.id + &quot;_comments&quot;'>
+        <b:include data='post' name='commentPicker'/>
+      </section>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='commentPicker' var='post'>
+    <b:include data='post' name='threadedComments'/>
+  </b:includable>
+
+  <b:includable id='threadedComments' var='post'>
+    <div class='comments-placeholder'>
+      <b:if cond='data:post.numComments'>
+        <a expr:href='data:post.url + &quot;#comments&quot;'>
+          <data:post.numComments/> comment(s)
+        </a>
+      </b:if>
+    </div>
+  </b:includable>
+
+  <b:includable id='postFooter' var='post'>
+    <footer class='post-footer'>
+      <b:include data='post' name='postTimestamp'/>
+      <b:include data='post' name='postLabels'/>
+    </footer>
+  </b:includable>
+
+  <b:includable id='postLabels' var='post'>
+    <b:if cond='data:post.labels'>
+      <span class='sys-tags'>
+        <b:loop values='data:post.labels' var='label'>
+          <a expr:href='data:label.url' rel='tag'><data:label.name/></a>
+        </b:loop>
+      </span>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='postTimestamp' var='post'>
+    <b:if cond='data:post.timestamp'>
+      <span class='timestamp'><data:post.timestamp/></span>
+    </b:if>
   </b:includable>
 </b:widget>

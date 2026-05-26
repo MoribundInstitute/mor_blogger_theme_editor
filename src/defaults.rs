@@ -52,10 +52,22 @@ pub fn default_theme_config() -> ThemeConfig {
             author_name: String::new(),
         },
         menu_links: vec![
-            MenuLink { label: "Home".to_string(), url: "/".to_string() },
-            MenuLink { label: "Archive".to_string(), url: "/p/archive.html".to_string() },
-            MenuLink { label: "About".to_string(), url: "/p/about.html".to_string() },
-            MenuLink { label: "Contact".to_string(), url: "/p/contact.html".to_string() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Archive".to_string(),
+                url: "/p/archive.html".to_string(),
+            },
+            MenuLink {
+                label: "About".to_string(),
+                url: "/p/about.html".to_string(),
+            },
+            MenuLink {
+                label: "Contact".to_string(),
+                url: "/p/contact.html".to_string(),
+            },
         ],
         footer: FooterConfig {
             footer_text: "Published with Blogger.".to_string(),
@@ -66,6 +78,7 @@ pub fn default_theme_config() -> ThemeConfig {
             custom_js: String::new(),
         },
         static_pages: crate::config::StaticPagesConfig::default(),
+        ads: crate::config::AdsConfig::default(),
         preset_css: String::new(),
     }
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='IE=edge' http-equiv='X-UA-Compatible'/>
+  <meta content='true' name='HandheldFriendly'/>
+  <meta content='width' name='MobileOptimized'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+
+  <title><data:view.title.escaped/></title>
+  <b:include data='blog' name='all-head-content'/>
+
+  <meta content='{{META_DESCRIPTION}}' name='description'/>
+  <meta content='{{META_KEYWORDS}}' name='keywords'/>
+  <meta content='{{AUTHOR_NAME}}' name='author'/>
+  <meta content='{{CUSTOM_ROBOTS}}' name='robots'/>
+  <meta content='{{THEME_COLOR}}' name='theme-color'/>
+  <meta content='{{THEME_COLOR}}' name='msapplication-TileColor'/>
+
+  <meta expr:content='data:view.title.escaped' property='og:title'/>
+  <meta content='{{META_DESCRIPTION}}' property='og:description'/>
+  <meta expr:content='data:blog.canonicalUrl' property='og:url'/>
+  <meta content='website' property='og:type'/>
+  <meta content='{{OG_IMAGE_URL}}' property='og:image'/>
+
+  <meta expr:content='data:view.title.escaped' name='twitter:title'/>
+  <meta content='{{META_DESCRIPTION}}' name='twitter:description'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <meta content='{{OG_IMAGE_URL}}' name='twitter:image'/>
+
+  <link href='{{FAVICON_16_URL}}' rel='icon' sizes='16x16' type='image/png'/>
+  <link href='{{FAVICON_32_URL}}' rel='icon' sizes='32x32' type='image/png'/>
+  <link href='{{FAVICON_48_URL}}' rel='icon' sizes='48x48' type='image/png'/>
+  <link href='{{FAVICON_192_URL}}' rel='icon' sizes='192x192' type='image/png'/>
+  <link href='{{FAVICON_512_URL}}' rel='icon' sizes='512x512' type='image/png'/>
+  <link href='{{APPLE_TOUCH_ICON_URL}}' rel='apple-touch-icon' sizes='180x180'/>
+
+  <meta content='{{FAVICON_32_URL}}' name='msapplication-TileImage'/>
+
+  <link href='{{CANONICAL_HOME_URL}}' rel='home'/>
+  <link href='{{LICENSE_URL}}' rel='license'/>
+
+  {{CUSTOM_HEAD_HTML}}
+  {{ADS_HEAD_SCRIPT}}

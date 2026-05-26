@@ -400,11 +400,42 @@ pub fn ExportPanel(props: ExportPanelProps) -> Element {
                             },
                             "Copy XML"
                         }
+
+                        button {
+                            class: "editor-button editor-button-good",
+                            onclick: {
+                                let export_xml = export_xml.clone();
+
+                                move |_| {
+                                    match crate::render::save_xml_to_disk(
+                                        &export_xml,
+                                        "Moribund_Institute",
+                                    ) {
+                                        Ok(msg) => {
+                                            println!("{}", msg);
+                                            status_msg.set(msg);
+                                        }
+                                        Err(err) => {
+                                            let msg = format!("Export failed: {}", err);
+                                            eprintln!("{}", msg);
+                                            status_msg.set(msg);
+                                        }
+                                    }
+                                }
+                            },
+                            "Export Theme to Disk"
+                        }
                     } else {
                         button {
                             class: "editor-button editor-button-disabled",
                             title: "Fix template integrity errors before exporting",
                             "Copy XML"
+                        }
+
+                        button {
+                            class: "editor-button editor-button-disabled",
+                            title: "Fix template integrity errors before exporting",
+                            "Export Theme to Disk"
                         }
                     }
                 }
@@ -453,9 +484,77 @@ pub fn ExportPanel(props: ExportPanelProps) -> Element {
                         class: "{device_class}",
                         style: "{device_style}",
 
+                        // Hidden source of truth for the generated preview HTML.
+                        // Dioxus updates this text node when presets/settings change;
+                        // the MutationObserver below rewrites the iframe document.
+                        pre {
+                            id: "mor-preview-html-source",
+                            style: "display: none;",
+                            "{preview_html}"
+                        }
+
                         iframe {
+                            id: "mor-preview-frame",
                             class: "preview-iframe",
-                            srcdoc: "{preview_html}"
+                            src: "about:blank",
+                            onmounted: move |_| {
+                                spawn(async move {
+                                    let _ = eval(
+                                        r#"
+                                        (function installMorPreviewBridge() {
+                                            const sourceId = "mor-preview-html-source";
+                                            const frameId = "mor-preview-frame";
+
+                                            function writePreview(source, frame) {
+                                                const html = source.textContent || "";
+                                                if (!html.trim()) return;
+                                                if (source.__morLastPreviewHtml === html) return;
+                                                source.__morLastPreviewHtml = html;
+
+                                                const doc = frame.contentDocument ||
+                                                    (frame.contentWindow && frame.contentWindow.document);
+                                                if (!doc) return;
+
+                                                doc.open();
+                                                doc.write(html);
+                                                doc.close();
+                                            }
+
+                                            function install(attempt) {
+                                                const source = document.getElementById(sourceId);
+                                                const frame = document.getElementById(frameId);
+
+                                                if (!source || !frame) {
+                                                    if (attempt < 40) {
+                                                        setTimeout(function () { install(attempt + 1); }, 25);
+                                                    }
+                                                    return;
+                                                }
+
+                                                if (source.__morPreviewObserver) {
+                                                    source.__morPreviewObserver.disconnect();
+                                                }
+
+                                                const observer = new MutationObserver(function () {
+                                                    writePreview(source, frame);
+                                                });
+
+                                                observer.observe(source, {
+                                                    childList: true,
+                                                    characterData: true,
+                                                    subtree: true
+                                                });
+
+                                                source.__morPreviewObserver = observer;
+                                                writePreview(source, frame);
+                                            }
+
+                                            install(0);
+                                        })();
+                                        "#
+                                    );
+                                });
+                            }
                         }
                     }
                 }

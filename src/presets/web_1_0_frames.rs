@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_WIN95};
@@ -37,10 +37,22 @@ pub fn web_1_0_frames() -> Preset {
             author_name: "Webmaster".to_string(),
         },
         vec![
-            MenuLink { label: "Home".to_string(), url: "/".to_string() },
-            MenuLink { label: "About Me".to_string(), url: "/p/about.html".to_string() },
-            MenuLink { label: "Guestbook".to_string(), url: "/p/guestbook.html".to_string() },
-            MenuLink { label: "Links".to_string(), url: "/p/links.html".to_string() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "About Me".to_string(),
+                url: "/p/about.html".to_string(),
+            },
+            MenuLink {
+                label: "Guestbook".to_string(),
+                url: "/p/guestbook.html".to_string(),
+            },
+            MenuLink {
+                label: "Links".to_string(),
+                url: "/p/links.html".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "Best viewed in Netscape Navigator 4.0+ at 800x600".to_string(),
@@ -68,22 +80,26 @@ pub fn web_1_0_frames() -> Preset {
                 border: "#002b36".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#002b36".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#002b36".to_string(),
+                },
             },
         },
         light: PresetPalette {
             colors: ColorConfig {
                 // The signature Windows 9x grey.
-                bg_base: "#008080".to_string(),  // Teal desktop background
+                bg_base: "#008080".to_string(), // Teal desktop background
                 bg_panel: SurfaceFill::solid("#c0c0c0"),
                 bg_elevated: SurfaceFill::solid("#dfdfdf"),
                 fg_base: "#000000".to_string(),
                 fg_muted: "#404040".to_string(),
-                accent: "#0000ee".to_string(),   // Unvisited link blue
+                accent: "#0000ee".to_string(), // Unvisited link blue
                 border: "#808080".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#008080".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#008080".to_string(),
+                },
             },
         },
     }

@@ -1,36 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
-<html b:css='false'
-      b:defaultwidgetversion='2'
-      b:layoutsVersion='3'
-      expr:dir='data:blog.languageDirection'
-      expr:lang='data:blog.locale'
-      xmlns='http://www.w3.org/1999/xhtml'
-      xmlns:b='http://www.google.com/2005/gml/b'
-      xmlns:data='http://www.google.com/2005/gml/data'
-      xmlns:expr='http://www.google.com/2005/gml/expr'>
-
+<html b:css="false" b:defaultwidgetversion="2" b:js="false" b:layoutsVersion="3" b:responsive="true" b:templateVersion="1.3.0" b:version="2" expr:dir="data:blog.languageDirection" expr:lang="data:blog.locale" xmlns="http://www.w3.org/1999/xhtml" xmlns:b="http://www.google.com/2005/gml/b" xmlns:data="http://www.google.com/2005/gml/data" xmlns:expr="http://www.google.com/2005/gml/expr">
 <head>
-  <meta content='width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0' name='viewport'/>
-  <meta content='IE=edge' http-equiv='X-UA-Compatible'/>
-  <meta content='true' name='HandheldFriendly'/>
-  <meta content='width' name='MobileOptimized'/>
-  <meta content='yes' name='apple-mobile-web-app-capable'/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0" name="viewport"/>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+  <meta content="true" name="HandheldFriendly"/>
+  <meta content="width" name="MobileOptimized"/>
+  <meta content="yes" name="apple-mobile-web-app-capable"/>
 
   <title><data:view.title.escaped/></title>
-  <b:include data='blog' name='all-head-content'/>
+  <b:include data="blog" name="all-head-content"/>
 
-  <meta content='{{META_DESCRIPTION}}' name='description'/>
-  <meta content='{{AUTHOR_NAME}}' name='author'/>
-  <meta content='{{SITE_TITLE}}' property='og:site_name'/>
-  <meta content='{{SITE_TITLE}}' property='og:title'/>
-  <meta content='{{META_DESCRIPTION}}' property='og:description'/>
-  <meta content='{{SOCIAL_CARD_IMAGE_URL}}' property='og:image'/>
+  <meta content="{{META_DESCRIPTION}}" name="description"/>
+  <meta content="{{AUTHOR_NAME}}" name="author"/>
+  <meta content="{{SITE_TITLE}}" property="og:site_name"/>
+  <meta content="{{SITE_TITLE}}" property="og:title"/>
+  <meta content="{{META_DESCRIPTION}}" property="og:description"/>
+  <meta content="{{SOCIAL_CARD_IMAGE_URL}}" property="og:image"/>
 
-  <link href='{{FAVICON_URL}}' rel='icon' sizes='16x16' type='image/png'/>
-  <link href='{{FAVICON_URL}}' rel='icon' sizes='32x32' type='image/png'/>
-  <link href='{{FAVICON_URL}}' rel='apple-touch-icon' sizes='180x180'/>
-{{GOOGLE_FONTS_LINK}}
+  <link href="{{FAVICON_URL}}" rel="icon" sizes="16x16" type="image/png"/>
+  <link href="{{FAVICON_URL}}" rel="icon" sizes="32x32" type="image/png"/>
+  <link href="{{FAVICON_URL}}" rel="apple-touch-icon" sizes="180x180"/>
+
+  {{GOOGLE_FONTS_LINK}}
   <b:skin><![CDATA[
 :root {
   /* Terminal Palette */
@@ -738,53 +730,130 @@ button:focus-visible {
    14-Widgets-Sidebars.css
    ========================================================== */
 
+/* Universal Native Gadget Styling */
 .widget {
-  margin-bottom: 25px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--btn-radius, 4px);
+  padding: 16px;
+  margin-bottom: 24px;
 }
 
-.widget h2 {
+.widget h2.title,
+.widget h3.title {
   margin-top: 0;
   font-size: 1rem;
+  color: var(--accent);
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 5px;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .sidebar-section .widget-content {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--fg-base);
+  word-wrap: break-word;
+}
+
+/* Generic Lists (BlogList, PageList, LinkList, etc.) */
+.sidebar-section .widget-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-section .widget-content li {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-color);
+}
+.sidebar-section .widget-content li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sidebar-section .widget-content a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  border-bottom: none;
+  transition: color 0.2s;
+}
+
+.sidebar-section .widget-content a:hover {
+  color: var(--accent);
+}
+
+/* Constrain height only for known long lists */
+.sidebar-section .Label .widget-content,
+.sidebar-section .BlogArchive .widget-content,
+.sidebar-section .PageList .widget-content {
   max-height: 250px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 5px;
 }
 
+/* Generic Inputs (Contact Form, Search, Translate) */
+.widget-content input[type="text"],
+.widget-content input[type="email"],
+.widget-content textarea,
+.widget-content select {
+  width: 100%;
+  background: var(--bg-base);
+  color: var(--fg-base);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.widget-content input[type="button"],
+.widget-content input[type="submit"] {
+  background: var(--bg-highlight);
+  color: var(--fg-base);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  padding: 6px 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.widget-content input[type="button"]:hover,
+.widget-content input[type="submit"]:hover {
+  background: var(--fg-base);
+  color: var(--bg-base);
+}
+
+/* Profile / Images */
+.widget-content img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+.Profile .profile-img {
+  border: 1px solid var(--border-color);
+  margin-bottom: 10px;
+}
+
+/* Specific Label Grid Override */
 .sidebar-section .Label ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px 10px;
 }
-
 .sidebar-section .Label li {
+  border-bottom: none;
   padding: 0;
-  font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.sidebar-section .Label a {
-  color: var(--fg-dim);
-  border-bottom: none;
-}
-
-.sidebar-section .Label a:hover,
-.sidebar-section .Label a:focus-visible {
-  color: var(--bg-base);
-  background: var(--fg-base);
-  text-shadow: none;
-}
-
 
 
 /* ==========================================================
@@ -1263,6 +1332,9 @@ button:focus-visible {
    ========================================================== */
 {{PRESET_CSS}}
   ]]></b:skin>
+
+  <b:template-skin><![CDATA[]]></b:template-skin>
+
   {{ADS_HEAD_SCRIPT}}
 </head>
 
@@ -1328,7 +1400,7 @@ button:focus-visible {
         <button class='panel-toggle' data-target='panel-left' type='button'>×</button>
       </div>
       <div class='panel-content'>
-        <b:section class='sidebar-section' id='sidebar-left' maxwidgets='10' showaddelement='yes'>
+        <b:section class='sidebar-section' id='sidebar-left' maxwidgets='10' name='Sidebar (Left)' preferred='yes' showaddelement='yes'>
           {{WIDGET_LABEL}}
           {{WIDGET_BLOG_ARCHIVE}}
         </b:section>
@@ -1341,9 +1413,12 @@ button:focus-visible {
         <span class='system-status'>system: online</span>
       </div>
 
-   <b:section class='main-section' id='main' maxwidgets='1' showaddelement='no'>
-       {{WIDGET_BLOG}}
-     </b:section>
+     <div class='canvas-content'>
+        <b:section class='main-section' id='main' maxwidgets='1' name='Main (Blog)' showaddelement='no'>
+          {{WIDGET_BLOG}}
+        </b:section>
+        <b:section class='main-section main-section-extras' id='main-extras' maxwidgets='10' name='Main Extras' showaddelement='yes'/>
+      </div>
 
     <footer class='terminal-footer'>
           <div class='footer-grid'>
@@ -1386,7 +1461,7 @@ button:focus-visible {
           </ul>
         </div>
 
-        <b:section class='sidebar-section' id='sidebar-right' maxwidgets='10' showaddelement='yes'>
+        <b:section class='sidebar-section' id='sidebar-right' maxwidgets='10' name='Sidebar (Right)' preferred='yes' showaddelement='yes'>
           {{WIDGET_HTML}}
           {{WIDGET_ADSENSE_SIDEBAR}}
         </b:section>

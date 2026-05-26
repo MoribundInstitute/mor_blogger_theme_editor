@@ -14,8 +14,9 @@ pub fn inject_state(xml: &str, toml_data: &str) -> String {
         return replace_existing_state(xml, &injection);
     }
 
-    if let Some(idx) = xml.find("<!DOCTYPE html>") {
-        let split_point = idx + "<!DOCTYPE html>".len();
+    // Safely inject the state marker INSIDE the head tag so Blogger doesn't strip it.
+    if let Some(idx) = xml.find("<head>") {
+        let split_point = idx + "<head>".len();
         let (first, second) = xml.split_at(split_point);
         format!("{}\n{}{}", first, injection, second)
     } else {
@@ -25,9 +26,9 @@ pub fn inject_state(xml: &str, toml_data: &str) -> String {
 
 /// Extracts the base64 string from pasted XML, decodes it, and returns the ThemeConfig.
 pub fn extract_and_decode(pasted_xml: &str) -> Result<ThemeConfig, String> {
-    let start_idx = pasted_xml
-        .find(MARKER_START)
-        .ok_or_else(|| "No theme data found. Did you paste a valid exported template?".to_string())?;
+    let start_idx = pasted_xml.find(MARKER_START).ok_or_else(|| {
+        "No theme data found. Did you paste a valid exported template?".to_string()
+    })?;
 
     let content_start = start_idx + MARKER_START.len();
 

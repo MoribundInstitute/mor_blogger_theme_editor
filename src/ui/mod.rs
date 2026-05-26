@@ -1,3 +1,4 @@
+pub mod ads_panel;
 pub mod assets_panel;
 pub mod background_panel;
 pub mod buttons_panel;

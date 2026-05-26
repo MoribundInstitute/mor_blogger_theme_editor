@@ -18,19 +18,13 @@ body {
   background-attachment: fixed !important;
 }
 
-/* Every major surface gets the signature Web 2.0 treatment:
-   - generous border-radius
-   - vertical gradient (light at top, slightly darker at bottom)
-   - 1px crisp border
-   - 1px inset highlight at the top (the "gloss line")
-   - soft drop shadow lifting it off the page */
+/* CONTAINER surfaces (outer cards) — get the full Web 2.0 treatment */
 .canvas-core,
 .terminal-post,
 .runelite-panel,
 .terminal-main-header,
 .terminal-footer,
-.mor-catalog-dropdown,
-.panel-content {
+.mor-catalog-dropdown {
   background: var(--bg-panel) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 12px !important;
@@ -38,6 +32,16 @@ body {
     0 2px 6px rgba(0, 0, 0, 0.08),
     0 8px 24px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+}
+
+/* CONTENT surfaces inside containers — flat, transparent, no border */
+.runelite-panel .panel-content,
+.canvas-core .panel-content {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
 }
 
 /* The masthead is the showpiece — bigger radius at the top corners
@@ -94,9 +98,6 @@ body {
           mask-image: linear-gradient(180deg, rgba(0,0,0,0.6), transparent 70%);
   font: inherit;
   color: inherit;
-  /* Fallback: if the anchor doesn't have aria-label set, the
-     ::after will be empty and nothing renders. That's fine —
-     the gloss alone still reads as Web 2.0. */
 }
 
 /* Posts get a generous radius and the same gloss treatment. */
@@ -216,8 +217,9 @@ body {
   color: color-mix(in srgb, var(--accent) 75%, black) !important;
 }
 
-/* Side panels get the same gloss treatment but with their headers
-   styled as glassy title bars. */
+/* HEADER surfaces inside containers — gradient stripe at top, no
+   independent border/shadow. The radius only applies to top corners
+   to match the parent card's top-left/top-right curve. */
 .panel-header,
 .mor-panel-heading {
   background: linear-gradient(
@@ -230,12 +232,11 @@ body {
   font-weight: 700 !important;
   font-size: 0.95rem !important;
   padding: 10px 14px !important;
+  border: none !important;
   border-bottom: 1px solid var(--border-color) !important;
   border-radius: 12px 12px 0 0 !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.06) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
 }
 
 /* Footer: glossy strip at the bottom matching the masthead. */

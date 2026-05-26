@@ -38,8 +38,14 @@ const HEADING_OPTIONS: &[(&str, &str)] = &[
 
 const MONO_OPTIONS: &[(&str, &str)] = &[
     ("Courier New", STACK_MONO),
-    ("Menlo / Consolas", "Menlo, Consolas, 'Liberation Mono', monospace"),
-    ("SF Mono", "'SF Mono', SFMono-Regular, ui-monospace, monospace"),
+    (
+        "Menlo / Consolas",
+        "Menlo, Consolas, 'Liberation Mono', monospace",
+    ),
+    (
+        "SF Mono",
+        "'SF Mono', SFMono-Regular, ui-monospace, monospace",
+    ),
 ];
 
 const WEIGHT_OPTIONS: &[(&str, &str)] = &[
@@ -166,7 +172,7 @@ fn FontStackPicker(
                 option {
                     value: "{CUSTOM_SENTINEL}",
                     selected: is_custom,
-                    "Custom…"
+                    "Custom / Google Font…"
                 }
             }
 
@@ -174,9 +180,13 @@ fn FontStackPicker(
                 input {
                     r#type: "text",
                     value: "{value}",
-                    placeholder: "Georgia, serif",
+                    placeholder: "e.g., 'Fira Code' or 'Georgia, serif'",
                     class: "editor-field",
                     oninput: move |e| value.set(e.value()),
+                }
+                p {
+                    class: "editor-mini-label",
+                    "Type a Google Font name to auto-load it, or paste a standard CSS stack."
                 }
             }
         }

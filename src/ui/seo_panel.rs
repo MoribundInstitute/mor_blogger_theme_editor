@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::ui::inputs::{EditorInput, SectionTitle, PanelNote};
+use crate::ui::inputs::{EditorInput, PanelNote, SectionTitle};
 
 #[component]
 pub fn SeoPanel(

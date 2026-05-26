@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 
-use crate::config::{BackgroundConfig, SurfaceFill, ThemeConfig};
+use crate::config::ThemeConfig;
 use crate::diagnostics::DiagnosticResult;
+use crate::ui::ads_panel::AdsPanel;
 use crate::ui::assets_panel::AssetsPanel;
 use crate::ui::background_panel::BackgroundPanel;
 use crate::ui::buttons_panel::ButtonsPanel;
@@ -16,69 +17,40 @@ use crate::ui::plugins_panel::PluginsPanel;
 use crate::ui::presets_panel::{PresetsPanel, ThemeSignals};
 use crate::ui::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::site_panel::SitePanel;
+use crate::ui::static_pages_panel::StaticPagesPanel;
 use crate::ui::typography_panel::TypographyPanel;
 
+#[derive(Props, Clone, PartialEq)]
+pub struct LeftPanelProps {
+    pub is_collapsed: Signal<bool>,
+    pub active_tab: Signal<&'static str>,
+    pub signals: ThemeSignals,
+    pub show_preview: Signal<bool>,
+    pub workbench_layout: Signal<WorkbenchLayout>,
+    pub active_preset: Signal<Option<&'static str>>,
+}
+
 #[component]
-pub fn LeftPanel(
-    is_collapsed: Signal<bool>,
-    workbench_layout: Signal<WorkbenchLayout>,
-    signals: ThemeSignals,
-    active_preset: Signal<Option<&'static str>>,
+pub fn LeftPanel(props: LeftPanelProps) -> Element {
+    let mut collapsed = props.is_collapsed;
+    let mut show_preview = props.show_preview;
+    let signals = props.signals;
 
-    site_title: Signal<String>,
-    site_subtitle: Signal<String>,
-    header_logo_url: Signal<String>,
-    home_url: Signal<String>,
-
-    bg_base: Signal<String>,
-    bg_panel: Signal<SurfaceFill>,
-    bg_elevated: Signal<SurfaceFill>,
-    fg_base: Signal<String>,
-    fg_muted: Signal<String>,
-    accent: Signal<String>,
-    border: Signal<String>,
-
-    btn_radius: Signal<String>,
-    btn_border_width: Signal<String>,
-    btn_text_transform: Signal<String>,
-
-    body_font_stack: Signal<String>,
-    heading_font_stack: Signal<String>,
-    mono_font_stack: Signal<String>,
-    base_size: Signal<String>,
-    scale_ratio: Signal<String>,
-    line_height: Signal<String>,
-    heading_weight: Signal<String>,
-
-    background: Signal<BackgroundConfig>,
-    favicon_url: Signal<String>,
-    social_card_image_url: Signal<String>,
-
-    menu_1_label: Signal<String>,
-    menu_1_url: Signal<String>,
-    menu_2_label: Signal<String>,
-    menu_2_url: Signal<String>,
-    menu_3_label: Signal<String>,
-    menu_3_url: Signal<String>,
-    menu_4_label: Signal<String>,
-    menu_4_url: Signal<String>,
-
-    meta_description: Signal<String>,
-    meta_keywords: Signal<String>,
-    custom_robots: Signal<String>,
-    author_name: Signal<String>,
-    license_url: Signal<String>,
-
-    footer_text: Signal<String>,
-    footer_license_label: Signal<String>,
-    footer_license_url: Signal<String>,
-
-    custom_js: Signal<String>,
-    static_pages: Signal<crate::config::StaticPagesConfig>,
-) -> Element {
-    let mut collapsed = is_collapsed;
-
-    let open_section = use_signal(|| "site");
+    let open_section = use_signal(move || match (props.active_tab)() {
+        "Site Identity" => "site",
+        "Colors" | "Palette" => "palette",
+        "Typography" => "typography",
+        "Buttons" => "buttons",
+        "Background" => "background",
+        "Assets" => "assets",
+        "Menu" => "menu",
+        "SEO" => "seo",
+        "Footer" => "footer",
+        "Plugins" => "plugins",
+        "Advertising" | "Ads" => "ads",
+        "Static Pages" => "static_pages",
+        _ => "site",
+    });
 
     if collapsed() {
         return rsx! {
@@ -98,7 +70,7 @@ pub fn LeftPanel(
         div {
             class: "editor-left-panel",
 
-            if workbench_layout() == WorkbenchLayout::FloatingEditor {
+            if (props.workbench_layout)() == WorkbenchLayout::FloatingEditor {
                 div {
                     class: "floating-editor-window-bar",
                     "data-floating-window-bar": "true",
@@ -139,7 +111,7 @@ pub fn LeftPanel(
                             class: "editor-mini-button",
                             title: "Dock the editor panel back to split layout",
                             onclick: move |_| {
-                                set_workbench_layout(workbench_layout, WorkbenchLayout::Split);
+                                set_workbench_layout(props.workbench_layout, WorkbenchLayout::Split);
                             },
                             "Dock"
                         }
@@ -177,58 +149,65 @@ pub fn LeftPanel(
                     class: "editor-panel-toolbar-actions",
 
                     button {
-                        class: if workbench_layout() == WorkbenchLayout::Split {
+                        class: if (props.workbench_layout)() == WorkbenchLayout::Split {
                             "editor-mini-button editor-mini-button-active"
                         } else {
                             "editor-mini-button"
                         },
                         onclick: move |_| {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::Split);
+                            set_workbench_layout(props.workbench_layout, WorkbenchLayout::Split);
                         },
                         "Normal"
                     }
 
                     button {
-                        class: if workbench_layout() == WorkbenchLayout::WideEditor {
+                        class: if (props.workbench_layout)() == WorkbenchLayout::WideEditor {
                             "editor-mini-button editor-mini-button-active"
                         } else {
                             "editor-mini-button"
                         },
                         onclick: move |_| {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::WideEditor);
+                            set_workbench_layout(props.workbench_layout, WorkbenchLayout::WideEditor);
                         },
                         "Wide"
                     }
 
                     button {
-                        class: if workbench_layout() == WorkbenchLayout::FloatingEditor {
+                        class: if (props.workbench_layout)() == WorkbenchLayout::FloatingEditor {
                             "editor-mini-button editor-mini-button-active"
                         } else {
                             "editor-mini-button"
                         },
                         onclick: move |_| {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::FloatingEditor);
+                            set_workbench_layout(props.workbench_layout, WorkbenchLayout::FloatingEditor);
                         },
                         "Float"
                     }
 
                     button {
-                        class: if workbench_layout() == WorkbenchLayout::PreviewTakeover {
+                        class: if (props.workbench_layout)() == WorkbenchLayout::PreviewTakeover {
                             "editor-mini-button editor-mini-button-active"
                         } else {
                             "editor-mini-button"
                         },
                         onclick: move |_| {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::PreviewTakeover);
+                            show_preview.set(true);
+                            set_workbench_layout(
+                                props.workbench_layout,
+                                WorkbenchLayout::PreviewTakeover,
+                            );
                         },
                         "Preview"
                     }
 
-                    if workbench_layout() == WorkbenchLayout::FloatingEditor {
+                    if (props.workbench_layout)() == WorkbenchLayout::FloatingEditor {
                         button {
                             class: "editor-mini-button",
                             onclick: move |_| {
-                                set_workbench_layout(workbench_layout, WorkbenchLayout::Split);
+                                set_workbench_layout(
+                                    props.workbench_layout,
+                                    WorkbenchLayout::Split,
+                                );
                             },
                             "Dock"
                         }
@@ -236,7 +215,10 @@ pub fn LeftPanel(
                 }
             }
 
-            PresetsPanel { signals, active_preset }
+            PresetsPanel {
+                signals,
+                active_preset: props.active_preset,
+            }
 
             div {
                 class: "editor-accordion",
@@ -246,10 +228,10 @@ pub fn LeftPanel(
                     title: "Site Identity".to_string(),
                     open_section,
                     SitePanel {
-                        site_title,
-                        site_subtitle,
-                        header_logo_url,
-                        home_url,
+                        site_title: signals.site_title,
+                        site_subtitle: signals.site_subtitle,
+                        header_logo_url: signals.header_logo_url,
+                        home_url: signals.home_url,
                     }
                 }
 
@@ -258,13 +240,13 @@ pub fn LeftPanel(
                     title: "Palette".to_string(),
                     open_section,
                     ColorsPanel {
-                        bg_base,
-                        bg_panel,
-                        bg_elevated,
-                        fg_base,
-                        fg_muted,
-                        accent,
-                        border,
+                        bg_base: signals.bg_base,
+                        bg_panel: signals.bg_panel,
+                        bg_elevated: signals.bg_elevated,
+                        fg_base: signals.fg_base,
+                        fg_muted: signals.fg_muted,
+                        accent: signals.accent,
+                        border: signals.border,
                     }
                 }
 
@@ -273,13 +255,13 @@ pub fn LeftPanel(
                     title: "Typography".to_string(),
                     open_section,
                     TypographyPanel {
-                        body_font_stack,
-                        heading_font_stack,
-                        mono_font_stack,
-                        base_size,
-                        scale_ratio,
-                        line_height,
-                        heading_weight,
+                        body_font_stack: signals.body_font_stack,
+                        heading_font_stack: signals.heading_font_stack,
+                        mono_font_stack: signals.mono_font_stack,
+                        base_size: signals.base_size,
+                        scale_ratio: signals.scale_ratio,
+                        line_height: signals.line_height,
+                        heading_weight: signals.heading_weight,
                     }
                 }
 
@@ -288,9 +270,9 @@ pub fn LeftPanel(
                     title: "Buttons".to_string(),
                     open_section,
                     ButtonsPanel {
-                        btn_radius,
-                        btn_border_width,
-                        btn_text_transform,
+                        btn_radius: signals.btn_radius,
+                        btn_border_width: signals.btn_border_width,
+                        btn_text_transform: signals.btn_text_transform,
                     }
                 }
 
@@ -298,7 +280,9 @@ pub fn LeftPanel(
                     id: "background".to_string(),
                     title: "Background".to_string(),
                     open_section,
-                    BackgroundPanel { background }
+                    BackgroundPanel {
+                        background: signals.background,
+                    }
                 }
 
                 AccordionSection {
@@ -306,8 +290,8 @@ pub fn LeftPanel(
                     title: "Assets".to_string(),
                     open_section,
                     AssetsPanel {
-                        favicon_url,
-                        social_card_image_url,
+                        favicon_url: signals.favicon_url,
+                        social_card_image_url: signals.social_card_image_url,
                     }
                 }
 
@@ -316,14 +300,14 @@ pub fn LeftPanel(
                     title: "Menu".to_string(),
                     open_section,
                     MenuPanel {
-                        menu_1_label,
-                        menu_1_url,
-                        menu_2_label,
-                        menu_2_url,
-                        menu_3_label,
-                        menu_3_url,
-                        menu_4_label,
-                        menu_4_url,
+                        menu_1_label: signals.menu_1_label,
+                        menu_1_url: signals.menu_1_url,
+                        menu_2_label: signals.menu_2_label,
+                        menu_2_url: signals.menu_2_url,
+                        menu_3_label: signals.menu_3_label,
+                        menu_3_url: signals.menu_3_url,
+                        menu_4_label: signals.menu_4_label,
+                        menu_4_url: signals.menu_4_url,
                     }
                 }
 
@@ -332,11 +316,11 @@ pub fn LeftPanel(
                     title: "SEO".to_string(),
                     open_section,
                     SeoPanel {
-                        meta_description,
-                        meta_keywords,
-                        custom_robots,
-                        author_name,
-                        license_url,
+                        meta_description: signals.meta_description,
+                        meta_keywords: signals.meta_keywords,
+                        custom_robots: signals.custom_robots,
+                        author_name: signals.author_name,
+                        license_url: signals.license_url,
                     }
                 }
 
@@ -345,9 +329,9 @@ pub fn LeftPanel(
                     title: "Footer".to_string(),
                     open_section,
                     FooterPanel {
-                        footer_text,
-                        footer_license_label,
-                        footer_license_url,
+                        footer_text: signals.footer_text,
+                        footer_license_label: signals.footer_license_label,
+                        footer_license_url: signals.footer_license_url,
                     }
                 }
 
@@ -355,7 +339,27 @@ pub fn LeftPanel(
                     id: "plugins".to_string(),
                     title: "Plugins".to_string(),
                     open_section,
-                    PluginsPanel { custom_js }
+                    PluginsPanel {
+                        custom_js: signals.custom_js,
+                    }
+                }
+
+                AccordionSection {
+                    id: "ads".to_string(),
+                    title: "Advertising".to_string(),
+                    open_section,
+                    AdsPanel {
+                        ads: signals.ads,
+                    }
+                }
+
+                AccordionSection {
+                    id: "static_pages".to_string(),
+                    title: "Static Pages".to_string(),
+                    open_section,
+                    StaticPagesPanel {
+                        signals,
+                    }
                 }
             }
 
@@ -416,6 +420,8 @@ fn AccordionSection(props: AccordionSectionProps) -> Element {
         "seo" => "seo",
         "footer" => "footer",
         "plugins" => "plugins",
+        "ads" => "ads",
+        "static_pages" => "static_pages",
         _ => "site",
     };
 

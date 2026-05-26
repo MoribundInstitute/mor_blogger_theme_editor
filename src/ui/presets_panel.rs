@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
+use serde::Deserialize;
 
-use crate::config::{BackgroundConfig, SurfaceFill};
+use crate::config::{AdsConfig, BackgroundConfig, SurfaceFill, ThemeConfig};
 use crate::presets::{all_presets, Preset, PresetPalette};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -71,6 +72,9 @@ pub struct ThemeSignals {
 
     // Static Pages
     pub static_pages: Signal<crate::config::StaticPagesConfig>,
+
+    // Ads
+    pub ads: Signal<AdsConfig>,
 }
 
 impl ThemeSignals {
@@ -81,32 +85,86 @@ impl ThemeSignals {
         self.swap_palette(palette);
 
         let base = &preset.base_config;
+        self.apply_config_except_palette(base);
 
-        self.site_title.clone().set(base.site.site_title.clone());
-        self.site_subtitle.clone().set(base.site.site_subtitle.clone());
-        self.header_logo_url.clone().set(base.site.header_logo_url.clone());
-        self.home_url.clone().set(base.site.home_url.clone());
+        // Carry the preset's optional CSS bundle into the live signals.
+        self.preset_css.clone().set(preset.preset_css.to_string());
+    }
 
-        self.btn_radius.clone().set(base.buttons.radius.clone());
-        self.btn_border_width.clone().set(base.buttons.border_width.clone());
-        self.btn_text_transform.clone().set(base.buttons.text_transform.clone());
+    pub fn apply_config(&self, config: &ThemeConfig) {
+        self.bg_base.clone().set(config.colors.bg_base.clone());
+        self.bg_panel.clone().set(config.colors.bg_panel.clone());
+        self.bg_elevated
+            .clone()
+            .set(config.colors.bg_elevated.clone());
+        self.fg_base.clone().set(config.colors.fg_base.clone());
+        self.fg_muted.clone().set(config.colors.fg_muted.clone());
+        self.accent.clone().set(config.colors.accent.clone());
+        self.border.clone().set(config.colors.border.clone());
+        self.background.clone().set(config.background.clone());
 
-        self.body_font_stack.clone().set(base.typography.body_font_stack.clone());
-        self.heading_font_stack.clone().set(base.typography.heading_font_stack.clone());
-        self.mono_font_stack.clone().set(base.typography.mono_font_stack.clone());
-        self.base_size.clone().set(base.typography.base_size.clone());
-        self.scale_ratio.clone().set(base.typography.scale_ratio.clone());
-        self.line_height.clone().set(base.typography.line_height.clone());
-        self.heading_weight.clone().set(base.typography.heading_weight.clone());
+        self.apply_config_except_palette(config);
+        self.preset_css.clone().set(config.preset_css.clone());
+    }
 
-        self.favicon_url.clone().set(base.assets.favicon_url.clone());
-        self.social_card_image_url.clone().set(base.assets.social_card_image_url.clone());
+    fn apply_config_except_palette(&self, config: &ThemeConfig) {
+        self.site_title.clone().set(config.site.site_title.clone());
+        self.site_subtitle
+            .clone()
+            .set(config.site.site_subtitle.clone());
+        self.header_logo_url
+            .clone()
+            .set(config.site.header_logo_url.clone());
+        self.home_url.clone().set(config.site.home_url.clone());
 
-        self.meta_description.clone().set(base.seo.meta_description.clone());
-        self.meta_keywords.clone().set(base.seo.meta_keywords.clone());
-        self.custom_robots.clone().set(base.seo.custom_robots.clone());
-        self.license_url.clone().set(base.seo.license_url.clone());
-        self.author_name.clone().set(base.seo.author_name.clone());
+        self.btn_radius.clone().set(config.buttons.radius.clone());
+        self.btn_border_width
+            .clone()
+            .set(config.buttons.border_width.clone());
+        self.btn_text_transform
+            .clone()
+            .set(config.buttons.text_transform.clone());
+
+        self.body_font_stack
+            .clone()
+            .set(config.typography.body_font_stack.clone());
+        self.heading_font_stack
+            .clone()
+            .set(config.typography.heading_font_stack.clone());
+        self.mono_font_stack
+            .clone()
+            .set(config.typography.mono_font_stack.clone());
+        self.base_size
+            .clone()
+            .set(config.typography.base_size.clone());
+        self.scale_ratio
+            .clone()
+            .set(config.typography.scale_ratio.clone());
+        self.line_height
+            .clone()
+            .set(config.typography.line_height.clone());
+        self.heading_weight
+            .clone()
+            .set(config.typography.heading_weight.clone());
+
+        self.favicon_url
+            .clone()
+            .set(config.assets.favicon_url.clone());
+        self.social_card_image_url
+            .clone()
+            .set(config.assets.social_card_image_url.clone());
+
+        self.meta_description
+            .clone()
+            .set(config.seo.meta_description.clone());
+        self.meta_keywords
+            .clone()
+            .set(config.seo.meta_keywords.clone());
+        self.custom_robots
+            .clone()
+            .set(config.seo.custom_robots.clone());
+        self.license_url.clone().set(config.seo.license_url.clone());
+        self.author_name.clone().set(config.seo.author_name.clone());
 
         let menu_pairs = [
             (self.menu_1_label, self.menu_1_url),
@@ -116,7 +174,7 @@ impl ThemeSignals {
         ];
 
         for (i, (mut label_sig, mut url_sig)) in menu_pairs.into_iter().enumerate() {
-            let (label, url) = base
+            let (label, url) = config
                 .menu_links
                 .get(i)
                 .map(|menu| (menu.label.clone(), menu.url.clone()))
@@ -125,20 +183,27 @@ impl ThemeSignals {
             url_sig.set(url);
         }
 
-        self.footer_text.clone().set(base.footer.footer_text.clone());
-        self.footer_license_label.clone().set(base.footer.footer_license_label.clone());
-        self.footer_license_url.clone().set(base.footer.footer_license_url.clone());
+        self.footer_text
+            .clone()
+            .set(config.footer.footer_text.clone());
+        self.footer_license_label
+            .clone()
+            .set(config.footer.footer_license_label.clone());
+        self.footer_license_url
+            .clone()
+            .set(config.footer.footer_license_url.clone());
 
-        self.custom_js.clone().set(base.plugins.custom_js.clone());
-        
-        // Carry the preset's optional CSS bundle into the live signals.
-        self.preset_css.clone().set(preset.preset_css.to_string());
+        self.custom_js.clone().set(config.plugins.custom_js.clone());
+        self.static_pages.clone().set(config.static_pages.clone());
+        self.ads.clone().set(config.ads.clone());
     }
 
     pub fn swap_palette(&self, palette: &PresetPalette) {
         self.bg_base.clone().set(palette.colors.bg_base.clone());
         self.bg_panel.clone().set(palette.colors.bg_panel.clone());
-        self.bg_elevated.clone().set(palette.colors.bg_elevated.clone());
+        self.bg_elevated
+            .clone()
+            .set(palette.colors.bg_elevated.clone());
         self.fg_base.clone().set(palette.colors.fg_base.clone());
         self.fg_muted.clone().set(palette.colors.fg_muted.clone());
         self.accent.clone().set(palette.colors.accent.clone());
@@ -156,8 +221,13 @@ pub struct PresetsPanelProps {
 #[component]
 pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let presets = all_presets();
-    let active = props.active_preset;
+    let mut active = props.active_preset;
     let mut is_dark_mode = props.signals.is_dark_mode;
+
+    let mut show_import = use_signal(|| false);
+    let mut remote_url = use_signal(String::new);
+    let mut pasted_theme = use_signal(String::new);
+    let mut import_status = use_signal(String::new);
 
     rsx! {
         section {
@@ -172,29 +242,191 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     "Theme Presets"
                 }
 
-                button {
-                    class: "editor-button editor-button-small",
-                    onclick: move |_| {
-                        let new_mode = !is_dark_mode();
-                        is_dark_mode.set(new_mode);
+                div {
+                    class: "editor-row",
 
-                        if let Some(active_id) = active() {
-                            if let Some(preset) = presets.iter().find(|preset| preset.id == active_id) {
-                                if new_mode {
-                                    props.signals.swap_palette(&preset.dark);
-                                } else {
-                                    props.signals.swap_palette(&preset.light);
+                    button {
+                        class: if show_import() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        onclick: move |_| {
+                            show_import.set(!show_import());
+                        },
+                        "Import JSON"
+                    }
+
+                    button {
+                        class: "editor-button editor-button-small",
+                        onclick: move |_| {
+                            let new_mode = !is_dark_mode();
+                            is_dark_mode.set(new_mode);
+
+                            if let Some(active_id) = active() {
+                                if let Some(preset) = presets.iter().find(|preset| preset.id == active_id) {
+                                    if new_mode {
+                                        props.signals.swap_palette(&preset.dark);
+                                    } else {
+                                        props.signals.swap_palette(&preset.light);
+                                    }
                                 }
                             }
-                        }
-                    },
-                    if is_dark_mode() { "☾ Dark Mode" } else { "☀ Light Mode" }
+                        },
+                        if is_dark_mode() { "☾ Dark Mode" } else { "☀ Light Mode" }
+                    }
                 }
             }
 
             p {
                 class: "preset-panel-copy",
                 "One click to swap the entire theme. Edit any field afterward to customize."
+            }
+
+            if show_import() {
+                div {
+                    class: "editor-note",
+
+                    h4 {
+                        class: "editor-note-title",
+                        "Import Compendium Theme"
+                    }
+
+                    p {
+                        class: "editor-note-body",
+                        "Paste a raw GitHub/compendium JSON URL, paste raw JSON/TOML, or load a local .json/.toml file."
+                    }
+
+                    div {
+                        class: "editor-field-group",
+                        label { class: "editor-field-label", "Remote JSON URL" }
+                        div {
+                            class: "editor-row-stretch",
+                            input {
+                                class: "editor-field editor-flex-1",
+                                r#type: "text",
+                                placeholder: "https://raw.githubusercontent.com/.../theme.json",
+                                value: "{remote_url}",
+                                oninput: move |evt| {
+                                    remote_url.set(evt.value());
+                                    import_status.set(String::new());
+                                }
+                            }
+                            button {
+                                class: "editor-button",
+                                onclick: move |_| {
+                                    let url = normalize_preset_url(&remote_url());
+                                    let signals = props.signals;
+
+                                    async move {
+                                        if url.trim().is_empty() {
+                                            import_status.set("Paste a remote JSON URL first.".to_string());
+                                            return;
+                                        }
+
+                                        match fetch_remote_theme(&url).await {
+                                            Ok(config) => {
+                                                signals.apply_config(&config);
+                                                active.set(None);
+                                                import_status.set("Imported remote theme.".to_string());
+                                            }
+                                            Err(err) => {
+                                                import_status.set(format!("Import failed: {}", err));
+                                            }
+                                        }
+                                    }
+                                },
+                                "Import URL"
+                            }
+                        }
+                    }
+
+                    div {
+                        class: "editor-field-group",
+                        label { class: "editor-field-label", "Local JSON/TOML File" }
+                        label {
+                            class: "editor-button",
+                            "Load JSON/TOML File"
+
+                            input {
+                                r#type: "file",
+                                accept: ".json,.toml,.txt,application/json,text/plain",
+                                style: "display: none;",
+                                onchange: move |evt| {
+                                    let signals = props.signals;
+
+                                    async move {
+                                        if let Some(file_engine) = evt.files() {
+                                            if let Some(file_name) = file_engine.files().first() {
+                                                match file_engine.read_file_to_string(file_name).await {
+                                                    Some(contents) => match parse_theme_text(&contents) {
+                                                        Ok(config) => {
+                                                            signals.apply_config(&config);
+                                                            active.set(None);
+                                                            import_status.set(format!("Imported {}", file_name));
+                                                        }
+                                                        Err(err) => {
+                                                            import_status.set(format!("Import failed: {}", err));
+                                                        }
+                                                    },
+                                                    None => {
+                                                        import_status.set(format!("Could not read {}", file_name));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    div {
+                        class: "editor-field-group",
+                        label { class: "editor-field-label", "Paste JSON or TOML" }
+                        textarea {
+                            class: "editor-textarea",
+                            style: "min-height: 90px; resize: vertical;",
+                            placeholder: "Paste exported ThemeConfig JSON/TOML here...",
+                            value: "{pasted_theme}",
+                            oninput: move |evt| {
+                                pasted_theme.set(evt.value());
+                                import_status.set(String::new());
+                            }
+                        }
+                        div {
+                            class: "editor-row",
+                            button {
+                                class: "editor-button",
+                                onclick: move |_| {
+                                    let pasted = pasted_theme();
+                                    match parse_theme_text(&pasted) {
+                                        Ok(config) => {
+                                            props.signals.apply_config(&config);
+                                            active.set(None);
+                                            import_status.set("Imported pasted theme.".to_string());
+                                        }
+                                        Err(err) => {
+                                            import_status.set(format!("Import failed: {}", err));
+                                        }
+                                    }
+                                },
+                                "Import Pasted Theme"
+                            }
+                            button {
+                                class: "editor-button editor-button-small",
+                                onclick: move |_| {
+                                    pasted_theme.set(String::new());
+                                    import_status.set(String::new());
+                                },
+                                "Clear"
+                            }
+                        }
+                    }
+
+                    if !import_status().is_empty() {
+                        div {
+                            class: "restore-status",
+                            "{import_status}"
+                        }
+                    }
+                }
             }
 
             div {
@@ -309,4 +541,100 @@ fn PresetCard(props: PresetCardProps) -> Element {
             }
         }
     }
+}
+
+async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String> {
+    let response = reqwest::get(url)
+        .await
+        .map_err(|err| format!("request failed: {}", err))?;
+
+    if !response.status().is_success() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+
+    let text = response
+        .text()
+        .await
+        .map_err(|err| format!("could not read response: {}", err))?;
+
+    parse_theme_text(&text)
+}
+
+fn parse_theme_text(text: &str) -> Result<ThemeConfig, String> {
+    let trimmed = text.trim();
+
+    if trimmed.is_empty() {
+        return Err("theme text is empty".to_string());
+    }
+
+    if let Ok(config) = serde_json::from_str::<ThemeConfig>(trimmed) {
+        return Ok(config);
+    }
+
+    if let Ok(config) = parse_json_wrapped_theme(trimmed) {
+        return Ok(config);
+    }
+
+    if let Ok(config) = toml::from_str::<ThemeConfig>(trimmed) {
+        return Ok(config);
+    }
+
+    Err(
+        "expected a ThemeConfig JSON/TOML document, or a JSON object with base_config/config/theme"
+            .to_string(),
+    )
+}
+
+#[derive(Deserialize)]
+struct WrappedTheme {
+    #[serde(default)]
+    base_config: Option<ThemeConfig>,
+    #[serde(default)]
+    config: Option<ThemeConfig>,
+    #[serde(default)]
+    theme: Option<ThemeConfig>,
+    #[serde(default)]
+    preset_css: Option<String>,
+}
+
+fn parse_json_wrapped_theme(text: &str) -> Result<ThemeConfig, String> {
+    let wrapped = serde_json::from_str::<WrappedTheme>(text).map_err(|err| err.to_string())?;
+
+    let mut config = wrapped
+        .base_config
+        .or(wrapped.config)
+        .or(wrapped.theme)
+        .ok_or_else(|| "no base_config/config/theme object found".to_string())?;
+
+    if config.preset_css.trim().is_empty() {
+        if let Some(css) = wrapped.preset_css {
+            config.preset_css = css;
+        }
+    }
+
+    Ok(config)
+}
+
+fn normalize_preset_url(input: &str) -> String {
+    let url = input.trim();
+
+    if url.contains("github.com/") && url.contains("/blob/") {
+        let without_scheme = url
+            .trim_start_matches("https://")
+            .trim_start_matches("http://");
+        let parts: Vec<&str> = without_scheme.split('/').collect();
+
+        if parts.len() >= 6 && parts[0] == "github.com" && parts[3] == "blob" {
+            let owner = parts[1];
+            let repo = parts[2];
+            let branch = parts[4];
+            let path = parts[5..].join("/");
+            return format!(
+                "https://raw.githubusercontent.com/{}/{}/{}/{}",
+                owner, repo, branch, path
+            );
+        }
+    }
+
+    url.to_string()
 }

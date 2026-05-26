@@ -1,9 +1,9 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
-use super::{build_base, Preset, PresetPalette, STACK_SYSTEM_UI, STACK_MONO};
+use super::{build_base, Preset, PresetPalette, STACK_MONO, STACK_SYSTEM_UI};
 
 const PRESET_CSS: &str = include_str!("css/glassmorphism.css");
 
@@ -37,10 +37,22 @@ pub fn glassmorphism() -> Preset {
             author_name: String::new(),
         },
         vec![
-            MenuLink { label: "Home".to_string(), url: "/".to_string() },
-            MenuLink { label: "Writing".to_string(), url: "/p/writing.html".to_string() },
-            MenuLink { label: "Projects".to_string(), url: "/p/projects.html".to_string() },
-            MenuLink { label: "Contact".to_string(), url: "/p/contact.html".to_string() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Writing".to_string(),
+                url: "/p/writing.html".to_string(),
+            },
+            MenuLink {
+                label: "Projects".to_string(),
+                url: "/p/projects.html".to_string(),
+            },
+            MenuLink {
+                label: "Contact".to_string(),
+                url: "/p/contact.html".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "Made with Blogger.".to_string(),

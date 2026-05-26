@@ -1,0 +1,70 @@
+<b:widget id='BlogArchive1' locked='false' title='Archive' type='BlogArchive' version='2' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='showStyle'>HIERARCHY</b:widget-setting>
+    <b:widget-setting name='yearPattern'>yyyy</b:widget-setting>
+    <b:widget-setting name='showWeekEnd'>true</b:widget-setting>
+    <b:widget-setting name='monthPattern'>MMMM</b:widget-setting>
+    <b:widget-setting name='dayPattern'>MMM dd</b:widget-setting>
+    <b:widget-setting name='weekPattern'>MM/dd</b:widget-setting>
+    <b:widget-setting name='chronological'>false</b:widget-setting>
+    <b:widget-setting name='showPosts'>true</b:widget-setting>
+    <b:widget-setting name='frequency'>MONTHLY</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main'>
+    <b:if cond='data:title != &quot;&quot;'>
+      <h2 class='title'><data:title/></h2>
+    </b:if>
+    <b:include name='content'/>
+  </b:includable>
+  <b:includable id='content'>
+    <div class='widget-content'>
+      <div id='ArchiveList'>
+        <div expr:id='data:widget.instanceId + &quot;_ArchiveList&quot;'>
+          <b:include cond='data:this.style == &quot;HIERARCHY&quot;' name='hierarchy'/>
+          <b:include cond='data:this.style in {&quot;FLAT&quot;, &quot;MENU&quot;}' name='flat'/>
+        </div>
+      </div>
+    </div>
+  </b:includable>
+  <b:includable id='hierarchy'>
+    <b:include data='data' name='interval'/>
+  </b:includable>
+  <b:includable id='flat'>
+    <ul class='flat'>
+      <b:loop values='data:data' var='i'>
+        <li class='archivedate'>
+          <a expr:href='data:i.url'>
+            <data:i.name/><span class='post-count'>(<data:i.post-count/>)</span>
+          </a>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+  <b:includable id='interval' var='intervals'>
+    <ul class='hierarchy'>
+      <b:loop values='data:intervals' var='interval'>
+        <li class='archivedate'>
+          <div class='hierarchy-title'>
+            <a class='post-count-link' expr:href='data:interval.url'>
+              <data:interval.name/>
+              <span class='post-count'>(<data:interval.post-count/>)</span>
+            </a>
+          </div>
+          <div class='hierarchy-content'>
+            <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+            <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+          </div>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+  <b:includable id='posts' var='posts'>
+    <ul class='posts hierarchy'>
+      <b:loop values='data:posts' var='post'>
+        <li>
+          <a expr:href='data:post.url'><data:post.title/></a>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+</b:widget>

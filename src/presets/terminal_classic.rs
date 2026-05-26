@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
 };
 
 use super::{build_base, Preset, PresetPalette, STACK_MONO};
@@ -36,10 +36,22 @@ pub fn terminal_classic() -> Preset {
             author_name: String::new(),
         },
         vec![
-            MenuLink { label: "home".to_string(), url: "/".to_string() },
-            MenuLink { label: "archive".to_string(), url: "/p/archive.html".to_string() },
-            MenuLink { label: "about".to_string(), url: "/p/about.html".to_string() },
-            MenuLink { label: "contact".to_string(), url: "/p/contact.html".to_string() },
+            MenuLink {
+                label: "home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "archive".to_string(),
+                url: "/p/archive.html".to_string(),
+            },
+            MenuLink {
+                label: "about".to_string(),
+                url: "/p/about.html".to_string(),
+            },
+            MenuLink {
+                label: "contact".to_string(),
+                url: "/p/contact.html".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "Powered by Blogger.".to_string(),
@@ -65,7 +77,9 @@ pub fn terminal_classic() -> Preset {
                 border: "#6f6078".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#222129".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#222129".to_string(),
+                },
             },
         },
         light: PresetPalette {
@@ -79,7 +93,9 @@ pub fn terminal_classic() -> Preset {
                 border: "#c9bea7".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid { color: "#f2eadf".to_string() },
+                mode: BackgroundMode::Solid {
+                    color: "#f2eadf".to_string(),
+                },
             },
         },
     }

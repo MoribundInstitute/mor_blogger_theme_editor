@@ -72,11 +72,7 @@ pub fn ColorsPanel(
 // ---------------------------------------------------------------------------
 
 #[component]
-fn SurfaceFillEditor(
-    label: String,
-    value: Signal<SurfaceFill>,
-    default_color: String,
-) -> Element {
+fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>, default_color: String) -> Element {
     let mut value = value;
     let current = value.read().clone();
     let mode_str = match current.mode {

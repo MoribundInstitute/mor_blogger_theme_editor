@@ -5,7 +5,7 @@
    readout from a 1995 prediction of 2025.
    ============================================================ */
 
-/* Scanline overlay — sits on body::after so it covers everything
+/* Scanline overlay: sits on body::after so it covers everything
    but stays click-through. The base theme already uses ::before
    for a vignette so we use ::after to avoid clobbering it. */
 body::after {
@@ -18,10 +18,9 @@ body::after {
     0deg,
     transparent 0,
     transparent 2px,
-    rgba(0, 255, 255, 0.04) 2px,
-    rgba(0, 255, 255, 0.04) 3px
+    rgba(0, 255, 255, 0.05) 2px,
+    rgba(0, 255, 255, 0.05) 3px
   );
-  mix-blend-mode: screen;
 }
 
 /* Subtle CRT chromatic-aberration glow on text via text-shadow. */
@@ -30,12 +29,12 @@ body::after {
 .terminal-main-header .institute-title,
 .mor-panel-heading,
 .panel-header {
-  color: var(--fg-base) !important;
+  color: var(--fg-base);
   text-shadow:
     0 0 4px var(--fg-base),
     0 0 8px var(--accent),
     -1px 0 0 rgba(255, 0, 255, 0.55),
-    1px 0 0 rgba(0, 255, 255, 0.55) !important;
+    1px 0 0 rgba(0, 255, 255, 0.55);
   letter-spacing: 0.04em;
 }
 
@@ -45,29 +44,28 @@ body::after {
 .runelite-panel,
 .terminal-main-header,
 .terminal-footer,
-.mor-catalog-dropdown,
-.panel-content {
-  background: var(--bg-panel) !important;
-  border: 1px solid var(--accent) !important;
-  border-radius: 0 !important;
+.mor-catalog-dropdown {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent);
+  border-radius: 0;
   box-shadow:
     0 0 0 1px rgba(255, 0, 255, 0.35),
     0 0 14px rgba(255, 0, 255, 0.45),
-    inset 0 0 22px rgba(255, 0, 255, 0.08) !important;
+    inset 0 0 22px rgba(255, 0, 255, 0.08);
 }
 
 .terminal-post {
-  padding: 20px !important;
-  margin: 14px 0 !important;
-  transition: box-shadow 240ms ease, border-color 240ms ease !important;
+  padding: 20px;
+  margin: 14px 0;
+  transition: box-shadow 240ms ease, border-color 240ms ease;
 }
 
 .terminal-post:hover {
-  border-color: var(--fg-base) !important;
+  border-color: var(--fg-base);
   box-shadow:
     0 0 0 1px rgba(0, 255, 255, 0.45),
     0 0 22px rgba(0, 255, 255, 0.55),
-    inset 0 0 32px rgba(0, 255, 255, 0.12) !important;
+    inset 0 0 32px rgba(0, 255, 255, 0.12);
 }
 
 /* Buttons: razor-thin neon rectangles. Hover swaps polarity. */
@@ -76,18 +74,18 @@ body::after {
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  background: transparent !important;
-  color: var(--accent) !important;
-  border: 1px solid var(--accent) !important;
-  border-radius: 0 !important;
-  padding: 6px 14px !important;
-  font-family: var(--font-mono, monospace) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.12em !important;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  padding: 6px 14px;
+  font-family: var(--font-mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   box-shadow:
     0 0 6px rgba(255, 0, 255, 0.4),
-    inset 0 0 6px rgba(255, 0, 255, 0.2) !important;
-  text-shadow: 0 0 4px var(--accent) !important;
+    inset 0 0 6px rgba(255, 0, 255, 0.2);
+  text-shadow: 0 0 4px var(--accent);
   cursor: pointer;
   transition: all 180ms ease;
 }
@@ -97,41 +95,40 @@ body::after {
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  background: var(--accent) !important;
-  color: var(--bg-base) !important;
-  text-shadow: none !important;
+  background: var(--accent);
+  color: var(--bg-base);
+  text-shadow: none;
   box-shadow:
     0 0 14px var(--accent),
-    0 0 24px var(--accent) !important;
+    0 0 24px var(--accent);
 }
 
 /* Links: solid magenta with cyan glow on hover. */
 .terminal-post .post-body a,
 .panel-content a {
-  color: var(--accent) !important;
-  text-decoration: none !important;
+  color: var(--accent);
+  text-decoration: none;
   border-bottom: 1px dotted var(--accent);
   text-shadow: 0 0 4px var(--accent);
   transition: color 180ms ease, text-shadow 180ms ease;
 }
 
 .terminal-post .post-body a:hover {
-  color: var(--fg-base) !important;
+  color: var(--fg-base);
   border-bottom-color: var(--fg-base);
   text-shadow: 0 0 8px var(--fg-base);
 }
 
 /* Branding wordmark: oversized, kerned out, glowing. */
 .terminal-main-header .institute-title {
-  font-size: 1.6rem !important;
-  letter-spacing: 0.18em !important;
-  font-weight: 700 !important;
+  font-size: 1.6rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
 }
 
-/* Prompt characters get an animated blink — the ">>" before
-   the subtitle in the header. */
+/* Prompt characters get an animated blink (the ">>" before the subtitle in the header). */
 .prompt {
-  color: var(--fg-base) !important;
+  color: var(--fg-base);
   text-shadow: 0 0 6px var(--fg-base);
   animation: neon-prompt-blink 1.1s steps(2, end) infinite;
 }
@@ -144,24 +141,24 @@ body::after {
 .terminal-post h1,
 .terminal-post h2,
 .terminal-post h3 {
-  color: var(--fg-base) !important;
+  color: var(--fg-base);
   text-shadow:
     0 0 3px var(--fg-base),
     -1px 0 0 rgba(255, 0, 255, 0.45),
-    1px 0 0 rgba(0, 255, 255, 0.45) !important;
+    1px 0 0 rgba(0, 255, 255, 0.45);
   letter-spacing: 0.03em;
 }
 
-/* Body text stays readable — no glow, just the palette colors. */
+/* Body text stays readable (no glow, just the palette colors). */
 .terminal-post .post-body {
-  color: var(--fg-muted) !important;
+  color: var(--fg-muted);
   text-shadow: none;
 }
 
 /* Footer signal-strip: small caps, dotted underline, low-glow. */
 .terminal-footer {
-  font-size: 0.78rem !important;
-  letter-spacing: 0.1em !important;
-  text-transform: uppercase !important;
-  padding: 10px 18px !important;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 18px;
 }

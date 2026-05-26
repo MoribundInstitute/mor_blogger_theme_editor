@@ -1,6 +1,6 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink,
-    SeoConfig, SiteConfig, SurfaceFill, TypographyConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, TypographyConfig,
 };
 
 use super::{build_base, gradient, Preset, PresetPalette, STACK_SANS};
@@ -30,18 +30,29 @@ pub fn web_2_0_skeuo() -> Preset {
             text_transform: "none".to_string(),
         },
         SeoConfig {
-            meta_description:
-                "Welcome to the new web. Faster. Glossier. More social.".to_string(),
+            meta_description: "Welcome to the new web. Faster. Glossier. More social.".to_string(),
             meta_keywords: "blog, web2, mashup, ajax, social".to_string(),
             custom_robots: "index, follow".to_string(),
             license_url: String::new(),
             author_name: String::new(),
         },
         vec![
-            MenuLink { label: "Home".to_string(),     url: "/".to_string() },
-            MenuLink { label: "Subscribe".to_string(),url: "/feeds/posts/default".to_string() },
-            MenuLink { label: "Tags".to_string(),     url: "/p/tags.html".to_string() },
-            MenuLink { label: "About".to_string(),    url: "/p/about.html".to_string() },
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Subscribe".to_string(),
+                url: "/feeds/posts/default".to_string(),
+            },
+            MenuLink {
+                label: "Tags".to_string(),
+                url: "/p/tags.html".to_string(),
+            },
+            MenuLink {
+                label: "About".to_string(),
+                url: "/p/about.html".to_string(),
+            },
         ],
         FooterConfig {
             footer_text: "Beta Blog 2.0 — Powered by the Web.".to_string(),

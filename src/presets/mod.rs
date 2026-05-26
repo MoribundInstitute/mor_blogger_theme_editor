@@ -5,13 +5,12 @@
 //! 1. **Tokens**: palette, typography, button shape, menu, footer.
 //!    These map into the existing `{{COLOR_*}}`, `{{FONT_*}}`, etc. placeholders.
 //! 2. **Preset CSS**: optional bundle of additional CSS rules (`preset_css`)
-//!    loaded *after* the token `:root`. This is where presets express their
-//!    structural personality (ridged borders, backdrop blurs, neon glows, etc.).
+//!    loaded *after* the token `:root`.
 //!
 //! To add a new preset:
-//!   - create `src/presets/<name>.rs` with a public `fn <name>() -> Preset`
-//!   - optionally create `src/presets/css/<name>.css` and `include_str!` it
-//!   - register the function in `all_presets()` below
+//!   * create `src/presets/<name>.rs` with a public `fn <name>() -> Preset`
+//!   * optionally create `src/presets/css/<name>.css` and `include_str!` it
+//!   * register the function in `all_presets()` below
 
 use crate::config::{
     AssetConfig, BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig,
@@ -19,17 +18,18 @@ use crate::config::{
     TypographyConfig,
 };
 
-pub mod modern_editorial;
-pub mod minimal;
-pub mod terminal_classic;
-pub mod web_1_0_frames;
+pub mod fluid_interactive;
 pub mod glassmorphism;
+pub mod minimal;
+pub mod modern_editorial;
 pub mod neon_cyberpunk;
 pub mod newspaper;
-pub mod web_2_0_skeuo;
-pub mod fluid_interactive;
+pub mod retro_mmorpg;
+pub mod terminal_classic;
+pub mod web_1_0_frames;
+pub mod web_2_0_skeuo; // Registered as a public module
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
 pub struct PresetPalette {
     pub colors: ColorConfig,
     pub background: BackgroundConfig,
@@ -43,11 +43,6 @@ pub struct Preset {
     pub base_config: ThemeConfig,
     pub dark: PresetPalette,
     pub light: PresetPalette,
-
-    /// Optional bundle of CSS rules that ship with this preset. Loaded
-    /// inside the exported theme's `<b:skin>` block, after the token-driven
-    /// `:root`, so preset rules can override or extend the base style.
-    /// Empty string means "no extra CSS; pure token swap."
     pub preset_css: &'static str,
 }
 
@@ -61,6 +56,7 @@ pub fn all_presets() -> Vec<Preset> {
         neon_cyberpunk::neon_cyberpunk(),
         fluid_interactive::fluid_interactive(),
         terminal_classic::terminal_classic(),
+        retro_mmorpg::retro_mmorpg(), // Now included in the vector
         minimal::minimal(),
     ]
 }
@@ -71,7 +67,7 @@ pub fn all_presets() -> Vec<Preset> {
 
 pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
 pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-#[allow(dead_code)] // reserved for upcoming presets (web_2_0_skeuo, newspaper)
+#[allow(dead_code)] // reserved for upcoming presets
 pub const STACK_SANS: &str =
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
 #[allow(dead_code)] // reserved for newspaper preset
@@ -120,14 +116,19 @@ pub fn build_base(
             border: "#444".to_string(),
         },
         background: BackgroundConfig {
-            mode: BackgroundMode::Solid { color: "#000".to_string() },
+            mode: BackgroundMode::Solid {
+                color: "#000".to_string(),
+            },
         },
         assets: AssetConfig {
             favicon_url: String::new(),
             social_card_image_url: String::new(),
         },
-        plugins: PluginConfig { custom_js: String::new() },
+        plugins: PluginConfig {
+            custom_js: String::new(),
+        },
         static_pages: crate::config::StaticPagesConfig::default(),
+        ads: crate::config::AdsConfig::default(),
         preset_css: String::new(),
     }
 }

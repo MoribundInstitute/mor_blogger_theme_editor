@@ -4,7 +4,7 @@ use dioxus_html::HasFileData;
 use crate::ui::inputs::EditorCard;
 
 #[component]
-pub fn PluginsPanel(custom_js: Signal<String>) -> Element {
+pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
     let has_js = !custom_js().trim().is_empty();
 
     rsx! {
@@ -32,21 +32,16 @@ pub fn PluginsPanel(custom_js: Signal<String>) -> Element {
 
                         for file_name in file_names {
                             if !file_name.to_lowercase().ends_with(".js") {
-                                web_sys::console::warn_1(
-                                    &format!("Skipped non-JavaScript file: {}", file_name).into(),
-                                );
+                                log::warn!("Skipped non-JavaScript file: {}", file_name);
                                 continue;
                             }
 
                             match file_engine.read_file_to_string(&file_name).await {
                                 Some(contents) => {
                                     custom_js.set(contents);
-                                    break;
                                 }
                                 None => {
-                                    web_sys::console::warn_1(
-                                        &format!("Could not read JavaScript file: {}", file_name).into(),
-                                    );
+                                    log::warn!("Failed to read file: {}", file_name);
                                 }
                             }
                         }

@@ -1,0 +1,19 @@
+/* Holding pen for short-lived overrides. Goal: drain this file over time
+   by either deleting rules or moving them to their proper module.
+   Anything in here loads LAST and therefore wins specificity ties. */
+
+/* --------------------------------------------------------------------------
+   Rolled-back drag experiment.
+   The class .editor-floating-drag-handle is no longer rendered by panels.rs.
+   These rules keep it visually neutralized in case any old DOM still mounts
+   it briefly during hot reload. Safe to delete once a full clean build
+   confirms the class is gone everywhere.
+-------------------------------------------------------------------------- */
+.editor-floating-drag-handle {
+  cursor: default;
+  user-select: none;
+}
+
+.editor-layout-floating .editor-floating-drag-handle::after {
+  content: none;
+}

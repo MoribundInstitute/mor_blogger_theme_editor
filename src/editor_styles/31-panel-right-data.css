@@ -1,0 +1,46 @@
+/* Specific styles for the Right Data Profile panel components. */
+
+.ads-panel-blurb {
+  font-size: 0.85rem;
+  color: var(--editor-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.ads-mode-fieldset {
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 16px;
+  background: var(--editor-panel-soft);
+}
+
+.ads-mode-fieldset legend {
+  color: var(--editor-accent-warm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0 8px;
+}
+
+.ads-banner-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 0.85rem;
+  color: var(--editor-text);
+  border: 1px solid transparent;
+}
+
+.ads-banner-radio:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ads-banner-radio.is-selected {
+  background: rgba(88, 166, 255, 0.1);
+  color: var(--editor-accent);
+  border-color: rgba(88, 166, 255, 0.2);
+}

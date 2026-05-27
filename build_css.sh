@@ -3,7 +3,7 @@
 # Run from repo root: ./build_css.sh
 set -euo pipefail
 
-SRC_DIR="src/styles"
+SRC_DIR="src/editor_styles"
 OUT="src/editor_ui.css"
 
 if [ ! -d "$SRC_DIR" ]; then

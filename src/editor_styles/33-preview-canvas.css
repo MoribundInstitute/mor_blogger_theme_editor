@@ -1,0 +1,83 @@
+/* ============================================================
+   33-preview-canvas.css
+   ============================================================ */
+
+/* The deep-space dot grid behind the preview iframe */
+.preview-canvas {
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  min-width: 0;
+  background: var(--editor-bg-deep);
+  background-image: radial-gradient(circle at center, var(--editor-border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) inset;
+}
+
+/* The Viewbar / Ruler */
+.preview-ruler {
+  display: flex; 
+  align-items: center; 
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.6); 
+  border-bottom: 1px solid var(--editor-border);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.preview-ruler-label {
+  color: var(--editor-muted); 
+  font-size: 0.75rem; 
+  width: 140px;
+}
+
+.preview-ruler-line {
+  flex: 1; 
+  height: 1px; 
+  background: var(--editor-border-soft);
+}
+
+/* The Absolute Centering Wrapper */
+.preview-scale-wrapper {
+  position: relative;
+  flex: 1; 
+  width: 100%; 
+  overflow: hidden; 
+}
+
+/* The Iframe Container */
+.preview-device-frame {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  /* Center it, then apply the dynamic JS scale variable */
+  transform: translateX(-50%) scale(var(--preview-scale, 1));
+  transform-origin: top center;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 30px 80px rgba(0, 0, 0, 0.6);
+  background: #ffffff;
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Force the height to stretch to the bottom of the workspace */
+  height: calc(100% - 48px);
+}
+
+.preview-device-frame-fit {
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: none !important;
+  box-shadow: none;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}

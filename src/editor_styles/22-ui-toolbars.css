@@ -1,0 +1,37 @@
+/* Workbench layout toolbars and mini buttons. */
+
+.editor-panel-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.editor-mini-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  min-height: 28px;
+  background: var(--editor-panel-raised);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.editor-mini-button:hover {
+  border-color: var(--editor-muted);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.editor-mini-button-active {
+  border-color: var(--editor-accent);
+  color: var(--editor-accent);
+  background: rgba(88, 166, 255, 0.1);
+}

@@ -1,0 +1,65 @@
+/* Floating panel window bars and absolute positioning. */
+
+.floating-editor-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -20px -20px 16px -20px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--editor-border);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.floating-editor-window-bar:active { cursor: grabbing; }
+
+.floating-editor-grip {
+  color: var(--editor-muted-2);
+  font-size: 1.2rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.floating-editor-title {
+  flex: 1 1 auto;
+  color: var(--editor-text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.floating-editor-window-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Floating behavior (Triggered via data attributes) */
+.editor-main[data-left-layout="floating"] .editor-left-panel,
+.editor-main[data-right-layout="floating"] .editor-right-panel {
+  position: absolute;
+  z-index: 150;
+  width: 440px;
+  max-height: calc(100vh - 120px);
+  height: auto;
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  will-change: top, left;
+}
+
+.editor-main[data-left-layout="floating"] .editor-left-panel {
+  top: var(--floating-left-y, 20px);
+  left: var(--floating-left-x, 20px);
+}
+
+.editor-main[data-right-layout="floating"] .editor-right-panel {
+  top: var(--floating-right-y, 20px);
+  right: var(--floating-right-x, 20px);
+  left: auto;
+}

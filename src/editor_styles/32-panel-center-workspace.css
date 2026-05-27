@@ -1,0 +1,226 @@
+/* Center Workspace (Preview, Export, Restore) */
+
+.export-panel {
+  flex: 1 1 auto;
+  min-width: 0; 
+  min-height: 0;
+  display: flex; 
+  flex-direction: column;
+  padding: 24px; 
+  overflow: hidden;
+}
+
+.export-panel-header, 
+.export-panel-header-split {
+  flex-shrink: 0; 
+  display: flex;
+  justify-content: space-between; 
+  align-items: flex-start;
+  gap: 12px; 
+  margin-bottom: 12px; 
+  flex-wrap: wrap;
+  padding-bottom: 16px; 
+  border-bottom: 1px solid var(--editor-border-soft);
+}
+
+.export-panel-title-block {
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  min-width: 190px;
+}
+
+.export-panel-title {
+  margin: 0; 
+  font-size: 1.15rem; 
+  font-weight: 600; 
+  color: var(--editor-text);
+  letter-spacing: -0.01em;
+}
+
+.preview-device-meta {
+  color: var(--editor-accent); 
+  font-size: 0.75rem; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em;
+}
+
+.export-toolbar {
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap;
+}
+
+.preview-toolbar-group {
+  display: flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--editor-panel-raised);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.preview-width-control {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding-left: 8px; 
+  margin-left: 4px;
+  border-left: 1px solid var(--editor-border);
+}
+
+.preview-width-label {
+  color: var(--editor-muted); 
+  font-size: 0.75rem; 
+  font-weight: 500;
+}
+
+.preview-width-input {
+  width: 72px; 
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.3); 
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border); 
+  border-radius: var(--radius-sm);
+  font-family: inherit; 
+  font-size: 0.8rem; 
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preview-width-input:focus { 
+  border-color: var(--editor-accent); 
+  box-shadow: 0 0 0 3px var(--editor-focus);
+  outline: none; 
+}
+
+.export-action-bar {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  gap: 16px; 
+  margin: 12px 0; 
+  flex-wrap: wrap;
+}
+
+.export-action-group, 
+.export-action-group-final {
+  display: flex; 
+  gap: 8px; 
+  align-items: center;
+}
+
+
+.export-viewport {
+  flex: 1; 
+  min-height: 0; 
+  display: flex; 
+  flex-direction: column; 
+  margin-top: 12px;
+}
+
+.export-xml-textarea {
+  flex: 1; 
+  width: 100%; 
+  resize: none;
+  background: rgba(0, 0, 0, 0.3); 
+  color: var(--editor-muted);
+  border: 1px solid var(--editor-border); 
+  border-radius: var(--radius-md);
+  padding: 16px; 
+  font-family: "Courier New", Courier, monospace; 
+  font-size: 0.8rem;
+  transition: border-color 0.2s ease;
+}
+
+.export-xml-textarea:focus { 
+  outline: none; 
+  border-color: var(--editor-accent); 
+}
+
+.restore-workspace-drawer {
+  margin-top: 16px; 
+  padding: 24px;
+  background: var(--editor-panel);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--editor-accent-warm);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.restore-header {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 12px;
+}
+
+.restore-title {
+  margin: 0; 
+  color: var(--editor-accent-warm); 
+  font-size: 1.05rem; 
+  font-weight: 600;
+}
+
+.restore-copy {
+  margin: 0 0 16px 0; 
+  color: var(--editor-muted); 
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.editor-row-stretch {
+  display: flex; 
+  gap: 12px; 
+  align-items: stretch;
+}
+
+.restore-textarea {
+  flex: 1; 
+  height: 80px; 
+  resize: none; 
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.restore-button {
+  background: var(--editor-accent-warm); 
+  color: var(--editor-bg-deep); 
+  font-weight: 600; 
+  border: none;
+}
+
+.restore-button:hover { 
+  background: #e2b392; 
+}
+
+.restore-status { 
+  margin-top: 12px; 
+  color: var(--editor-accent-warm); 
+  font-size: 0.85rem; 
+}
+
+.export-error-banner {
+  display: flex; 
+  gap: 12px; 
+  align-items: center; 
+  padding: 12px 16px; 
+  margin: 12px 0;
+  background: rgba(218, 54, 51, 0.1); 
+  border: 1px solid rgba(218, 54, 51, 0.3);
+  border-radius: var(--radius-md); 
+  color: #ff7b72; 
+  font-size: 0.9rem;
+}
+
+.export-status {
+  padding: 10px 16px; 
+  margin: 12px 0; 
+  background: rgba(35, 134, 54, 0.1);
+  border: 1px solid rgba(35, 134, 54, 0.3); 
+  border-radius: var(--radius-md);
+  color: #3fb950; 
+  font-size: 0.85rem;
+}

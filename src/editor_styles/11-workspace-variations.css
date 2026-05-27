@@ -1,0 +1,81 @@
+/* Independent panel layout variations utilizing HTML5 data-* attributes. */
+
+/* Base Panel Styles */
+.editor-left-panel,
+.editor-right-panel {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  background: var(--editor-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.editor-left-panel {
+  width: var(--left-panel-width, 360px);
+  flex: 0 0 var(--left-panel-width, 360px);
+  border-right: 1px solid var(--editor-border);
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), flex-basis 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-right-panel {
+  width: var(--right-panel-width, 360px);
+  flex: 0 0 var(--right-panel-width, 360px);
+  border-left: 1px solid var(--editor-border);
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), flex-basis 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Left Widths (Triggered via data-left-layout) */
+.editor-main[data-left-layout="split"] { --left-panel-width: 360px; }
+.editor-main[data-left-layout="wide"]  { --left-panel-width: 520px; }
+
+/* Right Widths (Triggered via data-right-layout) */
+.editor-main[data-right-layout="split"] { --right-panel-width: 360px; }
+.editor-main[data-right-layout="wide"]  { --right-panel-width: 520px; }
+
+/* Hidden panels */
+.editor-main[data-left-layout="hidden"] .editor-left-panel,
+.editor-main[data-right-layout="hidden"] .editor-right-panel {
+  display: none;
+}
+
+/* Collapsed Strips */
+.editor-left-panel-collapsed,
+.editor-right-panel-collapsed {
+  width: 40px;
+  flex: 0 0 40px;
+  min-height: 0;
+  height: 100%;
+  background: var(--editor-bg-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+}
+
+.editor-left-panel-collapsed { border-right: 1px solid var(--editor-border); }
+.editor-right-panel-collapsed { border-left: 1px solid var(--editor-border); }
+
+.editor-collapse-button {
+  background: transparent;
+  color: var(--editor-muted);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  min-height: 100px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.editor-collapse-button:hover {
+  color: var(--editor-text);
+  background: rgba(255, 255, 255, 0.08);
+}

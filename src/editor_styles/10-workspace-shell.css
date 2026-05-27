@@ -1,0 +1,66 @@
+/* Top-level shell, main workspace, footer, and the heading row. */
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: var(--font-sans);
+  background: radial-gradient(circle at top left, #162032, var(--editor-bg) 60%);
+  color: var(--editor-text);
+  overflow: hidden;
+}
+
+.editor-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  --left-panel-width: 360px;
+  --right-panel-width: 360px;
+  position: relative;
+}
+
+.editor-footer {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: var(--editor-bg-deep);
+  border-top: 1px solid var(--editor-border);
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+
+.editor-main-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(5, 7, 9, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--editor-border);
+  z-index: 200;
+}
+
+.editor-brand {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--editor-text);
+}
+
+.editor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--editor-border-soft);
+}
+
+.editor-panel-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--editor-accent-warm);
+}

@@ -1,0 +1,119 @@
+/* Reusable input building blocks (Cards, Forms, Buttons) */
+
+.editor-card {
+  padding: 16px;
+  margin: 0 0 16px 0;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md);
+}
+
+.editor-card-title {
+  margin: 0 0 14px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--editor-border-soft);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--editor-text);
+}
+
+.editor-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.editor-field-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--editor-muted);
+}
+
+.editor-mini-label {
+  font-size: 0.75rem;
+  color: var(--editor-muted-2);
+}
+
+.editor-field,
+.editor-select,
+.editor-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.editor-field:focus,
+.editor-select:focus,
+.editor-textarea:focus {
+  border-color: var(--editor-accent);
+  box-shadow: 0 0 0 3px var(--editor-focus);
+  outline: none;
+}
+
+.editor-color-field {
+  padding: 2px 4px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.editor-button {
+  padding: 8px 16px;
+  background: var(--editor-panel-raised);
+  color: var(--editor-text);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.editor-button:hover {
+  border-color: var(--editor-muted);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.editor-button-active {
+  border-color: var(--editor-accent);
+  color: var(--editor-accent);
+  background: rgba(88, 166, 255, 0.1);
+}
+
+.editor-button-danger {
+  border-color: rgba(218, 54, 51, 0.4);
+  color: #ff7b72;
+}
+
+.editor-button-danger:hover {
+  background: rgba(218, 54, 51, 0.15);
+  border-color: var(--editor-danger);
+}
+
+.editor-note {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(88, 166, 255, 0.05);
+  border: 1px dashed rgba(88, 166, 255, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.editor-note-title {
+  margin: 0 0 6px 0;
+  color: var(--editor-accent-warm);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.editor-note-body {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--editor-muted);
+  line-height: 1.5;
+}

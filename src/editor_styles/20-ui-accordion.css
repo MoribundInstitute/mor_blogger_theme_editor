@@ -1,0 +1,62 @@
+/* Modern Collapsible Accordions */
+
+.editor-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.editor-accordion-section {
+  border: 1px solid var(--editor-border);
+  background: var(--editor-panel-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.editor-accordion-section-open {
+  background: rgba(255, 255, 255, 0.015);
+  border-color: rgba(88, 166, 255, 0.4);
+}
+
+.editor-accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--editor-panel-raised);
+  color: var(--editor-text);
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.editor-accordion-trigger:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.editor-accordion-section-open .editor-accordion-trigger {
+  border-bottom: 1px solid var(--editor-border-soft);
+  color: var(--editor-accent-warm);
+}
+
+.editor-accordion-title {
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.editor-accordion-icon {
+  color: var(--editor-muted);
+  font-size: 1.2rem;
+  font-weight: 300;
+}
+
+.editor-accordion-body {
+  padding: 14px;
+}

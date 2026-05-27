@@ -1,0 +1,70 @@
+/* Theme Presets rail (Refactored to BEM namespace standard). */
+
+.editor-presets {
+  margin-bottom: 16px;
+}
+
+.editor-presets__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.editor-presets__copy {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  color: var(--editor-muted);
+  line-height: 1.5;
+}
+
+.editor-presets__rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 4px 12px 4px;
+}
+
+.editor-presets__card {
+  flex: 0 0 200px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  overflow: hidden;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.editor-presets__card:hover {
+  border-color: var(--editor-muted);
+  transform: translateY(-2px);
+}
+
+.editor-presets__card--active {
+  border-color: var(--editor-accent);
+  box-shadow: 0 0 0 3px var(--editor-focus);
+}
+
+.editor-presets__footer {
+  padding: 10px 14px;
+  background: var(--editor-panel-raised);
+  border-top: 1px solid var(--editor-border-soft);
+}
+
+.editor-presets__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--editor-text);
+  margin-bottom: 4px;
+}
+
+.editor-presets__desc {
+  font-size: 0.75rem;
+  color: var(--editor-muted);
+  white-space: normal;
+  line-height: 1.4;
+}

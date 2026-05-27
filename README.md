@@ -5,7 +5,7 @@ in Rust using Dioxus.\
 Design, customize, and export complete Blogger themes without ever
 touching raw XML.
 
-![Editor Preview](./docs/screenshots/editor_preview.png)
+![Editor Preview](docs/screenshots/editor_preview.png)
 ------------------------------------------------------------------------
 
 ## ✨ Overview

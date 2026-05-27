@@ -1,82 +1,178 @@
-# Blogger Theme Architect (`mor_blogger_theme_editor`)
+# Moribund Blogger Theme Editor
 
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
-[![Dioxus](https://img.shields.io/badge/UI-Dioxus-blue.svg)](https://dioxuslabs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A low-level **Blogger XML generator** with a modern, reactive GUI built
+in Rust using Dioxus.\
+Design, customize, and export complete Blogger themes without ever
+touching raw XML.
 
-**Blogger Theme Architect** is a reactive, Rust-based visual editor designed for modern, responsive Blogger template development. It allows you to build, customize, and export fully functional Blogger XML themes seamlessly without touching raw XML.
+------------------------------------------------------------------------
 
-## ✨ Key Features
+## ✨ Overview
 
-- **Live Visual Editor:** A fast, reactive UI built with Dioxus. Tweak colors, typography, and layouts, and watch the preview update instantly via an isolated iframe.
+Moribund Blogger Theme Editor replaces the traditional monolithic
+`template.xml` workflow with a modular system.\
+Instead of editing a single massive file, you work with structured
+components that compile into a final Blogger-ready theme.
 
-- **State Rehydration (Magic Import/Export):** Never lose your work. The editor serializes your configuration state into base64-encoded TOML and safely hides it inside the exported Blogger XML. To restore a previous session, simply paste your exported XML back into the editor.
+The result: faster iteration, safer edits, and a dramatically improved
+developer experience.
 
-- **Flexible Workspaces:** Customize your UI with hotkey-driven layouts:
-  - `Alt + 1`: Split View (Standard)
-  - `Alt + 2`: Wide Editor
-  - `Alt + 3`: Floating, draggable editor window
-  - `Alt + 4`: Preview Takeover
+------------------------------------------------------------------------
 
-- **Deep Customization:**
-  - **Typography & Colors:** Fine-tune font stacks, scaling ratios, line heights, and extensive color palettes.
-  - **SEO & Metadata:** Easily configure meta descriptions, custom robots tags, and Open Graph social cards.
-  - **Menu & Navigation:** Manage header menus, drop-downs, and catalog structures.
+## 🚀 Core Features
 
-- **Plugin Injection:** A dedicated drag-and-drop zone to inject custom JavaScript files directly into your theme before export.
+### 🧩 Modular XML Generation
 
-- **Built-in Diagnostics:** Real-time integrity checks ensure your template structure remains valid and ready for Blogger.
+-   Build themes from discrete template parts:
+    -   `meta.xml`
+    -   `css.xml`
+    -   `header.xml`
+    -   `sidebars.xml`
+-   Automatically composes a complete Blogger template
+-   Injects:
+    -   SEO metadata
+    -   Typography systems
+    -   Background systems
+    -   Widget sockets
 
-## 🚀 Getting Started
+------------------------------------------------------------------------
+
+### 🎨 GTK Theme Integration
+
+-   Import themes from:
+    -   WhiteSur
+    -   Adwaita
+    -   Nord
+-   Parses:
+    -   `gtk-4.0`
+    -   `gtk-3.0`
+    -   `gnome-shell`
+-   Converts SVG assets into CSS data URIs
+-   Maps GTK variables directly into your Blogger theme
+
+------------------------------------------------------------------------
+
+### 🖥️ Fluid Workspace UI
+
+-   Built with **Dioxus (Rust)**
+-   Features:
+    -   Glassmorphic panels
+    -   Collapsible sections
+    -   Floating draggable windows
+-   Includes:
+    -   Deep-space grid preview canvas
+    -   Responsive viewport scaling
+
+------------------------------------------------------------------------
+
+### ⚠️ Real-Time Diagnostics
+
+-   Live validation of template structure
+-   Detects:
+    -   Missing bindings
+    -   Invalid panel toggles
+    -   Structural inconsistencies
+-   Prevents broken exports
+
+------------------------------------------------------------------------
+
+### 🎮 Thematic Presets
+
+-   Includes built-in presets like:
+    -   **Retro MMORPG**
+-   Features:
+    -   Warm brown panels
+    -   Ember-red accents
+    -   Gold typography with heavy shadows
+
+------------------------------------------------------------------------
+
+## 🧠 Technical Architecture
+
+### Frontend Engine
+
+-   Rust + Dioxus
+-   Component-driven UI system
+-   Custom drag-and-drop window manager
+
+### Rendering Engine
+
+-   Merges `ThemeConfig` into template skeleton
+-   Produces:
+    -   Live preview HTML
+    -   Final Blogger XML
+
+### State System
+
+-   Signal-based reactive state
+-   Serialized into TOML
+-   Embedded into exported XML for restoration
+
+### CSS System
+
+-   Dark-first design
+-   Custom scrollbars
+-   BEM-style structure
+
+------------------------------------------------------------------------
+
+## 🛠️ Getting Started
 
 ### Prerequisites
 
-You will need the Rust toolchain and the Dioxus CLI installed on your machine.
+-   Rust toolchain → https://rustup.rs
+-   Dioxus CLI:
 
-1. **Install Rust:** [rustup.rs](https://rustup.rs/)
-2. **Install Dioxus CLI:**
-
-```bash
+``` bash
 cargo install dioxus-cli
 ```
 
-### Running the Editor Locally
+### Run Locally
 
-Clone the repository and run the Dioxus development server:
-
-```bash
+``` bash
 git clone https://github.com/MoribundInstitute/mor_blogger_theme_editor.git
 cd mor_blogger_theme_editor
-
-# Serve with hot-reloading enabled
 dx serve --hot-reload
 ```
 
-The application will launch in your default web browser, usually at `http://localhost:8080`.
+------------------------------------------------------------------------
 
-## 🏗️ Project Architecture
+## 🔄 Workflow
 
-- `src/app.rs`: The Dioxus application root. Handles global state, layout hotkeys, and rendering the core UI shell.
+1.  **Design**\
+    Configure layout, colors, typography, and metadata
 
-- `src/render.rs`: The rendering engine. It takes the active `ThemeConfig` and merges it into the `template.xml` skeleton to generate both the live preview HTML and the final exported Blogger XML.
+2.  **Preview**\
+    Test across desktop, tablet, and mobile
 
-- `src/rehydration.rs`: Handles the encoding and decoding of the editor's TOML state, safely injecting it into HTML comments within the exported theme.
+3.  **Export**\
+    Copy generated XML into Blogger
 
-- `src/config.rs` and `src/defaults.rs`: Define the data structures for the theme and provide the standard "Modern Editorial" starter configuration.
+4.  **Restore**\
+    Paste exported XML back into the editor to recover your workspace
 
-- `src/ui/`: Contains the modular Dioxus components, including panels, inputs, and presets, that make up the visual editor.
+------------------------------------------------------------------------
 
-## 🛠️ Usage Workflow
+## 📁 Project Structure
 
-1. **Design:** Use the left-hand panel to adjust your site identity, palette, and typography.
+    src/
+    ├── app.rs              # Application root
+    ├── render.rs           # Theme rendering engine
+    ├── rehydration.rs      # State encoding/decoding
+    ├── config.rs           # Theme data structures
+    ├── defaults.rs         # Default theme presets
+    ├── gtk_theme.rs        # GTK parser
+    └── ui/                 # Editor components
 
-2. **Preview:** Test different device viewports, including desktop, tablet, and mobile, in the right-hand canvas.
+------------------------------------------------------------------------
 
-3. **Export:** Navigate to the Export panel, copy the generated XML, and paste it directly into your Blogger dashboard under **Theme > Edit HTML**.
+## 👤 Author
 
-4. **Restore:** To make changes later, paste that same XML back into the editor's "Restore Workspace" drawer to instantly recover your exact settings.
+Developed by **Murdoch**\
+Moribund Institute
+
+------------------------------------------------------------------------
 
 ## 📄 License
 
-This project is open-sourced under the MIT License.
-
+MIT License

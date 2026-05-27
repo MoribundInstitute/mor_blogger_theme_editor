@@ -4,6 +4,7 @@ A low-level **Blogger XML generator** with a modern, reactive GUI built
 in Rust using Dioxus.\
 Design, customize, and export complete Blogger themes without ever
 touching raw XML.
+
 ![Editor Preview](./docs/screenshots/editor_preview.png)
 ------------------------------------------------------------------------
 

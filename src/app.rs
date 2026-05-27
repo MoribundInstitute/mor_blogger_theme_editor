@@ -11,24 +11,22 @@ use crate::ui::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
 use crate::ui::panel_center_workspace::CenterWorkspacePanel;
 use crate::ui::panel_left_visuals::LeftVisualsPanel;
 use crate::ui::panel_right_data::RightDataPanel;
-use crate::ui::presets_panel::ThemeSignals;
+use crate::ui::presets_panel::{PresetFloatingWindow, ThemeSignals};
 
 const EDITOR_UI_CSS: &str = include_str!("editor_ui.css");
 
-// EXTRACTED TO CONST TO PREVENT MACRO PARSING CRASHES
 const DRAG_JS: &str = r#"
 document.addEventListener('pointerdown', (e) => {
     const bar = e.target.closest('.floating-editor-window-bar');
     if (!bar) return;
-    
-    // Don't drag if clicking a button inside the bar
+
     if (e.target.closest('button, input, textarea, select, a, label')) return;
 
     const panel = bar.closest('.editor-left-panel, .editor-right-panel');
     if (!panel) return;
 
     e.preventDefault();
-    
+
     const isLeft = panel.classList.contains('editor-left-panel');
     const varX = isLeft ? '--floating-left-x' : '--floating-right-x';
     const varY = isLeft ? '--floating-left-y' : '--floating-right-y';
@@ -37,7 +35,6 @@ document.addEventListener('pointerdown', (e) => {
     const startY = e.clientY;
     const rect = panel.getBoundingClientRect();
 
-    // Calculate starting positions based on CSS orientation
     let startPosX = isLeft ? rect.left : (window.innerWidth - rect.right);
     let startPosY = rect.top;
 
@@ -47,11 +44,9 @@ document.addEventListener('pointerdown', (e) => {
         const dx = moveEvt.clientX - startX;
         const dy = moveEvt.clientY - startY;
 
-        // Right panel moves opposite on the X axis because it's anchored right
         let newX = isLeft ? (startPosX + dx) : (startPosX - dx);
         let newY = startPosY + dy;
 
-        // Bounds checking so it can't be dragged off screen
         newY = Math.max(0, Math.min(newY, window.innerHeight - 60));
         newX = Math.max(0, Math.min(newX, window.innerWidth - 100));
 
@@ -124,13 +119,14 @@ pub fn App() -> Element {
     let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
     let static_pages = use_signal(|| defaults.static_pages.clone());
     let ads = use_signal(|| defaults.ads.clone());
+    let icons = use_signal(|| defaults.icons.clone());
     let preset_css = use_signal(String::new);
 
     let show_preview = use_signal(|| true);
-    let active_preset = use_signal(|| None::<&'static str>);
+    let mut active_preset = use_signal(|| None::<&'static str>);
     let is_dark_mode = use_signal(|| true);
+    let show_undocked_presets = use_signal(|| false);
 
-    // Independent left/right panel layout states.
     let mut left_layout = use_signal(|| PanelLayout::Split);
     let mut right_layout = use_signal(|| PanelLayout::Split);
 
@@ -184,74 +180,87 @@ pub fn App() -> Element {
         preset_css,
         static_pages,
         ads,
+        icons,
     };
 
-    let current_config = use_memo(move || {
-        ThemeConfig {
-            site: crate::config::SiteConfig {
-                site_title: site_title(),
-                site_subtitle: site_subtitle(),
-                header_logo_url: header_logo_url(),
-                home_url: home_url(),
+    let current_config = use_memo(move || ThemeConfig {
+        site: crate::config::SiteConfig {
+            site_title: site_title(),
+            site_subtitle: site_subtitle(),
+            header_logo_url: header_logo_url(),
+            home_url: home_url(),
+        },
+        colors: crate::config::ColorConfig {
+            bg_base: bg_base(),
+            bg_panel: bg_panel(),
+            bg_elevated: bg_elevated(),
+            fg_base: fg_base(),
+            fg_muted: fg_muted(),
+            accent: accent(),
+            border: border(),
+        },
+        icons: icons(),
+        buttons: crate::config::ButtonConfig {
+            radius: btn_radius(),
+            border_width: btn_border_width(),
+            text_transform: btn_text_transform(),
+        },
+        typography: crate::config::TypographyConfig {
+            body_font_stack: body_font_stack(),
+            heading_font_stack: heading_font_stack(),
+            mono_font_stack: mono_font_stack(),
+            base_size: base_size(),
+            scale_ratio: scale_ratio(),
+            line_height: line_height(),
+            heading_weight: heading_weight(),
+        },
+        background: background(),
+        assets: crate::config::AssetConfig {
+            favicon_url: favicon_url(),
+            social_card_image_url: social_card_image_url(),
+        },
+        seo: crate::config::SeoConfig {
+            meta_description: meta_description(),
+            meta_keywords: meta_keywords(),
+            custom_robots: custom_robots(),
+            license_url: license_url(),
+            author_name: author_name(),
+        },
+        menu_links: vec![
+            MenuLink {
+                label: menu_1_label(),
+                url: menu_1_url(),
             },
-            colors: crate::config::ColorConfig {
-                bg_base: bg_base(),
-                bg_panel: bg_panel(),
-                bg_elevated: bg_elevated(),
-                fg_base: fg_base(),
-                fg_muted: fg_muted(),
-                accent: accent(),
-                border: border(),
+            MenuLink {
+                label: menu_2_label(),
+                url: menu_2_url(),
             },
-            buttons: crate::config::ButtonConfig {
-                radius: btn_radius(),
-                border_width: btn_border_width(),
-                text_transform: btn_text_transform(),
+            MenuLink {
+                label: menu_3_label(),
+                url: menu_3_url(),
             },
-            typography: crate::config::TypographyConfig {
-                body_font_stack: body_font_stack(),
-                heading_font_stack: heading_font_stack(),
-                mono_font_stack: mono_font_stack(),
-                base_size: base_size(),
-                scale_ratio: scale_ratio(),
-                line_height: line_height(),
-                heading_weight: heading_weight(),
+            MenuLink {
+                label: menu_4_label(),
+                url: menu_4_url(),
             },
-            background: background(),
-            assets: crate::config::AssetConfig {
-                favicon_url: favicon_url(),
-                social_card_image_url: social_card_image_url(),
-            },
-            seo: crate::config::SeoConfig {
-                meta_description: meta_description(),
-                meta_keywords: meta_keywords(),
-                custom_robots: custom_robots(),
-                license_url: license_url(),
-                author_name: author_name(),
-            },
-            menu_links: vec![
-                MenuLink { label: menu_1_label(), url: menu_1_url() },
-                MenuLink { label: menu_2_label(), url: menu_2_url() },
-                MenuLink { label: menu_3_label(), url: menu_3_url() },
-                MenuLink { label: menu_4_label(), url: menu_4_url() },
-            ],
-            footer: crate::config::FooterConfig {
-                footer_text: footer_text(),
-                footer_license_label: footer_license_label(),
-                footer_license_url: footer_license_url(),
-            },
-            plugins: crate::config::PluginConfig {
-                custom_js: custom_js(),
-            },
-            static_pages: static_pages(),
-            ads: ads(),
-            preset_css: preset_css(),
-        }
+        ],
+        footer: crate::config::FooterConfig {
+            footer_text: footer_text(),
+            footer_license_label: footer_license_label(),
+            footer_license_url: footer_license_url(),
+        },
+        plugins: crate::config::PluginConfig {
+            custom_js: custom_js(),
+        },
+        static_pages: static_pages(),
+        ads: ads(),
+        preset_css: preset_css(),
     });
 
     let generated_xml = use_memo(move || render_theme(&current_config()));
-    let preview_html = use_memo(move || render_preview_html(&current_config(), preview_template_mode()));
-    
+    let preview_html =
+        use_memo(move || render_preview_html(&current_config(), preview_template_mode()));
+
     let mut diag = use_signal(|| check_integrity(&generated_xml()));
     use_effect(move || {
         diag.set(check_integrity(&generated_xml()));
@@ -267,7 +276,6 @@ pub fn App() -> Element {
     let active_left_tab = use_signal(|| "Presets");
     let active_right_tab = use_signal(|| "Site");
 
-    // Global keyboard shortcuts for independent panel layouts.
     use_effect(move || {
         let mut eval = eval(
             r#"
@@ -327,6 +335,7 @@ pub fn App() -> Element {
 
     rsx! {
         style { "{EDITOR_UI_CSS}" }
+
         div { class: "editor-shell",
             header { class: "editor-main-header",
                 h1 { class: "editor-brand", "Moribund Institute Theme Architect" }
@@ -336,13 +345,21 @@ pub fn App() -> Element {
                 class: "editor-main",
                 "data-left-layout": layout_str(left_layout()),
                 "data-right-layout": layout_str(right_layout()),
+
                 LeftVisualsPanel {
                     active_tab: active_left_tab,
                     layout: left_layout,
                     active_preset,
                     signals,
                     show_preview,
+                    current_config: current_config(),
+                    on_apply_theme: move |new_config: ThemeConfig| {
+                        signals.apply_config(&new_config);
+                        active_preset.set(None);
+                    },
+                    show_undocked_presets,
                 }
+
                 CenterWorkspacePanel {
                     preview_viewport,
                     preview_width,
@@ -364,10 +381,18 @@ pub fn App() -> Element {
                         if let Ok(val) = serde_json::from_str::<serde_json::Value>(&json_text) {
                             let apply_str = |val: &serde_json::Value, path: &[&str], sig: &mut Signal<String>| {
                                 let mut current = val;
+
                                 for p in path {
-                                    if let Some(next) = current.get(p) { current = next; } else { return; }
+                                    if let Some(next) = current.get(p) {
+                                        current = next;
+                                    } else {
+                                        return;
+                                    }
                                 }
-                                if let Some(s_val) = current.as_str() { sig.set(s_val.to_string()); }
+
+                                if let Some(s_val) = current.as_str() {
+                                    sig.set(s_val.to_string());
+                                }
                             };
 
                             let mut s = signals;
@@ -381,10 +406,25 @@ pub fn App() -> Element {
                             apply_str(&val, &["assets", "social_card_image_url"], &mut s.social_card_image_url);
 
                             if let Some(menus) = val.get("menu_links").and_then(|m| m.as_array()) {
-                                if let Some(m) = menus.get(0) { apply_str(m, &["label"], &mut s.menu_1_label); apply_str(m, &["url"], &mut s.menu_1_url); }
-                                if let Some(m) = menus.get(1) { apply_str(m, &["label"], &mut s.menu_2_label); apply_str(m, &["url"], &mut s.menu_2_url); }
-                                if let Some(m) = menus.get(2) { apply_str(m, &["label"], &mut s.menu_3_label); apply_str(m, &["url"], &mut s.menu_3_url); }
-                                if let Some(m) = menus.get(3) { apply_str(m, &["label"], &mut s.menu_4_label); apply_str(m, &["url"], &mut s.menu_4_url); }
+                                if let Some(m) = menus.get(0) {
+                                    apply_str(m, &["label"], &mut s.menu_1_label);
+                                    apply_str(m, &["url"], &mut s.menu_1_url);
+                                }
+
+                                if let Some(m) = menus.get(1) {
+                                    apply_str(m, &["label"], &mut s.menu_2_label);
+                                    apply_str(m, &["url"], &mut s.menu_2_url);
+                                }
+
+                                if let Some(m) = menus.get(2) {
+                                    apply_str(m, &["label"], &mut s.menu_3_label);
+                                    apply_str(m, &["url"], &mut s.menu_3_url);
+                                }
+
+                                if let Some(m) = menus.get(3) {
+                                    apply_str(m, &["label"], &mut s.menu_4_label);
+                                    apply_str(m, &["url"], &mut s.menu_4_url);
+                                }
                             }
 
                             apply_str(&val, &["seo", "meta_description"], &mut s.meta_description);
@@ -407,14 +447,29 @@ pub fn App() -> Element {
                         }
                     },
                 }
+
                 RightDataPanel {
                     active_tab: active_right_tab,
                     layout: right_layout,
                     signals,
+                    current_config: current_config(),
+                    on_apply_theme: move |new_config: ThemeConfig| {
+                        signals.apply_config(&new_config);
+                    },
                 }
             }
-            
-            footer { class: "editor-footer", DiagnosticsPanel { result: diag } }
+
+            if show_undocked_presets() {
+                PresetFloatingWindow {
+                    signals,
+                    active_preset,
+                    show_undocked_presets,
+                }
+            }
+
+            footer { class: "editor-footer",
+                DiagnosticsPanel { result: diag }
+            }
 
             script {
                 dangerous_inner_html: "{DRAG_JS}"
@@ -430,6 +485,7 @@ fn menu_label(config: &ThemeConfig, index: usize) -> String {
         .map(|l| l.label.clone())
         .unwrap_or_default()
 }
+
 fn menu_url(config: &ThemeConfig, index: usize) -> String {
     config
         .menu_links

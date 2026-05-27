@@ -1,17 +1,21 @@
+pub mod accordion;
+pub mod panel_left_visuals;
+pub mod panel_right_data;
+pub mod panel_center_workspace;
+
 pub mod ads_panel;
 pub mod assets_panel;
 pub mod background_panel;
 pub mod buttons_panel;
 pub mod colors_panel;
 pub mod diagnostics_panel;
-pub mod export_panel;
 pub mod inputs;
 pub mod layout;
 pub mod menu_panel;
-pub mod panels;
 pub mod plugins_panel;
 pub mod presets_panel;
 pub mod seo_panel;
 pub mod site_panel;
 pub mod static_pages_panel;
 pub mod typography_panel;
+pub mod preview_canvas;

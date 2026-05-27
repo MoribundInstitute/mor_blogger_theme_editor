@@ -7,13 +7,68 @@ use crate::defaults::default_theme_config;
 use crate::diagnostics::check_integrity;
 use crate::render::{render_preview_html, render_theme};
 use crate::ui::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::layout::{
-    set_workbench_layout, PreviewTemplateMode, PreviewViewport, WorkbenchLayout,
-};
-use crate::ui::panels::{LeftPanel, RightPanel};
+use crate::ui::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
+use crate::ui::panel_center_workspace::CenterWorkspacePanel;
+use crate::ui::panel_left_visuals::LeftVisualsPanel;
+use crate::ui::panel_right_data::RightDataPanel;
 use crate::ui::presets_panel::ThemeSignals;
 
 const EDITOR_UI_CSS: &str = include_str!("editor_ui.css");
+
+// EXTRACTED TO CONST TO PREVENT MACRO PARSING CRASHES
+const DRAG_JS: &str = r#"
+document.addEventListener('pointerdown', (e) => {
+    const bar = e.target.closest('.floating-editor-window-bar');
+    if (!bar) return;
+    
+    // Don't drag if clicking a button inside the bar
+    if (e.target.closest('button, input, textarea, select, a, label')) return;
+
+    const panel = bar.closest('.editor-left-panel, .editor-right-panel');
+    if (!panel) return;
+
+    e.preventDefault();
+    
+    const isLeft = panel.classList.contains('editor-left-panel');
+    const varX = isLeft ? '--floating-left-x' : '--floating-right-x';
+    const varY = isLeft ? '--floating-left-y' : '--floating-right-y';
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+
+    // Calculate starting positions based on CSS orientation
+    let startPosX = isLeft ? rect.left : (window.innerWidth - rect.right);
+    let startPosY = rect.top;
+
+    document.body.classList.add('editor-floating-dragging');
+
+    const onMove = (moveEvt) => {
+        const dx = moveEvt.clientX - startX;
+        const dy = moveEvt.clientY - startY;
+
+        // Right panel moves opposite on the X axis because it's anchored right
+        let newX = isLeft ? (startPosX + dx) : (startPosX - dx);
+        let newY = startPosY + dy;
+
+        // Bounds checking so it can't be dragged off screen
+        newY = Math.max(0, Math.min(newY, window.innerHeight - 60));
+        newX = Math.max(0, Math.min(newX, window.innerWidth - 100));
+
+        document.documentElement.style.setProperty(varX, newX + 'px');
+        document.documentElement.style.setProperty(varY, newY + 'px');
+    };
+
+    const onUp = () => {
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.body.classList.remove('editor-floating-dragging');
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+});
+"#;
 
 pub fn App() -> Element {
     let defaults = default_theme_config();
@@ -71,11 +126,13 @@ pub fn App() -> Element {
     let ads = use_signal(|| defaults.ads.clone());
     let preset_css = use_signal(String::new);
 
-    let mut show_preview = use_signal(|| true);
+    let show_preview = use_signal(|| true);
     let active_preset = use_signal(|| None::<&'static str>);
-    let mut left_panel_collapsed = use_signal(|| false);
     let is_dark_mode = use_signal(|| true);
-    let mut workbench_layout = use_signal(|| WorkbenchLayout::FloatingEditor);
+
+    // Independent left/right panel layout states.
+    let mut left_layout = use_signal(|| PanelLayout::Split);
+    let mut right_layout = use_signal(|| PanelLayout::Split);
 
     let preview_viewport = use_signal(|| PreviewViewport::Desktop);
     let preview_width = use_signal(|| 1200u32);
@@ -124,181 +181,108 @@ pub fn App() -> Element {
         footer_license_label,
         footer_license_url,
         custom_js,
+        preset_css,
         static_pages,
         ads,
-        preset_css,
     };
 
-    let current_config = ThemeConfig {
-        site: crate::config::SiteConfig {
-            site_title: site_title(),
-            site_subtitle: site_subtitle(),
-            header_logo_url: header_logo_url(),
-            home_url: home_url(),
-        },
-        colors: crate::config::ColorConfig {
-            bg_base: bg_base(),
-            bg_panel: bg_panel(),
-            bg_elevated: bg_elevated(),
-            fg_base: fg_base(),
-            fg_muted: fg_muted(),
-            accent: accent(),
-            border: border(),
-        },
-        buttons: crate::config::ButtonConfig {
-            radius: btn_radius(),
-            border_width: btn_border_width(),
-            text_transform: btn_text_transform(),
-        },
-        typography: crate::config::TypographyConfig {
-            body_font_stack: body_font_stack(),
-            heading_font_stack: heading_font_stack(),
-            mono_font_stack: mono_font_stack(),
-            base_size: base_size(),
-            scale_ratio: scale_ratio(),
-            line_height: line_height(),
-            heading_weight: heading_weight(),
-        },
-        background: background(),
-        assets: crate::config::AssetConfig {
-            favicon_url: favicon_url(),
-            social_card_image_url: social_card_image_url(),
-        },
-        seo: crate::config::SeoConfig {
-            meta_description: meta_description(),
-            meta_keywords: meta_keywords(),
-            custom_robots: custom_robots(),
-            license_url: license_url(),
-            author_name: author_name(),
-        },
-        menu_links: vec![
-            MenuLink {
-                label: menu_1_label(),
-                url: menu_1_url(),
+    let current_config = use_memo(move || {
+        ThemeConfig {
+            site: crate::config::SiteConfig {
+                site_title: site_title(),
+                site_subtitle: site_subtitle(),
+                header_logo_url: header_logo_url(),
+                home_url: home_url(),
             },
-            MenuLink {
-                label: menu_2_label(),
-                url: menu_2_url(),
+            colors: crate::config::ColorConfig {
+                bg_base: bg_base(),
+                bg_panel: bg_panel(),
+                bg_elevated: bg_elevated(),
+                fg_base: fg_base(),
+                fg_muted: fg_muted(),
+                accent: accent(),
+                border: border(),
             },
-            MenuLink {
-                label: menu_3_label(),
-                url: menu_3_url(),
+            buttons: crate::config::ButtonConfig {
+                radius: btn_radius(),
+                border_width: btn_border_width(),
+                text_transform: btn_text_transform(),
             },
-            MenuLink {
-                label: menu_4_label(),
-                url: menu_4_url(),
+            typography: crate::config::TypographyConfig {
+                body_font_stack: body_font_stack(),
+                heading_font_stack: heading_font_stack(),
+                mono_font_stack: mono_font_stack(),
+                base_size: base_size(),
+                scale_ratio: scale_ratio(),
+                line_height: line_height(),
+                heading_weight: heading_weight(),
             },
-        ],
-        footer: crate::config::FooterConfig {
-            footer_text: footer_text(),
-            footer_license_label: footer_license_label(),
-            footer_license_url: footer_license_url(),
-        },
-        plugins: crate::config::PluginConfig {
-            custom_js: custom_js(),
-        },
-        static_pages: static_pages(),
-        ads: ads(),
-        preset_css: preset_css(),
+            background: background(),
+            assets: crate::config::AssetConfig {
+                favicon_url: favicon_url(),
+                social_card_image_url: social_card_image_url(),
+            },
+            seo: crate::config::SeoConfig {
+                meta_description: meta_description(),
+                meta_keywords: meta_keywords(),
+                custom_robots: custom_robots(),
+                license_url: license_url(),
+                author_name: author_name(),
+            },
+            menu_links: vec![
+                MenuLink { label: menu_1_label(), url: menu_1_url() },
+                MenuLink { label: menu_2_label(), url: menu_2_url() },
+                MenuLink { label: menu_3_label(), url: menu_3_url() },
+                MenuLink { label: menu_4_label(), url: menu_4_url() },
+            ],
+            footer: crate::config::FooterConfig {
+                footer_text: footer_text(),
+                footer_license_label: footer_license_label(),
+                footer_license_url: footer_license_url(),
+            },
+            plugins: crate::config::PluginConfig {
+                custom_js: custom_js(),
+            },
+            static_pages: static_pages(),
+            ads: ads(),
+            preset_css: preset_css(),
+        }
+    });
+
+    let generated_xml = use_memo(move || render_theme(&current_config()));
+    let preview_html = use_memo(move || render_preview_html(&current_config(), preview_template_mode()));
+    
+    let mut diag = use_signal(|| check_integrity(&generated_xml()));
+    use_effect(move || {
+        diag.set(check_integrity(&generated_xml()));
+    });
+
+    let layout_str = |layout: PanelLayout| match layout {
+        PanelLayout::Split => "split",
+        PanelLayout::Wide => "wide",
+        PanelLayout::Floating => "floating",
+        PanelLayout::Hidden => "hidden",
     };
 
-    let generated_xml = render_theme(&current_config);
-    let preview_html = render_preview_html(&current_config, preview_template_mode());
-    let initial_diagnostics_xml = generated_xml.clone();
-    let diag = use_signal(move || check_integrity(&initial_diagnostics_xml));
-    let layout_class = format!("editor-main {}", workbench_layout().as_class());
     let active_left_tab = use_signal(|| "Presets");
+    let active_right_tab = use_signal(|| "Site");
 
-    let mut layout_storage_ready = use_signal(|| false);
-
-    // Global keyboard shortcuts + Safer floating-panel drag via eval()
+    // Global keyboard shortcuts for independent panel layouts.
     use_effect(move || {
         let mut eval = eval(
             r#"
-            const layoutKey = "mor_blogger_theme_editor.workbench_layout";
-            const posKey    = "mor_blogger_theme_editor.floating_editor_position";
-
-            const storedLayout = window.localStorage.getItem(layoutKey);
-            setTimeout(function () { dioxus.send("restore_layout:" + (storedLayout || "")); }, 0);
-
-            function applyStoredFloatingPosition() {
-                let raw = null; try { raw = window.localStorage.getItem(posKey); } catch (e) { return; }
-                if (!raw) return; let pos; try { pos = JSON.parse(raw); } catch (e) { return; }
-                if (!pos || typeof pos.x !== "number" || typeof pos.y !== "number") return;
-                const panel = document.querySelector(".editor-left-panel");
-                if (!panel) return;
-                panel.style.setProperty("--floating-editor-x", pos.x + "px");
-                panel.style.setProperty("--floating-editor-y", pos.y + "px");
-            }
-
-            let restoreTries = 0;
-            const restoreTimer = setInterval(function () {
-                applyStoredFloatingPosition();
-                restoreTries += 1;
-                if (restoreTries >= 6) clearInterval(restoreTimer);
-            }, 100);
-
-            let dragState = null;
-            function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-            function getPanel() { return document.querySelector(".editor-layout-floating .editor-left-panel"); }
-
-            window.addEventListener("pointerdown", function (e) {
-                if (e.button !== 0) return;
-                if (!e.target || typeof e.target.closest !== "function") return;
-                if (e.target.closest("button, input, textarea, select, a, label")) return;
-
-                const bar = e.target.closest('[data-floating-window-bar="true"]');
-                if (!bar) return;
-
-                const panel = getPanel();
-                if (!panel) return;
-                const rect = panel.getBoundingClientRect();
-                dragState = {
-                    panel: panel, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top,
-                    panelWidth: rect.width, panelHeight: rect.height,
-                };
-                document.body.classList.add("editor-floating-dragging");
-            }, true);
-
-            window.addEventListener("pointermove", function (e) {
-                if (!dragState) return;
-                const margin = 4;
-                const maxX = window.innerWidth  - dragState.panelWidth  - margin;
-                const maxY = window.innerHeight - dragState.panelHeight - margin;
-                const x = clamp(e.clientX - dragState.offsetX, margin, Math.max(margin, maxX));
-                const y = clamp(e.clientY - dragState.offsetY, margin, Math.max(margin, maxY));
-
-                dragState.panel.style.setProperty("--floating-editor-x", x + "px");
-                dragState.panel.style.setProperty("--floating-editor-y", y + "px");
-                dragState.lastX = x; dragState.lastY = y;
-            });
-
-            window.addEventListener("pointerup", function () {
-                if (!dragState) return;
-                if (typeof dragState.lastX === "number" && typeof dragState.lastY === "number") {
-                    try { window.localStorage.setItem(posKey, JSON.stringify({ x: dragState.lastX, y: dragState.lastY })); } catch (e) {}
-                }
-                document.body.classList.remove("editor-floating-dragging");
-                dragState = null;
-            });
-
-            window.addEventListener("pointercancel", function () {
-                if (!dragState) return;
-                document.body.classList.remove("editor-floating-dragging");
-                dragState = null;
-            });
-
             window.addEventListener('keydown', function(e) {
                 let k = e.key.toLowerCase();
+
                 if (e.ctrlKey || e.metaKey) {
                     if (k === 'b') { e.preventDefault(); dioxus.send("toggle_left"); }
                     if (k === 'e') { e.preventDefault(); dioxus.send("toggle_right"); }
                 }
+
                 if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
                     if (k === '1') { e.preventDefault(); dioxus.send("layout_split"); }
                     if (k === '2') { e.preventDefault(); dioxus.send("layout_wide"); }
                     if (k === '3') { e.preventDefault(); dioxus.send("layout_float"); }
-                    if (k === '4') { e.preventDefault(); dioxus.send("layout_preview"); }
                 }
             });
             "#,
@@ -308,26 +292,31 @@ pub fn App() -> Element {
             while let Ok(value) = eval.recv().await {
                 if let Some(cmd) = value.as_str() {
                     match cmd {
-                        "toggle_left" => left_panel_collapsed.set(!left_panel_collapsed()),
-                        "toggle_right" => show_preview.set(!show_preview()),
+                        "toggle_left" => {
+                            if left_layout() == PanelLayout::Hidden {
+                                left_layout.set(PanelLayout::Split);
+                            } else {
+                                left_layout.set(PanelLayout::Hidden);
+                            }
+                        }
+                        "toggle_right" => {
+                            if right_layout() == PanelLayout::Hidden {
+                                right_layout.set(PanelLayout::Split);
+                            } else {
+                                right_layout.set(PanelLayout::Hidden);
+                            }
+                        }
                         "layout_split" => {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::Split)
+                            left_layout.set(PanelLayout::Split);
+                            right_layout.set(PanelLayout::Split);
                         }
                         "layout_wide" => {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::WideEditor)
+                            left_layout.set(PanelLayout::Wide);
+                            right_layout.set(PanelLayout::Wide);
                         }
                         "layout_float" => {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::FloatingEditor)
-                        }
-                        "layout_preview" => {
-                            set_workbench_layout(workbench_layout, WorkbenchLayout::PreviewTakeover)
-                        }
-                        _ if cmd.starts_with("restore_layout:") => {
-                            let value = cmd.trim_start_matches("restore_layout:");
-                            if let Some(layout) = WorkbenchLayout::from_storage_value(value) {
-                                workbench_layout.set(layout);
-                            }
-                            layout_storage_ready.set(true);
+                            left_layout.set(PanelLayout::Floating);
+                            right_layout.set(PanelLayout::Floating);
                         }
                         _ => {}
                     }
@@ -336,35 +325,33 @@ pub fn App() -> Element {
         });
     });
 
-    use_effect(move || {
-        let storage_ready = layout_storage_ready();
-        let layout_value = workbench_layout().storage_value().to_string();
-        if storage_ready {
-            spawn(async move {
-                let eval = eval(
-                    r#"let value = await dioxus.recv(); window.localStorage.setItem("mor_blogger_theme_editor.workbench_layout", value);"#,
-                );
-                let _ = eval.send(layout_value.into());
-            });
-        }
-    });
-
     rsx! {
         style { "{EDITOR_UI_CSS}" }
         div { class: "editor-shell",
-            div { class: "{layout_class}",
-                LeftPanel {
+            header { class: "editor-main-header",
+                h1 { class: "editor-brand", "Moribund Institute Theme Architect" }
+            }
+
+            div {
+                class: "editor-main",
+                "data-left-layout": layout_str(left_layout()),
+                "data-right-layout": layout_str(right_layout()),
+                LeftVisualsPanel {
                     active_tab: active_left_tab,
-                    is_collapsed: left_panel_collapsed,
+                    layout: left_layout,
                     active_preset,
                     signals,
                     show_preview,
-                    workbench_layout,
                 }
-                RightPanel {
-                    workbench_layout, preview_viewport, preview_width, preview_template_mode,
-                    generated_xml, preview_html, show_preview, diag,
-                    config_toml: toml::to_string_pretty(&current_config).unwrap_or_default(),
+                CenterWorkspacePanel {
+                    preview_viewport,
+                    preview_width,
+                    preview_template_mode,
+                    generated_xml: generated_xml(),
+                    preview_html: preview_html(),
+                    show_preview,
+                    diag,
+                    config_toml: toml::to_string_pretty(&current_config()).unwrap_or_default(),
                     on_load_theme: move |toml_text: String| {
                         if let Ok(new_config) = toml::from_str::<ThemeConfig>(&toml_text) {
                             signals.apply_config(&new_config);
@@ -373,9 +360,65 @@ pub fn App() -> Element {
                     on_restore: move |new_config: ThemeConfig| {
                         signals.apply_config(&new_config);
                     },
+                    on_load_hotswap: move |json_text: String| {
+                        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&json_text) {
+                            let apply_str = |val: &serde_json::Value, path: &[&str], sig: &mut Signal<String>| {
+                                let mut current = val;
+                                for p in path {
+                                    if let Some(next) = current.get(p) { current = next; } else { return; }
+                                }
+                                if let Some(s_val) = current.as_str() { sig.set(s_val.to_string()); }
+                            };
+
+                            let mut s = signals;
+
+                            apply_str(&val, &["site", "site_title"], &mut s.site_title);
+                            apply_str(&val, &["site", "site_subtitle"], &mut s.site_subtitle);
+                            apply_str(&val, &["site", "header_logo_url"], &mut s.header_logo_url);
+                            apply_str(&val, &["site", "home_url"], &mut s.home_url);
+
+                            apply_str(&val, &["assets", "favicon_url"], &mut s.favicon_url);
+                            apply_str(&val, &["assets", "social_card_image_url"], &mut s.social_card_image_url);
+
+                            if let Some(menus) = val.get("menu_links").and_then(|m| m.as_array()) {
+                                if let Some(m) = menus.get(0) { apply_str(m, &["label"], &mut s.menu_1_label); apply_str(m, &["url"], &mut s.menu_1_url); }
+                                if let Some(m) = menus.get(1) { apply_str(m, &["label"], &mut s.menu_2_label); apply_str(m, &["url"], &mut s.menu_2_url); }
+                                if let Some(m) = menus.get(2) { apply_str(m, &["label"], &mut s.menu_3_label); apply_str(m, &["url"], &mut s.menu_3_url); }
+                                if let Some(m) = menus.get(3) { apply_str(m, &["label"], &mut s.menu_4_label); apply_str(m, &["url"], &mut s.menu_4_url); }
+                            }
+
+                            apply_str(&val, &["seo", "meta_description"], &mut s.meta_description);
+                            apply_str(&val, &["seo", "meta_keywords"], &mut s.meta_keywords);
+                            apply_str(&val, &["seo", "custom_robots"], &mut s.custom_robots);
+                            apply_str(&val, &["seo", "author_name"], &mut s.author_name);
+                            apply_str(&val, &["seo", "license_url"], &mut s.license_url);
+
+                            apply_str(&val, &["footer", "footer_text"], &mut s.footer_text);
+                            apply_str(&val, &["footer", "footer_license_label"], &mut s.footer_license_label);
+                            apply_str(&val, &["footer", "footer_license_url"], &mut s.footer_license_url);
+
+                            apply_str(&val, &["plugins", "custom_js"], &mut s.custom_js);
+
+                            if let Some(ads_val) = val.get("ads") {
+                                if let Ok(ads_config) = serde_json::from_value(ads_val.clone()) {
+                                    s.ads.set(ads_config);
+                                }
+                            }
+                        }
+                    },
+                }
+                RightDataPanel {
+                    active_tab: active_right_tab,
+                    layout: right_layout,
+                    signals,
                 }
             }
+            
             footer { class: "editor-footer", DiagnosticsPanel { result: diag } }
+
+            script {
+                dangerous_inner_html: "{DRAG_JS}"
+            }
         }
     }
 }

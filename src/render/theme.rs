@@ -12,6 +12,11 @@ use crate::config::ThemeConfig;
 use super::xml_generator;
 
 pub fn render_theme(config: &ThemeConfig) -> String {
+    eprintln!(
+        "[render_theme] preset_css bytes = {}",
+        config.preset_css.len()
+    );
+
     xml_generator::render_template(config)
 }
 

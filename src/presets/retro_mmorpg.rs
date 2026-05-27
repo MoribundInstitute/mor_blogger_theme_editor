@@ -11,7 +11,7 @@ pub fn retro_mmorpg() -> Preset {
     let base = build_base(
         SiteConfig {
             site_title: "The Adventurer's Log".to_string(),
-            site_subtitle: "Buying iron ore 100ea".to_string(),
+            site_subtitle: "Quest board • guild notices • trading post".to_string(),
             header_logo_url: String::new(),
             home_url: "/".to_string(),
         },
@@ -30,8 +30,8 @@ pub fn retro_mmorpg() -> Preset {
             text_transform: "none".to_string(),
         },
         SeoConfig {
-            meta_description: "A retro MMORPG inspired theme.".to_string(),
-            meta_keywords: "retro, mmorpg, gaming, blog".to_string(),
+            meta_description: "A retro MMORPG-inspired theme with warm brown panels and ember-red controls.".to_string(),
+            meta_keywords: "retro, mmorpg, fantasy, guild, gaming, blog".to_string(),
             custom_robots: "index, follow".to_string(),
             license_url: String::new(),
             author_name: String::new(),
@@ -55,7 +55,7 @@ pub fn retro_mmorpg() -> Preset {
             },
         ],
         FooterConfig {
-            footer_text: "You have 0 unread messages.".to_string(),
+            footer_text: "Guild notices updated. Adventure continues.".to_string(),
             footer_license_label: "Copyright".to_string(),
             footer_license_url: "#".to_string(),
         },
@@ -65,38 +65,42 @@ pub fn retro_mmorpg() -> Preset {
         id: "retro_mmorpg",
         name: "Retro MMORPG",
         description:
-            "Dark UI panels, red interface buttons, and gold text with black drop shadows.",
+            "Warm brown fantasy-game panels, ember-red buttons, and gold text with chunky shadows.",
         base_config: base,
         preset_css: PRESET_CSS,
         dark: PresetPalette {
             colors: ColorConfig {
-                bg_base: "#000000".to_string(),
-                bg_panel: SurfaceFill::solid("#413525"),
-                bg_elevated: SurfaceFill::solid("#4e402d"),
-                fg_base: "#c8c0a8".to_string(),
-                fg_muted: "#908673".to_string(),
-                accent: "#ff981f".to_string(),
-                border: "#19140d".to_string(),
+                bg_base: "#24170f".to_string(),
+                bg_panel: SurfaceFill::solid("#4f3b2a"),
+                bg_elevated: SurfaceFill::solid("#5e4732"),
+                fg_base: "#e7dcc0".to_string(),
+                fg_muted: "#b8a88d".to_string(),
+                accent: "#ffae42".to_string(),
+                border: "#22160f".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid {
-                    color: "#000000".to_string(),
+                mode: BackgroundMode::Gradient {
+                    from: "#362317".to_string(),
+                    to: "#1b120d".to_string(),
+                    angle_deg: 180,
                 },
             },
         },
         light: PresetPalette {
             colors: ColorConfig {
-                bg_base: "#1a1a1a".to_string(),
-                bg_panel: SurfaceFill::solid("#544531"),
-                bg_elevated: SurfaceFill::solid("#63523b"),
-                fg_base: "#e3dbbf".to_string(),
-                fg_muted: "#a89d87".to_string(),
-                accent: "#ffff00".to_string(),
-                border: "#201a11".to_string(),
+                bg_base: "#3a281d".to_string(),
+                bg_panel: SurfaceFill::solid("#6a5139"),
+                bg_elevated: SurfaceFill::solid("#7a5e42"),
+                fg_base: "#f1e6c8".to_string(),
+                fg_muted: "#c9b99a".to_string(),
+                accent: "#ffd15a".to_string(),
+                border: "#2b1d14".to_string(),
             },
             background: BackgroundConfig {
-                mode: BackgroundMode::Solid {
-                    color: "#1a1a1a".to_string(),
+                mode: BackgroundMode::Gradient {
+                    from: "#5a3d29".to_string(),
+                    to: "#2a1b12".to_string(),
+                    angle_deg: 180,
                 },
             },
         },

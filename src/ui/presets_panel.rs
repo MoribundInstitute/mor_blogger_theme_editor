@@ -14,7 +14,7 @@ pub struct ThemeSignals {
     pub header_logo_url: Signal<String>,
     pub home_url: Signal<String>,
 
-    // Color palette — bg_panel and bg_elevated are now SurfaceFill
+    // Color palette — bg_panel and bg_elevated are SurfaceFill.
     pub bg_base: Signal<String>,
     pub bg_panel: Signal<SurfaceFill>,
     pub bg_elevated: Signal<SurfaceFill>,
@@ -49,7 +49,7 @@ pub struct ThemeSignals {
     pub license_url: Signal<String>,
     pub author_name: Signal<String>,
 
-    // Menu (4 slots)
+    // Menu: four slots for the GUI.
     pub menu_1_label: Signal<String>,
     pub menu_1_url: Signal<String>,
     pub menu_2_label: Signal<String>,
@@ -67,10 +67,16 @@ pub struct ThemeSignals {
     // Plugins
     pub custom_js: Signal<String>,
 
-    // Active preset CSS (empty for hand-built themes and re-imported exports)
+    // Active preset CSS.
+    //
+    // This is the important export/preview bridge:
+    // - presets/css/*.css lives in the preset module through include_str!
+    // - selecting a preset must copy that string here
+    // - ThemeConfig must then carry this into render/xml_generator.rs
+    // - xml_generator.rs must replace {{PRESET_CSS}} with this value
     pub preset_css: Signal<String>,
 
-    // Static Pages
+    // Static pages
     pub static_pages: Signal<crate::config::StaticPagesConfig>,
 
     // Ads
@@ -87,8 +93,7 @@ impl ThemeSignals {
         let base = &preset.base_config;
         self.apply_config_except_palette(base);
 
-        // Carry the preset's optional CSS bundle into the live signals.
-        self.preset_css.clone().set(preset.preset_css.to_string());
+        self.apply_preset_css(preset);
     }
 
     pub fn apply_config(&self, config: &ThemeConfig) {
@@ -104,7 +109,15 @@ impl ThemeSignals {
         self.background.clone().set(config.background.clone());
 
         self.apply_config_except_palette(config);
+
+        // Imported/restored themes may include preset CSS. Preserve it.
         self.preset_css.clone().set(config.preset_css.clone());
+    }
+
+    pub fn apply_preset_css(&self, preset: &Preset) {
+        self.preset_css
+            .clone()
+            .set(preset.preset_css.to_string());
     }
 
     fn apply_config_except_palette(&self, config: &ThemeConfig) {
@@ -179,6 +192,7 @@ impl ThemeSignals {
                 .get(i)
                 .map(|menu| (menu.label.clone(), menu.url.clone()))
                 .unwrap_or_default();
+
             label_sig.set(label);
             url_sig.set(url);
         }
@@ -229,6 +243,13 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut pasted_theme = use_signal(String::new);
     let mut import_status = use_signal(String::new);
 
+    let active_label = active()
+        .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
+        .map(|preset| preset.name)
+        .unwrap_or("Custom / Imported");
+
+    let preset_css_bytes = props.signals.preset_css.read().len();
+
     rsx! {
         section {
             class: "editor-card preset-panel",
@@ -246,7 +267,11 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     class: "editor-row",
 
                     button {
-                        class: if show_import() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        class: if show_import() {
+                            "editor-button editor-button-small editor-button-active"
+                        } else {
+                            "editor-button editor-button-small"
+                        },
                         onclick: move |_| {
                             show_import.set(!show_import());
                         },
@@ -266,6 +291,10 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     } else {
                                         props.signals.swap_palette(&preset.light);
                                     }
+
+                                    // Important: changing dark/light mode must not accidentally
+                                    // leave the export config with empty preset_css.
+                                    props.signals.apply_preset_css(preset);
                                 }
                             }
                         },
@@ -277,6 +306,19 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             p {
                 class: "preset-panel-copy",
                 "One click to swap the entire theme. Edit any field afterward to customize."
+            }
+
+            div {
+                class: "editor-note",
+                style: "margin-bottom: 12px;",
+                div {
+                    class: "editor-note-body",
+                    "Active preset: {active_label}"
+                }
+                div {
+                    class: "editor-note-body",
+                    "Preset CSS bytes: {preset_css_bytes}"
+                }
             }
 
             if show_import() {
@@ -295,9 +337,14 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
 
                     div {
                         class: "editor-field-group",
-                        label { class: "editor-field-label", "Remote JSON URL" }
+                        label {
+                            class: "editor-field-label",
+                            "Remote JSON URL"
+                        }
+
                         div {
                             class: "editor-row-stretch",
+
                             input {
                                 class: "editor-field editor-flex-1",
                                 r#type: "text",
@@ -308,6 +355,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     import_status.set(String::new());
                                 }
                             }
+
                             button {
                                 class: "editor-button",
                                 onclick: move |_| {
@@ -339,7 +387,12 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
 
                     div {
                         class: "editor-field-group",
-                        label { class: "editor-field-label", "Local JSON/TOML File" }
+
+                        label {
+                            class: "editor-field-label",
+                            "Local JSON/TOML File"
+                        }
+
                         label {
                             class: "editor-button",
                             "Load JSON/TOML File"
@@ -379,7 +432,12 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
 
                     div {
                         class: "editor-field-group",
-                        label { class: "editor-field-label", "Paste JSON or TOML" }
+
+                        label {
+                            class: "editor-field-label",
+                            "Paste JSON or TOML"
+                        }
+
                         textarea {
                             class: "editor-textarea",
                             style: "min-height: 90px; resize: vertical;",
@@ -390,12 +448,15 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                 import_status.set(String::new());
                             }
                         }
+
                         div {
                             class: "editor-row",
+
                             button {
                                 class: "editor-button",
                                 onclick: move |_| {
                                     let pasted = pasted_theme();
+
                                     match parse_theme_text(&pasted) {
                                         Ok(config) => {
                                             props.signals.apply_config(&config);
@@ -409,6 +470,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                 },
                                 "Import Pasted Theme"
                             }
+
                             button {
                                 class: "editor-button editor-button-small",
                                 onclick: move |_| {
@@ -504,16 +566,19 @@ fn PresetCard(props: PresetCardProps) -> Element {
 
             div {
                 style: "padding: 10px 12px; background: {bg_panel_css}; border-bottom: 1px solid {colors.border};",
+
                 div {
                     style: "color: {colors.accent}; font-family: {heading_font}; font-size: 0.9rem; font-weight: bold; line-height: 1.2;",
                     "{preset.base_config.site.site_title}"
                 }
+
                 if !preset.base_config.site.site_subtitle.is_empty() {
                     div {
                         style: "color: {colors.fg_muted}; font-family: {body_font}; font-size: 0.65rem; margin-top: 2px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
                         "{preset.base_config.site.site_subtitle}"
                     }
                 }
+
                 div {
                     style: "display: inline-block; margin-top: 6px; padding: 2px 6px; border: {sample_border_width} solid {colors.border}; border-radius: {sample_radius}; color: {colors.fg_base}; font-family: {body_font}; font-size: 0.65rem; text-transform: {sample_text_transform};",
                     "{sample_label}"
@@ -522,6 +587,7 @@ fn PresetCard(props: PresetCardProps) -> Element {
 
             div {
                 style: "padding: 8px 12px; background: {bg_elevated_css}; min-height: 24px;",
+
                 div {
                     style: "color: {colors.fg_muted}; font-family: {body_font}; font-size: 0.6rem; line-height: 1.3;",
                     "Sample content"
@@ -530,10 +596,12 @@ fn PresetCard(props: PresetCardProps) -> Element {
 
             div {
                 class: "preset-footer",
+
                 div {
                     class: "preset-name",
                     "{preset.name}"
                 }
+
                 div {
                     class: "preset-description",
                     "{preset.description}"
@@ -589,10 +657,13 @@ fn parse_theme_text(text: &str) -> Result<ThemeConfig, String> {
 struct WrappedTheme {
     #[serde(default)]
     base_config: Option<ThemeConfig>,
+
     #[serde(default)]
     config: Option<ThemeConfig>,
+
     #[serde(default)]
     theme: Option<ThemeConfig>,
+
     #[serde(default)]
     preset_css: Option<String>,
 }
@@ -622,6 +693,7 @@ fn normalize_preset_url(input: &str) -> String {
         let without_scheme = url
             .trim_start_matches("https://")
             .trim_start_matches("http://");
+
         let parts: Vec<&str> = without_scheme.split('/').collect();
 
         if parts.len() >= 6 && parts[0] == "github.com" && parts[3] == "blob" {
@@ -629,6 +701,7 @@ fn normalize_preset_url(input: &str) -> String {
             let repo = parts[2];
             let branch = parts[4];
             let path = parts[5..].join("/");
+
             return format!(
                 "https://raw.githubusercontent.com/{}/{}/{}/{}",
                 owner, repo, branch, path

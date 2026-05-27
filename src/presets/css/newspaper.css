@@ -19,7 +19,7 @@ body::before {
 
 /* The masthead — blackletter, oversized, centered, with hairline
    rules above and below in the classic newspaper plate style. */
-.terminal-main-header {
+.main-header {
   background: var(--bg-panel) !important;
   border-top: 4px double var(--fg-base) !important;
   border-bottom: 4px double var(--fg-base) !important;
@@ -28,18 +28,18 @@ body::before {
   box-shadow: none !important;
 }
 
-.terminal-main-header .branding {
+.main-header .branding {
   display: block !important;
   text-align: center !important;
 }
 
-.terminal-main-header .branding-link {
+.main-header .branding-link {
   display: inline-block !important;
   text-decoration: none !important;
   color: var(--fg-base) !important;
 }
 
-.terminal-main-header .institute-title {
+.main-header .institute-title {
   color: var(--fg-base) !important;
   font-family:
     'UnifrakturMaguntia', 'Old English Text MT', 'Blackletter686 BT',
@@ -53,7 +53,7 @@ body::before {
 
 /* The subtitle becomes a dateline strip: small caps, hairline rules
    on either side, the kind of thing that says "Vol. I · No. 1". */
-.terminal-main-header .header-bottom-row {
+.main-header .header-bottom-row {
   margin-top: 14px !important;
   padding-top: 10px !important;
   border-top: 1px solid var(--border-color) !important;
@@ -303,4 +303,57 @@ body::before {
 /* Kill any leftover glow/text-shadow on titles & headings throughout. */
 *, *::before, *::after {
   text-shadow: none !important;
+}
+
+/* ============================================================
+   Header toggle compatibility
+   Keeps the post-rename main header and clean-label sidebar
+   toggles as icon buttons, even when this preset restyles
+   .panel-toggle broadly.
+   ============================================================ */
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.header-panel-toggle::before,
+.header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: var(--fg-base) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.header-panel-toggle::after,
+.header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+
+.header-panel-toggle-left::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+}
+
+.header-panel-toggle-right::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat !important;
 }

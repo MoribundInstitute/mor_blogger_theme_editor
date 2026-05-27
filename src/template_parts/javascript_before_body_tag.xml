@@ -46,10 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Back-to-top button support.
 
     Recommended footer button:
-    <button class='back-to-top-btn' type='button'>[Back to Top]</button>
+    <button class='back-to-top-btn' type='button'>Back to Top</button>
 
-    This also supports the older button:
-    <button class='panel-toggle' onclick='window.scrollTo({top: 0, behavior: "smooth"})'>[SYS.REBOOT (Top)]</button>
+    Also supports legacy scrolling buttons by checking onclick strings.
   */
   const backToTopBtn =
     document.querySelector('.back-to-top-btn') ||

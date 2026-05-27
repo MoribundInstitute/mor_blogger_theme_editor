@@ -11,9 +11,11 @@ use super::ads::{
     render_ads_widget_sidebar,
 };
 use super::util::{build_google_fonts_link, escape_attr, escape_html, menu_link_or_empty};
+use super::xml_parts::header_generator::render_header_sockets;
 
 const META: &str = include_str!("../template_parts/meta.xml");
 const CSS: &str = include_str!("../template_parts/css.xml");
+// `header.xml` owns the outer `<header class='main-header'>` wrapper.
 const HEADER: &str = include_str!("../template_parts/header.xml");
 const SIDEBAR_LEFT: &str = include_str!("../template_parts/sidebar_left.xml");
 const MAIN: &str = include_str!("../template_parts/main.xml");
@@ -129,7 +131,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
     let base_xml = assemble_template(&ads_consent_banner, &ads_runtime_script);
 
-    base_xml
+    let rendered = base_xml
         // Optional legacy widget sockets, for older parts or experiments.
         .replace("{{WIDGET_ADSENSE_SIDEBAR}}", &ads_widget_sidebar)
 
@@ -156,12 +158,16 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
         // Branding / top navigation.
         .replace("{{SITE_TITLE}}", &escape_html(&config.site.site_title))
+        .replace("{{SITE_TITLE_ATTR}}", &escape_attr(&config.site.site_title))
         .replace("{{SITE_SUBTITLE}}", &escape_html(&config.site.site_subtitle))
+        .replace("{{SITE_SUBTITLE_ATTR}}", &escape_attr(&config.site.site_subtitle))
         .replace("{{HEADER_LOGO_URL}}", &escape_attr(&config.site.header_logo_url))
+        .replace("{{HEADER_LOGO_URL_ATTR}}", &escape_attr(&config.site.header_logo_url))
         .replace("{{SITE_HOME_URL}}", &escape_attr(site_home_url))
+        .replace("{{SITE_HOME_URL_ATTR}}", &escape_attr(site_home_url))
         .replace("{{HOME_URL}}", &escape_attr(site_home_url))
-        .replace("{{LEFT_PANEL_TOGGLE_LABEL}}", "[ Browse ]")
-        .replace("{{RIGHT_PANEL_TOGGLE_LABEL}}", "[ Contents ]")
+        .replace("{{LEFT_PANEL_OPEN_LABEL}}", "Browse")
+        .replace("{{RIGHT_PANEL_OPEN_LABEL}}", "Contents")
         .replace("{{NAV_HOME_LABEL}}", &escape_html(first_non_empty(&menu_1.label, "~/home")))
         .replace("{{NAV_HOME_URL}}", &escape_attr(first_non_empty(&menu_1.url, site_home_url)))
         .replace("{{NAV_ABOUT_LABEL}}", &escape_html(first_non_empty(&menu_2.label, "~/about")))
@@ -179,9 +185,11 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
         .replace("{{NAV_ARCHIVE_LABEL}}", "~/archive")
         .replace("{{NAV_ARCHIVE_URL}}", "/p/archive.html")
         .replace("{{SEARCH_ACTION_URL}}", "/search")
+        .replace("{{SEARCH_ACTION_URL_ATTR}}", "/search")
         .replace("{{SEARCH_PROMPT}}", "root@moribund:~$")
-        .replace("{{SEARCH_PLACEHOLDER}}", "grep -i &quot;query&quot;")
-        .replace("{{SEARCH_BUTTON_LABEL}}", "[Search]")
+        .replace("{{SEARCH_PLACEHOLDER}}", "Search...")
+        .replace("{{SEARCH_PLACEHOLDER_ATTR}}", "Search...")
+        .replace("{{SEARCH_BUTTON_LABEL}}", "Search")
 
         // Catalog defaults.
         .replace("{{CATALOG_TRIGGER_LABEL}}", "~/catalog")
@@ -338,7 +346,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
         // Left sidebar.
         .replace("{{LEFT_PANEL_TITLE}}", "Browse")
-        .replace("{{LEFT_PANEL_CLOSE_LABEL}}", "[x]")
+        .replace("{{LEFT_PANEL_CLOSE_LABEL}}", "Close")
         .replace("{{LABEL_WIDGET_TITLE}}", "Labels")
         .replace("{{LABEL_SORTING}}", "ALPHA")
         .replace("{{LABEL_DISPLAY}}", "LIST")
@@ -357,7 +365,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
         // Right sidebar / table of contents.
         .replace("{{RIGHT_PANEL_TITLE}}", "Contents")
-        .replace("{{RIGHT_PANEL_CLOSE_LABEL}}", "[x]")
+        .replace("{{RIGHT_PANEL_CLOSE_LABEL}}", "Close")
         .replace("{{RIGHT_WIDGET_TITLE}}", "Table of Contents")
         .replace("{{TOC_LOADING_MESSAGE}}", "Building contents...")
         .replace("{{TOC_WAITING_MESSAGE}}", "[SYS] WAITING FOR INPUT_STREAM...")
@@ -374,10 +382,10 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
         .replace("{{BLOG_COMMENT_LABEL}}", "Comment")
         .replace("{{BLOG_AUTHOR_LABEL}}", &format!("By {}", escape_html(&config.seo.author_name)))
         .replace("{{BLOG_TIMESTAMP_FORMAT}}", "d MMM, yyyy")
-        .replace("{{POST_TAGS_PREFIX}}", "// Tags: ")
-        .replace("{{PAGER_NEWER_LABEL}}", "[ &lt;&lt; SYS.PREV ]")
-        .replace("{{PAGER_HOME_LABEL}}", "[ SYS.HOME ]")
-        .replace("{{PAGER_OLDER_LABEL}}", "[ SYS.NEXT &gt;&gt; ]")
+        .replace("{{POST_TAGS_PREFIX}}", "Tags: ")
+        .replace("{{PAGER_NEWER_LABEL}}", "Newer")
+        .replace("{{PAGER_HOME_LABEL}}", "Home")
+        .replace("{{PAGER_OLDER_LABEL}}", "Older")
         .replace("{{POST_METADATA_FALLBACK_IMAGE_URL}}", &escape_attr(social_card_image_url))
         .replace("{{PUBLISHER_NAME}}", &escape_attr(&config.site.site_title))
         .replace("{{PUBLISHER_LOGO_URL}}", &escape_attr(&config.site.header_logo_url))
@@ -430,5 +438,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
         // Optional custom plugin JS lives inside javascript_before_body_tag.xml's
         // DOMContentLoaded handler, so do not wrap it in a second <script>.
-        .replace("{{CUSTOM_BEFORE_BODY_JS}}", &config.plugins.custom_js)
+        .replace("{{CUSTOM_BEFORE_BODY_JS}}", &config.plugins.custom_js);
+
+    render_header_sockets(rendered, config)
 }

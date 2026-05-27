@@ -1,74 +1,20 @@
-//! Workbench layout state for the Blogger Theme Architect editor.
+//! Panel and preview layout state for the Blogger Theme Architect editor.
 //!
-//! These layout enums let the app track whether the control panel is docked
-//! normally, widened, floating above the preview, or hidden while the preview
-//! takes over the workspace. They also track the responsive preview width
-//! preset used by the preview canvas.
+//! `PanelLayout` controls how the editor panels behave independently from the
+//! preview viewport. The preview enums below track the responsive preview width
+//! preset and template mode used by the preview canvas.
 
-use dioxus::prelude::{Signal, Writable};
+use dioxus::prelude::*;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum WorkbenchLayout {
-    /// Normal split view: editor controls on the left, preview/export on the right.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum PanelLayout {
     Split,
-
-    /// Wider docked editor panel for dense forms and longer fields.
-    WideEditor,
-
-    /// Editor panel floats over the preview instead of consuming layout width.
-    FloatingEditor,
-
-    /// Preview gets the workspace; editor controls are hidden until reopened.
-    PreviewTakeover,
+    Wide,
+    Floating,
+    Hidden,
 }
 
-impl WorkbenchLayout {
-    /// CSS class suffix for the current workbench layout.
-    pub fn as_class(self) -> &'static str {
-        match self {
-            Self::Split => "editor-layout-split",
-            Self::WideEditor => "editor-layout-wide",
-            Self::FloatingEditor => "editor-layout-floating",
-            Self::PreviewTakeover => "editor-layout-preview-takeover",
-        }
-    }
-
-    /// Whether the editor panel should be rendered in the main workspace.
-    pub fn is_editor_visible(self) -> bool {
-        !matches!(self, Self::PreviewTakeover)
-    }
-
-    /// Stable value used for localStorage persistence.
-    pub fn storage_value(self) -> &'static str {
-        match self {
-            Self::Split => "split",
-            Self::WideEditor => "wide",
-            Self::FloatingEditor => "floating",
-            Self::PreviewTakeover => "preview",
-        }
-    }
-
-    /// Restore a persisted layout value from localStorage.
-    pub fn from_storage_value(value: &str) -> Option<Self> {
-        match value {
-            "split" => Some(Self::Split),
-            "wide" => Some(Self::WideEditor),
-            "floating" => Some(Self::FloatingEditor),
-            "preview" => Some(Self::PreviewTakeover),
-            _ => None,
-        }
-    }
-}
-
-pub const WORKBENCH_LAYOUT_STORAGE_KEY: &str = "mor_blogger_theme_editor.workbench_layout";
-pub const FLOATING_EDITOR_POSITION_STORAGE_KEY: &str =
-    "mor_blogger_theme_editor.floating_editor_position";
-
-/// Set the workbench layout from buttons/shortcuts.
-///
-/// Persistence is handled in `app.rs` by watching this signal and writing the
-/// selected value to localStorage.
-pub fn set_workbench_layout(mut signal: Signal<WorkbenchLayout>, layout: WorkbenchLayout) {
+pub fn set_panel_layout(signal: &mut Signal<PanelLayout>, layout: PanelLayout) {
     signal.set(layout);
 }
 

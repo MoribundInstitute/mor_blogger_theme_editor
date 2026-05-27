@@ -1,7 +1,7 @@
 <aside class='runelite-panel panel-right' id='panel-right'>
   <div class='panel-header'>
     <span>{{RIGHT_PANEL_TITLE}}</span>
-    <button class='panel-toggle' data-target='panel-right'>{{RIGHT_PANEL_CLOSE_LABEL}}</button>
+    <button aria-label='Close Contents panel' class='panel-toggle' data-target='panel-right'>{{RIGHT_PANEL_CLOSE_LABEL}}</button>
   </div>
 
   <div class='panel-content' id='control-container'>

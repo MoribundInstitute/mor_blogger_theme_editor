@@ -1,34 +1,39 @@
 <b:skin><![CDATA[
+/* ===== 00-Root-Section.css ===== */
+
 :root {
   /* Terminal Palette */
   --bg-base: {{COLOR_BG_BASE}};
   --bg-panel: {{COLOR_BG_PANEL}};
-  --bg-highlight: {{COLOR_BG_HIGHLIGHT}};
-  --bg-soft: {{COLOR_BG_SOFT}};
+  --bg-highlight: {{COLOR_BG_ELEVATED}};
+  --bg-soft: {{COLOR_BG_PANEL}};
   --bg-elevated: {{COLOR_BG_ELEVATED}};
 
   --fg-base: {{COLOR_FG_BASE}};
-  --fg-dim: {{COLOR_FG_DIM}};
+  --fg-dim: {{COLOR_FG_MUTED}};
   --fg-muted: {{COLOR_FG_MUTED}};
+  --accent: {{COLOR_ACCENT}};
 
   --border-color: {{COLOR_BORDER}};
-  --border-soft: {{COLOR_BORDER_SOFT}};
+  --border-soft: {{COLOR_BORDER}};
 
-  --font-mono: {{FONT_MONO}};
+  --font-mono: "IM Fell English", Georgia, "Times New Roman", serif;
 
-  --sidebar-width: {{SIDEBAR_WIDTH}};
+  --sidebar-width: 300px;
   --header-z: 1100;
   --overlay-z: 1200;
   --dropdown-z: 1300;
 
-  --glow: {{GLOW_SOFT}};
-  --glow-strong: {{GLOW_STRONG}};
-  --shadow-elevated: {{SHADOW_ELEVATED}};
+  --glow: 0 0 4px {{COLOR_ACCENT}};
+  --glow-strong: 0 0 8px {{COLOR_ACCENT}};
+  --shadow-elevated: 0 18px 45px rgba(0, 0, 0, 0.65);
+
+  {{BACKGROUND_TILE_CSS}}
 }
 
-/* =========================================================
-   01. Reset / Base
-   ========================================================= */
+
+/* ===== 01-Reset-Base.css ===== */
+
 
 * {
   box-sizing: border-box;
@@ -57,9 +62,10 @@ video {
   max-width: 100%;
 }
 
-/* =========================================================
-   02. Typography / Links / Glow
-   ========================================================= */
+
+
+/* ===== 02-Typography-Links-Glow.css ===== */
+
 
 h1,
 h2,
@@ -90,9 +96,10 @@ a:focus-visible {
   outline: none;
 }
 
-/* =========================================================
-   03. Buttons
-   ========================================================= */
+
+
+/* ===== 03-Buttons.css ===== */
+
 
 button {
   background: transparent;
@@ -128,16 +135,18 @@ button:focus-visible {
   padding: 2px 7px;
 }
 
-/* =========================================================
-   04. Main Header
-   ========================================================= */
 
-.terminal-main-header {
+
+/* ===== 04-Main-Header.css ===== */
+
+
+.main-header {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-base);
+  width: 100%;
   position: relative;
   z-index: var(--header-z);
 }
@@ -151,7 +160,7 @@ button:focus-visible {
   padding: 10px 20px 9px;
   line-height: 1.2;
   border-bottom: 1px dashed var(--border-color);
-  background: var(--bg-highlight);
+  background: var(--bg-base);
 }
 
 .header-bottom-row {
@@ -164,9 +173,10 @@ button:focus-visible {
   line-height: 1.2;
 }
 
-/* =========================================================
-   05. Branding
-   ========================================================= */
+
+
+/* ===== 05-Branding.css ===== */
+
 
 .branding {
   min-width: 0;
@@ -192,19 +202,19 @@ button:focus-visible {
 
 .institute-logo {
   display: block;
-  width: {{HEADER_LOGO_SIZE}};
-  height: {{HEADER_LOGO_SIZE}};
+  width: 72px;
+  height: 72px;
   object-fit: cover;
-  border-radius: {{HEADER_LOGO_RADIUS}};
+  border-radius: 10px;
   border: 1px solid var(--border-color);
   box-shadow: var(--glow);
 }
 
 .branding .institute-title {
   display: inline-block;
-  font-size: {{SITE_TITLE_SIZE}};
+  font-size: 1.05rem;
   font-weight: bold;
-  letter-spacing: {{SITE_TITLE_LETTER_SPACING}};
+  letter-spacing: 2px;
   line-height: 1.2;
   color: var(--fg-base);
   text-shadow: var(--glow-strong);
@@ -223,9 +233,10 @@ button:focus-visible {
   text-decoration: underline;
 }
 
-/* =========================================================
-   06. Main Navigation
-   ========================================================= */
+
+
+/* ===== 06-Main-Navigation.css ===== */
+
 
 .terminal-nav {
   display: flex;
@@ -253,9 +264,10 @@ button:focus-visible {
   text-shadow: none;
 }
 
-/* =========================================================
-   07. Catalog Mega Dropdown
-   ========================================================= */
+
+
+/* ===== 07-Catalog-Mega-Dropdown.css ===== */
+
 
 .mor-catalog-menu {
   position: relative;
@@ -436,9 +448,10 @@ button:focus-visible {
   background: var(--fg-dim);
 }
 
-/* =========================================================
-   08. Command Line Search
-   ========================================================= */
+
+
+/* ===== 08-Command-Line-Search.css ===== */
+
 
 .terminal-search {
   min-width: 0;
@@ -452,6 +465,7 @@ button:focus-visible {
 }
 
 .terminal-search .prompt {
+  display: none; /* Opt-in for terminal themes only */
   color: var(--fg-dim);
   font-size: 0.9rem;
   white-space: nowrap;
@@ -464,19 +478,19 @@ button:focus-visible {
   color: var(--fg-base);
   font-family: var(--font-mono);
   outline: none;
-  width: {{SEARCH_INPUT_WIDTH}};
+  width: 180px;
   padding: 3px 4px;
   transition: width 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .terminal-search input:focus {
-  width: {{SEARCH_INPUT_FOCUS_WIDTH}};
+  width: 240px;
   border-bottom: 1px solid var(--fg-base);
   box-shadow: 0 1px 0 var(--fg-base);
 }
 
 .terminal-search input::placeholder {
-  color: var(--fg-muted);
+  color: #555555;
 }
 
 .terminal-search button {
@@ -485,9 +499,10 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-/* =========================================================
-   09. Workspace Layout
-   ========================================================= */
+
+
+/* ===== 09-Workspace-Layout.css ===== */
+
 
 .terminal-workspace {
   display: flex;
@@ -497,9 +512,10 @@ button:focus-visible {
   overflow: hidden;
 }
 
-/* =========================================================
-   10. Side Panels
-   ========================================================= */
+
+
+/* ===== 10-Side-Panels.css ===== */
+
 
 .runelite-panel {
   width: var(--sidebar-width);
@@ -553,9 +569,10 @@ button:focus-visible {
   font-size: 0.85rem;
 }
 
-/* =========================================================
-   11. Main Canvas
-   ========================================================= */
+
+
+/* ===== 11-Main-Canvas.css ===== */
+
 
 .canvas-core {
   flex-grow: 1;
@@ -583,15 +600,20 @@ button:focus-visible {
 
 .canvas-content {
   padding: 24px 20px 20px;
-  max-width: {{CONTENT_MAX_WIDTH}};
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 60px;
 }
 
-/* =========================================================
-   12. Terminal Post Styling
-   ========================================================= */
+
+
+/* ===== 12-Terminal-Post-Styling.css ===== */
+
 
 .terminal-post {
   margin-bottom: 40px;
@@ -601,7 +623,7 @@ button:focus-visible {
 
 .post-title {
   margin-top: 0;
-  font-size: {{POST_TITLE_SIZE}};
+  font-size: 1.5rem;
   line-height: 1.25;
 }
 
@@ -647,9 +669,10 @@ button:focus-visible {
   padding: 1px 4px;
 }
 
-/* =========================================================
-   13. Pagination
-   ========================================================= */
+
+
+/* ===== 13-Pagination.css ===== */
+
 
 .terminal-pager {
   display: flex;
@@ -670,9 +693,10 @@ button:focus-visible {
   background: var(--fg-base);
 }
 
-/* =========================================================
-   14. Widgets / Sidebars
-   ========================================================= */
+
+
+/* ===== 14-Widgets-Sidebars.css ===== */
+
 
 .widget {
   margin-bottom: 25px;
@@ -721,9 +745,10 @@ button:focus-visible {
   text-shadow: none;
 }
 
-/* =========================================================
-   15. Archive Widget
-   ========================================================= */
+
+
+/* ===== 15-Archive-Widget.css ===== */
+
 
 .sidebar-section .BlogArchive {
   font-size: 0.75rem;
@@ -759,9 +784,10 @@ button:focus-visible {
   text-overflow: ellipsis;
 }
 
-/* =========================================================
-   16. Table of Contents
-   ========================================================= */
+
+
+/* ===== 16-Table-of-Contents.css ===== */
+
 
 #terminal-toc-wrapper {
   font-size: 0.85rem;
@@ -777,9 +803,10 @@ button:focus-visible {
   overflow-wrap: anywhere;
 }
 
-/* =========================================================
-   17. Scrollbars
-   ========================================================= */
+
+
+/* ===== 17-Scrollbars.css ===== */
+
 
 .sidebar-section .widget-content::-webkit-scrollbar,
 .panel-content::-webkit-scrollbar,
@@ -805,16 +832,18 @@ button:focus-visible {
   background: var(--fg-dim);
 }
 
-/* =========================================================
-   18. Footer
-   ========================================================= */
+
+
+/* ===== 18-Footer.css ===== */
+
 
 .terminal-footer {
-  margin-top: 60px;
+  margin-top: auto;
   border-top: 1px dashed var(--border-color);
   padding-top: 30px;
   padding-bottom: 20px;
   font-size: 0.85rem;
+  width: 100%;
 }
 
 .footer-grid {
@@ -884,124 +913,102 @@ button:focus-visible {
   background: var(--fg-base);
 }
 
-/* =========================================================
-   19. Responsive: Mobile / Tablet
-   ========================================================= */
+
+
+/* ===== 19-Responsive-Mobile-Tablet.css ===== */
 
 @media screen and (max-width: 900px) {
   :root {
-    --sidebar-width: min(320px, 86vw);
+    --sidebar-width: 85vw; /* Let menus take up most of the screen */
   }
 
   html,
   body {
     height: auto;
     min-height: 100vh;
-    overflow: auto;
+    overflow-x: hidden; /* Prevent horizontal scrolling glitches */
   }
 
   body {
     display: block;
   }
 
-  .terminal-main-header {
+  /* ── 1. Top Header & Branding ── */
+  .main-header {
     position: sticky;
     top: 0;
+    z-index: 50; /* Ensure header stays above content */
+    background: var(--bg-base); /* Prevent transparency overlap */
   }
 
   .header-top-row {
-    min-height: 44px;
-    padding: 8px 10px;
-    gap: 8px;
+    min-height: 60px; /* Taller header for thumbs */
+    padding: 10px 15px;
+    gap: 12px;
   }
 
   .institute-logo {
-    width: {{HEADER_LOGO_SIZE_MOBILE}};
-    height: {{HEADER_LOGO_SIZE_MOBILE}};
-    border-radius: {{HEADER_LOGO_RADIUS_MOBILE}};
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
   }
 
   .branding .institute-title {
-    font-size: {{SITE_TITLE_SIZE_MOBILE}};
-    letter-spacing: {{SITE_TITLE_LETTER_SPACING_MOBILE}};
-    max-width: 46vw;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    max-width: 40vw;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  /* ── 2. Massive, Thumb-Friendly Buttons ── */
   .panel-toggle {
     min-width: auto;
-    font-size: 0.8rem;
-    padding: 4px 6px;
+    font-size: 0.9rem;
+    padding: 12px 16px; /* Huge touch targets */
+    min-height: 44px; /* Standard mobile touch minimum */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 1px;
   }
 
+  /* ── 3. Scrollable Navigation Strip ── */
   .header-bottom-row {
     flex-direction: column;
     align-items: stretch;
-    padding: 10px;
-    gap: 10px;
+    padding: 12px 15px;
+    gap: 15px;
   }
 
   .terminal-nav {
     width: 100%;
-    gap: 10px;
+    gap: 15px; /* More space between links */
     overflow-x: auto;
-    overflow-y: visible;
-    padding-bottom: 2px;
+    overflow-y: hidden;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
 
   .terminal-nav a,
   .terminal-nav button {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    padding: 8px 10px; /* Better touch area for links */
+    white-space: nowrap;
   }
 
-  .mor-catalog-menu {
-    position: static;
-  }
-
-  .mor-catalog-dropdown {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    top: 150px;
-    z-index: var(--dropdown-z);
-    grid-template-columns: 1fr;
-    width: auto;
-    max-height: calc(100vh - 170px);
-  }
-
-  .mor-catalog-left {
-    border-right: 0;
-    border-bottom: 1px solid var(--border-color);
-    max-height: 32vh;
-  }
-
-  .mor-catalog-right {
-    max-height: 40vh;
-  }
-
-  .terminal-search {
-    width: 100%;
-  }
-
-  .terminal-search form {
-    width: 100%;
-    align-items: stretch;
-  }
-
-  .terminal-search .prompt {
-    display: none;
-  }
-
+  /* ── 4. Search Bar Polish ── */
+  .terminal-search { width: 100%; }
+  .terminal-search form { width: 100%; align-items: stretch; }
+  .terminal-search .prompt { display: none; }
   .terminal-search input {
     width: 100%;
     flex: 1;
+    padding: 10px; /* Bigger input area */
+    font-size: 1rem; /* Prevent iOS from zooming in */
   }
 
-  .terminal-search input:focus {
-    width: 100%;
-  }
-
+  /* ── 5. Main Canvas ── */
   .terminal-workspace {
     display: block;
     height: auto;
@@ -1016,47 +1023,31 @@ button:focus-visible {
   }
 
   .canvas-content {
-    padding: 16px 12px;
+    padding: 24px 16px; /* Better breathing room for reading */
     max-width: none;
+    gap: 40px;
   }
 
-  .post-title {
-    font-size: {{POST_TITLE_SIZE_MOBILE}};
-  }
+  .post-title { font-size: 1.35rem; line-height: 1.3; }
 
+  /* ── 6. True Off-Canvas Sidebars ── */
   .runelite-panel {
     position: fixed;
     top: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    min-width: 0;
+    max-width: 350px;
     height: 100vh;
-    z-index: var(--overlay-z);
-    box-shadow: 2px 0 14px rgba(0, 0, 0, 0.65);
+    z-index: var(--overlay-z, 100);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9); /* Deep shadow to separate from content */
     margin: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth slide */
+    background: var(--bg-panel);
+    overflow-y: auto;
   }
 
-  .panel-left {
-    left: 0;
-    right: auto;
-    border-right: 1px solid var(--border-color);
-  }
-
-  .panel-right {
-    right: 0;
-    left: auto;
-    border-left: 1px solid var(--border-color);
-  }
-
-  .panel-left.is-collapsed {
-    margin-left: 0;
-    transform: translateX(-100%);
-  }
-
-  .panel-right.is-collapsed {
-    margin-right: 0;
-    transform: translateX(100%);
-  }
+  .panel-left { left: 0; right: auto; border-right: 1px solid var(--border-color); transform: translateX(-100%); }
+  .panel-right { right: 0; left: auto; border-left: 1px solid var(--border-color); transform: translateX(100%); }
 
   .panel-left:not(.is-collapsed),
   .panel-right:not(.is-collapsed) {
@@ -1064,45 +1055,31 @@ button:focus-visible {
   }
 
   .panel-content {
-    padding: 14px;
-  }
-
-  .sidebar-section .Label ul {
-    grid-template-columns: 1fr;
+    padding: 20px; /* Stop text from hitting the edges */
   }
 
   .sidebar-section .widget-content {
-    max-height: 45vh;
+    max-height: none; /* Let mobile scroll naturally */
   }
 
-  .terminal-footer {
-    margin-top: 40px;
-  }
-
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .footer-sys-info {
-    align-items: flex-start;
-    flex-direction: column;
-  }
+  /* ── 7. Footer ── */
+  .terminal-footer { margin-top: auto; padding: 20px 15px; width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .footer-sys-info { align-items: flex-start; flex-direction: column; gap: 10px; }
 }
 
-/* =========================================================
-   20. Responsive: Very Small Screens
-   ========================================================= */
+/* ===== 20-Responsive-Very-Small-Screens.css ===== */
+
 
 @media screen and (max-width: 480px) {
   .institute-logo {
-    width: {{HEADER_LOGO_SIZE_SMALL}};
-    height: {{HEADER_LOGO_SIZE_SMALL}};
-    border-radius: {{HEADER_LOGO_RADIUS_SMALL}};
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
   }
 
   .branding .institute-title {
-    font-size: {{SITE_TITLE_SIZE_SMALL}};
+    font-size: 0.8rem;
     max-width: 38vw;
   }
 
@@ -1119,12 +1096,12 @@ button:focus-visible {
     font-size: 0.8rem;
   }
 
-  .mor-catalog-dropdown {
-    left: 6px;
-    right: 6px;
-    top: 140px;
-    max-height: calc(100vh - 155px);
-  }
+.mor-catalog-dropdown {
+  left: 6px;
+  right: 6px;
+  top: 140px;
+  max-height: calc(100vh - 155px);
+}
 
   .mor-catalog-left,
   .mor-catalog-right {
@@ -1142,9 +1119,10 @@ button:focus-visible {
   }
 }
 
-/* =========================================================
-   21. Responsive: Desktop
-   ========================================================= */
+
+
+/* ===== 21-Responsive-Desktop.css ===== */
+
 
 @media screen and (min-width: 901px) {
   html,
@@ -1158,7 +1136,7 @@ button:focus-visible {
     flex-direction: column;
   }
 
-  .terminal-main-header {
+  .main-header {
     position: relative;
   }
 
@@ -1175,4 +1153,93 @@ button:focus-visible {
     margin-right: calc(var(--sidebar-width) * -1);
   }
 }
+
+/* ===== Export safety: compact sidebar closers =====
+   Presets may style .panel-toggle broadly. Keep actual panel-header
+   close buttons compact while leaving the top Browse/Contents buttons
+   as larger controls. */
+
+/* Header open buttons: GTK4-style sidebar icons */
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  border: 1px solid transparent !important;
+  flex-shrink: 0 !important;
+
+  /* Hide the text, use a GTK-style SVG mask */
+  color: transparent !important;
+  background-color: transparent !important;
+  position: relative;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.header-panel-toggle:hover,
+.header-top-row > .panel-toggle:hover {
+  background-color: color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border-color) 50%, transparent) !important;
+}
+
+/* Left sidebar icon: box with left column filled */
+.header-panel-toggle-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--fg-base);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat;
+}
+
+/* Right sidebar icon: box with right column filled */
+.header-panel-toggle-right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--fg-base);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat;
+}
+
+/* Sidebar close buttons: GTK4-style circular icon */
+.panel-header .panel-toggle {
+  min-width: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  border: 1px solid transparent !important;
+  flex-shrink: 0 !important;
+  
+  /* Hide the rust-injected text, use a GTK-style SVG mask cross */
+  color: transparent !important;
+  background-color: transparent !important;
+  position: relative;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.panel-header .panel-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--fg-base);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") center/18px no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") center/18px no-repeat;
+}
+
+.panel-header .panel-toggle:hover {
+  background-color: color-mix(in srgb, var(--fg-base) 15%, transparent) !important;
+}
+
+/* ===== Active Preset CSS =====
+   Loaded after base skin rules so selected presets can override safely. */
+{{PRESET_CSS}}
 ]]></b:skin>

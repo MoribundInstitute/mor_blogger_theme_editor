@@ -22,7 +22,7 @@ body {
 .canvas-core,
 .terminal-post,
 .runelite-panel,
-.terminal-main-header,
+.main-header,
 .terminal-footer,
 .mor-catalog-dropdown {
   background: var(--bg-panel) !important;
@@ -47,7 +47,7 @@ body {
 /* The masthead is the showpiece — bigger radius at the top corners
    only, the "wet floor" pseudo-element underneath, and a glossy
    sheen across the top half. */
-.terminal-main-header {
+.main-header {
   position: relative !important;
   border-radius: 14px 14px 14px 14px !important;
   padding: 20px 24px !important;
@@ -66,7 +66,7 @@ body {
     var(--bg-panel) !important;
 }
 
-.terminal-main-header .institute-title {
+.main-header .institute-title {
   color: var(--fg-base) !important;
   font-weight: 700 !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) !important;
@@ -76,14 +76,14 @@ body {
 /* The "wet floor" reflection beneath the masthead title.
    Pure CSS — a mirrored copy of the title generated via ::after
    on the branding link. Subtle. Mac OS X dock would approve. */
-.terminal-main-header .branding-link {
+.main-header .branding-link {
   display: inline-block !important;
   position: relative !important;
   color: inherit !important;
   text-decoration: none !important;
 }
 
-.terminal-main-header .branding-link::after {
+.main-header .branding-link::after {
   content: attr(aria-label);
   position: absolute !important;
   left: 0 !important;
@@ -281,4 +281,57 @@ select:focus {
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.08),
     0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+/* ============================================================
+   Header toggle compatibility
+   Keeps the post-rename main header and clean-label sidebar
+   toggles as icon buttons, even when this preset restyles
+   .panel-toggle broadly.
+   ============================================================ */
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.header-panel-toggle::before,
+.header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: var(--fg-base) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.header-panel-toggle::after,
+.header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+
+.header-panel-toggle-left::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm16 16V5H9v14h10z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+}
+
+.header-panel-toggle-right::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat !important;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 16V5h10v14H5z'/%3E%3C/svg%3E") center/20px no-repeat !important;
 }

@@ -42,14 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const panelRight = document.getElementById('panel-right');
   const canvasCore = document.querySelector('.canvas-core');
 
-  /*
-    Back-to-top button support.
-
-    Recommended footer button:
-    <button class='back-to-top-btn' type='button'>Back to Top</button>
-
-    Also supports legacy scrolling buttons by checking onclick strings.
-  */
   const backToTopBtn =
     document.querySelector('.back-to-top-btn') ||
     document.querySelector('.footer-sys-info button[onclick*="scrollTo"]');
@@ -235,10 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleBtn) {
       const targetId = toggleBtn.getAttribute('data-target');
 
-      /*
-        Only panel-toggle buttons with data-target are treated as panel controls.
-        This keeps old utility buttons from accidentally toggling side panels.
-      */
       if (targetId) {
         const targetPanel = document.getElementById(targetId);
 
@@ -262,16 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const key = event.key ? event.key.toLowerCase() : '';
     const typing = isTypingInField();
 
-    /*
-      Ctrl+B = Browse panel
-      Ctrl+E = Contents panel
-      Home = scroll main content to top, unless typing in a field
-      Escape = close catalog menu and mobile side panels
-    */
-
     if (event.ctrlKey && key === 'b') {
       event.preventDefault();
-
       if (panelLeft) {
         panelLeft.classList.toggle('is-collapsed');
       }
@@ -279,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (event.ctrlKey && key === 'e') {
       event.preventDefault();
-
       if (panelRight) {
         panelRight.classList.toggle('is-collapsed');
       }
@@ -293,12 +272,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (key === 'escape') {
       if (catalogMenu && catalogMenu.classList.contains('is-open')) {
         closeCatalogMenu();
-
         if (catalogTrigger) {
           catalogTrigger.focus();
         }
       }
-
       closeMobilePanels();
     }
   });
@@ -320,7 +297,123 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     07. Optional GUI-Injected Custom JS
+     07. Light/Dark Theme Toggler
+     ========================================================= */
+  
+  const themeToggleBtn = document.getElementById('mor-theme-toggle');
+  const htmlEl = document.documentElement;
+  
+  const savedTheme = localStorage.getItem('mor-theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+      htmlEl.setAttribute('data-theme', 'dark');
+  }
+
+  if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          if (htmlEl.getAttribute('data-theme') === 'dark') {
+              htmlEl.removeAttribute('data-theme');
+              localStorage.setItem('mor-theme', 'light');
+          } else {
+              htmlEl.setAttribute('data-theme', 'dark');
+              localStorage.setItem('mor-theme', 'dark');
+          }
+      });
+  }
+
+  /* =========================================================
+     08. Share Menu Toggler & Actions
+     ========================================================= */
+  
+  const shareButtons = document.querySelectorAll('.sharing-button');
+
+  // 1. Handle opening/closing the dropdown
+  shareButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation(); 
+
+      const targetId = button.getAttribute('aria-controls');
+      
+      if (targetId) {
+        const targetMenu = document.getElementById(targetId);
+        if (targetMenu) {
+          // Close other open menus first
+          document.querySelectorAll('.share-buttons').forEach(menu => {
+             if (menu !== targetMenu && !menu.classList.contains('hidden')) {
+                 menu.classList.add('hidden');
+                 menu.setAttribute('aria-hidden', 'true');
+             }
+          });
+
+          targetMenu.classList.toggle('hidden');
+          
+          const isHidden = targetMenu.classList.contains('hidden');
+          targetMenu.setAttribute('aria-hidden', isHidden.toString());
+        }
+      }
+    });
+  });
+
+  // 2. Handle clicking the actual platforms
+  const platformButtons = document.querySelectorAll('.sharing-platform-button');
+  
+  platformButtons.forEach(btn => {
+    btn.addEventListener('click', (event) => {
+       event.preventDefault();
+       event.stopPropagation();
+
+       const shareHref = btn.getAttribute('data-href');
+       const shareUrl = btn.getAttribute('data-url');
+       const isCopyLink = btn.classList.contains('sharing-element-link');
+
+       // Action A: "Get Link" (Copy to Clipboard)
+       if (isCopyLink && shareUrl) {
+         if (navigator.clipboard) {
+           navigator.clipboard.writeText(shareUrl).then(() => {
+             // Visual feedback
+             const textSpan = btn.querySelector('.platform-sharing-text');
+             if (textSpan) {
+               const originalText = textSpan.innerText;
+               textSpan.innerText = 'Link Copied!';
+               setTimeout(() => { textSpan.innerText = originalText; }, 2000);
+             }
+           });
+         } else {
+           // Fallback for older browsers
+           prompt("Copy to clipboard: Ctrl+C, Enter", shareUrl);
+         }
+       } 
+       // Action B: Social Platforms (Popup Window)
+       else if (shareHref) {
+         window.open(shareHref, 'shareWindow', 'width=600,height=500,scrollbars=yes,resizable=yes');
+       }
+
+       // Close the menu after clicking
+       const parentMenu = btn.closest('.share-buttons');
+       if (parentMenu) {
+         parentMenu.classList.add('hidden');
+         parentMenu.setAttribute('aria-hidden', 'true');
+       }
+    });
+  });
+
+  // 3. Close the menu if clicking off-target
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.post-share-buttons')) {
+      const allMenus = document.querySelectorAll('.share-buttons');
+      allMenus.forEach(menu => {
+        if (!menu.classList.contains('hidden')) {
+          menu.classList.add('hidden');
+          menu.setAttribute('aria-hidden', 'true');
+        }
+      });
+    }
+  });
+  /* =========================================================
+     09. Optional GUI-Injected Custom JS
      ========================================================= */
 
   {{CUSTOM_BEFORE_BODY_JS}}

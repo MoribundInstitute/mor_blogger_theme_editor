@@ -1,41 +1,188 @@
 /* ============================================================
-   Glassmorphism preset
-   Frosted, translucent panels floating over an aurora gradient
-   body background. Heavy use of backdrop-filter — requires a
-   browser that supports it (Safari 9+, Chrome 76+, Firefox 103+).
-   Falls back to solid panels in unsupporting browsers.
+   Glassmorphism preset — v2
+   Three elevation tiers, directional rim-lighting, a tinted
+   gradient in the glass itself (not flat alpha), animated
+   aurora blobs, and an SVG noise overlay for tactile texture.
    ============================================================ */
 
-/* The aurora wallpaper. The base theme's token-driven bg-base
-   sits underneath. We layer a soft radial-gradient blob on top
-   so the blur has something colorful to chew on. */
+/* ---- Glass design tokens -------------------------------------
+   Centralise the glass recipe so the cascade stops fighting us.
+   Each tier defines: tint gradient, blur strength, border alpha,
+   shadow depth. Sidebars sit at L0 (recessive), header at L1
+   (default), the post at L2 (hero / focal). */
+:root {
+  /* L0 — recessive: sidebars, footers, dropdowns */
+  --glass-l0-tint: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+  --glass-l0-blur: blur(18px) saturate(150%);
+  --glass-l0-border: 1px solid rgba(255,255,255,0.14);
+  --glass-l0-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.28),
+    inset 1px 0 0 0 rgba(255,255,255,0.10),
+    inset -1px 0 0 0 rgba(0,0,0,0.08),
+    inset 0 -1px 0 0 rgba(0,0,0,0.12),
+    0 14px 36px -10px rgba(5,3,30,0.45),
+    0 4px 12px -3px rgba(5,3,30,0.22);
+
+  /* L1 — default: header, dropdowns, generic panels */
+  --glass-l1-tint: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%);
+  --glass-l1-blur: blur(24px) saturate(180%);
+  --glass-l1-border: 1px solid rgba(255,255,255,0.18);
+  --glass-l1-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.40),
+    inset 1px 0 0 0 rgba(255,255,255,0.18),
+    inset -1px 0 0 0 rgba(0,0,0,0.10),
+    inset 0 -1px 0 0 rgba(0,0,0,0.18),
+    0 20px 50px -12px rgba(5,3,30,0.55),
+    0 6px 18px -4px rgba(5,3,30,0.30);
+
+  /* L2 — hero: the post card itself */
+  --glass-l2-tint: linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 100%);
+  --glass-l2-blur: blur(32px) saturate(200%);
+  --glass-l2-border: 1px solid rgba(255,255,255,0.22);
+  --glass-l2-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.50),
+    inset 1px 0 0 0 rgba(255,255,255,0.22),
+    inset -1px 0 0 0 rgba(0,0,0,0.10),
+    inset 0 -1px 0 0 rgba(0,0,0,0.20),
+    0 30px 70px -14px rgba(5,3,30,0.65),
+    0 10px 24px -6px rgba(5,3,30,0.40);
+
+  /* Pill / button glass */
+  --glass-pill-tint: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 100%);
+  --glass-pill-blur: blur(14px) saturate(150%);
+}
+
+/* Light theme rebalance — pure white tint over pastel gradients
+   washes everything out, so light mode gets a cooler, slightly
+   darker tint and stronger borders. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --glass-l0-tint: linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.30) 100%);
+    --glass-l1-tint: linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.40) 100%);
+    --glass-l2-tint: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.50) 100%);
+    --glass-pill-tint: linear-gradient(135deg, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.35) 100%);
+    --glass-l0-border: 1px solid rgba(255,255,255,0.65);
+    --glass-l1-border: 1px solid rgba(255,255,255,0.75);
+    --glass-l2-border: 1px solid rgba(255,255,255,0.85);
+  }
+}
+
+/* ---- Stage: body background + ambient aurora blobs -----------
+   The base bg-base sits underneath. Pseudo-elements paint two
+   animated blob layers on top — these are what the backdrop-
+   filter actually has interesting content to blur.
+
+   We attach pseudo-elements to `body::before/::after` so they
+   live behind everything and never create a stacking context
+   that could break descendants' `backdrop-filter`. */
 body {
-  background-attachment: fixed !important;
-  background-image:
-    radial-gradient(circle at 12% 18%, rgba(168, 85, 247, 0.55), transparent 38%),
-    radial-gradient(circle at 88% 24%, rgba(56, 189, 248, 0.45), transparent 42%),
-    radial-gradient(circle at 50% 90%, rgba(244, 114, 182, 0.40), transparent 50%) !important;
   background-color: var(--bg-base) !important;
+  position: relative;
+  /* Avoid `background-attachment: fixed` — it breaks blur on
+     elements that share the viewport on iOS Safari. */
+  min-height: 100vh;
 }
 
-/* Every major surface becomes glass. Single layer treatment. */
-.canvas-core,
-.mor-post,
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+}
+
+body::before {
+  width: 55vw; height: 55vw;
+  left: -10vw; top: -10vw;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.55), transparent 65%);
+  animation: aurora-drift-a 28s ease-in-out infinite alternate;
+}
+body::after {
+  width: 60vw; height: 60vw;
+  right: -15vw; bottom: -15vw;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.50), transparent 60%),
+    radial-gradient(circle at 70% 70%, rgba(244, 114, 182, 0.40), transparent 60%);
+  animation: aurora-drift-b 34s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift-a {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(8vw, 6vh) scale(1.15); }
+}
+@keyframes aurora-drift-b {
+  from { transform: translate(0, 0) scale(1.05); }
+  to   { transform: translate(-6vw, -4vh) scale(0.95); }
+}
+
+/* Reduced motion: hold blobs in place. */
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
+
+/* Faint SVG noise overlay — encoded inline so it ships with the
+   CSS. Without grain, every glass surface looks like plastic. */
+html::after {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ---- Tier assignment -----------------------------------------
+   Sidebars/footer/dropdowns recede (L0); header sits at default
+   (L1); the post is the hero (L2). All share the same blur
+   recipe so the visual language is consistent — only the tint,
+   border alpha, and shadow depth vary. */
 .runelite-panel,
-.main-header,
-.mor-footer,
-.mor-catalog-dropdown {
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(20px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+.mor-catalog-dropdown,
+.mor-footer {
+  background: var(--glass-l0-tint) !important;
+  backdrop-filter: var(--glass-l0-blur);
+  -webkit-backdrop-filter: var(--glass-l0-blur);
+  border: var(--glass-l0-border) !important;
   border-radius: 18px !important;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+  box-shadow: var(--glass-l0-shadow) !important;
 }
 
-/* CONTENT surfaces inside glass containers — flat, transparent, no inherited stacking */
+.canvas-core,
+.main-header {
+  background: var(--glass-l1-tint) !important;
+  backdrop-filter: var(--glass-l1-blur);
+  -webkit-backdrop-filter: var(--glass-l1-blur);
+  border: var(--glass-l1-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--glass-l1-shadow) !important;
+}
+
+.mor-post {
+  background: var(--glass-l2-tint) !important;
+  backdrop-filter: var(--glass-l2-blur);
+  -webkit-backdrop-filter: var(--glass-l2-blur);
+  border: var(--glass-l2-border) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--glass-l2-shadow) !important;
+  padding: 32px !important;
+  margin-bottom: 20px !important;
+}
+
+/* Tighten the header so it doesn't dominate the viewport. The
+   original 24px padding + auto height burned ~280px. */
+.main-header {
+  padding: 16px 22px !important;
+  margin-bottom: 16px !important;
+}
+
+/* ---- Panel internals -----------------------------------------
+   Content inside a glass container should be flat — re-applying
+   glass effects nested inside another blurred element creates
+   visual noise and tanks performance. */
 .runelite-panel .panel-content,
 .canvas-core .panel-content {
   background: transparent !important;
@@ -45,53 +192,47 @@ body {
   padding: 14px 18px !important;
 }
 
-/* HEADER surfaces inside containers — sharp bottom border line, rounded top corners */
+/* Panel headers: a clear "lit ledge" effect — bright top line,
+   dark bottom line — so the header reads as a distinct surface
+   above the content, not just a slightly-different shade. */
 .panel-header,
 .mor-panel-heading {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   color: var(--fg-base) !important;
   font-weight: 600 !important;
   font-size: 0.95rem !important;
   padding: 12px 16px !important;
   border: none !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12) !important;
   border-radius: 18px 18px 0 0 !important;
 }
 
-/* Slightly denser glass for posts to preserve raw reading legibility. */
-.mor-post {
-  background: rgba(255, 255, 255, 0.10) !important;
-  padding: 28px !important;
-  margin-bottom: 20px !important;
-}
-
-/* The header gets a thinner, more horizontal piece of glass. */
-.main-header {
-  border-radius: 18px !important;
-  margin-bottom: 20px !important;
-  padding: 24px !important;
-}
-
-/* Buttons: pill-shaped glass capsules. */
+/* ---- Buttons -------------------------------------------------
+   Pill capsules with rim lighting. Hover lifts; active sinks. */
 .pager-btn,
 .panel-toggle,
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: var(--glass-pill-tint) !important;
+  backdrop-filter: var(--glass-pill-blur);
+  -webkit-backdrop-filter: var(--glass-pill-blur);
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
   border-radius: 999px !important;
   color: var(--fg-base) !important;
   padding: 8px 18px !important;
   font-weight: 500 !important;
   text-transform: none !important;
-  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease !important;
   cursor: pointer;
+  transition:
+    background 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease !important;
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+    0 4px 12px rgba(0, 0, 0, 0.20) !important;
 }
 
 .pager-btn:hover,
@@ -99,21 +240,24 @@ body {
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%) !important;
   transform: translateY(-1px);
   box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+    0 6px 18px rgba(0, 0, 0, 0.28) !important;
 }
 
 .pager-btn:active,
 .panel-toggle:active {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10) !important;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Header Browse / Contents buttons */
+/* Header buttons */
 .header-panel-toggle.panel-toggle,
 .header-top-row > .panel-toggle {
   min-width: 92px !important;
@@ -123,7 +267,6 @@ body {
   border-radius: 999px !important;
 }
 
-/* In-app preview/demo square toggle button */
 .preview-panel-toggle.panel-toggle {
   width: 44px !important;
   height: 44px !important;
@@ -136,49 +279,62 @@ body {
   border-radius: 999px !important;
 }
 
-/* Post titles: stay solid, but pick up a tiny gradient lift. */
+/* ---- Typography ----------------------------------------------
+   Post title gets a subtle gradient lift toward the accent.
+   Body text uses fg-base at 90% so muted text doesn't disappear
+   into the glass. */
 .mor-post .post-title,
 .mor-post .post-title a {
-  background: linear-gradient(135deg, var(--fg-base) 30%, var(--accent) 100%);
+  background: linear-gradient(135deg, var(--fg-base) 25%, var(--accent) 105%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
   font-weight: 700 !important;
+  letter-spacing: -0.015em;
   text-shadow: none !important;
 }
 
-/* Links inside the post body get the accent treatment with a
-   subtle underline that animates on hover. */
+.mor-post .post-body {
+  color: color-mix(in srgb, var(--fg-base) 92%, transparent) !important;
+}
+
 .mor-post .post-body a {
   color: var(--accent) !important;
   text-decoration: none !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  transition: border-color 150ms ease;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: border-color 150ms ease, color 150ms ease;
 }
-
 .mor-post .post-body a:hover {
   border-bottom-color: var(--accent);
+  color: color-mix(in srgb, var(--accent) 80%, white);
 }
 
-/* Footer glass strip */
 .mor-footer {
   padding: 16px 24px !important;
   color: var(--fg-muted) !important;
 }
 
-/* Styled inputs matching the translucent theme */
+/* ---- Form elements -------------------------------------------
+   The original input was a stacking-context hazard — its tiny
+   blur inside an already-blurred ancestor caused the rendering
+   glitch you saw in the search field. Drop the nested blur and
+   lean on a clean translucent fill instead. */
 input[type='text'],
 input[type='search'],
 input[type='email'],
 textarea,
 select {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 10px !important;
   padding: 8px 12px !important;
   color: var(--fg-base) !important;
-  backdrop-filter: blur(4px) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18) !important;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: color-mix(in srgb, var(--fg-muted) 70%, transparent) !important;
 }
 
 input[type='text']:focus,
@@ -187,62 +343,36 @@ input[type='email']:focus,
 textarea:focus,
 select:focus {
   outline: none !important;
-  border-color: var(--accent) !important;
-  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.18),
+    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent) !important;
 }
 
-/* Graceful degradation: if backdrop-filter isn't supported, the
-   panels will look like flat-tinted boxes. The base bg color in
-   the palette is dark enough to keep text readable in that case. */
-@supports not (backdrop-filter: blur(1px)) {
+/* ---- Performance & fallback ---------------------------------
+   Mobile: cut the heaviest blurs in half — backdrop-filter is
+   GPU-expensive on phones and we'd rather have 60fps than the
+   absolute thickest glass. */
+@media (max-width: 768px) {
+  :root {
+    --glass-l1-blur: blur(14px) saturate(160%);
+    --glass-l2-blur: blur(18px) saturate(170%);
+  }
+  body::before, body::after { filter: blur(50px); }
+}
+
+/* Graceful degradation: if backdrop-filter is unsupported, fall
+   back to the palette's solid panel colors. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .canvas-core,
   .mor-post,
   .runelite-panel,
   .main-header,
-  .mor-footer {
+  .mor-footer,
+  .mor-catalog-dropdown {
     background: var(--bg-panel) !important;
+    backdrop-filter: none !important;
   }
-}
-
-/* ============================================================
-   Header toggle compatibility
-   Keeps the post-rename main header and clean-label sidebar
-   toggles as icon buttons, even when this preset restyles
-   .panel-toggle broadly.
-   ============================================================ */
-
-.header-panel-toggle,
-.header-top-row > .panel-toggle {
-  min-width: 0 !important;
-  width: 36px !important;
-  height: 36px !important;
-  min-height: 36px !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  white-space: normal !important;
-  flex-shrink: 0 !important;
-  color: transparent !important;
-  overflow: hidden !important;
-  position: relative !important;
-}
-
-.header-panel-toggle::before,
-.header-top-row > .panel-toggle::before {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  display: block !important;
-  background-color: var(--fg-base) !important;
-  background-image: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  pointer-events: none !important;
-}
-
-.header-panel-toggle::after,
-.header-top-row > .panel-toggle::after {
-  content: none !important;
-  display: none !important;
+  body::before, body::after { display: none; }
 }

@@ -1,0 +1,107 @@
+/* ============================================================
+   25. Share Buttons & Dropdown Menu
+   ============================================================ */
+
+.post-share-buttons {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* The trigger button itself (Shrunk & Softened) */
+.sharing-button {
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  border-radius: var(--btn-radius, 8px);
+  padding: 6px 12px;
+  font-family: var(--font-body, inherit);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.sharing-button:hover {
+  color: var(--fg-base);
+  border-color: var(--fg-base);
+  background: color-mix(in srgb, var(--bg-elevated) 30%, transparent);
+}
+
+/* Force Blogger's native trigger SVGs to size correctly (Shrunk to 16px) */
+.sharing-button svg,
+.flat-icon-button svg {
+    width: 16px !important;
+    height: 16px !important;
+    fill: currentColor !important;
+}
+
+/* The Popup Container */
+.share-buttons-container {
+  position: absolute;
+  bottom: 100%; /* Makes it drop-up instead of drop-down */
+  left: 0;
+  margin-bottom: 8px;
+  z-index: var(--dropdown-z, 1300);
+}
+
+/* The actual ul list */
+ul.share-buttons {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  min-width: 160px;
+  
+  /* Hidden by default, toggled by Blogger's native JS */
+  display: none; 
+}
+
+/* Blogger's JS removes the 'hidden' class when the button is clicked */
+ul.share-buttons:not(.hidden) {
+  display: block;
+  animation: share-menu-fade-in 0.15s ease-out forwards;
+}
+
+@keyframes share-menu-fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+ul.share-buttons li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* The individual share links */
+.sharing-platform-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: var(--fg-base);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.sharing-platform-button:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+/* Size down Blogger's injected SVG icons in the dropdown */
+.sharing-platform-button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}

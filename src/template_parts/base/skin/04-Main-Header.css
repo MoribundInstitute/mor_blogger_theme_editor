@@ -1,3 +1,40 @@
 .main-header { display: flex; flex-direction: column; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background-color: var(--bg-base); width: 100%; position: relative; z-index: var(--header-z); }
-.header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 10px 20px 9px; line-height: 1.2; border-bottom: 1px dashed var(--border-color); background: var(--bg-base); }
-.header-bottom-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 12px 20px 14px; flex-wrap: wrap; line-height: 1.2; }
+
+/* The fix: Background is now transparent so the parent's glass/gradient shines through */
+.header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 10px 20px 9px; line-height: 1.2; border-bottom: 1px dashed var(--border-color); background: transparent; }
+.header-bottom-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 12px 20px 14px; flex-wrap: wrap; line-height: 1.2; background: transparent; }
+
+/* Group wrappers to maintain strict center alignment of the logo */
+.header-side-controls { display: flex; align-items: center; gap: 8px; flex: 1 1 0; }
+.right-controls { justify-content: flex-end; }
+
+/* --- Light/Dark Toggle SVG Logic --- */
+/* Use ID selector to guarantee we override 22-Export-Safety.css */
+#mor-theme-toggle { 
+  color: var(--fg-base) !important; 
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Kill the engine's default icon mask so it doesn't overlap the SVGs */
+#mor-theme-toggle::before,
+#mor-theme-toggle::after { 
+  display: none !important; 
+  background: none !important;
+  content: none !important;
+}
+
+#mor-theme-toggle svg { 
+  width: 18px !important; 
+  height: 18px !important; 
+  fill: currentColor !important; 
+}
+
+/* Light Mode: Show Moon, Hide Sun */
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: block !important; }
+
+/* Dark Mode: Show Sun, Hide Moon */
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: none !important; }

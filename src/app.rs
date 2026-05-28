@@ -208,7 +208,11 @@ pub fn App() -> Element {
         preset_css: preset_css(),
     });
 
-    let generated_xml = use_memo(move || render_theme(&current_config()));
+    let generated_xml = use_memo(move || {
+        let config = current_config();
+        let (light, dark) = crate::presets::resolve_palette_pair(active_preset(), &config);
+        render_theme(&config, &light, &dark)
+    });
     let preview_html =
         use_memo(move || render_preview_html(&current_config(), preview_template_mode()));
 
@@ -321,6 +325,7 @@ pub fn App() -> Element {
                     show_preview,
                     diag,
                     config_toml: toml::to_string_pretty(&current_config()).unwrap_or_default(),
+                    active_preset,
                     on_load_theme: move |toml_text: String| {
                         if let Ok(new_config) = toml::from_str::<ThemeConfig>(&toml_text) {
                             signals.apply_config(&new_config);

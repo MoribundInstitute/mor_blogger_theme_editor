@@ -55,7 +55,23 @@
                   <data:post.body/>
                 </div>
 
+                <!-- ADD THE FOOTER HERE INSIDE THE ACTUAL ARTICLE TAG -->
+                <div class='post-footer'>
+                  <b:if cond='data:view.isSingleItem'>
+                    <!-- 1. Render the Author Profile -->
+                    <b:include data='post' name='postFooterAuthorProfile'/>
+                    
+                    <!-- 2. Render the Share Buttons -->
+                    <b:include name='postShareButtons'/>
+                  </b:if>
+                </div>
+
               </article>
+
+              <b:if cond='data:view.isSingleItem'>
+                <b:include data='post' name='commentPicker'/>
+              </b:if>
+
             </b:loop>
           </div>
 
@@ -64,6 +80,8 @@
 
         <b:includable id='aboutPostAuthor'>
           <div class='author-name'>
+            <!-- NEW: The 'By' label -->
+            <span class='author-label'>By</span>
             <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
               <span>
                 <data:post.author.name/>
@@ -443,7 +461,15 @@
               <b:include data='post' name='postBodySnippet'/>
               <b:include data='post' name='postJumpLink'/>
             </b:if>
-            <b:include data='post' name='postFooter'/>
+
+            <div class='post-footer'>
+              <b:if cond='data:view.isSingleItem'>
+                <b:include data='post' name='postFooterAuthorProfile'/>
+
+                <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+              </b:if>
+            </div>
+
           </div>
         </b:includable>
 
@@ -505,7 +531,7 @@
         </b:includable>
 
         <b:includable id='postFooterAuthorProfile' var='post'>
-          <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+          <b:if cond='data:view.isPost'>
             <div class='author-profile'>
               <b:if cond='data:post.author.authorPhoto.url'>
                 <img class='author-image' expr:src='data:post.author.authorPhoto.url' width='50px'/>

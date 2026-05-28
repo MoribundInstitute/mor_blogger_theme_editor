@@ -21,6 +21,7 @@ pub fn CenterWorkspacePanel(
     diag: Signal<DiagnosticResult>,
 
     config_toml: String,
+    active_preset: Signal<Option<&'static str>>,
     on_load_theme: EventHandler<String>,
     on_restore: EventHandler<ThemeConfig>,
     on_load_hotswap: EventHandler<String>,
@@ -34,6 +35,9 @@ pub fn CenterWorkspacePanel(
     let toml_for_save_data = config_toml.clone(); // <-- ADDED: The spare copy for the second JSON button
     let toml_for_bottom_copy = config_toml.clone();
     let toml_for_disk = config_toml.clone();
+    // Snapshot the active preset name once so both export closures can capture it by value.
+    let preset_for_bottom_copy = active_preset();
+    let preset_for_disk = active_preset();
 
     let is_valid = diag.read().is_valid;
     let error_count = diag.read().errors.len();
@@ -429,7 +433,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                match build_fresh_export_xml(&toml_for_bottom_copy) {
+                                match build_fresh_export_xml(&toml_for_bottom_copy, preset_for_bottom_copy) {
                                     Ok(fresh_xml) => {
                                         copy_to_clipboard(fresh_xml);
                                         status_msg.set("XML copied to clipboard!".to_string());
@@ -447,7 +451,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                let fresh_xml = match build_fresh_export_xml(&toml_for_disk) {
+                                let fresh_xml = match build_fresh_export_xml(&toml_for_disk, preset_for_disk) {
                                     Ok(xml) => xml,
                                     Err(err) => {
                                         let msg = format!("Export failed: {}", err);
@@ -481,10 +485,20 @@ pub fn CenterWorkspacePanel(
     }
 }
 
-fn build_fresh_export_xml(config_toml: &str) -> Result<String, String> {
+fn build_fresh_export_xml(
+    config_toml: &str,
+    active_preset_name: Option<&'static str>,
+) -> Result<String, String> {
     let config = toml::from_str::<ThemeConfig>(config_toml)
         .map_err(|err| format!("could not parse current ThemeConfig TOML: {}", err))?;
 
-    let rendered_xml = crate::render::render_theme(&config);
+    // Resolve the light/dark palette pair for the active preset.
+    // `resolve_palette_pair` falls back to config-derived palettes when no
+    // preset is selected, so this is always safe to call.
+    let (light_palette, dark_palette) =
+        crate::presets::resolve_palette_pair(active_preset_name, &config);
+
+    let rendered_xml =
+        crate::render::render_theme(&config, &light_palette, &dark_palette);
     Ok(crate::rehydration::inject_state(&rendered_xml, config_toml))
 }

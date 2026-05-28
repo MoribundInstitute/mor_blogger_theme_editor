@@ -145,3 +145,29 @@ pub fn build_base(
         preset_css: String::new(),
     }
 }
+// ---------------------------------------------------------------------------
+// Engine resolution helpers
+// ---------------------------------------------------------------------------
+
+/// Return the `(light, dark)` palette pair for the named preset.
+///
+/// If `preset_id` is `None`, or the ID is not found in the registry, both
+/// palettes fall back to the current active colors from `fallback_config`.
+/// This means the engine always gets valid palettes regardless of state.
+pub fn resolve_palette_pair(
+    preset_id: Option<&str>,
+    fallback_config: &crate::config::ThemeConfig,
+) -> (PresetPalette, PresetPalette) {
+    if let Some(id) = preset_id {
+        if let Some(preset) = all_presets().into_iter().find(|p| p.id == id) {
+            return (preset.light.clone(), preset.dark.clone());
+        }
+    }
+
+    // Fallback: wrap the live config colors so the engine never receives empty palettes.
+    let fallback = PresetPalette {
+        colors: fallback_config.colors.clone(),
+        background: fallback_config.background.clone(),
+    };
+    (fallback.clone(), fallback)
+}

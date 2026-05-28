@@ -5,13 +5,18 @@ use std::fs;
 
 use super::xml_generator;
 use crate::config::ThemeConfig;
+use crate::presets::PresetPalette;
 
-pub fn render_theme(config: &ThemeConfig) -> String {
+pub fn render_theme(
+    config: &ThemeConfig,
+    light_palette: &PresetPalette,
+    dark_palette: &PresetPalette,
+) -> String {
     eprintln!(
         "[render_theme] preset_css bytes = {}",
         config.preset_css.len()
     );
-    xml_generator::render_template(config)
+    xml_generator::render_template(config, light_palette, dark_palette)
 }
 
 pub fn save_xml_to_disk(xml_content: &str, site_title: &str) -> Result<String, String> {

@@ -1,0 +1,58 @@
+/* ============================================================
+   24. Author Profile Block
+   ============================================================ */
+
+.author-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 24px; /* Slightly reduced top/bottom padding for the pill shape */
+  margin: 40px 0;
+  background: color-mix(in srgb, var(--bg-panel) 60%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 133px; /* Kept your custom pill radius! */
+  
+  /* THIS IS THE MAGIC BULLET */
+  width: fit-content; 
+}
+
+.author-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.author-about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Flex alignment for the By label and the Name */
+.author-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.author-label {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+.author-name a {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fg-base);
+  text-decoration: none;
+}
+
+.author-desc {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}

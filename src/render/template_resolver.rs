@@ -19,7 +19,7 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     // 1. Resolve Headers
     let header = match pack.header_variant.as_str() {
         "gtk_headerbar" => include_str!("../template_parts/headers/gtk_headerbar.xml"),
-        "mor" | _ => include_str!("../template_parts/headers/mor.xml"),
+        "mor" | _ => include_str!("../template_parts/headers/mor_header_baseline.xml"),
     };
 
     // 2. Resolve Main Layouts
@@ -52,7 +52,7 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     // 7. Resolve Scripts
     let javascript = match pack.script_variant.as_str() {
         "minimal" => include_str!("../template_parts/scripts/minimal.xml"),
-        "mor_panels" | _ => include_str!("../template_parts/scripts/mor_panels.xml"),
+        "mor_panels" | _ => include_str!("../template_parts/scripts/Mor_Script_Default.xml"),
     };
 
     // Dynamically build the master CSS from the 23 modular skin files
@@ -80,6 +80,9 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
         include_str!("../template_parts/base/skin/20-Responsive-Very-Small-Screens.css"),
         include_str!("../template_parts/base/skin/21-Responsive-Desktop.css"),
         include_str!("../template_parts/base/skin/22-Export-Safety.css"),
+        include_str!("../template_parts/base/skin/23-Comments.css"),
+        include_str!("../template_parts/base/skin/24-Author-Profile.css"),
+        include_str!("../template_parts/base/skin/25-Share-Menu.css"),
     ]);
 
     TemplateParts {

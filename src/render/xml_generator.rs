@@ -5,6 +5,7 @@
 //! a reference/legacy fallback, not as the export input.
 
 use crate::config::{BackgroundMode, ThemeConfig};
+use crate::presets::PresetPalette;
 use crate::render::template_resolver::resolve_template_parts;
 
 use super::ads::{
@@ -43,6 +44,23 @@ fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
     }
 }
 
+fn generate_background_css(bg: &BackgroundMode) -> String {
+    match bg {
+        BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
+        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+            "background: linear-gradient({}deg, {}, {});",
+            angle_deg,
+            escape_attr(from),
+            escape_attr(to)
+        ),
+        BackgroundMode::Tile { url } if url.trim().is_empty() => String::new(),
+        BackgroundMode::Tile { url } => format!(
+            "background-image: url('{}');\n  background-repeat: repeat;",
+            escape_attr(url)
+        ),
+    }
+}
+
 fn assemble_template(
     meta: &str,
     css: &str,
@@ -74,26 +92,15 @@ fn assemble_template(
 /// allowed to expose many safe GUI-facing labels. Structural Blogger values
 /// such as `Blog1`, `Label1`, `BlogArchive1`, widget `type`, and section IDs
 /// should stay literal inside the XML parts.
-pub(super) fn render_template(config: &ThemeConfig) -> String {
-    let background_tile_css = match &config.background.mode {
-        BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
-        BackgroundMode::Gradient {
-            from,
-            to,
-            angle_deg,
-        } => format!(
-            "background: linear-gradient({}deg, {}, {});",
-            angle_deg,
-            escape_attr(from),
-            escape_attr(to)
-        ),
-        BackgroundMode::Tile { url } if url.trim().is_empty() => String::new(),
-        BackgroundMode::Tile { url } => format!(
-            "background-image: url('{}');\n  background-repeat: repeat;",
-            escape_attr(url)
-        ),
-    };
+pub(super) fn render_template(
+    config: &ThemeConfig,
+    light_palette: &PresetPalette,
+    dark_palette: &PresetPalette,
+) -> String {
+    let light_bg_css = generate_background_css(&light_palette.background.mode);
+    let dark_bg_css = generate_background_css(&dark_palette.background.mode);
 
+    // Keep the active background URL for meta tags
     let background_tile_url = match &config.background.mode {
         BackgroundMode::Tile { url } => url.clone(),
         _ => String::new(),
@@ -388,36 +395,32 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
         .replace("{{PROGRESS_ACTIVITIES_LABEL}}", "Activities")
         .replace("{{PROGRESS_ACTIVITIES_URL}}", "/search/label/Activity")
         // CSS tokens.
-        .replace("{{COLOR_BG_BASE}}", &escape_attr(&config.colors.bg_base))
-        .replace(
-            "{{COLOR_BG_PANEL}}",
-            &escape_attr(&config.colors.bg_panel.to_css()),
-        )
-        .replace(
-            "{{COLOR_BG_HIGHLIGHT}}",
-            &escape_attr(&config.colors.bg_elevated.to_css()),
-        )
-        .replace(
-            "{{COLOR_BG_SOFT}}",
-            &escape_attr(&config.colors.bg_panel.to_css()),
-        )
-        .replace(
-            "{{COLOR_BG_ELEVATED}}",
-            &escape_attr(&config.colors.bg_elevated.to_css()),
-        )
-        .replace("{{COLOR_FG_BASE}}", &escape_attr(&config.colors.fg_base))
-        .replace("{{COLOR_FG_DIM}}", &escape_attr(&config.colors.fg_muted))
-        .replace("{{COLOR_FG_MUTED}}", &escape_attr(&config.colors.fg_muted))
-        .replace("{{COLOR_ACCENT}}", &escape_attr(&config.colors.accent))
+
+        // --- INJECT LIGHT PALETTE ---
+        .replace("{{LIGHT_BG_BASE}}", &escape_attr(&light_palette.colors.bg_base))
+        .replace("{{LIGHT_BG_PANEL}}", &escape_attr(&light_palette.colors.bg_panel.to_css()))
+        .replace("{{LIGHT_BG_ELEVATED}}", &escape_attr(&light_palette.colors.bg_elevated.to_css()))
+        .replace("{{LIGHT_FG_BASE}}", &escape_attr(&light_palette.colors.fg_base))
+        .replace("{{LIGHT_FG_MUTED}}", &escape_attr(&light_palette.colors.fg_muted))
+        .replace("{{LIGHT_ACCENT}}", &escape_attr(&light_palette.colors.accent))
+        .replace("{{LIGHT_BORDER}}", &escape_attr(&light_palette.colors.border))
+        .replace("{{LIGHT_BACKGROUND_TILE_CSS}}", &light_bg_css)
+
+        // --- INJECT DARK PALETTE ---
+        .replace("{{DARK_BG_BASE}}", &escape_attr(&dark_palette.colors.bg_base))
+        .replace("{{DARK_BG_PANEL}}", &escape_attr(&dark_palette.colors.bg_panel.to_css()))
+        .replace("{{DARK_BG_ELEVATED}}", &escape_attr(&dark_palette.colors.bg_elevated.to_css()))
+        .replace("{{DARK_FG_BASE}}", &escape_attr(&dark_palette.colors.fg_base))
+        .replace("{{DARK_FG_MUTED}}", &escape_attr(&dark_palette.colors.fg_muted))
+        .replace("{{DARK_ACCENT}}", &escape_attr(&dark_palette.colors.accent))
+        .replace("{{DARK_BORDER}}", &escape_attr(&dark_palette.colors.border))
+        .replace("{{DARK_BACKGROUND_TILE_CSS}}", &dark_bg_css)
+
+        // Keep these legacy active-config fallbacks so we don't break older templates
         .replace("{{COLOR_ACCENT_SOFT}}", &escape_attr(&color_accent_soft))
-        .replace(
-            "{{COLOR_ACCENT_SHADOW}}",
-            &escape_attr(&color_accent_shadow),
-        )
+        .replace("{{COLOR_ACCENT_SHADOW}}", &escape_attr(&color_accent_shadow))
         .replace("{{COLOR_ACCENT_WASH}}", &escape_attr(&color_accent_wash))
         .replace("{{FLUID_GLOW_CSS}}", &fluid_glow)
-        .replace("{{COLOR_BORDER}}", &escape_attr(&config.colors.border))
-        .replace("{{COLOR_BORDER_SOFT}}", &escape_attr(&config.colors.border))
         .replace(
             "{{FONT_BODY}}",
             &escape_attr(&config.typography.body_font_stack),
@@ -488,7 +491,6 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
             "{{BACKGROUND_TILE_URL}}",
             &escape_attr(&background_tile_url),
         )
-        .replace("{{BACKGROUND_TILE_CSS}}", &background_tile_css)
         .replace("{{ICON_SIDEBAR_LEFT}}", &config.icons.sidebar_left)
         .replace("{{ICON_SIDEBAR_RIGHT}}", &config.icons.sidebar_right)
         .replace("{{ICON_PANEL_CLOSE}}", &config.icons.panel_close)

@@ -1,491 +1,130 @@
-# MOR_PLAN.md
+This is an excellent architectural pivot. Bringing the modular "block" philosophy from MorBlocks into the Theme Architect completely shifts the app from being a simple "color palette reskinner" to a genuine layout engine. It perfectly addresses the core issue: a GTK theme (or a retro MMORPG theme) relies on structural paradigms—headerbars, docks, and popovers—not just a set of hex codes.
 
-## Goal
+Your immediate next step recommendation is completely correct. The most common pitfall when doing a refactor like this is breaking Blogger's extremely rigid b:section/b:widget XML parsing. By doing a "safe infrastructure pass" first (Phases 1 & 2), you guarantee the Rust plumbing works before you touch the file system or introduce new layout HTML.
 
-Refactor the Blogger theme editor so it exports a valid, customizable Blogger XML theme from modular template parts instead of a brittle monolithic `src/template.xml`.
+Here is the exact Rust code and checklist to execute your safe infrastructure pass.
 
-The app should remain a GUI editor. Users should be able to customize the visible theme shell, CSS, navigation, static page links, external links, footer content, colors, fonts, and optional scripts without accidentally breaking Blogger's widget engine.
+Phase 1: Add the Config Model
+First, we define TemplatePackConfig and implement Default to mirror the variants you are currently using.
 
-## Core Principle
+Using #[serde(default)] on the new field in ThemeConfig is the critical piece here. It ensures that any old user presets, built-in presets, or GTK imports saved to disk that lack the template_pack key will seamlessly deserialize and fall back to the terminal layout, rather than crashing the app.
 
-Separate the project into two layers:
+src/models/config.rs (or wherever your config models live)
 
-```text
-Customizable GUI layer:
-  CSS variables
-  theme colors
-  fonts
-  header branding
-  menu links
-  catalog links
-  static page links
-  external links
-  footer text
-  optional custom HTML/JS
-  preview behavior
+Rust
+use serde::{Deserialize, Serialize};
 
-Frozen Blogger engine layer:
-  Blog1 widget ID/type
-  Label1 widget ID/type
-  BlogArchive1 widget ID/type
-  HTML1/widget IDs
-  b:widget-settings
-  b:includable blocks
-  b:section IDs
-  Blogger data bindings
-```
-
-Do not tokenize Blogger structural identifiers such as:
-
-```text
-Blog1
-BlogArchive1
-BlogArchive
-Label1
-Label
-HTML1
-BlogSearch1
-BlogSearch
-```
-
-Only tokenize safe text, URLs, CSS values, labels, and configurable HTML/CSS/JS zones.
-
-## Current Source Layout
-
-Use the modular XML parts under:
-
-```text
-src/template_parts/
-  meta.xml
-  css.xml
-  header.xml
-  sidebar_left.xml
-  main.xml
-  sidebar_right.xml
-  javascript_before_body_tag.xml
-```
-
-The old monolithic template should be archived only:
-
-```text
-docs/archive/template-old-monolith.xml
-```
-
-## File Responsibilities
-
-### `src/template_parts/meta.xml`
-
-Owns the XML declaration, doctype, Blogger namespaces, opening `<head>`, meta tags, Blogger `all-head-content`, favicons, social metadata, Google font link, and ad head script token.
-
-Safe tokens include:
-
-```text
-{{SITE_TITLE}}
-{{META_DESCRIPTION}}
-{{META_KEYWORDS}}
-{{AUTHOR_NAME}}
-{{THEME_COLOR}}
-{{FAVICON_URL}}
-{{SOCIAL_CARD_IMAGE_URL}}
-{{GOOGLE_FONTS_LINK}}
-{{ADS_HEAD_SCRIPT}}
-```
-
-### `src/template_parts/css.xml`
-
-Owns:
-
-```text
-<b:skin><![CDATA[
-  theme CSS
-]]></b:skin>
-```
-
-Safe tokens include:
-
-```text
-{{COLOR_BG_BASE}}
-{{COLOR_BG_PANEL}}
-{{COLOR_BG_ELEVATED}}
-{{COLOR_FG_BASE}}
-{{COLOR_FG_MUTED}}
-{{COLOR_ACCENT}}
-{{COLOR_BORDER}}
-{{FONT_BODY}}
-{{FONT_HEADING}}
-{{FONT_MONO}}
-{{BTN_RADIUS}}
-{{BTN_BORDER_WIDTH}}
-{{BACKGROUND_TILE_CSS}}
-{{PRESET_CSS}}
-```
-
-Keep raw CSS inside CDATA.
-
-### `src/template_parts/header.xml`
-
-Owns the terminal header, panel toggle buttons, branding/logo, main nav, catalog dropdown, and search form.
-
-Safe tokens include:
-
-```text
-{{SITE_TITLE}}
-{{SITE_SUBTITLE}}
-{{HEADER_LOGO_URL}}
-{{SITE_HOME_URL}}
-{{LEFT_PANEL_OPEN_LABEL}}
-{{RIGHT_PANEL_OPEN_LABEL}}
-{{NAV_HOME_LABEL}}
-{{NAV_HOME_URL}}
-{{NAV_ABOUT_LABEL}}
-{{NAV_ABOUT_URL}}
-{{NAV_PROJECTS_LABEL}}
-{{NAV_PROJECTS_URL}}
-{{NAV_CONTACT_LABEL}}
-{{NAV_CONTACT_URL}}
-{{SEARCH_ACTION_URL}}
-{{SEARCH_PLACEHOLDER}}
-{{SEARCH_BUTTON_LABEL}}
-```
-
-Future GUI feature: generate menu/catalog entries from config rather than hardcoding every slot.
-
-### `src/template_parts/sidebar_left.xml`
-
-Owns the left panel shell, `sidebar-left` section, `Label1`, and `BlogArchive1`.
-
-Keep `Label1` and `BlogArchive1` full and Blogger-native.
-
-Safe tokens include:
-
-```text
-{{LEFT_PANEL_TITLE}}
-{{LEFT_PANEL_CLOSE_LABEL}}
-{{LABEL_WIDGET_TITLE}}
-{{ARCHIVE_WIDGET_TITLE}}
-{{LABEL_SORTING}}
-{{LABEL_DISPLAY}}
-{{ARCHIVE_SHOW_STYLE}}
-{{ARCHIVE_FREQUENCY}}
-```
-
-Never tokenize widget IDs or widget types.
-
-### `src/template_parts/main.xml`
-
-Owns the main canvas shell, main/content section, `Blog1`, post rendering includables, pager, comments, and sharing includables.
-
-Keep `Blog1` full and Blogger-native.
-
-Safe tokens include:
-
-```text
-{{BLOG_WIDGET_TITLE}}
-{{BLOG_COMMENT_LABEL}}
-{{BLOG_AUTHOR_LABEL}}
-{{BLOG_TIMESTAMP_FORMAT}}
-{{POST_TAGS_PREFIX}}
-{{PAGER_NEWER_LABEL}}
-{{PAGER_HOME_LABEL}}
-{{PAGER_OLDER_LABEL}}
-{{POST_METADATA_FALLBACK_IMAGE_URL}}
-{{PUBLISHER_NAME}}
-{{PUBLISHER_LOGO_URL}}
-```
-
-Do not replace the full Blog widget with a tiny generated fragment unless it has been proven in Blogger.
-
-### `src/template_parts/sidebar_right.xml`
-
-Owns the right panel shell, `sidebar-right` section, and `HTML1` table-of-contents widget.
-
-Safe tokens include:
-
-```text
-{{RIGHT_PANEL_TITLE}}
-{{RIGHT_PANEL_CLOSE_LABEL}}
-{{RIGHT_WIDGET_TITLE}}
-{{TOC_LOADING_MESSAGE}}
-{{TOC_WAITING_MESSAGE}}
-{{TOC_EMPTY_MESSAGE}}
-{{TOC_HEADING_SELECTOR}}
-```
-
-### `src/template_parts/javascript_before_body_tag.xml`
-
-Owns panel toggles, catalog behavior, keyboard shortcuts, back-to-top behavior, TOC helpers, and optional user JS insertion.
-
-Safe token:
-
-```text
-{{CUSTOM_BEFORE_BODY_JS}}
-```
-
-Do not wrap `{{CUSTOM_BEFORE_BODY_JS}}` in another `<script>` if this file already lives inside a script block.
-
-## Renderer Refactor
-
-Edit:
-
-```text
-src/render/theme.rs
-src/render/xml_generator.rs
-src/render/util.rs
-src/render/ads.rs
-```
-
-### `src/render/theme.rs`
-
-Make it the stable public facade:
-
-```rust
-pub fn render_theme(config: &ThemeConfig) -> String {
-    xml_generator::render_template(config)
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct TemplatePackConfig {
+    pub header_variant: String,
+    pub main_variant: String,
+    pub left_sidebar_variant: String,
+    pub right_sidebar_variant: String,
+    pub script_variant: String,
+    pub icon_pack: String,
 }
-```
 
-It should no longer pass `BASE_TEMPLATE` from `src/template.xml`.
-
-### `src/render/xml_generator.rs`
-
-Responsibilities:
-
-```text
-include_str! each template part
-assemble final XML
-build token map
-replace safe GUI tokens
-run header socket generation if needed
-return final XML
-```
-
-Desired constants:
-
-```rust
-const META: &str = include_str!("../template_parts/meta.xml");
-const CSS: &str = include_str!("../template_parts/css.xml");
-const HEADER: &str = include_str!("../template_parts/header.xml");
-const SIDEBAR_LEFT: &str = include_str!("../template_parts/sidebar_left.xml");
-const MAIN: &str = include_str!("../template_parts/main.xml");
-const SIDEBAR_RIGHT: &str = include_str!("../template_parts/sidebar_right.xml");
-const JS_BEFORE_BODY: &str = include_str!("../template_parts/javascript_before_body_tag.xml");
-```
-
-Assembly shape:
-
-```rust
-format!(
-    "{meta}
-{css}
-<b:template-skin><![CDATA[]]></b:template-skin>
-</head>
-<body>
-{header}
-<div class='terminal-workspace'>
-{left}
-{main}
-{right}
-</div>
-{ads_consent_banner}
-{ads_runtime_script}
-{js}
-</body>
-</html>"
-)
-```
-
-Split the giant `.replace(...)` chain into grouped token builders:
-
-```text
-push_head_tokens
-push_branding_tokens
-push_nav_tokens
-push_catalog_tokens
-push_css_tokens
-push_sidebar_tokens
-push_blog_footer_tokens
-push_plugin_tokens
-```
-
-Then apply:
-
-```rust
-fn apply_tokens(mut xml: String, tokens: TokenList) -> String {
-    for (token, value) in tokens {
-        xml = xml.replace(token, &value);
+// These defaults preserve the current layout structure
+impl Default for TemplatePackConfig {
+    fn default() -> Self {
+        Self {
+            header_variant: "terminal".to_string(),
+            main_variant: "sidebars".to_string(),
+            left_sidebar_variant: "blogger_widgets".to_string(),
+            right_sidebar_variant: "toc".to_string(),
+            script_variant: "terminal_panels".to_string(),
+            icon_pack: "default".to_string(),
+        }
     }
-    xml
 }
-```
 
-## Diagnostics Refactor
-
-Edit:
-
-```text
-src/diagnostics.rs
-```
-
-Diagnostics should validate the final rendered XML, not require template-source tokens to exist.
-
-Correct final XML checks:
-
-```text
-XML parses
-no unresolved {{TOKEN}} remains
-terminal-workspace exists
-panel-left exists
-panel-right exists
-canvas-core exists
-b:section sidebar-left exists
-b:section main or main-content exists
-b:section sidebar-right exists
-Blog1 exists
-Label1 exists
-BlogArchive1 exists
-Blog1 has key includables
-wrong compendium/gallery template markers are absent
-```
-
-Wrong-template markers to reject:
-
-```text
-MorThemeGallery
-mor-theme-gallery
-The MorBlogger Theme Compendium
-compendium-header
-mor-gallery-grid
-```
-
-## GUI Static Pages / External Links
-
-Users should be able to add Blogger pages and external URLs through the GUI.
-
-Edit:
-
-```text
-src/config/pages.rs
-src/config/mod.rs
-src/ui/static_pages_panel.rs
-src/ui/menu_panel.rs
-src/render/xml_parts/header_generator.rs
-```
-
-Suggested model:
-
-```rust
+// Update your main ThemeConfig struct:
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct StaticLink {
-    pub label: String,
-    pub url: String,
-    pub kind: LinkKind,
-    pub open_in_new_tab: bool,
+pub struct ThemeConfig {
+    // ... [Your existing fields like colors, typography, etc.] ...
+    
+    #[serde(default)]
+    pub template_pack: TemplatePackConfig,
+}
+Checklist action: Run a quick search for ThemeConfig { in your codebase to see if any handmade constructors need template_pack: TemplatePackConfig::default(), or ..Default::default() added to make cargo check happy.
+
+Phase 2: Add the Resolver (Without Moving Files)
+Create a new file for the resolver. In this phase, the resolver takes the config but deliberately ignores the variants. It just returns your existing files. This isolates the refactor to prove that passing file contents as &'static str fields works exactly like invoking include_str! locally inside the generator.
+
+src/render/template_pack.rs (or similar)
+
+Rust
+use crate::models::ThemeConfig; // Adjust import based on your structure
+
+pub struct TemplateParts {
+    pub meta: &'static str,
+    pub css: &'static str,
+    pub header: &'static str,
+    pub main: &'static str,
+    pub sidebar_left: &'static str,
+    pub sidebar_right: &'static str,
+    pub javascript: &'static str,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum LinkKind {
-    BloggerPage,
-    BloggerLabel,
-    BloggerSearch,
-    ExternalSite,
-    Custom,
+pub fn resolve_template_parts(_config: &ThemeConfig) -> TemplateParts {
+    // PHASE 2: Ignore _config for now to do a safe, behavior-preserving pass.
+    // We return the exact same files to verify wiring without breaking Blogger XML.
+    // Note: Adjust the relative paths below depending on where this module lives!
+    
+    TemplateParts {
+        meta: include_str!("../../template_parts/meta.xml"),
+        css: include_str!("../../template_parts/css.xml"),
+        header: include_str!("../../template_parts/header.xml"),
+        main: include_str!("../../template_parts/main.xml"),
+        sidebar_left: include_str!("../../template_parts/sidebar_left.xml"),
+        sidebar_right: include_str!("../../template_parts/sidebar_right.xml"),
+        javascript: include_str!("../../template_parts/javascript_before_body_tag.xml"),
+    }
 }
-```
+Phase 2 (Continued): Wire xml_generator.rs
+Now, go into your XML generation file, strip out the hardcoded include_str! macros at the top, and invoke the resolver instead.
 
-Preview behavior:
+src/render/xml_generator.rs
 
-```text
-Blogger/internal links:
-  render in preview or normal anchor behavior
+Rust
+use crate::render::template_pack::resolve_template_parts;
 
-External links:
-  show Open in Browser
-  open using the system default browser from the desktop app
-```
+pub fn generate_blogger_xml(config: &ThemeConfig) -> String {
+    // 1. Resolve template parts based on config
+    let parts = resolve_template_parts(config);
+    
+    // 2. Consume the resolved parts instead of calling include_str!() directly
+    let meta_str = parts.meta;
+    let css_str = parts.css;
+    let header_str = parts.header;
+    let main_str = parts.main;
+    let sidebar_left_str = parts.sidebar_left;
+    let sidebar_right_str = parts.sidebar_right;
+    let javascript_str = parts.javascript;
 
-Export behavior:
+    // ... Keep all of your existing replacement, string assembly, and 
+    // token interpolation logic perfectly intact ...
+}
+The Validation Step (Phases 1 & 2 Checklist)
+Once you've made these changes:
 
-```xml
-<a href='https://example.com' rel='noopener' target='_blank'>External Site</a>
-```
+Run cargo check.
 
-## Safety Rules
+Open the Dioxus app and ensure old presets load without crashing.
 
-Use:
+Export a preset to an XML file.
 
-```rust
-escape_html()
-escape_attr()
-```
+The ultimate test: Compare the newly exported XML against a backup of an older export. It should be byte-for-byte identical.
 
-Rules:
+Upload it to a test Blogger blog to completely confirm no widgets or b:includable blocks were corrupted.
 
-```text
-Element text -> escape_html
-Attribute values -> escape_attr
-Raw CSS in CDATA -> do not HTML-escape, but avoid breaking CDATA
-Raw JS in CDATA -> do not double-wrap in script tags
-```
+Looking Ahead to Phase 3
+Once this safe pass is verified, transitioning to Phase 3 is incredibly easy. You'll just move the files into their new subdirectories (headers/, mains/, etc.) and swap the dummy resolver logic out for clean match statements that fall back safely:
 
-Never tokenize structural Blogger names.
-
-Bad:
-
-```xml
-<b:widget id='Blog{{ARCHIVE_WIDGET_TITLE}}1' type='Blog{{ARCHIVE_WIDGET_TITLE}}'>
-```
-
-Good:
-
-```xml
-<b:widget id='BlogArchive1' title='{{ARCHIVE_WIDGET_TITLE}}' type='BlogArchive'>
-```
-
-Keep the working `Blog1`, `Label1`, and `BlogArchive1` bodies intact unless testing proves a smaller body works inside Blogger.
-
-## Migration Steps
-
-1. Archive the monolith at `docs/archive/template-old-monolith.xml`.
-2. Make `src/render/theme.rs` call `xml_generator::render_template(config)`.
-3. Refactor `src/render/xml_generator.rs` to assemble the seven template parts.
-4. Ensure every `{{TOKEN}}` in template parts has exactly one replacement.
-5. Update diagnostics to check final rendered XML.
-6. Smoke-test export and search for `terminal-workspace`, `canvas-core`, `panel-left`, `panel-right`, `Blog1`, `Label1`, `BlogArchive1`.
-7. Search for wrong-template markers: `MorThemeGallery`, `mor-theme-gallery`, `compendium-header`, `mor-gallery-grid`. They must be absent.
-8. Upload the exported XML to Blogger.
-9. If Blogger accepts it but widgets render empty, inspect live source for `Blog1`, `blog-posts`, `post-title`, `Label1`, `BlogArchive1`, and `_WidgetManager`.
-
-## Suggested Tests
-
-Unit tests:
-
-```text
-hex_to_rgba handles valid hex
-first_non_empty falls back on blank strings
-rendered XML contains no {{TOKEN}}
-rendered XML contains terminal-workspace
-rendered XML contains Blog1, Label1, BlogArchive1
-rendered XML does not contain MorThemeGallery
-```
-
-Manual tests:
-
-```text
-cargo fmt
-cargo check
-cargo run
-export XML
-search exported XML for unresolved tokens
-upload to Blogger
-view live source
-confirm widgets render
-```
-
-## Anti-Loop Rule
-
-Do not keep trying random widget fragments.
-
-If widgets break, compare against a known-good Blogger export and copy the full widget body back into the matching template part.
-
-The GUI editor customizes the shell and safe values. Blogger widgets are the haunted engine layer.
-
+Rust
+// Preview of Phase 3 implementation
+let header = match config.template_pack.header_variant.as_str() {
+    // "gtk_headerbar" => include_str!("../../template_parts/headers/gtk_headerbar.xml"), // Phase 4
+    "terminal" | _  => include_str!("../../template_parts/headers/terminal.xml"),
+};
+Using the wildcard _ ensures that if a user deletes a layout, loads a corrupted preset, or inputs a missing template name, the compiler falls back gracefully to the safe terminal default rather than panicking the app.

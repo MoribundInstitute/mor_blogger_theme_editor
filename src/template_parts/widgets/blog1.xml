@@ -19,7 +19,7 @@
   </b:includable>
 
   <b:includable id='post' var='post'>
-    <article class='terminal-post'>
+    <article class='mor-post'>
       <b:include data='post' name='postTitle'/>
       <div class='post-meta'>
         <b:if cond='data:post.dateHeader'>
@@ -53,7 +53,7 @@
   </b:includable>
 
   <b:includable id='postPagination'>
-    <nav class='terminal-pager'>
+    <nav class='mor-pager'>
       <b:if cond='data:newerPageUrl'>
         <a class='pager-btn' expr:href='data:newerPageUrl'>Previous Page</a>
       </b:if>

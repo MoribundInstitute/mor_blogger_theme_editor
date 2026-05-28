@@ -9,7 +9,7 @@ pub fn terminal_classic() -> Preset {
     let base = build_base(
         SiteConfig {
             site_title: "My Blogger Site".to_string(),
-            site_subtitle: "A high-contrast terminal-style weblog".to_string(),
+            site_subtitle: "A high-contrast mor-style weblog".to_string(),
             header_logo_url: String::new(),
             home_url: "/".to_string(),
         },

@@ -1,0 +1,139 @@
+<aside class='runelite-panel panel-left' id='panel-left'>
+  <div class='panel-header'>
+    <span>{{LEFT_PANEL_TITLE}}</span>
+    <button aria-label='Close Browse panel' class='panel-toggle' data-target='panel-left'>{{LEFT_PANEL_CLOSE_LABEL}}</button>
+  </div>
+
+  <div class='panel-content' id='toc-container'>
+    <b:section class='sidebar-section' id='sidebar-left' showaddelement='yes'>
+
+      <b:widget id='Label1' locked='false' title='{{LABEL_WIDGET_TITLE}}' type='Label' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='sorting'>{{LABEL_SORTING}}</b:widget-setting>
+          <b:widget-setting name='display'>{{LABEL_DISPLAY}}</b:widget-setting>
+          <b:widget-setting name='selectedLabelsList'/>
+          <b:widget-setting name='showType'>{{LABEL_SHOW_TYPE}}</b:widget-setting>
+          <b:widget-setting name='showFreqNumbers'>{{LABEL_SHOW_FREQ_NUMBERS}}</b:widget-setting>
+        </b:widget-settings>
+
+        <b:includable id='main' var='this'>
+          <b:include name='widget-title'/>
+          <b:include name='content'/>
+        </b:includable>
+
+        <b:includable id='cloud'>
+          <b:loop values='data:labels' var='label'>
+            <span class='label-size'>
+              <b:class expr:name='&quot;label-size-&quot; + data:label.cssSize'/>
+              <a class='label-name' expr:href='data:label.url'>
+                <data:label.name/>
+                <b:if cond='data:this.showFreqNumbers'>
+                  <span class='label-count'><data:label.count/></span>
+                </b:if>
+              </a>
+            </span>
+          </b:loop>
+        </b:includable>
+
+        <b:includable id='content'>
+          <div class='widget-content'>
+            <b:class expr:name='data:this.display + &quot;-label-widget-content&quot;'/>
+            <b:include cond='data:this.display == &quot;list&quot;' name='list'/>
+            <b:include cond='data:this.display == &quot;cloud&quot;' name='cloud'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='list'>
+          <ul>
+            <b:loop values='data:labels' var='label'>
+              <li>
+                <a class='label-name' expr:href='data:label.url'>
+                  <data:label.name/>
+                  <b:if cond='data:this.showFreqNumbers'>
+                    <span class='label-count'><data:label.count/></span>
+                  </b:if>
+                </a>
+              </li>
+            </b:loop>
+          </ul>
+        </b:includable>
+      </b:widget>
+
+      <b:widget id='BlogArchive1' locked='false' title='{{ARCHIVE_WIDGET_TITLE}}' type='BlogArchive' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='showStyle'>{{ARCHIVE_SHOW_STYLE}}</b:widget-setting>
+          <b:widget-setting name='yearPattern'>{{ARCHIVE_YEAR_PATTERN}}</b:widget-setting>
+          <b:widget-setting name='showWeekEnd'>{{ARCHIVE_SHOW_WEEK_END}}</b:widget-setting>
+          <b:widget-setting name='monthPattern'>{{ARCHIVE_MONTH_PATTERN}}</b:widget-setting>
+          <b:widget-setting name='dayPattern'>{{ARCHIVE_DAY_PATTERN}}</b:widget-setting>
+          <b:widget-setting name='weekPattern'>{{ARCHIVE_WEEK_PATTERN}}</b:widget-setting>
+          <b:widget-setting name='chronological'>{{ARCHIVE_CHRONOLOGICAL}}</b:widget-setting>
+          <b:widget-setting name='showPosts'>{{ARCHIVE_SHOW_POSTS}}</b:widget-setting>
+          <b:widget-setting name='frequency'>{{ARCHIVE_FREQUENCY}}</b:widget-setting>
+        </b:widget-settings>
+
+        <b:includable id='main' var='this'>
+          <b:include name='widget-title'/>
+          <b:include name='content'/>
+        </b:includable>
+
+        <b:includable id='content'>
+          <div class='widget-content'>
+            <div id='ArchiveList'>
+              <div expr:id='data:widget.instanceId + &quot;_ArchiveList&quot;'>
+                <b:include cond='data:this.style == &quot;HIERARCHY&quot;' name='hierarchy'/>
+                <b:include cond='data:this.style in {&quot;FLAT&quot;, &quot;MENU&quot;}' name='flat'/>
+              </div>
+            </div>
+          </div>
+        </b:includable>
+
+        <b:includable id='flat'>
+          <ul class='flat'>
+            <b:loop values='data:data' var='i'>
+              <li class='archivedate'>
+                <a expr:href='data:i.url'>
+                  <data:i.name/><span class='post-count'><data:i.post-count/></span>
+                </a>
+              </li>
+            </b:loop>
+          </ul>
+        </b:includable>
+
+        <b:includable id='hierarchy'>
+          <b:include data='data' name='interval'/>
+        </b:includable>
+
+        <b:includable id='interval' var='intervals'>
+          <ul class='hierarchy'>
+            <b:loop values='data:intervals' var='interval'>
+              <li class='archivedate'>
+                <div class='hierarchy-title'>
+                  <a class='post-count-link' expr:href='data:interval.url'>
+                    <data:interval.name/>
+                    <span class='post-count'><data:interval.post-count/></span>
+                  </a>
+                </div>
+                <div class='hierarchy-content'>
+                  <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+                  <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+                </div>
+              </li>
+            </b:loop>
+          </ul>
+        </b:includable>
+
+        <b:includable id='posts' var='posts'>
+          <ul class='posts hierarchy'>
+            <b:loop values='data:posts' var='post'>
+              <li>
+                <a expr:href='data:post.url'><data:post.title/></a>
+              </li>
+            </b:loop>
+          </ul>
+        </b:includable>
+      </b:widget>
+
+    </b:section>
+  </div>
+</aside>

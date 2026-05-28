@@ -2,68 +2,18 @@
 
 use dioxus::prelude::*;
 
-use crate::config::{MenuLink, ThemeConfig};
+use crate::config::{MenuLink, TemplatePackConfig, ThemeConfig};
 use crate::defaults::default_theme_config;
 use crate::diagnostics::check_integrity;
 use crate::render::{render_preview_html, render_theme};
-use crate::ui::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
-use crate::ui::panel_center_workspace::CenterWorkspacePanel;
-use crate::ui::panel_left_visuals::LeftVisualsPanel;
-use crate::ui::panel_right_data::RightDataPanel;
-use crate::ui::presets_panel::{PresetFloatingWindow, ThemeSignals};
+use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
+use crate::ui::workspace::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
+use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
+use crate::ui::workspace::left_dock::LeftVisualsPanel;
+use crate::ui::workspace::right_dock::RightDataPanel;
+use crate::ui::panels::presets_panel::{PresetFloatingWindow, ThemeSignals};
 
 const EDITOR_UI_CSS: &str = include_str!("editor_ui.css");
-
-const DRAG_JS: &str = r#"
-document.addEventListener('pointerdown', (e) => {
-    const bar = e.target.closest('.floating-editor-window-bar');
-    if (!bar) return;
-
-    if (e.target.closest('button, input, textarea, select, a, label')) return;
-
-    const panel = bar.closest('.editor-left-panel, .editor-right-panel');
-    if (!panel) return;
-
-    e.preventDefault();
-
-    const isLeft = panel.classList.contains('editor-left-panel');
-    const varX = isLeft ? '--floating-left-x' : '--floating-right-x';
-    const varY = isLeft ? '--floating-left-y' : '--floating-right-y';
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const rect = panel.getBoundingClientRect();
-
-    let startPosX = isLeft ? rect.left : (window.innerWidth - rect.right);
-    let startPosY = rect.top;
-
-    document.body.classList.add('editor-floating-dragging');
-
-    const onMove = (moveEvt) => {
-        const dx = moveEvt.clientX - startX;
-        const dy = moveEvt.clientY - startY;
-
-        let newX = isLeft ? (startPosX + dx) : (startPosX - dx);
-        let newY = startPosY + dy;
-
-        newY = Math.max(0, Math.min(newY, window.innerHeight - 60));
-        newX = Math.max(0, Math.min(newX, window.innerWidth - 100));
-
-        document.documentElement.style.setProperty(varX, newX + 'px');
-        document.documentElement.style.setProperty(varY, newY + 'px');
-    };
-
-    const onUp = () => {
-        document.removeEventListener('pointermove', onMove);
-        document.removeEventListener('pointerup', onUp);
-        document.body.classList.remove('editor-floating-dragging');
-    };
-
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
-});
-"#;
 
 pub fn App() -> Element {
     let defaults = default_theme_config();
@@ -254,6 +204,7 @@ pub fn App() -> Element {
         },
         static_pages: static_pages(),
         ads: ads(),
+        template_pack: TemplatePackConfig::default(),
         preset_css: preset_css(),
     });
 
@@ -337,6 +288,7 @@ pub fn App() -> Element {
         style { "{EDITOR_UI_CSS}" }
 
         div { class: "editor-shell",
+            // Standard internal branding header (OS handles the window above this)
             header { class: "editor-main-header",
                 h1 { class: "editor-brand", "Moribund Institute Theme Architect" }
             }
@@ -471,9 +423,6 @@ pub fn App() -> Element {
                 DiagnosticsPanel { result: diag }
             }
 
-            script {
-                dangerous_inner_html: "{DRAG_JS}"
-            }
         }
     }
 }

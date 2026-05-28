@@ -8,11 +8,11 @@
 
 /* Force chunky ridged borders on every major surface */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
-.terminal-pager,
+.mor-footer,
+.mor-pager,
 .mor-catalog-dropdown,
 .panel-header {
   border-style: ridge;
@@ -63,8 +63,8 @@
 
 .main-header .institute-title,
 .main-header .branding-link,
-.main-header .terminal-nav a,
-.main-header .terminal-nav button {
+.main-header .mor-nav a,
+.main-header .mor-nav button {
   color: #ffffff !important;
   text-shadow: none;
 }
@@ -101,15 +101,15 @@
 }
 
 /* Post bodies: clinical white "document" surface over the grey panel. */
-.terminal-post {
+.mor-post {
   background: #ffffff;
   color: #000000;
   margin: 8px;
   padding: 12px;
 }
 
-.terminal-post .post-title,
-.terminal-post .post-title a {
+.mor-post .post-title,
+.mor-post .post-title a {
   color: #000000;
   font-family: 'Times New Roman', Times, serif;
   font-size: 1.6rem;
@@ -119,24 +119,24 @@
   text-shadow: none;
 }
 
-.terminal-post .post-body {
+.mor-post .post-body {
   color: #000000;
   font-family: 'Times New Roman', Times, serif;
 }
 
 /* Links: unvisited blue, visited purple (the original web). */
-.terminal-post .post-body a,
+.mor-post .post-body a,
 .panel-content a {
   color: #0000ee;
   text-decoration: underline;
 }
 
-.terminal-post .post-body a:visited,
+.mor-post .post-body a:visited,
 .panel-content a:visited {
   color: #551a8b;
 }
 
-.terminal-post .post-body a:active,
+.mor-post .post-body a:active,
 .panel-content a:active {
   color: #ff0000;
 }
@@ -147,7 +147,7 @@ body {
 }
 
 /* Footer: drop the slick monospace look, give it a status-bar feel. */
-.terminal-footer {
+.mor-footer {
   background: var(--bg-panel);
   color: var(--fg-base);
   border-top: 2px solid #ffffff;
@@ -158,9 +158,9 @@ body {
 }
 
 /* Headings inside posts get the "MS Word document" look. */
-.terminal-post h1,
-.terminal-post h2,
-.terminal-post h3 {
+.mor-post h1,
+.mor-post h2,
+.mor-post h3 {
   font-family: 'Times New Roman', Times, serif;
   color: #000000;
   font-weight: 700;
@@ -172,7 +172,7 @@ body {
 *::after {
   text-shadow: none;
 }
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .canvas-core {
   box-shadow: none;
@@ -181,7 +181,7 @@ body {
 /* Optional: blinking text on the construction notice (footer).
    Keep this subtle (only on a specific class so it doesn't
    nuke the rest of the page with attention-deficit horror). */
-.terminal-footer .footer-sys-info::after {
+.mor-footer .footer-sys-info::after {
   content: " UNDER CONSTRUCTION";
   margin-left: 8px;
   animation: web1-blink 1.2s steps(2, end) infinite;
@@ -198,21 +198,21 @@ body {
    ============================================================ */
 
 /* 1. Vaporize the terminal command prompt */
-.terminal-search .prompt {
+.mor-search .prompt {
   display: none !important;
 }
 
 /* 2. Override any search-button pseudo-element decorations.
    Do not target `.header-panel-toggle::before` here: those pseudo-elements
    are the actual sidebar icons. */
-.terminal-search button::before,
-.terminal-search button::after {
+.mor-search button::before,
+.mor-search button::after {
   content: none !important;
   display: none !important;
 }
 
 /* 3. Style the search input to look like a Windows 95 text field */
-.terminal-search input {
+.mor-search input {
   background: #ffffff !important;
   color: #000000 !important;
   border-style: inset !important;
@@ -223,7 +223,7 @@ body {
   font-family: var(--font-body, 'MS Sans Serif', Tahoma, sans-serif) !important;
 }
 
-.terminal-search input:focus {
+.mor-search input:focus {
   width: 220px;
   outline: none;
   box-shadow: none !important;

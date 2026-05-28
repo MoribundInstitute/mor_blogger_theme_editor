@@ -62,10 +62,10 @@ body {
 /* Surfaces float on the mesh with a subtle backdrop blur,
    softer than full glassmorphism, just enough to ground them. */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
+.mor-footer,
 .mor-catalog-dropdown {
   background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
   backdrop-filter: blur(10px) saturate(120%);
@@ -80,7 +80,7 @@ body {
 /* Posts get a hover lift and scroll-driven reveal. The reveal uses
    animation-timeline: view(), which animates an element as it
    enters the viewport. Old browsers ignore this gracefully. */
-.terminal-post {
+.mor-post {
   padding: 28px 32px;
   margin-bottom: 22px;
   transition:
@@ -103,7 +103,7 @@ body {
   }
 }
 
-.terminal-post:hover {
+.mor-post:hover {
   transform: translateY(-2px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.08) inset,
@@ -113,7 +113,7 @@ body {
 
 /* Focus-within ring: when any input inside a card receives focus,
    the whole card lights up. Modern keyboard-friendly UX. */
-.terminal-post:focus-within,
+.mor-post:focus-within,
 .runelite-panel:focus-within {
   border-color: var(--accent);
   box-shadow:
@@ -122,8 +122,8 @@ body {
 }
 
 /* Post titles: gradient text that subtly shifts hue on hover. */
-.terminal-post .post-title,
-.terminal-post .post-title a {
+.mor-post .post-title,
+.mor-post .post-title a {
   background:
     linear-gradient(110deg,
       var(--fg-base) 0%,
@@ -140,13 +140,13 @@ body {
   transition: background-position 600ms ease;
 }
 
-.terminal-post:hover .post-title,
-.terminal-post:hover .post-title a {
+.mor-post:hover .post-title,
+.mor-post:hover .post-title a {
   background-position: 100% 0%;
 }
 
 /* Body text: clean, no decoration. */
-.terminal-post .post-body {
+.mor-post .post-body {
   color: var(--fg-base);
   text-shadow: none;
   font-size: 1.02rem;
@@ -228,7 +228,7 @@ body {
 }
 
 /* Links in body copy: gradient underline that fills in on hover. */
-.terminal-post .post-body a,
+.mor-post .post-body a,
 .panel-content a {
   position: relative;
   color: var(--fg-base);
@@ -243,7 +243,7 @@ body {
     color 320ms ease;
 }
 
-.terminal-post .post-body a:hover,
+.mor-post .post-body a:hover,
 .panel-content a:hover {
   background-size: 100% 2px;
   color: var(--accent);

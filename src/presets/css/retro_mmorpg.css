@@ -32,10 +32,10 @@ body {
 
 /* CONTAINER surfaces */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
+.mor-footer,
 .mor-catalog-dropdown {
   background: linear-gradient(180deg, #5b4631 0%, #4a3929 100%) !important;
   border: 2px solid var(--border-color) !important;
@@ -79,8 +79,8 @@ body {
 /* Headings (gold/orange) */
 h1, h2, h3, h4,
 .main-header .institute-title,
-.terminal-post .post-title,
-.terminal-post .post-title a {
+.mor-post .post-title,
+.mor-post .post-title a {
   color: var(--accent) !important;
   font-weight: bold !important;
   letter-spacing: 0.5px !important;
@@ -93,20 +93,20 @@ h1, h2, h3, h4,
   color: var(--accent) !important;
 }
 
-.terminal-post .post-title {
+.mor-post .post-title {
   border-bottom: 2px solid var(--border-color) !important;
   padding-bottom: 8px !important;
   margin-bottom: 12px !important;
 }
 
 /* Main navigation band */
-.terminal-nav a,
-.terminal-nav button {
+.mor-nav a,
+.mor-nav button {
   color: #d6b791 !important;
 }
 
-.terminal-nav > a:hover,
-.terminal-nav > a:focus-visible {
+.mor-nav > a:hover,
+.mor-nav > a:focus-visible {
   background: #6f241b !important;
   color: #fff2cf !important;
 }
@@ -150,13 +150,13 @@ h1, h2, h3, h4,
 }
 
 /* Links */
-.terminal-post .post-body a,
+.mor-post .post-body a,
 .panel-content a {
   color: var(--accent) !important;
   text-decoration: underline !important;
 }
 
-.terminal-post .post-body a:hover,
+.mor-post .post-body a:hover,
 .panel-content a:hover {
   color: #ffffff !important;
 }

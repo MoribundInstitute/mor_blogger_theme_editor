@@ -7,7 +7,7 @@
 //! - The Blogger engine layer is required: Blog1, working b:section mounts,
 //!   and the full expanded V2 widget includables.
 //! - The visual shell is profile-specific: Terminal shell uses panel-left,
-//!   panel-right, canvas-core, terminal-workspace, etc.; the functional
+//!   panel-right, canvas-core, mor-workspace, etc.; the functional
 //!   compendium/base shell uses layout-container, layout-main, layout-sidebar,
 //!   and a single sidebar section.
 //!
@@ -253,7 +253,7 @@ fn collect_facts(doc: &Document) -> StructuralFacts {
 }
 
 fn detect_profile(facts: &StructuralFacts) -> TemplateProfile {
-    if has_class(facts, "terminal-workspace") || has_class(facts, "canvas-core") {
+    if has_class(facts, "mor-workspace") || has_class(facts, "canvas-core") {
         TemplateProfile::TerminalWorkspace
     } else if has_class(facts, "layout-container")
         || has_class(facts, "layout-main")
@@ -283,7 +283,8 @@ fn check_blogger_engine_layer(source: &str, facts: &StructuralFacts, out: &mut V
 
     // Accept either the functional single-sidebar model or the older split-sidebar model.
     let has_single_sidebar = has_section(facts, "sidebar");
-    let has_split_sidebars = has_section(facts, "sidebar-left") && has_section(facts, "sidebar-right");
+    let has_split_sidebars =
+        has_section(facts, "sidebar-left") && has_section(facts, "sidebar-right");
 
     if !has_single_sidebar && !has_split_sidebars {
         out.push(Warning::error(
@@ -349,14 +350,18 @@ fn check_blogger_engine_layer(source: &str, facts: &StructuralFacts, out: &mut V
 // Profile-specific checks
 // ---------------------------------------------------------------------------
 
-fn check_profile_structure(profile: TemplateProfile, facts: &StructuralFacts, out: &mut Vec<Warning>) {
+fn check_profile_structure(
+    profile: TemplateProfile,
+    facts: &StructuralFacts,
+    out: &mut Vec<Warning>,
+) {
     match profile {
         TemplateProfile::TerminalWorkspace => {
             require_id(facts, out, "panel-left", Severity::Error);
             require_id(facts, out, "panel-right", Severity::Error);
             require_class(facts, out, "canvas-core", Severity::Error);
             require_class(facts, out, "panel-toggle", Severity::Error);
-            require_class(facts, out, "terminal-workspace", Severity::Error);
+            require_class(facts, out, "mor-workspace", Severity::Error);
         }
         TemplateProfile::FunctionalBloggerBase => {
             require_class(facts, out, "layout-container", Severity::Error);
@@ -384,7 +389,12 @@ fn check_profile_structure(profile: TemplateProfile, facts: &StructuralFacts, ou
     }
 }
 
-fn require_id(facts: &StructuralFacts, out: &mut Vec<Warning>, id: &'static str, severity: Severity) {
+fn require_id(
+    facts: &StructuralFacts,
+    out: &mut Vec<Warning>,
+    id: &'static str,
+    severity: Severity,
+) {
     if !has_id(facts, id) {
         let warning = match severity {
             Severity::Error => Warning::error(
@@ -463,7 +473,7 @@ mod tests {
       xmlns:b="http://www.google.com/2005/gml/b">
 <head><title>x</title></head>
 <body>
-  <div class="terminal-workspace">
+  <div class="mor-workspace">
     <aside id="panel-left">
       <button class="panel-toggle" data-target="panel-left">x</button>
       <b:section id="sidebar-left"/>

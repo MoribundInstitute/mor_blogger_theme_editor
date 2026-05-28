@@ -14,8 +14,8 @@
 
 use crate::config::{
     AssetConfig, BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig,
-    MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, SurfaceMode, ThemeConfig,
-    TypographyConfig,
+    IconConfig, MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, SurfaceMode,
+    TemplatePackConfig, ThemeConfig, TypographyConfig,
 };
 
 pub mod fluid_interactive;
@@ -27,7 +27,8 @@ pub mod newspaper;
 pub mod retro_mmorpg;
 pub mod terminal_classic;
 pub mod web_1_0_frames;
-pub mod web_2_0_skeuo; // Registered as a public module
+pub mod web_2_0_skeuo;
+pub mod user_presets;
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
 pub struct PresetPalette {
@@ -46,7 +47,7 @@ pub struct Preset {
     pub preset_css: &'static str,
 }
 
-pub fn all_presets() -> Vec<Preset> {
+pub fn all_builtin_presets() -> Vec<Preset> {
     vec![
         modern_editorial::modern_editorial(),
         web_1_0_frames::web_1_0_frames(),
@@ -56,9 +57,15 @@ pub fn all_presets() -> Vec<Preset> {
         neon_cyberpunk::neon_cyberpunk(),
         fluid_interactive::fluid_interactive(),
         terminal_classic::terminal_classic(),
-        retro_mmorpg::retro_mmorpg(), // Now included in the vector
+        retro_mmorpg::retro_mmorpg(),
         minimal::minimal(),
     ]
+}
+
+pub fn all_presets() -> Vec<Preset> {
+    let mut presets = all_builtin_presets();
+    presets.extend(user_presets::load_user_presets_as_presets());
+    presets
 }
 
 // ---------------------------------------------------------------------------
@@ -67,11 +74,14 @@ pub fn all_presets() -> Vec<Preset> {
 
 pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
 pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-#[allow(dead_code)] // reserved for upcoming presets
+
+#[allow(dead_code)]
 pub const STACK_SANS: &str =
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
-#[allow(dead_code)] // reserved for newspaper preset
+
+#[allow(dead_code)]
 pub const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
+
 pub const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
 pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif";
 
@@ -79,7 +89,7 @@ pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, 
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-#[allow(dead_code)] // helper for gradient SurfaceFills, used by future presets
+#[allow(dead_code)]
 pub fn gradient(from: &str, to: &str, angle_deg: u16) -> SurfaceFill {
     SurfaceFill {
         mode: SurfaceMode::Gradient,
@@ -105,6 +115,7 @@ pub fn build_base(
         seo,
         menu_links,
         footer,
+
         // Palette fields overwritten by swap_palette at apply time.
         colors: ColorConfig {
             bg_base: "#000".to_string(),
@@ -115,6 +126,7 @@ pub fn build_base(
             accent: "#fff".to_string(),
             border: "#444".to_string(),
         },
+        icons: IconConfig::default(),
         background: BackgroundConfig {
             mode: BackgroundMode::Solid {
                 color: "#000".to_string(),
@@ -129,6 +141,7 @@ pub fn build_base(
         },
         static_pages: crate::config::StaticPagesConfig::default(),
         ads: crate::config::AdsConfig::default(),
+        template_pack: TemplatePackConfig::default(),
         preset_css: String::new(),
     }
 }

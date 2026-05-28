@@ -1,0 +1,32 @@
+<header class='main-header'>
+
+  <div class='header-top-row'>
+    <button class='panel-toggle header-panel-toggle header-panel-toggle-left' data-target='panel-left' type='button'>
+      {{LEFT_PANEL_OPEN_LABEL}}
+    </button>
+
+    <a aria-label="{{SITE_TITLE_ATTR}} homepage" class='branding branding-link' href="{{SITE_HOME_URL_ATTR}}">
+      <img alt="{{SITE_TITLE_ATTR}} logo" class='institute-logo' src="{{HEADER_LOGO_URL_ATTR}}"/>
+      <span class='institute-title'>{{SITE_TITLE}}</span>
+    </a>
+
+    <button class='panel-toggle header-panel-toggle header-panel-toggle-right' data-target='panel-right' type='button'>
+      {{RIGHT_PANEL_OPEN_LABEL}}
+    </button>
+  </div>
+
+  <div class='header-bottom-row'>
+    <nav aria-label='Main navigation' class='mor-nav'>
+      {{MAIN_NAV_LINKS}}
+    </nav>
+
+    <div class='mor-search'>
+      <form action="{{SEARCH_ACTION_URL_ATTR}}" method='get'>
+        <span class='prompt'>{{SEARCH_PROMPT}}</span>
+        <input name='q' placeholder="{{SEARCH_PLACEHOLDER_ATTR}}" type='text'/>
+        <button type='submit'>{{SEARCH_BUTTON_LABEL}}</button>
+      </form>
+    </div>
+  </div>
+
+</header>

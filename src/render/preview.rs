@@ -4,7 +4,7 @@
 //! consumer, share only the helpers in `util`).
 
 use crate::config::{BackgroundMode, ThemeConfig};
-use crate::ui::layout::PreviewTemplateMode;
+use crate::ui::workspace::layout::PreviewTemplateMode;
 
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 
@@ -61,25 +61,25 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
     };
 
     // NOTE: Each preview-* element carries a second class corresponding to
-    // the production-template class name (e.g. preview-hero-card -> terminal-post).
+    // the production-template class name (e.g. preview-hero-card -> mor-post).
     // The preview's own CSS in this file matches the `preview-*` selectors;
     // preset CSS files (src/presets/css/*.css) target the production names.
     // This lets one preset CSS work for both the live preview AND the
     // exported Blogger theme without duplicating selectors.
     let modern_body = format!(
         r##"<div class="preview-shell preview-shell-modern">
-    <header class="preview-site-header terminal-main-header">
+    <header class="preview-site-header mor-main-header">
       <div class="preview-brand branding">
         <p class="preview-kicker">Blogger Theme Preview</p>
         <h1 class="preview-site-title institute-title">{site_title}</h1>
         <p class="preview-site-subtitle">{site_subtitle}</p>
       </div>
-      <nav class="preview-nav terminal-nav">{menu_links}</nav>
+      <nav class="preview-nav mor-nav">{menu_links}</nav>
     </header>
 
     <main>
       <section class="preview-hero">
-        <article class="preview-hero-card terminal-post">
+        <article class="preview-hero-card mor-post">
           <p class="preview-kicker post-kicker">Featured Post</p>
           <h2 class="post-title">Designing a better weblog shell</h2>
           <div class="post-body">
@@ -104,21 +104,21 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </section>
 
       <section class="preview-card-grid">
-        <article class="preview-card terminal-post">
+        <article class="preview-card mor-post">
           <p class="preview-kicker">Recent Notes</p>
           <h3 class="post-title">Readable post cards</h3>
           <div class="post-body">
             <p>Use this space to judge contrast, line-height, borders, and card surfaces.</p>
           </div>
         </article>
-        <article class="preview-card terminal-post">
+        <article class="preview-card mor-post">
           <p class="preview-kicker">Typography</p>
           <h3 class="post-title">Font stack test</h3>
           <div class="post-body">
             <p>Body, heading, and <code>mono</code> font choices render directly in this preview.</p>
           </div>
         </article>
-        <article class="preview-card terminal-post">
+        <article class="preview-card mor-post">
           <p class="preview-kicker">About</p>
           <h3 class="post-title">Browser-safe shell</h3>
           <div class="post-body">
@@ -128,7 +128,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </section>
     </main>
 
-    <footer class="preview-footer terminal-footer">
+    <footer class="preview-footer mor-footer">
       <span>{footer_text}</span>
       <span>{site_title}</span>
     </footer>
@@ -147,7 +147,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
 
     let sidebars_body = format!(
         r##"<div class="preview-shell preview-shell-sidebars">
-    <header class="preview-site-header preview-site-header-with-toggles terminal-main-header">
+    <header class="preview-site-header preview-site-header-with-toggles mor-main-header">
       <button type="button" class="preview-panel-toggle panel-toggle" data-target="left" aria-label="Browse" title="Browse">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -159,7 +159,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         <p class="preview-kicker">Blogger Theme Preview</p>
         <h1 class="preview-site-title institute-title">{site_title}</h1>
         <p class="preview-site-subtitle">{site_subtitle}</p>
-        <nav class="preview-nav preview-nav-centered terminal-nav">{menu_links}</nav>
+        <nav class="preview-nav preview-nav-centered mor-nav">{menu_links}</nav>
       </div>
 
       <button type="button" class="preview-panel-toggle panel-toggle" data-target="right" aria-label="Contents" title="Contents">
@@ -170,7 +170,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </button>
     </header>
 
-    <main class="preview-sidebar-layout terminal-workspace" id="preview-layout">
+    <main class="preview-sidebar-layout mor-workspace" id="preview-layout">
       <aside class="preview-sidebar runelite-panel panel-left sidebar-section" data-side="left">
         <div class="preview-sidebar-header panel-header">
           <strong>Browse</strong>
@@ -187,7 +187,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         </div>
       </aside>
 
-      <article class="preview-hero-card preview-sidebar-main-card terminal-post">
+      <article class="preview-hero-card preview-sidebar-main-card mor-post">
         <p class="preview-kicker post-kicker">Featured Post</p>
         <h2 class="post-title">Modern layout with closeable sidebars</h2>
         <div class="post-body">
@@ -217,7 +217,7 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </aside>
     </main>
 
-    <footer class="preview-footer terminal-footer">
+    <footer class="preview-footer mor-footer">
       <span>{footer_text}</span>
       <span>{site_title}</span>
     </footer>

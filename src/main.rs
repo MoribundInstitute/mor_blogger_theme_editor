@@ -1,9 +1,17 @@
-use mor_blogger_theme_editor::App;
+use dioxus::prelude::*;
+use dioxus::desktop::{Config, WindowBuilder};
 
 fn main() {
     dioxus_logger::init(dioxus_logger::tracing::Level::INFO).expect("failed to init logger");
 
-    // Dioxus automatically boots the native Desktop window because
-    // it is defined as the default feature in your Cargo.toml
-    dioxus::launch(App);
+    // Reverting to Native OS Decorations.
+    // Windows/macOS/Linux will now handle dragging, snapping, and maximizing perfectly.
+    let cfg = Config::new().with_window(
+        WindowBuilder::new()
+            .with_title("Moribund Theme Architect")
+            .with_decorations(true)
+            .with_transparent(false)
+    );
+
+    LaunchBuilder::desktop().with_cfg(cfg).launch(mor_blogger_theme_editor::app::App);
 }

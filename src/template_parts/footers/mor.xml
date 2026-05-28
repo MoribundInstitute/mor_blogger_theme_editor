@@ -1,0 +1,52 @@
+<footer class='mor-footer'>
+  <div class='footer-grid'>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_SOCIALS_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_SOCIAL_1_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOCIAL_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_SOCIAL_2_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOCIAL_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_SOCIAL_3_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOCIAL_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_SOCIAL_4_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOCIAL_4_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_LINKS_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_LINK_1_URL}}' rel='noopener' target='_blank'>{{FOOTER_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_LINK_2_URL}}' rel='noopener' target='_blank'>{{FOOTER_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_LINK_3_URL}}' rel='noopener' target='_blank'>{{FOOTER_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_LINK_4_URL}}' rel='noopener' target='_blank'>{{FOOTER_LINK_4_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_RESOURCES_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_RESOURCE_1_URL}}' rel='noopener' target='_blank'>{{FOOTER_RESOURCE_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_RESOURCE_2_URL}}' rel='noopener' target='_blank'>{{FOOTER_RESOURCE_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_RESOURCE_3_URL}}' rel='noopener' target='_blank'>{{FOOTER_RESOURCE_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_RESOURCE_4_URL}}' rel='noopener' target='_blank'>{{FOOTER_RESOURCE_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_RESOURCE_5_URL}}' rel='noopener' target='_blank'>{{FOOTER_RESOURCE_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_TOOLS_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_TOOL_1_URL}}' rel='noopener' target='_blank'>{{FOOTER_TOOL_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_TOOL_2_URL}}' rel='noopener' target='_blank'>{{FOOTER_TOOL_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_TOOL_3_URL}}' rel='noopener' target='_blank'>{{FOOTER_TOOL_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_TOOL_4_URL}}' rel='noopener' target='_blank'>{{FOOTER_TOOL_4_LABEL}}</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class='footer-sys-info'>
+    <span>{{FOOTER_SYS_MESSAGE}} <a href='{{FOOTER_LICENSE_URL}}' rel='noopener' target='_blank'>{{FOOTER_LICENSE_LABEL}}</a></span>
+    <a href='{{FOOTER_SOURCE_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOURCE_LABEL}}</a>
+    <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
+  </div>
+</footer>

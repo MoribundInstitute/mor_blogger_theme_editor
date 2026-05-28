@@ -20,10 +20,10 @@ body {
 
 /* Every major surface becomes glass. Single layer treatment. */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
+.mor-footer,
 .mor-catalog-dropdown {
   background: rgba(255, 255, 255, 0.06) !important;
   backdrop-filter: blur(20px) saturate(160%) !important;
@@ -59,7 +59,7 @@ body {
 }
 
 /* Slightly denser glass for posts to preserve raw reading legibility. */
-.terminal-post {
+.mor-post {
   background: rgba(255, 255, 255, 0.10) !important;
   padding: 28px !important;
   margin-bottom: 20px !important;
@@ -137,8 +137,8 @@ body {
 }
 
 /* Post titles: stay solid, but pick up a tiny gradient lift. */
-.terminal-post .post-title,
-.terminal-post .post-title a {
+.mor-post .post-title,
+.mor-post .post-title a {
   background: linear-gradient(135deg, var(--fg-base) 30%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -149,19 +149,19 @@ body {
 
 /* Links inside the post body get the accent treatment with a
    subtle underline that animates on hover. */
-.terminal-post .post-body a {
+.mor-post .post-body a {
   color: var(--accent) !important;
   text-decoration: none !important;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   transition: border-color 150ms ease;
 }
 
-.terminal-post .post-body a:hover {
+.mor-post .post-body a:hover {
   border-bottom-color: var(--accent);
 }
 
 /* Footer glass strip */
-.terminal-footer {
+.mor-footer {
   padding: 16px 24px !important;
   color: var(--fg-muted) !important;
 }
@@ -196,10 +196,10 @@ select:focus {
    the palette is dark enough to keep text readable in that case. */
 @supports not (backdrop-filter: blur(1px)) {
   .canvas-core,
-  .terminal-post,
+  .mor-post,
   .runelite-panel,
   .main-header,
-  .terminal-footer {
+  .mor-footer {
     background: var(--bg-panel) !important;
   }
 }

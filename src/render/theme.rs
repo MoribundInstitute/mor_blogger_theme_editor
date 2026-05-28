@@ -1,26 +1,19 @@
 //! Public Blogger theme export API.
-//!
-//! This module is intentionally kept as the stable facade for export-facing
-//! theme rendering. The lower-level modular template assembly and token
-//! replacement machinery lives in `xml_generator.rs`.
 
 use rfd::FileDialog;
 use std::fs;
 
-use crate::config::ThemeConfig;
-
 use super::xml_generator;
+use crate::config::ThemeConfig;
 
 pub fn render_theme(config: &ThemeConfig) -> String {
     eprintln!(
         "[render_theme] preset_css bytes = {}",
         config.preset_css.len()
     );
-
     xml_generator::render_template(config)
 }
 
-/// Bypasses the webview IPC and clipboard buffers to safely write large XML files directly to disk.
 pub fn save_xml_to_disk(xml_content: &str, site_title: &str) -> Result<String, String> {
     let safe_title = site_title.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
     let default_filename = format!("{}_theme.xml", safe_title.to_lowercase());

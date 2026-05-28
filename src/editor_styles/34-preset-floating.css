@@ -1,0 +1,203 @@
+/* Preset browser, horizontal rail, and detached draggable preset window.
+   Add this file to src/editor_styles/34-preset-floating.css, then run ./build_css.sh. */
+
+.preset-panel {
+  position: relative;
+  overflow: visible;
+}
+
+.preset-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.preset-panel-header .editor-row,
+.preset-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: center;
+}
+
+.preset-panel-copy {
+  margin: 0 0 12px 0;
+  color: var(--editor-text);
+  line-height: 1.45;
+}
+
+.preset-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 2px 2px 14px 2px;
+  scroll-snap-type: x proximity;
+  scrollbar-gutter: stable;
+}
+
+.preset-rail-undocked {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-content: start;
+  gap: 16px;
+  scroll-snap-type: none;
+}
+
+.preset-card {
+  flex: 0 0 238px;
+  min-width: 238px;
+  max-width: 238px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: #111827;
+  cursor: pointer;
+  overflow: hidden;
+  text-align: center;
+  font-family: inherit;
+  scroll-snap-align: start;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+
+.preset-rail-undocked .preset-card {
+  flex: initial;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.preset-card:hover {
+  border-color: var(--editor-accent);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+  transform: translateY(-1px);
+}
+
+.preset-card-active {
+  border-color: var(--editor-accent);
+  box-shadow: 0 0 0 3px var(--editor-focus);
+}
+
+.preset-footer {
+  padding: 8px 10px 12px 10px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.preset-name {
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.preset-description {
+  margin-top: 2px;
+  color: #1f2937;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.preset-floating-window {
+  position: fixed;
+  left: var(--preset-floating-x, 240px);
+  top: var(--preset-floating-y, 92px);
+  z-index: 3000;
+  width: min(980px, calc(100vw - 48px));
+  max-height: min(760px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--editor-panel);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.preset-floating-window-bar {
+  flex: 0 0 auto;
+  justify-content: space-between;
+  margin: 0;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+
+.preset-floating-window-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.preset-floating-window-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.preset-floating-window-intro {
+  flex: 0 0 auto;
+  padding: 14px 18px 0 18px;
+}
+
+.preset-floating-window-title {
+  margin: 0;
+  color: var(--editor-text);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.preset-floating-window-subtitle {
+  margin: 4px 0 0 0;
+  color: var(--editor-muted);
+  font-size: 0.82rem;
+}
+
+body.preset-floating-dragging,
+body.preset-floating-dragging *,
+body.editor-floating-dragging,
+body.editor-floating-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+@media (max-width: 760px) {
+  .preset-panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .preset-card {
+    flex-basis: 220px;
+    min-width: 220px;
+    max-width: 220px;
+  }
+
+  .preset-floating-window {
+    left: 12px;
+    right: 12px;
+    top: 72px;
+    width: auto;
+    max-height: calc(100vh - 96px);
+  }
+
+  .preset-rail-undocked {
+    grid-template-columns: 1fr;
+  }
+}

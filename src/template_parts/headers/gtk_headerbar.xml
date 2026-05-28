@@ -1,0 +1,24 @@
+<header class='gtk-headerbar'>
+  <div class='headerbar-start'>
+    <button class='panel-toggle headerbar-btn icon-btn' data-target='panel-left' type='button' aria-label="Toggle Sidebar">
+      {{LEFT_PANEL_OPEN_LABEL}}
+    </button>
+  </div>
+
+  <div class='headerbar-center'>
+    <a aria-label="{{SITE_TITLE_ATTR}} homepage" class='branding-link' href="{{SITE_HOME_URL_ATTR}}">
+      <span class='gtk-window-title'>{{SITE_TITLE}}</span>
+    </a>
+  </div>
+
+  <div class='headerbar-end'>
+    <div class='gtk-search-wrap'>
+      <form action="{{SEARCH_ACTION_URL_ATTR}}" method='get'>
+        <input name='q' placeholder="Search..." type='text' class="gtk-search-input"/>
+      </form>
+    </div>
+    <button class='panel-toggle headerbar-btn icon-btn' data-target='panel-right' type='button'>
+      {{RIGHT_PANEL_OPEN_LABEL}}
+    </button>
+  </div>
+</header>

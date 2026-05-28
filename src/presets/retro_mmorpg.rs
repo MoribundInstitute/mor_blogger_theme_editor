@@ -30,7 +30,9 @@ pub fn retro_mmorpg() -> Preset {
             text_transform: "none".to_string(),
         },
         SeoConfig {
-            meta_description: "A retro MMORPG-inspired theme with warm brown panels and ember-red controls.".to_string(),
+            meta_description:
+                "A retro MMORPG-inspired theme with warm brown panels and ember-red controls."
+                    .to_string(),
             meta_keywords: "retro, mmorpg, fantasy, guild, gaming, blog".to_string(),
             custom_robots: "index, follow".to_string(),
             license_url: String::new(),

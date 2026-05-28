@@ -24,8 +24,8 @@ body::after {
 }
 
 /* Subtle CRT chromatic-aberration glow on text via text-shadow. */
-.terminal-post .post-title,
-.terminal-post .post-title a,
+.mor-post .post-title,
+.mor-post .post-title a,
 .main-header .institute-title,
 .mor-panel-heading,
 .panel-header {
@@ -40,10 +40,10 @@ body::after {
 
 /* Every major surface gets a neon outline that glows on hover. */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
+.mor-footer,
 .mor-catalog-dropdown {
   background: var(--bg-panel);
   border: 1px solid var(--accent);
@@ -54,13 +54,13 @@ body::after {
     inset 0 0 22px rgba(255, 0, 255, 0.08);
 }
 
-.terminal-post {
+.mor-post {
   padding: 20px;
   margin: 14px 0;
   transition: box-shadow 240ms ease, border-color 240ms ease;
 }
 
-.terminal-post:hover {
+.mor-post:hover {
   border-color: var(--fg-base);
   box-shadow:
     0 0 0 1px rgba(0, 255, 255, 0.45),
@@ -104,7 +104,7 @@ body::after {
 }
 
 /* Links: solid magenta with cyan glow on hover. */
-.terminal-post .post-body a,
+.mor-post .post-body a,
 .panel-content a {
   color: var(--accent);
   text-decoration: none;
@@ -113,7 +113,7 @@ body::after {
   transition: color 180ms ease, text-shadow 180ms ease;
 }
 
-.terminal-post .post-body a:hover {
+.mor-post .post-body a:hover {
   color: var(--fg-base);
   border-bottom-color: var(--fg-base);
   text-shadow: 0 0 8px var(--fg-base);
@@ -138,9 +138,9 @@ body::after {
 }
 
 /* Headings inside posts: keep the chromatic-shift effect but smaller. */
-.terminal-post h1,
-.terminal-post h2,
-.terminal-post h3 {
+.mor-post h1,
+.mor-post h2,
+.mor-post h3 {
   color: var(--fg-base);
   text-shadow:
     0 0 3px var(--fg-base),
@@ -150,13 +150,13 @@ body::after {
 }
 
 /* Body text stays readable (no glow, just the palette colors). */
-.terminal-post .post-body {
+.mor-post .post-body {
   color: var(--fg-muted);
   text-shadow: none;
 }
 
 /* Footer signal-strip: small caps, dotted underline, low-glow. */
-.terminal-footer {
+.mor-footer {
   font-size: 0.78rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;

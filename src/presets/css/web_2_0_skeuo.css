@@ -6,7 +6,7 @@
    typography, no sharp corners anywhere.
    ============================================================ */
 
-/* Kill the base theme's terminal-era vignette overlay. */
+/* Kill the base theme's mor-era vignette overlay. */
 body::before {
   background: none !important;
   opacity: 0 !important;
@@ -20,10 +20,10 @@ body {
 
 /* CONTAINER surfaces (outer cards) — get the full Web 2.0 treatment */
 .canvas-core,
-.terminal-post,
+.mor-post,
 .runelite-panel,
 .main-header,
-.terminal-footer,
+.mor-footer,
 .mor-catalog-dropdown {
   background: var(--bg-panel) !important;
   border: 1px solid var(--border-color) !important;
@@ -101,14 +101,14 @@ body {
 }
 
 /* Posts get a generous radius and the same gloss treatment. */
-.terminal-post {
+.mor-post {
   padding: 22px 26px !important;
   margin-bottom: 18px !important;
   border-radius: 14px !important;
 }
 
-.terminal-post .post-title,
-.terminal-post .post-title a {
+.mor-post .post-title,
+.mor-post .post-title a {
   color: var(--fg-base) !important;
   font-weight: 700 !important;
   font-size: clamp(1.5rem, 3.5vw, 2rem) !important;
@@ -118,7 +118,7 @@ body {
   margin-bottom: 10px !important;
 }
 
-.terminal-post .post-body {
+.mor-post .post-body {
   color: var(--fg-base) !important;
   text-shadow: none !important;
 }
@@ -204,7 +204,7 @@ body {
 
 /* Links in body copy: the accent blue with the classic underline,
    slight gradient on hover to underscore "this is clickable". */
-.terminal-post .post-body a,
+.mor-post .post-body a,
 .panel-content a {
   color: var(--accent) !important;
   text-decoration: underline !important;
@@ -212,7 +212,7 @@ body {
   transition: color 120ms ease !important;
 }
 
-.terminal-post .post-body a:hover,
+.mor-post .post-body a:hover,
 .panel-content a:hover {
   color: color-mix(in srgb, var(--accent) 75%, black) !important;
 }
@@ -240,7 +240,7 @@ body {
 }
 
 /* Footer: glossy strip at the bottom matching the masthead. */
-.terminal-footer {
+.mor-footer {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--bg-panel) 92%, white) 0%,

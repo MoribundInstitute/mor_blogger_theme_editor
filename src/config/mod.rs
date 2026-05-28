@@ -1,22 +1,27 @@
 pub mod ads;
+pub mod gtk_theme;
 pub mod pages;
 pub mod styling;
+pub mod template_pack;
 
 use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------
-// THE FIX: We must re-export these as PUBLIC (pub use)
-// so the rest of the application can reach them!
+// Re-export these as PUBLIC (pub use) so the rest of the
+// application can reach the config subtypes directly.
 // ---------------------------------------------------------
 pub use ads::*;
 pub use pages::*;
 pub use styling::*;
+pub use template_pack::*;
+pub use gtk_theme::*; // Added to expose the refactored GTK module types
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ThemeConfig {
     pub site: SiteConfig,
     pub colors: ColorConfig,
+    pub icons: IconConfig,
     pub assets: AssetConfig,
     pub background: BackgroundConfig,
     pub buttons: ButtonConfig,
@@ -27,6 +32,8 @@ pub struct ThemeConfig {
     pub plugins: PluginConfig,
     pub static_pages: StaticPagesConfig,
     pub ads: AdsConfig,
+    #[serde(default)]
+    pub template_pack: TemplatePackConfig,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub preset_css: String,
 }
@@ -36,6 +43,7 @@ impl Default for ThemeConfig {
         Self {
             site: SiteConfig::default(),
             colors: ColorConfig::default(),
+            icons: IconConfig::default(),
             assets: AssetConfig::default(),
             background: BackgroundConfig::default(),
             buttons: ButtonConfig::default(),
@@ -55,6 +63,7 @@ impl Default for ThemeConfig {
             plugins: PluginConfig::default(),
             static_pages: StaticPagesConfig::default(),
             ads: AdsConfig::default(),
+            template_pack: TemplatePackConfig::default(),
             preset_css: String::new(),
         }
     }
@@ -137,9 +146,8 @@ impl Default for FooterConfig {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct PluginConfig {
     pub custom_js: String,
 }

@@ -1,179 +1,122 @@
-# Moribund Blogger Theme Editor
+<div align="center">
 
-A low-level **Blogger XML generator** with a modern, reactive GUI built
-in Rust using Dioxus.\
-Design, customize, and export complete Blogger themes without ever
-touching raw XML.
+# 🏛️ Moribund Blogger Theme Architect
 
-![Editor Preview](docs/screenshots/editor_preview.png)
-------------------------------------------------------------------------
+**A low-level XML generator with a modern, reactive GUI built in Rust.**<br>
+Design, customize, and export complete Blogger themes without ever touching raw XML.
 
-## ✨ Overview
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Built with Rust](https://img.shields.io/badge/Built_with-Rust-dca282.svg?logo=rust)](https://www.rust-lang.org/)
+[![UI by Dioxus](https://img.shields.io/badge/UI-Dioxus-black.svg)](https://dioxuslabs.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
 
-Moribund Blogger Theme Editor replaces the traditional monolithic
-`template.xml` workflow with a modular system.\
-Instead of editing a single massive file, you work with structured
-components that compile into a final Blogger-ready theme.
+<img src="docs/screenshots/editor_preview.png" alt="Editor Preview" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
 
-The result: faster iteration, safer edits, and a dramatically improved
-developer experience.
+</div>
 
-------------------------------------------------------------------------
+---
 
-## 🚀 Core Features
+## ⚡ The Problem
 
-### 🧩 Modular XML Generation
+Editing a custom Blogger theme traditionally means wrestling with a monolithic, 3,000-line `template.xml` file. One missing CDATA tag or nested skin wrapper crashes the entire site. Iteration is slow, styling is dangerous, and modularity is non-existent.
 
--   Build themes from discrete template parts:
-    -   `meta.xml`
-    -   `css.xml`
-    -   `header.xml`
-    -   `sidebars.xml`
--   Automatically composes a complete Blogger template
--   Injects:
-    -   SEO metadata
-    -   Typography systems
-    -   Background systems
-    -   Widget sockets
+## ✨ The Solution
 
-------------------------------------------------------------------------
+The **Moribund Theme Architect** replaces the monolith with a strict, component-driven pipeline. You work visually with structured modules in a highly responsive desktop-class UI. When you are ready, the Rust engine safely compiles your palettes, typography, and modular CSS into a single, bulletproof XML file ready for upload.
 
-### 🎨 GTK Theme Integration
+---
 
--   Import themes from:
-    -   WhiteSur
-    -   Adwaita
-    -   Nord
--   Parses:
-    -   `gtk-4.0`
-    -   `gtk-3.0`
-    -   `gnome-shell`
--   Converts SVG assets into CSS data URIs
--   Maps GTK variables directly into your Blogger theme
+## 🚀 Core Capabilities
 
-------------------------------------------------------------------------
+### 🧩 Modular XML Assembly
+
+- **No More Monoliths:** Build themes from discrete, manageable template parts (`meta.xml`, `header.xml`, `sidebars.xml`).
+- **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
+- **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
+
+### 🎨 GTK Desktop Integration
+
+- **Native-Feeling Themes:** Import visual variables directly from legendary Linux themes like Adwaita, Nord, and WhiteSur.
+- **Asset Compilation:** Automatically converts external SVG assets into lightweight, embedded CSS data URIs to eliminate external HTTP requests.
 
 ### 🖥️ Fluid Workspace UI
 
--   Built with **Dioxus (Rust)**
--   Features:
-    -   Glassmorphic panels
-    -   Collapsible sections
-    -   Floating draggable windows
--   Includes:
-    -   Deep-space grid preview canvas
-    -   Responsive viewport scaling
-
-------------------------------------------------------------------------
+- **Custom Window Manager:** Features a custom-built, floating, drag-and-drop window system inside the app.
+- **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
+- **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
 ### ⚠️ Real-Time Diagnostics
 
--   Live validation of template structure
--   Detects:
-    -   Missing bindings
-    -   Invalid panel toggles
-    -   Structural inconsistencies
--   Prevents broken exports
+- **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
+- **Export Safety:** Prevents broken XML from ever reaching your clipboard.
 
-------------------------------------------------------------------------
+---
 
-### 🎮 Thematic Presets
+## 📚 Documentation & Deep Dives
 
--   Includes built-in presets like:
-    -   **Retro MMORPG**
--   Features:
-    -   Warm brown panels
-    -   Ember-red accents
-    -   Gold typography with heavy shadows
+The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
 
-------------------------------------------------------------------------
+- [**Architecture Overview**](docs/ARCHITECTURE.md) — How the Rust rendering engine and Dioxus state management interact.
+- [**The CSS Assembly Pipeline**](docs/CSS_PIPELINE.md) — Understanding the `mor_` namespace and how modular CSS is stitched together.
+- [**Creating a Theme Preset**](docs/THEME_CREATION.md) — A guide to defining tokens, palettes, and custom layouts for the Compendium.
+- [**GTK Theme Parsing**](docs/GTK_PARSER.md) — How the engine translates Linux desktop themes into Blogger variables.
 
-## 🧠 Technical Architecture
-
-### Frontend Engine
-
--   Rust + Dioxus
--   Component-driven UI system
--   Custom drag-and-drop window manager
-
-### Rendering Engine
-
--   Merges `ThemeConfig` into template skeleton
--   Produces:
-    -   Live preview HTML
-    -   Final Blogger XML
-
-### State System
-
--   Signal-based reactive state
--   Serialized into TOML
--   Embedded into exported XML for restoration
-
-### CSS System
-
--   Dark-first design
--   Custom scrollbars
--   BEM-style structure
-
-------------------------------------------------------------------------
+---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 
--   Rust toolchain → https://rustup.rs
--   Dioxus CLI:
+- Rust toolchain → [rustup.rs](https://rustup.rs/)
+- Dioxus CLI
 
-``` bash
+```bash
+# Install the Dioxus CLI
 cargo install dioxus-cli
 ```
 
-### Run Locally
+### Installation & Launch
 
-``` bash
+```bash
+# Clone the repository
 git clone https://github.com/MoribundInstitute/mor_blogger_theme_editor.git
+
+# Navigate to the project directory
 cd mor_blogger_theme_editor
+
+# Launch the Architect with hot-reloading
 dx serve --hot-reload
 ```
 
-------------------------------------------------------------------------
+---
 
-## 🔄 Workflow
+## 🔄 The Editorial Workflow
 
-1.  **Design**\
-    Configure layout, colors, typography, and metadata
+1. **Design:** Select a baseline preset from the Compendium, such as Mor Modern Editorial or Mor Retro MMORPG.
+2. **Customize:** Tweak colors, typography, and widget layouts using the floating UI panels.
+3. **Preview:** Test your structural layout instantly across simulated desktop, tablet, and mobile viewports.
+4. **Export:** Click **Export Theme**. The Rust engine compiles your perfect `template.xml` directly to your clipboard.
+5. **Restore:** Paste your exported XML back into the editor at any time to instantly rehydrate your complete workspace state.
 
-2.  **Preview**\
-    Test across desktop, tablet, and mobile
+---
 
-3.  **Export**\
-    Copy generated XML into Blogger
+## 🤝 Contributing
 
-4.  **Restore**\
-    Paste exported XML back into the editor to recover your workspace
+The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium.
 
-------------------------------------------------------------------------
+Please ensure your preset follows the `mor_` namespacing guidelines outlined in the Theme Creation Guide before submitting a Pull Request.
 
-## 📁 Project Structure
+---
 
-    src/
-    ├── app.rs              # Application root
-    ├── render.rs           # Theme rendering engine
-    ├── rehydration.rs      # State encoding/decoding
-    ├── config.rs           # Theme data structures
-    ├── defaults.rs         # Default theme presets
-    ├── gtk_theme.rs        # GTK parser
-    └── ui/                 # Editor components
+## License
 
-------------------------------------------------------------------------
+Published under the MIT License.
 
-## 👤 Author
+---
 
-Developed by **Murdoch**\
-Moribund Institute
+<div align="center">
 
-------------------------------------------------------------------------
+Developed by **Murdoch**  
+The Moribund Institute
 
-## 📄 License
-
-MIT License
+</div>

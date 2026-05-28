@@ -1,11 +1,12 @@
 <main class='canvas-core'>
   <div class='canvas-content'>
-    
+
     <b:section class='main-section' id='main-content' showaddelement='no'>
       {{MAIN_CONTENT_MODULE}}
     </b:section>
-    
-    {{FOOTER_MODULE}}
 
   </div>
+
+  <!-- Moved outside of canvas-content so it can stretch fully! -->
+  {{FOOTER_MODULE}} 
 </main>

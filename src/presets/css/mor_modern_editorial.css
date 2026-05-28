@@ -1,0 +1,89 @@
+/* --- GTK/Mojave Inspired Gradients --- */
+/* This perfectly replicates the rich editor preview background on live Blogger */
+body, .canvas-core, html {
+    background: radial-gradient(circle at top center, var(--bg-elevated) 0%, var(--bg-base) 100%) !important;
+    background-attachment: fixed !important;
+}
+
+/* --- App-like Sidebars --- */
+.runelite-panel {
+    background: color-mix(in srgb, var(--bg-panel) 75%, transparent) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: color-mix(in srgb, var(--border-color) 50%, transparent) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Sidebar Header & Close Button --- */
+.panel-header {
+    background: color-mix(in srgb, var(--bg-elevated) 60%, transparent) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important; /* Puts title left, button right */
+    padding: 14px 18px !important;
+}
+
+.panel-header .panel-toggle {
+    min-width: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background-color: #ff5f56 !important; /* Clean Red */
+    border: 1px solid #e0443e !important;
+    color: transparent !important;
+    text-shadow: none !important;
+    position: relative;
+    transition: filter 0.2s ease, transform 0.2s ease !important;
+    box-sizing: border-box !important;
+    cursor: pointer;
+}
+
+.panel-header .panel-toggle:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05); /* Slight pop effect on hover */
+}
+
+/* Disable the default SVG cross so it remains a sleek dot */
+.panel-header .panel-toggle::before {
+    display: none !important; 
+}
+
+/* Title text */
+.panel-header span {
+    font-weight: 600;
+    color: var(--fg-base) !important;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    text-shadow: none !important;
+}
+
+/* --- Refined Post Cards --- */
+.mor-post {
+    background: linear-gradient(145deg, var(--bg-panel) 0%, var(--bg-base) 100%) !important;
+    border-radius: 12px;
+    padding: 35px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent) !important;
+}
+
+/* --- Refined Search Bar --- */
+.mor-search input {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.mor-search input:focus {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+.mor-search button {
+    display: none !important; /* Hide the default search button for a cleaner macOS look */
+}

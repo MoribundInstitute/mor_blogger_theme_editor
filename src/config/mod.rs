@@ -69,6 +69,20 @@ impl Default for ThemeConfig {
     }
 }
 
+impl ThemeConfig {
+    /// Hotswaps the Site Data profile while preserving the current Visual Theme.
+    pub fn apply_site_data(&mut self, new_data: &ThemeConfig) {
+        self.site = new_data.site.clone();                 // Site Identity
+        self.assets = new_data.assets.clone();             // Images & Assets
+        self.menu_links = new_data.menu_links.clone();     // Navigation Menu
+        self.seo = new_data.seo.clone();                   // SEO
+        self.footer = new_data.footer.clone();             // Footer
+        self.ads = new_data.ads.clone();                   // Advertising Policy
+        self.plugins = new_data.plugins.clone();           // Custom Scripts
+        self.static_pages = new_data.static_pages.clone(); // Static Pages
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SiteConfig {

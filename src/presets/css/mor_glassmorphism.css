@@ -1,0 +1,248 @@
+/* ============================================================
+   Glassmorphism preset
+   Frosted, translucent panels floating over an aurora gradient
+   body background. Heavy use of backdrop-filter — requires a
+   browser that supports it (Safari 9+, Chrome 76+, Firefox 103+).
+   Falls back to solid panels in unsupporting browsers.
+   ============================================================ */
+
+/* The aurora wallpaper. The base theme's token-driven bg-base
+   sits underneath. We layer a soft radial-gradient blob on top
+   so the blur has something colorful to chew on. */
+body {
+  background-attachment: fixed !important;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(168, 85, 247, 0.55), transparent 38%),
+    radial-gradient(circle at 88% 24%, rgba(56, 189, 248, 0.45), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(244, 114, 182, 0.40), transparent 50%) !important;
+  background-color: var(--bg-base) !important;
+}
+
+/* Every major surface becomes glass. Single layer treatment. */
+.canvas-core,
+.mor-post,
+.runelite-panel,
+.main-header,
+.mor-footer,
+.mor-catalog-dropdown {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+}
+
+/* CONTENT surfaces inside glass containers — flat, transparent, no inherited stacking */
+.runelite-panel .panel-content,
+.canvas-core .panel-content {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 14px 18px !important;
+}
+
+/* HEADER surfaces inside containers — sharp bottom border line, rounded top corners */
+.panel-header,
+.mor-panel-heading {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--fg-base) !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  padding: 12px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px 18px 0 0 !important;
+}
+
+/* Slightly denser glass for posts to preserve raw reading legibility. */
+.mor-post {
+  background: rgba(255, 255, 255, 0.10) !important;
+  padding: 28px !important;
+  margin-bottom: 20px !important;
+}
+
+/* The header gets a thinner, more horizontal piece of glass. */
+.main-header {
+  border-radius: 18px !important;
+  margin-bottom: 20px !important;
+  padding: 24px !important;
+}
+
+/* Buttons: pill-shaped glass capsules. */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 999px !important;
+  color: var(--fg-base) !important;
+  padding: 8px 18px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease !important;
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.pager-btn:active,
+.panel-toggle:active {
+  background: rgba(255, 255, 255, 0.04) !important;
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* Header Browse / Contents buttons */
+.header-panel-toggle.panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 92px !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 8px 18px !important;
+  border-radius: 999px !important;
+}
+
+/* In-app preview/demo square toggle button */
+.preview-panel-toggle.panel-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+}
+
+/* Post titles: stay solid, but pick up a tiny gradient lift. */
+.mor-post .post-title,
+.mor-post .post-title a {
+  background: linear-gradient(135deg, var(--fg-base) 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* Links inside the post body get the accent treatment with a
+   subtle underline that animates on hover. */
+.mor-post .post-body a {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: border-color 150ms ease;
+}
+
+.mor-post .post-body a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Footer glass strip */
+.mor-footer {
+  padding: 16px 24px !important;
+  color: var(--fg-muted) !important;
+}
+
+/* Styled inputs matching the translucent theme */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea,
+select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: var(--fg-base) !important;
+  backdrop-filter: blur(4px) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* Graceful degradation: if backdrop-filter isn't supported, the
+   panels will look like flat-tinted boxes. The base bg color in
+   the palette is dark enough to keep text readable in that case. */
+@supports not (backdrop-filter: blur(1px)) {
+  .canvas-core,
+  .mor-post,
+  .runelite-panel,
+  .main-header,
+  .mor-footer {
+    background: var(--bg-panel) !important;
+  }
+}
+
+/* ============================================================
+   Header toggle compatibility
+   Keeps the post-rename main header and clean-label sidebar
+   toggles as icon buttons, even when this preset restyles
+   .panel-toggle broadly.
+   ============================================================ */
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.header-panel-toggle::before,
+.header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: var(--fg-base) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.header-panel-toggle::after,
+.header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}

@@ -1,0 +1,23 @@
+.mor-catalog-menu { position: relative; display: inline-flex; align-items: center; }
+.mor-catalog-trigger { appearance: none; display: inline-flex; align-items: center; gap: 0.35rem; border: none; background: transparent; color: var(--fg-dim); font: inherit; cursor: pointer; padding: 0; }
+.mor-catalog-trigger:hover, .mor-catalog-trigger:focus-visible, .mor-catalog-menu.is-open .mor-catalog-trigger { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-dropdown { position: absolute; top: 100%; left: 0; z-index: var(--dropdown-z); display: none; grid-template-columns: minmax(230px, 280px) minmax(340px, 520px); width: min(860px, calc(100vw - 2rem)); max-height: min(72vh, 680px); background: var(--bg-elevated); border: 1px solid var(--border-color); box-shadow: var(--shadow-elevated); overflow: hidden; }
+.mor-catalog-menu.is-open .mor-catalog-dropdown, .mor-catalog-menu:focus-within .mor-catalog-dropdown { display: grid; }
+.mor-catalog-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 8px; }
+.mor-catalog-left, .mor-catalog-right { padding: 0.85rem; overflow-y: auto; overflow-x: hidden; }
+.mor-catalog-left { background: var(--bg-panel); border-right: 1px solid var(--border-color); }
+.mor-catalog-right { background: var(--bg-base); min-width: 0; }
+.mor-catalog-category { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid transparent; background: transparent; color: var(--fg-base); cursor: pointer; padding: 0.65rem 0.75rem; text-align: left; font: inherit; }
+.mor-catalog-category:hover, .mor-catalog-category:focus-visible, .mor-catalog-category.is-active { border-color: var(--fg-dim); background: var(--bg-highlight); color: var(--fg-base); text-shadow: var(--glow-strong); outline: none; }
+.mor-catalog-all { display: block; margin-top: 0.75rem; padding: 0.65rem 0.75rem; border-top: 1px solid var(--border-color); border-bottom: none; color: var(--fg-dim); }
+.mor-catalog-all:hover, .mor-catalog-all:focus-visible { background: var(--fg-base); color: var(--bg-base); }
+.mor-catalog-panel { display: none; }
+.mor-catalog-panel.is-active { display: grid; gap: 0.2rem; align-content: start; }
+.mor-catalog-panel a { display: block; padding: 0.55rem 0.75rem; color: var(--fg-base); border-bottom: none; white-space: normal; }
+.mor-catalog-panel a:hover, .mor-catalog-panel a:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-panel .mor-panel-heading { border: 1px solid var(--border-color); background: var(--bg-highlight); color: var(--fg-base); font-weight: bold; margin-bottom: 0.35rem; text-shadow: var(--glow-strong); }
+.mor-catalog-panel .mor-panel-heading:hover, .mor-catalog-panel .mor-panel-heading:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; }
+.mor-catalog-left::-webkit-scrollbar, .mor-catalog-right::-webkit-scrollbar { width: 6px; }
+.mor-catalog-left::-webkit-scrollbar-track, .mor-catalog-right::-webkit-scrollbar-track { background: var(--bg-base); }
+.mor-catalog-left::-webkit-scrollbar-thumb, .mor-catalog-right::-webkit-scrollbar-thumb { background: var(--border-color); }
+.mor-catalog-left::-webkit-scrollbar-thumb:hover, .mor-catalog-right::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }

@@ -1,0 +1,5 @@
+button { background: transparent; color: var(--fg-base); border: 1px solid var(--border-color); cursor: pointer; font-family: var(--font-mono); padding: 4px 8px; line-height: 1.2; }
+button:hover, button:focus { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+button:focus-visible { box-shadow: 0 0 0 2px var(--fg-dim); }
+.panel-toggle { min-width: 92px; text-align: center; white-space: nowrap; }
+.panel-header .panel-toggle { min-width: auto; padding: 2px 7px; }

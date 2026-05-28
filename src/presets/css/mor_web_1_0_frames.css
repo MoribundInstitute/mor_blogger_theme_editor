@@ -1,0 +1,297 @@
+/* ============================================================
+   Web 1.0 Frames preset
+   The mid-1990s personal homepage: ridged grey panels, sharp
+   corners, and "best viewed in Netscape" energy. No border-radius,
+   no smooth shadows, no animation. Every container looks like
+   a Windows 95 dialog.
+   ============================================================ */
+
+/* Force chunky ridged borders on every major surface */
+.canvas-core,
+.mor-post,
+.runelite-panel,
+.main-header,
+.mor-footer,
+.mor-pager,
+.mor-catalog-dropdown,
+.panel-header {
+  border-style: ridge;
+  border-width: 3px;
+  border-color: var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Title bars on every panel: the signature blue gradient strip
+   you used to see on Win95 dialog titles.
+
+   Important: `.main-header` is only the outer header shell. The visible
+   header bands are `.header-top-row` and `.header-bottom-row`, so this
+   preset must style all three as one coordinated component. */
+.main-header {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+  color: #ffffff !important;
+  padding: 0 !important;
+  font-weight: 700;
+  border-bottom: 2px solid #000040;
+}
+
+.main-header .header-top-row,
+.main-header .header-bottom-row {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: #000040 !important;
+}
+
+.main-header .header-top-row {
+  padding: 10px 20px 9px !important;
+  border-bottom: 2px solid #000040 !important;
+}
+
+.main-header .header-bottom-row {
+  padding: 12px 20px 14px !important;
+}
+
+.panel-header,
+.mor-panel-heading {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #ffffff;
+  padding: 4px 8px;
+  font-weight: 700;
+  border-bottom: 2px solid #000040;
+}
+
+.main-header .institute-title,
+.main-header .branding-link,
+.main-header .mor-nav a,
+.main-header .mor-nav button {
+  color: #ffffff !important;
+  text-shadow: none;
+}
+
+/* The classic "outset" button: beveled highlight on top-left,
+   shadow on bottom-right. Looks pressable. */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: var(--bg-panel);
+  color: var(--fg-base);
+  border-style: outset;
+  border-width: 2px;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  border-radius: 0;
+  padding: 3px 12px;
+  font-family: inherit;
+  text-transform: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.pager-btn:active,
+.panel-toggle:active,
+.toc-jump-link:active,
+.back-to-top-btn:active,
+.mor-catalog-trigger:active {
+  /* Pressed state: invert the bevel direction. */
+  border-style: inset;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 4px 11px 2px 13px;  /* nudge content for "pressed" feel */
+}
+
+/* Post bodies: clinical white "document" surface over the grey panel. */
+.mor-post {
+  background: #ffffff;
+  color: #000000;
+  margin: 8px;
+  padding: 12px;
+}
+
+.mor-post .post-title,
+.mor-post .post-title a {
+  color: #000000;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 4px;
+  text-shadow: none;
+}
+
+.mor-post .post-body {
+  color: #000000;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* Links: unvisited blue, visited purple (the original web). */
+.mor-post .post-body a,
+.panel-content a {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+.mor-post .post-body a:visited,
+.panel-content a:visited {
+  color: #551a8b;
+}
+
+.mor-post .post-body a:active,
+.panel-content a:active {
+  color: #ff0000;
+}
+
+/* The body itself: tiled teal screensaver desktop. */
+body {
+  background-color: #008080;
+}
+
+/* Footer: drop the slick monospace look, give it a status-bar feel. */
+.mor-footer {
+  background: var(--bg-panel);
+  color: var(--fg-base);
+  border-top: 2px solid #ffffff;
+  border-bottom: 2px solid #808080;
+  font-family: var(--font-body, 'MS Sans Serif', Tahoma, sans-serif);
+  font-size: 0.85rem;
+  padding: 4px 8px;
+}
+
+/* Headings inside posts get the "MS Word document" look. */
+.mor-post h1,
+.mor-post h2,
+.mor-post h3 {
+  font-family: 'Times New Roman', Times, serif;
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Kill all the modern glow/shadow effects from the base theme. */
+*,
+*::before,
+*::after {
+  text-shadow: none;
+}
+.mor-post,
+.runelite-panel,
+.canvas-core {
+  box-shadow: none;
+}
+
+/* Optional: blinking text on the construction notice (footer).
+   Keep this subtle (only on a specific class so it doesn't
+   nuke the rest of the page with attention-deficit horror). */
+.mor-footer .footer-sys-info::after {
+  content: " UNDER CONSTRUCTION";
+  margin-left: 8px;
+  animation: web1-blink 1.2s steps(2, end) infinite;
+  color: #ff0000;
+  font-weight: 700;
+}
+
+@keyframes web1-blink {
+  50% { opacity: 0; }
+}
+
+/* ============================================================
+   Non-Terminal UI De-coupling Overrides (Web 1.0)
+   ============================================================ */
+
+/* 1. Vaporize the terminal command prompt */
+.mor-search .prompt {
+  display: none !important;
+}
+
+/* 2. Override any search-button pseudo-element decorations.
+   Do not target `.header-panel-toggle::before` here: those pseudo-elements
+   are the actual sidebar icons. */
+.mor-search button::before,
+.mor-search button::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 3. Style the search input to look like a Windows 95 text field */
+.mor-search input {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-style: inset !important;
+  border-width: 2px !important;
+  border-color: #808080 #ffffff #ffffff #808080 !important;
+  border-radius: 0 !important;
+  padding: 3px 6px !important;
+  font-family: var(--font-body, 'MS Sans Serif', Tahoma, sans-serif) !important;
+}
+
+.mor-search input:focus {
+  width: 220px;
+  outline: none;
+  box-shadow: none !important;
+}
+
+/* 4. Fix alignment after removing the prompt */
+.header-bottom-row {
+  align-items: center;
+}
+
+/* ============================================================
+   Header toggle compatibility
+   Keeps the post-rename main header and clean-label sidebar
+   toggles as icon buttons, even when this preset restyles
+   .panel-toggle broadly.
+   ============================================================ */
+
+.main-header .header-panel-toggle,
+.main-header .header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: var(--bg-panel) !important;
+  border-style: outset !important;
+  border-width: 2px !important;
+  border-color: #ffffff #808080 #808080 #ffffff !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.main-header .header-panel-toggle:hover,
+.main-header .header-top-row > .panel-toggle:hover {
+  background: #dfdfdf !important;
+  color: transparent !important;
+}
+
+.main-header .header-panel-toggle:active,
+.main-header .header-top-row > .panel-toggle:active {
+  padding: 0 !important;
+  border-style: inset !important;
+  border-color: #808080 #ffffff #ffffff #808080 !important;
+}
+
+.main-header .header-panel-toggle::before,
+.main-header .header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: #000000 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.main-header .header-panel-toggle::after,
+.main-header .header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}

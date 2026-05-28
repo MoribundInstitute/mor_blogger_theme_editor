@@ -1,0 +1,3 @@
+.mor-pager { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 30px; justify-content: flex-start; }
+.pager-btn { color: var(--fg-dim); border: none; }
+.pager-btn:hover, .pager-btn:focus-visible { color: var(--bg-base); background: var(--fg-base); }

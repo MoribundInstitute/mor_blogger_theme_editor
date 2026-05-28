@@ -18,16 +18,16 @@ use crate::config::{
     TemplatePackConfig, ThemeConfig, TypographyConfig,
 };
 
-pub mod fluid_interactive;
-pub mod glassmorphism;
-pub mod minimal;
-pub mod modern_editorial;
-pub mod neon_cyberpunk;
-pub mod newspaper;
-pub mod retro_mmorpg;
-pub mod terminal_classic;
-pub mod web_1_0_frames;
-pub mod web_2_0_skeuo;
+pub mod mor_fluid_interactive;
+pub mod mor_glassmorphism;
+pub mod mor_minimal;
+pub mod mor_modern_editorial;
+pub mod mor_neon_cyberpunk;
+pub mod mor_newspaper;
+pub mod mor_retro_mmorpg;
+pub mod mor_terminal_classic;
+pub mod mor_web_1_0_frames;
+pub mod mor_web_2_0_skeuo;
 pub mod user_presets;
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -49,16 +49,16 @@ pub struct Preset {
 
 pub fn all_builtin_presets() -> Vec<Preset> {
     vec![
-        modern_editorial::modern_editorial(),
-        web_1_0_frames::web_1_0_frames(),
-        newspaper::newspaper(),
-        web_2_0_skeuo::web_2_0_skeuo(),
-        glassmorphism::glassmorphism(),
-        neon_cyberpunk::neon_cyberpunk(),
-        fluid_interactive::fluid_interactive(),
-        terminal_classic::terminal_classic(),
-        retro_mmorpg::retro_mmorpg(),
-        minimal::minimal(),
+        mor_modern_editorial::mor_modern_editorial(),
+        mor_web_1_0_frames::mor_web_1_0_frames(),
+        mor_newspaper::mor_newspaper(),
+        mor_web_2_0_skeuo::mor_web_2_0_skeuo(),
+        mor_glassmorphism::mor_glassmorphism(),
+        mor_neon_cyberpunk::mor_neon_cyberpunk(),
+        mor_fluid_interactive::mor_fluid_interactive(),
+        mor_terminal_classic::mor_terminal_classic(),
+        mor_retro_mmorpg::mor_retro_mmorpg(),
+        mor_minimal::mor_minimal(),
     ]
 }
 

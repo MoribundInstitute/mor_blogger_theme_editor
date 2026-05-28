@@ -7,6 +7,7 @@ mod xml_generator;
 pub mod pages;
 pub mod xml_parts;
 pub mod template_resolver;
+pub mod css_builder;
 
 pub use preview::render_preview_html;
 pub use theme::{render_theme, save_xml_to_disk};

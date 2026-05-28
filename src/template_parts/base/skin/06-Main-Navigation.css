@@ -1,0 +1,4 @@
+.mor-nav { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.mor-nav a, .mor-nav button { color: var(--fg-dim); border-bottom: none; font-size: 0.95rem; white-space: nowrap; }
+.mor-nav > a { border: none; }
+.mor-nav > a:hover, .mor-nav > a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }

@@ -1,0 +1,7 @@
+.widget { margin-bottom: 25px; }
+.widget h2 { margin-top: 0; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+.sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+.sidebar-section .Label ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+.sidebar-section .Label li { padding: 0; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-section .Label a { color: var(--fg-dim); border-bottom: none; }
+.sidebar-section .Label a:hover, .sidebar-section .Label a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }

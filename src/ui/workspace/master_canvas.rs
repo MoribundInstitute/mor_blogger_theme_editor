@@ -31,6 +31,7 @@ pub fn CenterWorkspacePanel(
     let xml_for_download = generated_xml.clone();
     let toml_for_backup = config_toml.clone();
     let toml_for_hotswap = config_toml.clone();
+    let toml_for_save_data = config_toml.clone(); // <-- ADDED: The spare copy for the second JSON button
     let toml_for_bottom_copy = config_toml.clone();
     let toml_for_disk = config_toml.clone();
 
@@ -243,48 +244,99 @@ pub fn CenterWorkspacePanel(
 
                 div {
                     class: "export-action-group",
-                    label {
-                        class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm); cursor: pointer;",
-                        "Load Data (.json)"
-                        input {
-                            r#type: "file", accept: ".json", style: "display: none;",
-                            onchange: move |evt| {
-                                let on_load_hotswap = on_load_hotswap.clone();
-                                async move {
-                                    if let Some(file_engine) = evt.files() {
-                                        if let Some(file_name) = file_engine.files().first() {
-                                            if let Some(contents) = file_engine.read_file_to_string(&file_name).await {
-                                                on_load_hotswap.call(contents);
-                                            }
-                                        }
+                    button {
+                        class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
+                        onclick: {
+                            let on_restore = on_restore.clone();
+                            move |_| {
+                                let toml_copy = toml_for_hotswap.clone();
+
+                                let mut updated_config = match toml::from_str::<ThemeConfig>(&toml_copy) {
+                                    Ok(config) => config,
+                                    Err(err) => {
+                                        let msg = format!("Load Data failed: could not parse current ThemeConfig TOML: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                        return;
                                     }
-                                }
+                                };
+
+                                let Some(path) = rfd::FileDialog::new()
+                                    .set_title("Load Site Data Profile")
+                                    .add_filter("JSON", &["json"])
+                                    .pick_file()
+                                else {
+                                    status_msg.set("Load Data cancelled.".to_string());
+                                    return;
+                                };
+
+                                let json_string = match std::fs::read_to_string(&path) {
+                                    Ok(contents) => contents,
+                                    Err(err) => {
+                                        let msg = format!("Load Data failed: could not read {}: {}", path.display(), err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                        return;
+                                    }
+                                };
+
+                                let loaded_data = match serde_json::from_str::<ThemeConfig>(&json_string) {
+                                    Ok(config) => config,
+                                    Err(err) => {
+                                        let msg = format!("Load Data failed: invalid ThemeConfig JSON: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                        return;
+                                    }
+                                };
+
+                                updated_config.apply_site_data(&loaded_data);
+                                on_restore.call(updated_config);
+                                status_msg.set(format!("Site data loaded: {}", path.display()));
                             }
-                        }
+                        },
+                        "Load Data (.json)"
                     }
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
                         onclick: move |_| {
-                            let toml_copy = toml_for_hotswap.clone();
-                            async move {
-                                if let Ok(config_val) = toml::from_str::<serde_json::Value>(&toml_copy) {
-                                    let hotswap = serde_json::json!({
-                                        "site": config_val.get("site"), "assets": config_val.get("assets"), "menu_links": config_val.get("menu_links"),
-                                        "seo": config_val.get("seo"), "footer": config_val.get("footer"), "ads": config_val.get("ads"),
-                                        "plugins": config_val.get("plugins"), "static_pages": config_val.get("static_pages"),
-                                    });
-                                    if let Ok(json_str) = serde_json::to_string_pretty(&hotswap) {
-                                        let mut eval = eval(r#"
-                                            let text = await dioxus.recv();
-                                            let blob = new Blob([text], { type: 'application/json' });
-                                            let url = URL.createObjectURL(blob);
-                                            let a = document.createElement('a'); a.href = url; a.download = 'hotswap_data.json';
-                                            document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
-                                            dioxus.send("done");
-                                        "#);
-                                        let _ = eval.send(json_str.into());
-                                        let _ = eval.recv().await;
+                            let toml_copy = toml_for_save_data.clone(); // <-- UPDATED: Now uses its own safe clone
+
+                            let current_config = match toml::from_str::<ThemeConfig>(&toml_copy) {
+                                Ok(config) => config,
+                                Err(err) => {
+                                    let msg = format!("Save Data failed: could not parse current ThemeConfig TOML: {}", err);
+                                    eprintln!("{}", msg);
+                                    status_msg.set(msg);
+                                    return;
+                                }
+                            };
+
+                            let Some(path) = rfd::FileDialog::new()
+                                .set_title("Save Site Data Profile")
+                                .set_file_name("my_site_data.json")
+                                .add_filter("JSON", &["json"])
+                                .save_file()
+                            else {
+                                status_msg.set("Save Data cancelled.".to_string());
+                                return;
+                            };
+
+                            match serde_json::to_string_pretty(&current_config) {
+                                Ok(json_string) => match std::fs::write(&path, json_string) {
+                                    Ok(()) => {
+                                        status_msg.set(format!("Site data saved: {}", path.display()));
                                     }
+                                    Err(err) => {
+                                        let msg = format!("Save Data failed: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                    }
+                                },
+                                Err(err) => {
+                                    let msg = format!("Save Data failed: could not serialize ThemeConfig: {}", err);
+                                    eprintln!("{}", msg);
+                                    status_msg.set(msg);
                                 }
                             }
                         },

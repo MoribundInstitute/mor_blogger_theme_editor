@@ -1,0 +1,11 @@
+.mor-footer { margin-top: auto; border-top: 1px dashed var(--border-color); padding: 30px 40px 20px; font-size: 0.85rem; width: 100%; }
+.footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 30px; margin-bottom: 30px; }
+.footer-col h4 { color: var(--fg-base); margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); display: inline-block; padding-bottom: 2px; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; }
+.footer-col li { margin-bottom: 8px; }
+.footer-col a { color: var(--fg-dim); border-bottom: none; display: inline-block; }
+.footer-col a:before { content: "> "; opacity: 0.5; }
+.footer-col a:hover, .footer-col a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }
+.footer-sys-info { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px; color: var(--fg-dim); font-size: 0.8rem; flex-wrap: wrap; gap: 15px; }
+.footer-sys-info a { color: var(--fg-dim); border-bottom: 1px dotted var(--fg-dim); }
+.footer-sys-info a:hover, .footer-sys-info a:focus-visible { color: var(--bg-base); background: var(--fg-base); }

@@ -1,0 +1,349 @@
+/* ============================================================
+   Newspaper preset
+   The blog as broadsheet. Multi-column body text at wide widths,
+   drop cap on the lead paragraph, hairline rules between sections,
+   small caps for category labels, blackletter masthead, and a
+   restrained ink-on-paper palette with one accent red.
+   ============================================================ */
+
+/* Pull a blackletter face from Google Fonts for the masthead.
+   Falls back gracefully via the heading_font_stack in the .rs file. */
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+
+/* The page surface itself feels like paper. Kill the glow vignette
+   that the base theme paints over the body. */
+body::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* The masthead — blackletter, oversized, centered, with hairline
+   rules above and below in the classic newspaper plate style. */
+.main-header {
+  background: var(--bg-panel) !important;
+  border-top: 4px double var(--fg-base) !important;
+  border-bottom: 4px double var(--fg-base) !important;
+  padding: 24px 18px 18px 18px !important;
+  text-align: center !important;
+  box-shadow: none !important;
+}
+
+.main-header .branding {
+  display: block !important;
+  text-align: center !important;
+}
+
+.main-header .branding-link {
+  display: inline-block !important;
+  text-decoration: none !important;
+  color: var(--fg-base) !important;
+}
+
+.main-header .institute-title {
+  color: var(--fg-base) !important;
+  font-family:
+    'UnifrakturMaguntia', 'Old English Text MT', 'Blackletter686 BT',
+    'Times New Roman', Times, serif !important;
+  font-size: clamp(2.2rem, 6vw, 4rem) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.0 !important;
+  text-shadow: none !important;
+}
+
+/* The subtitle becomes a dateline strip: small caps, hairline rules
+   on either side, the kind of thing that says "Vol. I · No. 1". */
+.main-header .header-bottom-row {
+  margin-top: 14px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid var(--border-color) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 24px !important;
+  font-variant: small-caps !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.14em !important;
+  color: var(--fg-muted) !important;
+}
+
+/* Each post is a story plate: hairline border, white/cream paper
+   surface, generous padding. No drop shadow, no glow. */
+.mor-post {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 32px 36px !important;
+  margin-bottom: 24px !important;
+}
+
+/* The post title — large, serif, with a hairline rule beneath it. */
+.mor-post .post-title,
+.mor-post .post-title a {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: clamp(1.8rem, 4vw, 2.6rem) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--fg-base) !important;
+  text-shadow: none !important;
+  margin: 0 0 6px 0 !important;
+}
+
+/* The "FEATURED POST" / category label above the title becomes a
+   small-caps banner in the accent color — like a section flag. */
+.mor-post::before {
+  content: "Section" !important;       /* default; can be overridden per-post */
+  display: inline-block !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 4px !important;
+  border-bottom: 2px solid var(--accent) !important;
+  font-family: var(--font-body) !important;
+  font-variant: small-caps !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.18em !important;
+  color: var(--accent) !important;
+}
+
+/* Byline rule: a hairline divider sits between the title and body. */
+.mor-post .post-title {
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* The body itself — justified text and multi-column at wide widths.
+   At narrow widths, columns collapse to one. */
+.mor-post .post-body {
+  color: var(--fg-base) !important;
+  font-family: var(--font-body) !important;
+  font-size: 1.02rem !important;
+  line-height: 1.62 !important;
+  text-align: justify !important;
+  hyphens: auto !important;
+  margin-top: 18px !important;
+}
+
+@media (min-width: 760px) {
+  .mor-post .post-body {
+    column-count: 2 !important;
+    column-gap: 28px !important;
+    column-rule: 1px solid var(--border-color) !important;
+  }
+}
+
+@media (min-width: 1240px) {
+  .mor-post .post-body {
+    column-count: 3 !important;
+  }
+}
+
+/* Drop cap on the lead paragraph — the signature newspaper move.
+   The :first-of-type makes sure it only lands on the first <p>,
+   not every paragraph. column-span: all pulls it across the columns. */
+.mor-post .post-body > p:first-of-type::first-letter {
+  float: left !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 4.4rem !important;
+  line-height: 0.86 !important;
+  padding: 6px 10px 0 0 !important;
+  margin: 4px 4px 0 0 !important;
+  color: var(--fg-base) !important;
+  /* In multi-column mode the cap belongs to the first column only,
+     which is the default. Don't span — it would push the columns. */
+}
+
+/* Inline emphasis: italic for em (already default but reinforce),
+   true small caps for <abbr> and <cite>. */
+.mor-post .post-body em,
+.mor-post .post-body i {
+  font-style: italic !important;
+}
+
+.mor-post .post-body abbr,
+.mor-post .post-body cite {
+  font-variant: small-caps !important;
+  font-style: normal !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Pull quotes via <blockquote>: oversized, italic, no quotes glyphs,
+   centered with hairline rules above and below. */
+.mor-post .post-body blockquote {
+  break-inside: avoid !important;
+  margin: 18px 0 !important;
+  padding: 14px 8px !important;
+  border-top: 1px solid var(--border-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-left: 0 !important;
+  font-style: italic !important;
+  font-size: 1.18rem !important;
+  line-height: 1.45 !important;
+  text-align: center !important;
+  color: var(--fg-base) !important;
+}
+
+/* Headings inside the body get the serif treatment with hairline rules. */
+.mor-post .post-body h2,
+.mor-post .post-body h3,
+.mor-post .post-body h4 {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  color: var(--fg-base) !important;
+  text-shadow: none !important;
+  break-after: avoid !important;
+}
+
+.mor-post .post-body h2 {
+  font-size: 1.4rem !important;
+  margin: 18px 0 8px 0 !important;
+  padding-bottom: 4px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.mor-post .post-body h3 {
+  font-size: 1.15rem !important;
+  font-variant: small-caps !important;
+  letter-spacing: 0.06em !important;
+  margin: 14px 0 6px 0 !important;
+}
+
+/* Links inside body copy: subtle dotted underline in fg-base, going
+   to the accent red on hover (the newspaper's "see more" cue). */
+.mor-post .post-body a,
+.panel-content a {
+  color: var(--fg-base) !important;
+  text-decoration: none !important;
+  border-bottom: 1px dotted var(--fg-muted) !important;
+  text-shadow: none !important;
+  transition: color 120ms ease, border-color 120ms ease !important;
+}
+
+.mor-post .post-body a:hover,
+.panel-content a:hover {
+  color: var(--accent) !important;
+  border-bottom-color: var(--accent) !important;
+  border-bottom-style: solid !important;
+}
+
+/* Side panels (Browse / Contents): treat them like a "stories on this
+   page" sidebar in a print paper. Hairline border, no glow. */
+.runelite-panel,
+.panel-content,
+.mor-catalog-dropdown {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.panel-header,
+.mor-panel-heading {
+  background: var(--bg-elevated) !important;
+  color: var(--fg-base) !important;
+  font-family: var(--font-body) !important;
+  font-variant: small-caps !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.16em !important;
+  padding: 8px 12px !important;
+  border-bottom: 2px solid var(--fg-base) !important;
+  text-shadow: none !important;
+}
+
+/* Buttons in the navigation: small caps, no fill, hairline border.
+   Hover swaps to a solid black plate (ink stamp feel). */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: transparent !important;
+  color: var(--fg-base) !important;
+  border: 1px solid var(--fg-base) !important;
+  border-radius: 0 !important;
+  padding: 6px 14px !important;
+  font-family: var(--font-body) !important;
+  font-variant: small-caps !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.14em !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: var(--fg-base) !important;
+  color: var(--bg-base) !important;
+}
+
+/* The footer becomes a colophon: tiny, centered, in small caps. */
+.mor-footer {
+  background: var(--bg-panel) !important;
+  color: var(--fg-muted) !important;
+  border-top: 2px double var(--fg-base) !important;
+  padding: 18px 24px !important;
+  font-family: var(--font-body) !important;
+  font-variant: small-caps !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.14em !important;
+  text-align: center !important;
+  text-shadow: none !important;
+}
+
+/* Kill any leftover glow/text-shadow on titles & headings throughout. */
+*, *::before, *::after {
+  text-shadow: none !important;
+}
+
+/* ============================================================
+   Header toggle compatibility
+   Keeps the post-rename main header and clean-label sidebar
+   toggles as icon buttons, even when this preset restyles
+   .panel-toggle broadly.
+   ============================================================ */
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.header-panel-toggle::before,
+.header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: var(--fg-base) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.header-panel-toggle::after,
+.header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}

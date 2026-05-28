@@ -1,0 +1,51 @@
+:root {
+  /* LIGHT MODE (Default) */
+  --bg-base: {{LIGHT_BG_BASE}};
+  --bg-panel: {{LIGHT_BG_PANEL}};
+  --bg-highlight: {{LIGHT_BG_ELEVATED}};
+  --bg-soft: {{LIGHT_BG_PANEL}};
+  --bg-elevated: {{LIGHT_BG_ELEVATED}};
+
+  --fg-base: {{LIGHT_FG_BASE}};
+  --fg-dim: {{LIGHT_FG_MUTED}};
+  --fg-muted: {{LIGHT_FG_MUTED}};
+  --accent: {{LIGHT_ACCENT}};
+
+  --border-color: {{LIGHT_BORDER}};
+  --border-soft: {{LIGHT_BORDER}};
+
+  --font-mono: "IM Fell English", Georgia, "Times New Roman", serif;
+  --sidebar-width: 300px;
+  --header-z: 1100;
+  --overlay-z: 1200;
+  --dropdown-z: 1300;
+
+  --glow: 0 0 4px {{LIGHT_ACCENT}};
+  --glow-strong: 0 0 8px {{LIGHT_ACCENT}};
+  --shadow-elevated: 0 18px 45px rgba(0, 0, 0, 0.15);
+
+  {{LIGHT_BACKGROUND_TILE_CSS}}
+}
+
+/* DARK MODE (Triggered via JS) */
+html[data-theme="dark"] {
+  --bg-base: {{DARK_BG_BASE}};
+  --bg-panel: {{DARK_BG_PANEL}};
+  --bg-highlight: {{DARK_BG_ELEVATED}};
+  --bg-soft: {{DARK_BG_PANEL}};
+  --bg-elevated: {{DARK_BG_ELEVATED}};
+
+  --fg-base: {{DARK_FG_BASE}};
+  --fg-dim: {{DARK_FG_MUTED}};
+  --fg-muted: {{DARK_FG_MUTED}};
+  --accent: {{DARK_ACCENT}};
+
+  --border-color: {{DARK_BORDER}};
+  --border-soft: {{DARK_BORDER}};
+
+  --glow: 0 0 4px {{DARK_ACCENT}};
+  --glow-strong: 0 0 8px {{DARK_ACCENT}};
+  --shadow-elevated: 0 18px 45px rgba(0, 0, 0, 0.65);
+
+  {{DARK_BACKGROUND_TILE_CSS}}
+}

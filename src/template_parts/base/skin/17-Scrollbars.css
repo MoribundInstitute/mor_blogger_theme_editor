@@ -1,0 +1,4 @@
+.sidebar-section .widget-content::-webkit-scrollbar, .panel-content::-webkit-scrollbar, .canvas-core::-webkit-scrollbar { width: 6px; }
+.sidebar-section .widget-content::-webkit-scrollbar-track, .panel-content::-webkit-scrollbar-track, .canvas-core::-webkit-scrollbar-track { background: var(--bg-base); }
+.sidebar-section .widget-content::-webkit-scrollbar-thumb, .panel-content::-webkit-scrollbar-thumb, .canvas-core::-webkit-scrollbar-thumb { background: var(--border-color); }
+.sidebar-section .widget-content::-webkit-scrollbar-thumb:hover, .panel-content::-webkit-scrollbar-thumb:hover, .canvas-core::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }

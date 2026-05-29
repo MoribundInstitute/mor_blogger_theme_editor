@@ -5,6 +5,7 @@ mod importers;
 mod panel;
 mod signals;
 
+pub use drag::ThemeRestoreDropZone;
 pub use floating_window::PresetFloatingWindow;
 pub use panel::PresetsPanel;
 pub use signals::ThemeSignals;

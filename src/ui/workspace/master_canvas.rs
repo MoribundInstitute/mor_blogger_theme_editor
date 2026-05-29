@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-
 use crate::clipboard::copy_to_clipboard;
 use crate::config::ThemeConfig;
 use crate::diagnostics::DiagnosticResult;
@@ -8,6 +7,7 @@ use crate::ui::workspace::layout::{
     PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
+use crate::ui::panels::presets_panel::ThemeRestoreDropZone;
 
 #[component]
 pub fn CenterWorkspacePanel(
@@ -26,16 +26,27 @@ pub fn CenterWorkspacePanel(
     on_restore: EventHandler<ThemeConfig>,
     on_load_hotswap: EventHandler<String>,
 ) -> Element {
-    let export_xml = crate::rehydration::inject_state(&generated_xml, &config_toml);
+    // Parse the TOML into our struct so we can pass it into the new binary injection pipeline
+    let export_xml = match toml::from_str::<ThemeConfig>(&config_toml) {
+        Ok(config) => crate::rehydration::inject_state(&generated_xml, &config)
+            .unwrap_or_else(|err| {
+                log::error!("Failed to inject state: {}", err);
+                generated_xml.clone()
+            }),
+        Err(err) => {
+            log::error!("Failed to parse config for state injection: {}", err);
+            generated_xml.clone()
+        }
+    };
 
-    let xml_for_copy = generated_xml.clone();
-    let xml_for_download = generated_xml.clone();
+    let xml_for_copy = export_xml.clone();
+    let xml_for_download = export_xml.clone();
     let toml_for_backup = config_toml.clone();
     let toml_for_hotswap = config_toml.clone();
-    let toml_for_save_data = config_toml.clone(); // <-- ADDED: The spare copy for the second JSON button
+    let toml_for_save_data = config_toml.clone();
     let toml_for_bottom_copy = config_toml.clone();
     let toml_for_disk = config_toml.clone();
-    // Snapshot the active preset name once so both export closures can capture it by value.
+    
     let preset_for_bottom_copy = active_preset();
     let preset_for_disk = active_preset();
 
@@ -43,8 +54,6 @@ pub fn CenterWorkspacePanel(
     let error_count = diag.read().errors.len();
 
     let mut status_msg = use_signal(|| "".to_string());
-    let mut import_text = use_signal(|| "".to_string());
-    let mut import_status = use_signal(|| "".to_string());
     let mut show_restore = use_signal(|| false);
 
     rsx! {
@@ -190,7 +199,7 @@ pub fn CenterWorkspacePanel(
                                     dioxus.send("done");
                                 "#);
                                 let _ = eval.send(xml.into());
-                                let _ = eval.recv().await;
+                                let _ = eval.recv().await; 
                             }
                         },
                         "Download .xml"
@@ -304,7 +313,7 @@ pub fn CenterWorkspacePanel(
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
                         onclick: move |_| {
-                            let toml_copy = toml_for_save_data.clone(); // <-- UPDATED: Now uses its own safe clone
+                            let toml_copy = toml_for_save_data.clone();
 
                             let current_config = match toml::from_str::<ThemeConfig>(&toml_copy) {
                                 Ok(config) => config,
@@ -380,45 +389,9 @@ pub fn CenterWorkspacePanel(
             }
 
             if show_restore() {
-                div {
-                    class: "restore-workspace-drawer",
-                    div {
-                        class: "restore-header",
-                        h4 { class: "restore-title", "Restore Workspace from Blogger XML" }
-                        button { class: "editor-mini-button", onclick: move |_| { show_restore.set(false); }, "Close" }
-                    }
-                    p { class: "restore-copy", "Paste a previously exported Blogger XML template here to restore your GUI state." }
-                    div {
-                        class: "editor-row-stretch",
-                        textarea {
-                            class: "editor-textarea restore-textarea", placeholder: "Paste Blogger XML here...", value: "{import_text}",
-                            oninput: move |evt| { import_text.set(evt.value().clone()); import_status.set("".to_string()); },
-                        }
-                        button {
-                            class: "editor-button restore-button",
-                            onclick: {
-                                let on_restore = on_restore.clone();
-                                move |_| {
-                                    let pasted_xml = import_text();
-                                    if pasted_xml.trim().is_empty() {
-                                        import_status.set("Paste exported Blogger XML before rehydrating.".to_string()); return;
-                                    }
-                                    match crate::rehydration::extract_and_decode(&pasted_xml) {
-                                        Ok(config) => {
-                                            on_restore.call(config);
-                                            import_status.set("Workspace restored successfully.".to_string());
-                                            import_text.set("".to_string());
-                                        }
-                                        Err(err) => { import_status.set(format!("Error: {}", err)); }
-                                    }
-                                }
-                            },
-                            "Rehydrate"
-                        }
-                    }
-                    if !import_status().is_empty() {
-                        div { class: "restore-status", "{import_status}" }
-                    }
+                ThemeRestoreDropZone {
+                    on_restore: on_restore.clone(),
+                    on_close: move |_| { show_restore.set(false); },
                 }
             }
 
@@ -492,13 +465,11 @@ fn build_fresh_export_xml(
     let config = toml::from_str::<ThemeConfig>(config_toml)
         .map_err(|err| format!("could not parse current ThemeConfig TOML: {}", err))?;
 
-    // Resolve the light/dark palette pair for the active preset.
-    // `resolve_palette_pair` falls back to config-derived palettes when no
-    // preset is selected, so this is always safe to call.
     let (light_palette, dark_palette) =
         crate::presets::resolve_palette_pair(active_preset_name, &config);
 
     let rendered_xml =
         crate::render::render_theme(&config, &light_palette, &dark_palette);
-    Ok(crate::rehydration::inject_state(&rendered_xml, config_toml))
+        
+    crate::rehydration::inject_state(&rendered_xml, &config)
 }

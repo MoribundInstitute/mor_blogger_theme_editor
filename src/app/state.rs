@@ -1,0 +1,211 @@
+use dioxus::prelude::*;
+
+use crate::config::{MenuLink, TemplatePackConfig, ThemeConfig};
+use crate::defaults::default_theme_config;
+use crate::ui::panels::presets_panel::ThemeSignals;
+
+use super::config_bridge::{menu_label, menu_url};
+
+#[derive(Clone, Copy)]
+pub struct ThemeAppState {
+    pub signals: ThemeSignals,
+    pub current_config: Memo<ThemeConfig>,
+    pub active_preset: Signal<Option<&'static str>>,
+    pub show_preview: Signal<bool>,
+    pub show_undocked_presets: Signal<bool>,
+}
+
+pub fn use_theme_app_state() -> ThemeAppState {
+    let defaults = default_theme_config();
+
+    let site_title = use_signal(|| defaults.site.site_title.clone());
+    let site_subtitle = use_signal(|| defaults.site.site_subtitle.clone());
+    let header_logo_url = use_signal(|| defaults.site.header_logo_url.clone());
+    let home_url = use_signal(|| defaults.site.home_url.clone());
+
+    let bg_base = use_signal(|| defaults.colors.bg_base.clone());
+    let bg_panel = use_signal(|| defaults.colors.bg_panel.clone());
+    let bg_elevated = use_signal(|| defaults.colors.bg_elevated.clone());
+    let fg_base = use_signal(|| defaults.colors.fg_base.clone());
+    let fg_muted = use_signal(|| defaults.colors.fg_muted.clone());
+    let accent = use_signal(|| defaults.colors.accent.clone());
+    let border = use_signal(|| defaults.colors.border.clone());
+
+    let btn_radius = use_signal(|| defaults.buttons.radius.clone());
+    let btn_border_width = use_signal(|| defaults.buttons.border_width.clone());
+    let btn_text_transform = use_signal(|| defaults.buttons.text_transform.clone());
+
+    let body_font_stack = use_signal(|| defaults.typography.body_font_stack.clone());
+    let heading_font_stack = use_signal(|| defaults.typography.heading_font_stack.clone());
+    let mono_font_stack = use_signal(|| defaults.typography.mono_font_stack.clone());
+    let base_size = use_signal(|| defaults.typography.base_size.clone());
+    let scale_ratio = use_signal(|| defaults.typography.scale_ratio.clone());
+    let line_height = use_signal(|| defaults.typography.line_height.clone());
+    let heading_weight = use_signal(|| defaults.typography.heading_weight.clone());
+
+    let background = use_signal(|| defaults.background.clone());
+    let favicon_url = use_signal(|| defaults.assets.favicon_url.clone());
+    let social_card_image_url = use_signal(|| defaults.assets.social_card_image_url.clone());
+
+    let meta_description = use_signal(|| defaults.seo.meta_description.clone());
+    let meta_keywords = use_signal(|| defaults.seo.meta_keywords.clone());
+    let custom_robots = use_signal(|| defaults.seo.custom_robots.clone());
+    let license_url = use_signal(|| defaults.seo.license_url.clone());
+    let author_name = use_signal(|| defaults.seo.author_name.clone());
+
+    let menu_1_label = use_signal(|| menu_label(&defaults, 0));
+    let menu_1_url = use_signal(|| menu_url(&defaults, 0));
+    let menu_2_label = use_signal(|| menu_label(&defaults, 1));
+    let menu_2_url = use_signal(|| menu_url(&defaults, 1));
+    let menu_3_label = use_signal(|| menu_label(&defaults, 2));
+    let menu_3_url = use_signal(|| menu_url(&defaults, 2));
+    let menu_4_label = use_signal(|| menu_label(&defaults, 3));
+    let menu_4_url = use_signal(|| menu_url(&defaults, 3));
+
+    let footer_text = use_signal(|| defaults.footer.footer_text.clone());
+    let footer_license_label = use_signal(|| defaults.footer.footer_license_label.clone());
+    let footer_license_url = use_signal(|| defaults.footer.footer_license_url.clone());
+
+    let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
+    let static_pages = use_signal(|| defaults.static_pages.clone());
+    let ads = use_signal(|| defaults.ads.clone());
+    let icons = use_signal(|| defaults.icons.clone());
+    let preset_css = use_signal(String::new);
+
+    let show_preview = use_signal(|| true);
+    let active_preset = use_signal(|| None::<&'static str>);
+    let is_dark_mode = use_signal(|| true);
+    let show_undocked_presets = use_signal(|| false);
+
+    let signals = ThemeSignals {
+        is_dark_mode,
+        site_title,
+        site_subtitle,
+        header_logo_url,
+        home_url,
+        bg_base,
+        bg_panel,
+        bg_elevated,
+        fg_base,
+        fg_muted,
+        accent,
+        border,
+        btn_radius,
+        btn_border_width,
+        btn_text_transform,
+        body_font_stack,
+        heading_font_stack,
+        mono_font_stack,
+        base_size,
+        scale_ratio,
+        line_height,
+        heading_weight,
+        background,
+        favicon_url,
+        social_card_image_url,
+        meta_description,
+        meta_keywords,
+        custom_robots,
+        license_url,
+        author_name,
+        menu_1_label,
+        menu_1_url,
+        menu_2_label,
+        menu_2_url,
+        menu_3_label,
+        menu_3_url,
+        menu_4_label,
+        menu_4_url,
+        footer_text,
+        footer_license_label,
+        footer_license_url,
+        custom_js,
+        preset_css,
+        static_pages,
+        ads,
+        icons,
+    };
+
+    let current_config = use_memo(move || ThemeConfig {
+        site: crate::config::SiteConfig {
+            site_title: site_title(),
+            site_subtitle: site_subtitle(),
+            header_logo_url: header_logo_url(),
+            home_url: home_url(),
+        },
+        colors: crate::config::ColorConfig {
+            bg_base: bg_base(),
+            bg_panel: bg_panel(),
+            bg_elevated: bg_elevated(),
+            fg_base: fg_base(),
+            fg_muted: fg_muted(),
+            accent: accent(),
+            border: border(),
+        },
+        icons: icons(),
+        buttons: crate::config::ButtonConfig {
+            radius: btn_radius(),
+            border_width: btn_border_width(),
+            text_transform: btn_text_transform(),
+        },
+        typography: crate::config::TypographyConfig {
+            body_font_stack: body_font_stack(),
+            heading_font_stack: heading_font_stack(),
+            mono_font_stack: mono_font_stack(),
+            base_size: base_size(),
+            scale_ratio: scale_ratio(),
+            line_height: line_height(),
+            heading_weight: heading_weight(),
+        },
+        background: background(),
+        assets: crate::config::AssetConfig {
+            favicon_url: favicon_url(),
+            social_card_image_url: social_card_image_url(),
+        },
+        seo: crate::config::SeoConfig {
+            meta_description: meta_description(),
+            meta_keywords: meta_keywords(),
+            custom_robots: custom_robots(),
+            license_url: license_url(),
+            author_name: author_name(),
+        },
+        menu_links: vec![
+            MenuLink {
+                label: menu_1_label(),
+                url: menu_1_url(),
+            },
+            MenuLink {
+                label: menu_2_label(),
+                url: menu_2_url(),
+            },
+            MenuLink {
+                label: menu_3_label(),
+                url: menu_3_url(),
+            },
+            MenuLink {
+                label: menu_4_label(),
+                url: menu_4_url(),
+            },
+        ],
+        footer: crate::config::FooterConfig {
+            footer_text: footer_text(),
+            footer_license_label: footer_license_label(),
+            footer_license_url: footer_license_url(),
+        },
+        plugins: crate::config::PluginConfig {
+            custom_js: custom_js(),
+        },
+        static_pages: static_pages(),
+        ads: ads(),
+        template_pack: TemplatePackConfig::default(),
+        preset_css: preset_css(),
+    });
+
+    ThemeAppState {
+        signals,
+        current_config,
+        active_preset,
+        show_preview,
+        show_undocked_presets,
+    }
+}

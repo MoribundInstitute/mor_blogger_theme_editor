@@ -26,10 +26,10 @@
           <b:widget-setting name='showReactions'>false</b:widget-setting>
         </b:widget-settings>
 
-        <b:includable id='main' var='top'>
+       <b:includable id='main' var='top'>
           <div class='blog-posts'>
             <b:loop values='data:posts' var='post'>
-              <article class='mor-post'>
+              <article class='mor-post' {{MOR_LMS_HOOKS}}>
 
                 <h2 class='post-title'>
                   <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>

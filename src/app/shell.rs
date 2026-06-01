@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::presets_panel::PresetFloatingWindow;
+use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
@@ -25,12 +26,14 @@ pub fn render_app_shell(
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
     let show_undocked_presets = theme.show_undocked_presets;
+    
+    // NEW: Local switch for static pages undocking
+    let mut show_undocked_pages = use_signal(|| false);
 
     rsx! {
         style { "{EDITOR_UI_CSS}" }
 
         div { class: "editor-shell",
-            // Standard internal branding header (OS handles the window above this)
             header { class: "editor-main-header",
                 h1 { class: "editor-brand", "Moribund Institute Theme Architect" }
             }
@@ -52,6 +55,7 @@ pub fn render_app_shell(
                         active_preset.set(None);
                     },
                     show_undocked_presets,
+                    show_undocked_pages,
                 }
 
                 CenterWorkspacePanel {
@@ -93,6 +97,14 @@ pub fn render_app_shell(
                     signals,
                     active_preset,
                     show_undocked_presets,
+                }
+            }
+
+            // NEW: Render the floating window if the switch is flipped
+            if show_undocked_pages() {
+                StaticPagesFloatingWindow {
+                    signals,
+                    show_undocked_pages,
                 }
             }
 

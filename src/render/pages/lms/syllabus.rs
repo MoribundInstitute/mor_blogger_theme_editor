@@ -1,63 +1,59 @@
 use crate::config::pages::LmsConfig;
-use crate::config::styling::ColorConfig;
+use crate::render::pages::escape_html;
 
-pub fn generate_syllabus_html(colors: &ColorConfig, config: &LmsConfig) -> String {
+/// Emits the Syllabus page as pure layout. Colors resolve from inherited theme
+/// tokens; the `<style>` block carries structure only. For an offline color
+/// override, wrap the output with `apply_stencil_colors` in the parent module.
+pub fn generate_syllabus_html(config: &LmsConfig) -> String {
     let mut html = String::new();
 
-    html.push_str(&format!(
+    html.push_str(
         r##"<style>
-.mor-syllabus-section {{
-  --bg-panel: {bg_panel};
-  --fg-base: {fg_base};
-  --fg-dim: {fg_muted};
-  --border-color: {border};
-  --accent: {accent};
-}}
-.mor-syllabus-section {{
+.mor-syllabus-section {
   max-width: 800px;
   margin: 0 auto;
   font-family: inherit;
-  color: var(--fg-base);
-}}
-.mor-course-header {{
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
+  color: var(--fg-base, inherit);
+}
+.mor-course-header {
+  background: var(--bg-panel, rgba(128, 128, 128, 0.08));
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
   padding: 40px;
   border-radius: 8px;
   margin-bottom: 40px;
-}}
-.mor-course-header h1 {{
+}
+.mor-course-header h1 {
   margin: 0 0 16px 0;
-  color: var(--accent);
+  color: var(--accent, #3b82f6);
   font-size: 2.2rem;
-}}
-.mor-course-header p {{
+}
+.mor-course-header p {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: var(--fg-dim);
+  color: var(--fg-dim, #888);
   margin: 0;
-}}
-.mor-lesson-list {{
+}
+.mor-lesson-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}}
-.mor-lesson-item {{
+}
+.mor-lesson-item {
   display: flex;
   align-items: flex-start;
   gap: 20px;
   padding: 24px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
   border-radius: 6px;
   transition: border-color 0.2s ease;
-}}
-.mor-lesson-item:hover {{
-  border-color: var(--accent);
-}}
-.mor-lesson-marker {{
-  background: var(--bg-panel);
-  color: var(--fg-dim);
-  border: 1px solid var(--border-color);
+}
+.mor-lesson-item:hover {
+  border-color: var(--accent, #3b82f6);
+}
+.mor-lesson-marker {
+  background: var(--bg-panel, rgba(128, 128, 128, 0.08));
+  color: var(--fg-dim, #888);
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -66,41 +62,36 @@ pub fn generate_syllabus_html(colors: &ColorConfig, config: &LmsConfig) -> Strin
   justify-content: center;
   font-weight: bold;
   flex-shrink: 0;
-}}
-.mor-lesson-content {{
+}
+.mor-lesson-content {
   flex-grow: 1;
-}}
-.mor-lesson-content h3 {{
+}
+.mor-lesson-content h3 {
   margin: 0 0 8px 0;
   font-size: 1.3rem;
-}}
-.mor-lesson-content h3 a {{
-  color: var(--fg-base);
+}
+.mor-lesson-content h3 a {
+  color: var(--fg-base, inherit);
   text-decoration: none;
-}}
-.mor-lesson-content h3 a:hover {{
-  color: var(--accent);
+}
+.mor-lesson-content h3 a:hover {
+  color: var(--accent, #3b82f6);
   text-decoration: underline;
-}}
-.mor-lesson-content p {{
+}
+.mor-lesson-content p {
   margin: 0 0 12px 0;
-  color: var(--fg-dim);
+  color: var(--fg-dim, #888);
   line-height: 1.5;
-}}
-.mor-lesson-meta {{
+}
+.mor-lesson-meta {
   font-size: 0.85rem;
-  color: var(--accent);
+  color: var(--accent, #3b82f6);
   font-family: monospace;
   text-transform: uppercase;
-}}
+}
 </style>
 "##,
-        bg_panel = colors.bg_panel.to_css(),
-        fg_base = colors.fg_base,
-        fg_muted = colors.fg_muted,
-        border = colors.border,
-        accent = colors.accent
-    ));
+    );
 
     let mut lessons_html = String::new();
     for (i, lesson) in config.lessons.iter().enumerate() {
@@ -114,7 +105,7 @@ pub fn generate_syllabus_html(colors: &ColorConfig, config: &LmsConfig) -> Strin
         };
 
         lessons_html.push_str(&format!(
-            r##"  <div class="mor-lesson-item">
+            r##"  <div class="mor-lesson-item" data-mor-type="lesson" data-mor-id="{}">
     <div class="mor-lesson-marker">{}</div>
     <div class="mor-lesson-content">
       <h3><a href="{}">{}</a></h3>
@@ -123,6 +114,7 @@ pub fn generate_syllabus_html(colors: &ColorConfig, config: &LmsConfig) -> Strin
     </div>
   </div>
 "##,
+            escape_html(&lesson.url), // The unique ID for the tracker
             i + 1,
             escape_html(&lesson.url),
             escape_html(&lesson.title),
@@ -149,13 +141,4 @@ pub fn generate_syllabus_html(colors: &ColorConfig, config: &LmsConfig) -> Strin
     ));
 
     html
-}
-
-fn escape_html(value: &str) -> String {
-    value
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;")
 }

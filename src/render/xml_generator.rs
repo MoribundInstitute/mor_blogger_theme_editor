@@ -522,11 +522,11 @@ pub(super) fn render_template(
         .replace("{{TOC_LOADING_MESSAGE}}", "Building contents...")
         .replace(
             "{{TOC_WAITING_MESSAGE}}",
-            "[SYS] WAITING FOR INPUT_STREAM...",
+            "Waiting for document...",
         )
         .replace(
             "{{TOC_EMPTY_MESSAGE}}",
-            "[SYS] No anchor points found in document.",
+            "No anchor points found in document.",
         )
         .replace("{{TOC_HEADING_SELECTOR}}", "h2, h3, h4, h5")
         .replace("{{TOC_INDENT_STEP}}", "15")
@@ -545,6 +545,14 @@ pub(super) fn render_template(
         )
         .replace("{{BLOG_TIMESTAMP_FORMAT}}", "d MMM, yyyy")
         .replace("{{POST_TAGS_PREFIX}}", "Tags: ")
+
+        // --- NEW: MORIBUND LMS TRACKING HOOKS ---
+        .replace(
+            "{{MOR_LMS_HOOKS}}",
+            "expr:data-mor-id='data:post.id' expr:data-mor-labels='data:post.labels ? (data:post.labels map (l =&gt; l.name) join &quot;,&quot;) : &quot;&quot;'"
+        )
+        // ----------------------------------------
+
         .replace("{{PAGER_NEWER_LABEL}}", "Newer")
         .replace("{{PAGER_HOME_LABEL}}", "Home")
         .replace("{{PAGER_OLDER_LABEL}}", "Older")
@@ -622,8 +630,8 @@ pub(super) fn render_template(
             "{{FOOTER_SOURCE_URL}}",
             "https://github.com/MoribundInstitute/blogger-theme-moribund-institute",
         )
-        .replace("{{FOOTER_SOURCE_LABEL}}", "[SRC: GitHub Repository]")
-        .replace("{{BACK_TO_TOP_LABEL}}", "[Back to Top]")
+        .replace("{{FOOTER_SOURCE_LABEL}}", "GitHub Repository")
+        .replace("{{BACK_TO_TOP_LABEL}}", "Back to Top")
         // Optional custom plugin JS lives inside javascript_before_body_tag.xml's
         // DOMContentLoaded handler, so do not wrap it in a second <script>.
         .replace("{{CUSTOM_BEFORE_BODY_JS}}", &config.plugins.custom_js);

@@ -1,40 +1,38 @@
 use crate::config::pages::PortfolioPageConfig;
-use crate::config::styling::ColorConfig;
+use crate::render::pages::escape_html;
 
-pub fn generate_portfolio_html(colors: &ColorConfig, config: &PortfolioPageConfig) -> String {
+/// Emits the Portfolio page as pure layout. Colors resolve from inherited theme
+/// tokens; the `<style>` block carries structure only. For an offline color
+/// override, wrap the output with `apply_stencil_colors` in the parent module.
+pub fn generate_portfolio_html(config: &PortfolioPageConfig) -> String {
     let mut html = String::new();
 
+    // Still a `format!` because `column-count` is data-driven (`{cols}`); all
+    // other braces are escaped (`{{`/`}}`). Colors read from inherited tokens.
     html.push_str(&format!(
         r##"<style>
-.mor-portfolio-section {{
-  --bg-panel: {bg_panel};
-  --fg-base: {fg_base};
-  --fg-dim: {fg_muted};
-  --border-color: {border};
-  --accent: {accent};
-}}
 .mor-portfolio-section {{
   max-width: 1200px;
   margin: 0 auto;
   font-family: inherit;
-  color: var(--fg-base);
+  color: var(--fg-base, inherit);
 }}
 .mor-portfolio-intro {{
   margin-bottom: 40px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
   padding-bottom: 30px;
 }}
 .mor-portfolio-kicker {{
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--fg-dim);
+  color: var(--fg-dim, #888);
   margin-bottom: 8px;
 }}
 .mor-portfolio-title {{
   font-size: 2.5rem;
-  color: var(--accent);
+  color: var(--accent, #3b82f6);
   margin: 0 0 12px 0;
 }}
 .mor-portfolio-desc {{
@@ -42,7 +40,7 @@ pub fn generate_portfolio_html(colors: &ColorConfig, config: &PortfolioPageConfi
   line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
-  color: var(--fg-dim);
+  color: var(--fg-dim, #888);
 }}
 .mor-masonry-grid {{
   column-count: {cols};
@@ -51,15 +49,15 @@ pub fn generate_portfolio_html(colors: &ColorConfig, config: &PortfolioPageConfi
 .mor-gallery-item {{
   break-inside: avoid;
   margin-bottom: 16px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-panel);
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
+  background: var(--bg-panel, rgba(128, 128, 128, 0.08));
   padding: 8px;
   border-radius: 4px;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }}
 .mor-gallery-item:hover {{
   transform: translateY(-2px);
-  border-color: var(--accent);
+  border-color: var(--accent, #3b82f6);
 }}
 .mor-gallery-item img {{
   width: 100%;
@@ -75,11 +73,6 @@ pub fn generate_portfolio_html(colors: &ColorConfig, config: &PortfolioPageConfi
 }}
 </style>
 "##,
-        bg_panel = colors.bg_panel.to_css(),
-        fg_base = colors.fg_base,
-        fg_muted = colors.fg_muted,
-        border = colors.border,
-        accent = colors.accent,
         cols = config.columns
     ));
 
@@ -114,13 +107,4 @@ pub fn generate_portfolio_html(colors: &ColorConfig, config: &PortfolioPageConfi
     ));
 
     html
-}
-
-fn escape_html(value: &str) -> String {
-    value
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;")
 }

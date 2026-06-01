@@ -2,18 +2,19 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn copy_to_clipboard(text: String) {
-    // Native Desktop OS implementation
-    if let Ok(mut clipboard) = arboard::Clipboard::new() {
-        let _ = clipboard.set_text(text);
-    } else {
-        log::error!("Failed to initialize native clipboard");
+    // Native desktop: arboard wraps the OS clipboard APIs (Win32 / NSPasteboard / X11 / Wayland).
+    match arboard::Clipboard::new() {
+        Ok(mut clipboard) => {
+            let _ = clipboard.set_text(text);
+        }
+        Err(e) => log::error!("Failed to initialize native clipboard: {e}"),
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 pub fn copy_to_clipboard(text: String) {
-    // WebAssembly Browser implementation
-    use wasm_bindgen::{JsCast, JsValue};
+    // WebAssembly browser: navigator.clipboard.writeText (fire-and-forget).
+    use wasm_bindgen::JsValue;
     use wasm_bindgen_futures::spawn_local;
 
     spawn_local(async move {

@@ -109,6 +109,7 @@ fn parse_json_wrapped_theme(text: &str) -> Result<ThemeConfig, String> {
 pub(crate) fn normalize_preset_url(input: &str) -> String {
     let url = input.trim();
 
+    // 1. Handle standard GitHub Blob URLs
     if url.contains("github.com/") && url.contains("/blob/") {
         let without_scheme = url
             .trim_start_matches("https://")
@@ -126,6 +127,34 @@ pub(crate) fn normalize_preset_url(input: &str) -> String {
                 "https://raw.githubusercontent.com/{}/{}/{}/{}",
                 owner, repo, branch, path
             );
+        }
+    }
+
+    // 2. NEW: Intercept jsDelivr CDN URLs and convert them directly to raw GitHub URLs to bypass the 12-hour cache.
+    // Example: https://cdn.jsdelivr.net/gh/Owner/Repo@main/path/to/theme.json
+    if url.contains("cdn.jsdelivr.net/gh/") {
+        let without_scheme = url
+            .trim_start_matches("https://")
+            .trim_start_matches("http://");
+
+        let parts: Vec<&str> = without_scheme.splitn(4, '/').collect();
+        
+        if parts.len() >= 4 && parts[0] == "cdn.jsdelivr.net" && parts[1] == "gh" {
+            let owner = parts[2];
+            let rest = parts[3]; 
+
+            if let Some((repo_branch, path)) = rest.split_once('/') {
+                let (repo, branch) = if let Some((r, b)) = repo_branch.split_once('@') {
+                    (r, b)
+                } else {
+                    (repo_branch, "main")
+                };
+
+                return format!(
+                    "https://raw.githubusercontent.com/{}/{}/{}/{}",
+                    owner, repo, branch, path
+                );
+            }
         }
     }
 

@@ -46,9 +46,11 @@ pub fn CenterWorkspacePanel(
     let toml_for_save_data = config_toml.clone();
     let toml_for_bottom_copy = config_toml.clone();
     let toml_for_disk = config_toml.clone();
-    
+    let toml_for_bundle = config_toml.clone();
+
     let preset_for_bottom_copy = active_preset();
     let preset_for_disk = active_preset();
+    let preset_for_bundle = active_preset();
 
     let is_valid = diag.read().is_valid;
     let error_count = diag.read().errors.len();
@@ -446,11 +448,52 @@ pub fn CenterWorkspacePanel(
                                     }
                                 }
                             },
-                            "Export Theme to Disk"
+                            "Export XML to Disk"
+                        }
+
+                        // NEW: Export the full theme bundle (.zip) with generated stencils + static pages
+                        button {
+                            class: "editor-button editor-button-good",
+                            onclick: move |_| {
+                                let fresh_xml = match build_fresh_export_xml(&toml_for_bundle, preset_for_bundle) {
+                                    Ok(xml) => xml,
+                                    Err(err) => {
+                                        let msg = format!("Bundle failed: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                        return;
+                                    }
+                                };
+
+                                // Re-parse the TOML to recover the StaticPagesConfig the bundler needs
+                                let config = match toml::from_str::<ThemeConfig>(&toml_for_bundle) {
+                                    Ok(c) => c,
+                                    Err(err) => {
+                                        let msg = format!("Bundle failed: config error: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                        return;
+                                    }
+                                };
+
+                                match crate::render::save_bundle_to_disk(&fresh_xml, "Moribund_Institute", &config.static_pages) {
+                                    Ok(msg) => {
+                                        println!("{}", msg);
+                                        status_msg.set(msg);
+                                    }
+                                    Err(err) => {
+                                        let msg = format!("Bundle failed: {}", err);
+                                        eprintln!("{}", msg);
+                                        status_msg.set(msg);
+                                    }
+                                }
+                            },
+                            "Export Theme Bundle (.zip)"
                         }
                     } else {
                         button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Copy XML" }
-                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Export Theme to Disk" }
+                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Export XML to Disk" }
+                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Export Theme Bundle (.zip)" }
                     }
                 }
             }

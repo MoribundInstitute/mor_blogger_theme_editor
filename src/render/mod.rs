@@ -10,4 +10,5 @@ pub mod template_resolver;
 pub mod css_builder;
 
 pub use preview::render_preview_html;
-pub use theme::{render_theme, save_xml_to_disk};
+// Added save_bundle_to_disk to the public exports
+pub use theme::{render_theme, save_bundle_to_disk, save_xml_to_disk};

@@ -4,7 +4,6 @@
 .footer-col ul { list-style: none; padding: 0; margin: 0; }
 .footer-col li { margin-bottom: 8px; }
 .footer-col a { color: var(--fg-dim); border-bottom: none; display: inline-block; }
-.footer-col a:before { content: "> "; opacity: 0.5; }
 .footer-col a:hover, .footer-col a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }
 .footer-sys-info { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px; color: var(--fg-dim); font-size: 0.8rem; flex-wrap: wrap; gap: 15px; }
 .footer-sys-info a { color: var(--fg-dim); border-bottom: 1px dotted var(--fg-dim); }

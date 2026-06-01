@@ -21,6 +21,7 @@ pub fn LeftVisualsPanel(
     current_config: ThemeConfig,
     on_apply_theme: EventHandler<ThemeConfig>,
     show_undocked_presets: Signal<bool>,
+    show_undocked_pages: Signal<bool>,
 ) -> Element {
     let _ = show_preview;
 
@@ -157,7 +158,7 @@ pub fn LeftVisualsPanel(
                     }
                 }
                 EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
-                    StaticPagesPanel { signals }
+                    StaticPagesPanel { signals, show_undocked_pages }
                 }
             }
         }

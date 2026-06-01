@@ -1,85 +1,44 @@
 /* ============================================================
-   Glassmorphism preset — v2
-   Three elevation tiers, directional rim-lighting, a tinted
-   gradient in the glass itself (not flat alpha), animated
-   aurora blobs, and an SVG noise overlay for tactile texture.
+   Glassmorphism preset — v4
+   
+   The earlier versions all treated every panel as a peer glass
+   card with the same rounded corners. That's exactly what made
+   the design feel pillowy and undifferentiated. v4 fixes this:
+   
+   1. ONE focal glass surface (the post). Everything else either
+      barely-glass (sidebars) or medium-glass (header).
+   2. Asymmetric corner radii — edge-touching panels are flat on
+      their outer side, rounded on their inner side. The post is
+      the only thing rounded on all four corners because it's
+      the only thing that actually floats.
+   3. Floating drop shadow lives under the POST only. Sidebars
+      and header don't need it; they're not "floating" elements.
+   4. Glass tint derives from var(--bg-base) via color-mix(), so
+      the same rules work for both light and dark palettes.
    ============================================================ */
 
-/* ---- Glass design tokens -------------------------------------
-   Centralise the glass recipe so the cascade stops fighting us.
-   Each tier defines: tint gradient, blur strength, border alpha,
-   shadow depth. Sidebars sit at L0 (recessive), header at L1
-   (default), the post at L2 (hero / focal). */
 :root {
-  /* L0 — recessive: sidebars, footers, dropdowns */
-  --glass-l0-tint: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-  --glass-l0-blur: blur(18px) saturate(150%);
-  --glass-l0-border: 1px solid rgba(255,255,255,0.14);
-  --glass-l0-shadow:
-    inset 0 1px 0 0 rgba(255,255,255,0.28),
-    inset 1px 0 0 0 rgba(255,255,255,0.10),
-    inset -1px 0 0 0 rgba(0,0,0,0.08),
-    inset 0 -1px 0 0 rgba(0,0,0,0.12),
-    0 14px 36px -10px rgba(5,3,30,0.45),
-    0 4px 12px -3px rgba(5,3,30,0.22);
-
-  /* L1 — default: header, dropdowns, generic panels */
-  --glass-l1-tint: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%);
-  --glass-l1-blur: blur(24px) saturate(180%);
-  --glass-l1-border: 1px solid rgba(255,255,255,0.18);
-  --glass-l1-shadow:
-    inset 0 1px 0 0 rgba(255,255,255,0.40),
-    inset 1px 0 0 0 rgba(255,255,255,0.18),
-    inset -1px 0 0 0 rgba(0,0,0,0.10),
-    inset 0 -1px 0 0 rgba(0,0,0,0.18),
-    0 20px 50px -12px rgba(5,3,30,0.55),
-    0 6px 18px -4px rgba(5,3,30,0.30);
-
-  /* L2 — hero: the post card itself */
-  --glass-l2-tint: linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 100%);
-  --glass-l2-blur: blur(32px) saturate(200%);
-  --glass-l2-border: 1px solid rgba(255,255,255,0.22);
-  --glass-l2-shadow:
-    inset 0 1px 0 0 rgba(255,255,255,0.50),
-    inset 1px 0 0 0 rgba(255,255,255,0.22),
-    inset -1px 0 0 0 rgba(0,0,0,0.10),
-    inset 0 -1px 0 0 rgba(0,0,0,0.20),
-    0 30px 70px -14px rgba(5,3,30,0.65),
-    0 10px 24px -6px rgba(5,3,30,0.40);
-
-  /* Pill / button glass */
-  --glass-pill-tint: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 100%);
-  --glass-pill-blur: blur(14px) saturate(150%);
+  /* Glass fills derived from the active palette's bg colour.
+     Higher percentage = more opaque, more readable. */
+  --glass-strong:   color-mix(in srgb, var(--bg-base) 62%, transparent);
+  --glass-medium:   color-mix(in srgb, var(--bg-base) 45%, transparent);
+  --glass-subtle:   color-mix(in srgb, var(--bg-base) 28%, transparent);
+  
+  /* Edges & highlights derived from fg, so they invert per theme.
+     On dark theme fg is near-white → bright rim. On light theme
+     fg is dark → subtle dark line. Both feel correct. */
+  --glass-rim:      color-mix(in srgb, var(--fg-base) 16%, transparent);
+  --glass-border:   color-mix(in srgb, var(--fg-base) 10%, transparent);
+  --glass-divider:  color-mix(in srgb, var(--fg-base)  7%, transparent);
 }
 
-/* Light theme rebalance — pure white tint over pastel gradients
-   washes everything out, so light mode gets a cooler, slightly
-   darker tint and stronger borders. */
-@media (prefers-color-scheme: light) {
-  :root {
-    --glass-l0-tint: linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.30) 100%);
-    --glass-l1-tint: linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.40) 100%);
-    --glass-l2-tint: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.50) 100%);
-    --glass-pill-tint: linear-gradient(135deg, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.35) 100%);
-    --glass-l0-border: 1px solid rgba(255,255,255,0.65);
-    --glass-l1-border: 1px solid rgba(255,255,255,0.75);
-    --glass-l2-border: 1px solid rgba(255,255,255,0.85);
-  }
-}
-
-/* ---- Stage: body background + ambient aurora blobs -----------
-   The base bg-base sits underneath. Pseudo-elements paint two
-   animated blob layers on top — these are what the backdrop-
-   filter actually has interesting content to blur.
-
-   We attach pseudo-elements to `body::before/::after` so they
-   live behind everything and never create a stacking context
-   that could break descendants' `backdrop-filter`. */
+/* ---- Aurora background --------------------------------------
+   Two animated blobs on body pseudos. Larger and more vivid
+   than v3 — the original mistake of v2 was making them too
+   subtle. */
 body {
   background-color: var(--bg-base) !important;
   position: relative;
-  /* Avoid `background-attachment: fixed` — it breaks blur on
-     elements that share the viewport on iOS Safari. */
   min-height: 100vh;
 }
 
@@ -93,146 +52,179 @@ body::after {
   filter: blur(80px);
   will-change: transform;
 }
-
 body::before {
-  width: 55vw; height: 55vw;
-  left: -10vw; top: -10vw;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.55), transparent 65%);
-  animation: aurora-drift-a 28s ease-in-out infinite alternate;
+  width: 60vw; height: 60vw;
+  left: -15vw; top: -15vw;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.65), transparent 65%);
+  animation: aurora-a 26s ease-in-out infinite alternate;
 }
 body::after {
-  width: 60vw; height: 60vw;
-  right: -15vw; bottom: -15vw;
+  width: 65vw; height: 65vw;
+  right: -18vw; bottom: -18vw;
   background:
-    radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.50), transparent 60%),
-    radial-gradient(circle at 70% 70%, rgba(244, 114, 182, 0.40), transparent 60%);
-  animation: aurora-drift-b 34s ease-in-out infinite alternate;
+    radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.55), transparent 60%),
+    radial-gradient(circle at 70% 70%, rgba(236, 72, 153, 0.50), transparent 60%);
+  animation: aurora-b 32s ease-in-out infinite alternate;
 }
-
-@keyframes aurora-drift-a {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(8vw, 6vh) scale(1.15); }
-}
-@keyframes aurora-drift-b {
-  from { transform: translate(0, 0) scale(1.05); }
-  to   { transform: translate(-6vw, -4vh) scale(0.95); }
-}
-
-/* Reduced motion: hold blobs in place. */
+@keyframes aurora-a { from {transform: translate(0,0) scale(1);} to {transform: translate(10vw,7vh) scale(1.15);} }
+@keyframes aurora-b { from {transform: translate(0,0) scale(1.05);} to {transform: translate(-8vw,-5vh) scale(0.95);} }
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after { animation: none; }
 }
 
-/* Faint SVG noise overlay — encoded inline so it ships with the
-   CSS. Without grain, every glass surface looks like plastic. */
+/* Faint noise overlay — kills the plastic feel. */
 html::after {
   content: "";
   position: fixed; inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.08;
+  opacity: 0.07;
   mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* ---- Tier assignment -----------------------------------------
-   Sidebars/footer/dropdowns recede (L0); header sits at default
-   (L1); the post is the hero (L2). All share the same blur
-   recipe so the visual language is consistent — only the tint,
-   border alpha, and shadow depth vary. */
+/* ---- Layout shell stays transparent (v3 fix carried over) --- */
+.canvas-core {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   HEADER — medium glass.
+   Asymmetric corners: flat on top (hugs page edge), rounded
+   only at the bottom. No floating shadow — it's not floating,
+   it's docked to the top of the viewport.
+   ============================================================ */
+.main-header {
+  background: var(--glass-medium) !important;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: none !important;
+  border-bottom: 1px solid var(--glass-divider) !important;
+  border-radius: 0 0 14px 14px !important;
+  box-shadow: 0 6px 20px -6px rgba(0,0,0,0.30) !important;
+  padding: 14px 20px !important;
+  margin-bottom: 14px !important;
+}
+
+/* ============================================================
+   SIDEBARS — barely glass. The recessive layer.
+   Low opacity (~28% of bg colour) + soft blur. No drop shadow.
+   Default uniform radius is 10px on all four corners; if your
+   template wraps sidebars in containers with `left` or `right`
+   in the class/id, the asymmetric overrides below kick in.
+   ============================================================ */
 .runelite-panel,
-.mor-catalog-dropdown,
-.mor-footer {
-  background: var(--glass-l0-tint) !important;
-  backdrop-filter: var(--glass-l0-blur);
-  -webkit-backdrop-filter: var(--glass-l0-blur);
-  border: var(--glass-l0-border) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--glass-l0-shadow) !important;
+.mor-catalog-dropdown {
+  background: var(--glass-subtle) !important;
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 10px !important;
+  box-shadow: inset 0 1px 0 var(--glass-rim) !important;
 }
 
-.canvas-core,
-.main-header {
-  background: var(--glass-l1-tint) !important;
-  backdrop-filter: var(--glass-l1-blur);
-  -webkit-backdrop-filter: var(--glass-l1-blur);
-  border: var(--glass-l1-border) !important;
-  border-radius: 20px !important;
-  box-shadow: var(--glass-l1-shadow) !important;
+/* Asymmetric overrides for edge-hugging sidebars.
+   Broad selectors so they catch whatever class scheme the base
+   template uses ([id*="left"], .sidebar-left, .left-sidebar). */
+[id*="sidebar-left"] .runelite-panel,
+[class*="sidebar-left"] .runelite-panel,
+[id*="left-sidebar"] .runelite-panel,
+[class*="left-sidebar"] .runelite-panel {
+  border-radius: 0 10px 10px 0 !important;
+  border-left: none !important;
 }
 
-.mor-post {
-  background: var(--glass-l2-tint) !important;
-  backdrop-filter: var(--glass-l2-blur);
-  -webkit-backdrop-filter: var(--glass-l2-blur);
-  border: var(--glass-l2-border) !important;
-  border-radius: 22px !important;
-  box-shadow: var(--glass-l2-shadow) !important;
-  padding: 32px !important;
-  margin-bottom: 20px !important;
+[id*="sidebar-right"] .runelite-panel,
+[class*="sidebar-right"] .runelite-panel,
+[id*="right-sidebar"] .runelite-panel,
+[class*="right-sidebar"] .runelite-panel {
+  border-radius: 10px 0 0 10px !important;
+  border-right: none !important;
 }
 
-/* Tighten the header so it doesn't dominate the viewport. The
-   original 24px padding + auto height burned ~280px. */
-.main-header {
-  padding: 16px 22px !important;
-  margin-bottom: 16px !important;
-}
-
-/* ---- Panel internals -----------------------------------------
-   Content inside a glass container should be flat — re-applying
-   glass effects nested inside another blurred element creates
-   visual noise and tanks performance. */
+/* Panel internals stay flat */
 .runelite-panel .panel-content,
 .canvas-core .panel-content {
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  padding: 14px 18px !important;
+  padding: 8px 10px !important;
 }
 
-/* Panel headers: a clear "lit ledge" effect — bright top line,
-   dark bottom line — so the header reads as a distinct surface
-   above the content, not just a slightly-different shade. */
 .panel-header,
 .mor-panel-heading {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: var(--fg-base) !important;
+  background: transparent !important;
+  color: var(--fg-muted) !important;
   font-weight: 600 !important;
-  font-size: 0.95rem !important;
-  padding: 12px 16px !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 10px 14px !important;
   border: none !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12) !important;
-  border-radius: 18px 18px 0 0 !important;
+  border-bottom: 1px solid var(--glass-divider) !important;
+  border-radius: 0 !important;
 }
 
-/* ---- Buttons -------------------------------------------------
-   Pill capsules with rim lighting. Hover lifts; active sinks. */
+/* ============================================================
+   POST — heavy glass. The ONE focal floating element.
+   All four corners rounded, prominent drop shadow underneath.
+   This is what should catch the eye first.
+   ============================================================ */
+.mor-post {
+  background: var(--glass-strong) !important;
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 20px 50px -12px rgba(0, 0, 0, 0.45) !important;
+  padding: 24px 26px !important;
+  margin-bottom: 16px !important;
+}
+
+/* ============================================================
+   FOOTER — like sidebars, barely glass. Rounded only at top
+   if it's docked to the page bottom.
+   ============================================================ */
+.mor-footer {
+  background: var(--glass-subtle) !important;
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  border: none !important;
+  border-top: 1px solid var(--glass-divider) !important;
+  border-radius: 14px 14px 0 0 !important;
+  padding: 14px 22px !important;
+  color: var(--fg-muted) !important;
+}
+
+/* ---- Buttons: pill capsules ---------------------------------
+   Only round shape that's appropriate everywhere — pills are
+   inherently pill-shaped. No tension with the "stop rounding
+   everything" critique. */
 .pager-btn,
 .panel-toggle,
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  background: var(--glass-pill-tint) !important;
-  backdrop-filter: var(--glass-pill-blur);
-  -webkit-backdrop-filter: var(--glass-pill-blur);
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: var(--glass-medium) !important;
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  border: 1px solid var(--glass-border) !important;
   border-radius: 999px !important;
   color: var(--fg-base) !important;
-  padding: 8px 18px !important;
+  padding: 6px 14px !important;
   font-weight: 500 !important;
+  font-size: 0.875rem !important;
   text-transform: none !important;
   cursor: pointer;
-  transition:
-    background 180ms ease,
-    transform 180ms ease,
-    box-shadow 180ms ease !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.40),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
-    0 4px 12px rgba(0, 0, 0, 0.20) !important;
+  transition: background 150ms ease, transform 150ms ease !important;
+  box-shadow: inset 0 1px 0 var(--glass-rim) !important;
 }
 
 .pager-btn:hover,
@@ -240,38 +232,28 @@ html::after {
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%) !important;
+  background: var(--glass-strong) !important;
   transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.50),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
-    0 6px 18px rgba(0, 0, 0, 0.28) !important;
 }
 
 .pager-btn:active,
 .panel-toggle:active {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: var(--glass-subtle) !important;
   transform: translateY(0);
-  box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.15),
-    0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Header buttons */
 .header-panel-toggle.panel-toggle,
 .header-top-row > .panel-toggle {
-  min-width: 92px !important;
-  width: auto !important;
+  min-width: 84px !important;
   height: auto !important;
-  padding: 8px 18px !important;
-  border-radius: 999px !important;
+  padding: 6px 14px !important;
 }
 
 .preview-panel-toggle.panel-toggle {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
   padding: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -279,62 +261,50 @@ html::after {
   border-radius: 999px !important;
 }
 
-/* ---- Typography ----------------------------------------------
-   Post title gets a subtle gradient lift toward the accent.
-   Body text uses fg-base at 90% so muted text doesn't disappear
-   into the glass. */
+/* ---- Typography in the post --------------------------------- */
 .mor-post .post-title,
 .mor-post .post-title a {
-  background: linear-gradient(135deg, var(--fg-base) 25%, var(--accent) 105%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent !important;
+  color: var(--fg-base) !important;
   font-weight: 700 !important;
   letter-spacing: -0.015em;
+  background: none !important;
+  -webkit-text-fill-color: currentColor;
   text-shadow: none !important;
 }
 
 .mor-post .post-body {
-  color: color-mix(in srgb, var(--fg-base) 92%, transparent) !important;
+  color: color-mix(in srgb, var(--fg-base) 95%, transparent) !important;
 }
 
 .mor-post .post-body a {
   color: var(--accent) !important;
   text-decoration: none !important;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  transition: border-color 150ms ease, color 150ms ease;
+  transition: border-color 150ms ease;
 }
 .mor-post .post-body a:hover {
   border-bottom-color: var(--accent);
-  color: color-mix(in srgb, var(--accent) 80%, white);
 }
 
-.mor-footer {
-  padding: 16px 24px !important;
-  color: var(--fg-muted) !important;
-}
-
-/* ---- Form elements -------------------------------------------
-   The original input was a stacking-context hazard — its tiny
-   blur inside an already-blurred ancestor caused the rendering
-   glitch you saw in the search field. Drop the nested blur and
-   lean on a clean translucent fill instead. */
+/* ---- Form elements -----------------------------------------
+   No nested backdrop-filter. Translucent fill against the
+   surrounding glass works fine. */
 input[type='text'],
 input[type='search'],
 input[type='email'],
 textarea,
 select {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 10px !important;
-  padding: 8px 12px !important;
+  background: color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
   color: var(--fg-base) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;
   transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
 input::placeholder, textarea::placeholder {
-  color: color-mix(in srgb, var(--fg-muted) 70%, transparent) !important;
+  color: color-mix(in srgb, var(--fg-muted) 75%, transparent) !important;
 }
 
 input[type='text']:focus,
@@ -343,29 +313,24 @@ input[type='email']:focus,
 textarea:focus,
 select:focus {
   outline: none !important;
-  border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
-  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important;
   box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.18),
-    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent) !important;
+    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+    0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent) !important;
 }
 
-/* ---- Performance & fallback ---------------------------------
-   Mobile: cut the heaviest blurs in half — backdrop-filter is
-   GPU-expensive on phones and we'd rather have 60fps than the
-   absolute thickest glass. */
+/* ---- Mobile performance ramp -------------------------------- */
 @media (max-width: 768px) {
-  :root {
-    --glass-l1-blur: blur(14px) saturate(160%);
-    --glass-l2-blur: blur(18px) saturate(170%);
+  .main-header { backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); }
+  .mor-post    { backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%); }
+  .runelite-panel, .mor-footer, .mor-catalog-dropdown {
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-  body::before, body::after { filter: blur(50px); }
+  body::before, body::after { filter: blur(55px); }
 }
 
-/* Graceful degradation: if backdrop-filter is unsupported, fall
-   back to the palette's solid panel colors. */
+/* ---- Fallback ---------------------------------------------- */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .canvas-core,
   .mor-post,
   .runelite-panel,
   .main-header,

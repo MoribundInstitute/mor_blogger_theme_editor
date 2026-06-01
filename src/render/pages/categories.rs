@@ -1,25 +1,13 @@
-use crate::config::{CategoriesPageConfig, ColorConfig};
+use crate::config::CategoriesPageConfig;
+use crate::render::pages::escape_html;
 
-pub fn generate_categories_html(colors: &ColorConfig, config: &CategoriesPageConfig) -> String {
+/// Emits the Categories page as pure layout. This stencil inherits its tokens
+/// and layout classes from the Mor theme skin, so it emits no `<style>` block of
+/// its own. For an offline color override, wrap the output with
+/// `apply_stencil_colors` in the parent module. Same portability caveat as
+/// `archive.rs`.
+pub fn generate_categories_html(config: &CategoriesPageConfig) -> String {
     let mut html = String::new();
-
-    html.push_str(&format!(
-        r##"<style>
-.mor-category-section {{
-  --bg-panel: {bg_panel};
-  --fg-base: {fg_base};
-  --fg-dim: {fg_muted};
-  --border-color: {border};
-  --accent: {accent};
-}}
-</style>
-"##,
-        bg_panel = colors.bg_panel.to_css(),
-        fg_base = colors.fg_base,
-        fg_muted = colors.fg_muted,
-        border = colors.border,
-        accent = colors.accent
-    ));
 
     let mut topic_nav_links = String::new();
     let mut category_groups = String::new();
@@ -27,7 +15,7 @@ pub fn generate_categories_html(colors: &ColorConfig, config: &CategoriesPageCon
     for (i, section) in config.enabled_sections.iter().enumerate() {
         let section_id = format!("topic-sec-{}", i);
         let escaped_name = escape_html(section);
-        let url_encoded = section.replace(" ", "%20");
+        let url_encoded = section.replace(' ', "%20");
 
         topic_nav_links.push_str(&format!(
             r##"      <a href="#{id}">{name}</a>
@@ -129,46 +117,9 @@ pub fn generate_categories_html(colors: &ColorConfig, config: &CategoriesPageCon
         category_groups = category_groups
     ));
 
-    let js_template = r##"<script>
-(function () {
-  const sections = [
-    { id: "author-links", keyword: "Author" },
-    { id: "musician-links", keyword: "Musician" },
-    { id: "painter-links", keyword: "Painter" },
-    { id: "actor-links", keyword: "Actor" },
-    { id: "anime-links", keyword: "Anime" },
-    { id: "kdrama-links", keyword: "Korean Drama" },
-    { id: "animal-links", keyword: "Animal" }
-  ];
-
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-  sections.forEach(({ id, keyword }) => {
-    const container = document.getElementById(id);
-    if (!container) return;
-
-    alphabet.forEach(letter => {
-      const label = keyword + ": " + letter;
-      const link = document.createElement("a");
-      link.href = "/search/label/" + encodeURIComponent(label);
-      link.textContent = letter;
-      link.setAttribute("aria-label", keyword + " labels beginning with " + letter);
-      container.appendChild(link);
-    });
-  });
-})();
-</script>"##;
-
-    html.push_str(js_template);
+    // Script fragment lives next to the other stencils. No data-driven slots, so
+    // it is appended verbatim.
+    html.push_str(include_str!("../../html_page_stencils/categories_script.js"));
 
     html
-}
-
-fn escape_html(value: &str) -> String {
-    value
-        .replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;")
 }

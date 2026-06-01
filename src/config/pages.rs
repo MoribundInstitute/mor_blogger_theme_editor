@@ -36,6 +36,7 @@ impl Default for StaticPagesConfig {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ArchivePageConfig {
+    pub include_in_bundle: bool,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -45,6 +46,7 @@ pub struct ArchivePageConfig {
 impl Default for ArchivePageConfig {
     fn default() -> Self {
         Self {
+            include_in_bundle: false, // Changed
             kicker: "THE_MORIBUND_INSTITUTE // ARCHIVE".to_string(),
             title: "Chronological Archive".to_string(),
             description: "A date-sorted index of Institute posts, lessons, wiki walks, commentaries, and assorted textual machinery.".to_string(),
@@ -56,6 +58,7 @@ impl Default for ArchivePageConfig {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct CategoriesPageConfig {
+    pub include_in_bundle: bool,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -65,6 +68,7 @@ pub struct CategoriesPageConfig {
 impl Default for CategoriesPageConfig {
     fn default() -> Self {
         Self {
+            include_in_bundle: false, // Changed
             kicker: "THE_MORIBUND_INSTITUTE // CATEGORIES".to_string(),
             title: "Browse Categories".to_string(),
             description: "A subject index for Institute posts, lessons, wiki walks, lexicographical rummaging, video commentary, and other classified whatnot.".to_string(),
@@ -87,6 +91,7 @@ impl Default for CategoriesPageConfig {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct AboutPageConfig {
+    pub include_in_bundle: bool,
     pub kicker: String,
     pub title: String,
     pub profile_image_url: String,
@@ -98,6 +103,7 @@ pub struct AboutPageConfig {
 impl Default for AboutPageConfig {
     fn default() -> Self {
         Self {
+            include_in_bundle: false, // Changed
             kicker: "THE_MORIBUND_INSTITUTE // ABOUT".to_string(),
             title: "About".to_string(),
             profile_image_url: String::new(),
@@ -122,6 +128,7 @@ impl Default for AboutPageConfig {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PortfolioPageConfig {
+    pub include_in_bundle: bool,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -132,6 +139,7 @@ pub struct PortfolioPageConfig {
 impl Default for PortfolioPageConfig {
     fn default() -> Self {
         Self {
+            include_in_bundle: false, // Changed
             kicker: "THE_MORIBUND_INSTITUTE // PORTFOLIO".to_string(),
             title: "Portfolio".to_string(),
             description:
@@ -146,6 +154,8 @@ impl Default for PortfolioPageConfig {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct LmsConfig {
+    pub include_catalog_in_bundle: bool,
+    pub include_syllabus_in_bundle: bool,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -157,6 +167,8 @@ pub struct LmsConfig {
 impl Default for LmsConfig {
     fn default() -> Self {
         Self {
+            include_catalog_in_bundle: false, // Changed
+            include_syllabus_in_bundle: false, // Changed
             kicker: "THE_MORIBUND_INSTITUTE // LESSONS".to_string(),
             title: "Learning Hub".to_string(),
             description: "A structured index for lessons, study paths, course notes, and educational machinery.".to_string(),

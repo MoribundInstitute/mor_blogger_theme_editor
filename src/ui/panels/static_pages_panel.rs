@@ -2,63 +2,137 @@ use dioxus::prelude::*;
 
 use crate::clipboard::copy_to_clipboard;
 use crate::config::pages::StaticPagesConfig;
-use crate::config::styling::ColorConfig;
 use crate::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
     generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
 };
 use crate::ui::panels::presets_panel::ThemeSignals;
 
+// (tab id, button label)
+const TABS: &[(&str, &str)] = &[
+    ("Archive", "Archive"),
+    ("Directory", "Directory"),
+    ("About", "About Me"),
+    ("Portfolio", "Portfolio"),
+    ("LMS", "Courses"),
+];
+
 #[component]
-pub fn StaticPagesPanel(signals: ThemeSignals) -> Element {
-    let pages_config = signals.static_pages;
-    let status_msg = use_signal(String::new);
-    let mut active_tab = use_signal(|| "Archive");
-
-    let current_colors = ColorConfig {
-        bg_base: (signals.bg_base)(),
-        bg_panel: (signals.bg_panel)(),
-        bg_elevated: (signals.bg_elevated)(),
-        fg_base: (signals.fg_base)(),
-        fg_muted: (signals.fg_muted)(),
-        accent: (signals.accent)(),
-        border: (signals.border)(),
-    };
-
+pub fn StaticPagesFloatingWindow(
+    signals: ThemeSignals,
+    mut show_undocked_pages: Signal<bool>,
+) -> Element {
     rsx! {
         div {
-            class: "editor-panel",
-
+            class: "preset-floating-window",
+            style: "position: fixed; top: 120px; left: 380px; width: 400px; max-height: 80vh; background: var(--editor-bg-base); border: 1px solid var(--editor-border-soft); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden;",
+            
             div {
-                class: "editor-help-text",
+                class: "preset-floating-drag-handle",
+                style: "padding: 10px 16px; background: var(--editor-bg-panel); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center; cursor: move;",
+                
+                h3 { style: "margin: 0; font-size: 14px;", "Static Pages" }
+                
+                button {
+                    class: "editor-mini-button",
+                    onclick: move |_| show_undocked_pages.set(false),
+                    "Dock"
+                }
+            }
+            
+            div {
+                style: "padding: 16px; overflow-y: auto;",
+                StaticPagesPanel { signals, show_undocked_pages }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn StaticPagesPanel(signals: ThemeSignals, mut show_undocked_pages: Signal<bool>) -> Element {
+    let mut pages = signals.static_pages;
+    let status = use_signal(String::new);
+    let mut active_tab = use_signal(|| "Archive");
+
+    rsx! {
+        div { class: "editor-panel",
+            
+            div { class: "editor-row", style: "margin-bottom: 12px;",
+                button {
+                    class: if show_undocked_pages() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                    onclick: move |_| show_undocked_pages.set(!show_undocked_pages()),
+                    if show_undocked_pages() { "Dock Pages" } else { "Undock Pages" }
+                }
+            }
+
+            div { class: "editor-help-text",
                 "Select a page template to generate its HTML. Paste this directly into Blogger's Pages editor (HTML View) to automatically match your active theme colors."
             }
 
-            // Tab Navigation
+            // Tab navigation
             div {
                 style: "display: flex; gap: 8px; margin: 20px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; overflow-x: auto;",
-                button { class: "editor-button", onclick: move |_| active_tab.set("Archive"), "Archive" }
-                button { class: "editor-button", onclick: move |_| active_tab.set("Directory"), "Directory" }
-                button { class: "editor-button", onclick: move |_| active_tab.set("About"), "About Me" }
-                button { class: "editor-button", onclick: move |_| active_tab.set("Portfolio"), "Portfolio" }
-                button { class: "editor-button", onclick: move |_| active_tab.set("LMS"), "Courses" }
+                for (id, label) in TABS.iter().copied() {
+                    button {
+                        key: "{id}",
+                        class: "editor-button",
+                        onclick: move |_| active_tab.set(id),
+                        "{label}"
+                    }
+                }
             }
 
-            // Active Builder Canvas
+            // Active builder canvas
             match active_tab() {
-                "Archive" => rsx! { ArchiveBuilder { config: pages_config, colors: current_colors.clone(), status: status_msg } },
-                "Directory" => rsx! { CategoriesBuilder { config: pages_config, colors: current_colors.clone(), status: status_msg } },
-                "About" => rsx! { AboutBuilder { config: pages_config, colors: current_colors.clone(), status: status_msg } },
-                "Portfolio" => rsx! { PortfolioBuilder { config: pages_config, colors: current_colors.clone(), status: status_msg } },
-                "LMS" => rsx! { LmsBuilder { config: pages_config, colors: current_colors.clone(), status: status_msg } },
-                _ => rsx! { div {} }
+                "Archive" => rsx! {
+                    SinglePageBuilder {
+                        heading: "Archive Page Settings",
+                        title: pages().archive.title,
+                        include_in_bundle: pages().archive.include_in_bundle,
+                        html: generate_archive_html(&pages().archive),
+                        copy_label: "Copy Archive HTML",
+                        copied_msg: "Archive HTML copied to clipboard!",
+                        status,
+                        on_title: move |v| { let mut c = pages(); c.archive.title = v; pages.set(c); },
+                        on_toggle_bundle: move |v| { let mut c = pages(); c.archive.include_in_bundle = v; pages.set(c); }
+                    }
+                },
+                "Directory" => rsx! {
+                    SinglePageBuilder {
+                        heading: "Directory Settings",
+                        title: pages().categories.title,
+                        include_in_bundle: pages().categories.include_in_bundle,
+                        html: generate_categories_html(&pages().categories),
+                        copy_label: "Copy Directory HTML",
+                        copied_msg: "Directory HTML copied to clipboard!",
+                        status,
+                        on_title: move |v| { let mut c = pages(); c.categories.title = v; pages.set(c); },
+                        on_toggle_bundle: move |v| { let mut c = pages(); c.categories.include_in_bundle = v; pages.set(c); }
+                    }
+                },
+                "Portfolio" => rsx! {
+                    SinglePageBuilder {
+                        heading: "Art Portfolio Settings",
+                        title: pages().portfolio.title,
+                        include_in_bundle: pages().portfolio.include_in_bundle,
+                        html: generate_portfolio_html(&pages().portfolio),
+                        copy_label: "Copy Portfolio HTML",
+                        copied_msg: "Portfolio HTML copied to clipboard!",
+                        status,
+                        on_title: move |v| { let mut c = pages(); c.portfolio.title = v; pages.set(c); },
+                        on_toggle_bundle: move |v| { let mut c = pages(); c.portfolio.include_in_bundle = v; pages.set(c); }
+                    }
+                },
+                "About" => rsx! { AboutBuilder { config: pages, status } },
+                "LMS" => rsx! { LmsBuilder { config: pages, status } },
+                _ => rsx! {}
             }
 
-            if !status_msg().is_empty() {
+            if !status().is_empty() {
                 div {
                     class: "export-status",
                     style: "margin-top: 15px; color: #3fb950; font-weight: bold;",
-                    "{status_msg}"
+                    "{status}"
                 }
             }
         }
@@ -66,71 +140,92 @@ pub fn StaticPagesPanel(signals: ThemeSignals) -> Element {
 }
 
 // ---------------------------------------------------------
-// Sub-Components for each Builder Type
+// Shared building blocks
 // ---------------------------------------------------------
 
+/// A labelled text input or textarea wired to an `on_change` handler.
 #[component]
-fn ArchiveBuilder(
-    config: Signal<StaticPagesConfig>,
-    colors: ColorConfig,
-    status: Signal<String>,
+fn TextField(
+    label: String,
+    value: String,
+    #[props(default)] multiline: bool,
+    on_change: EventHandler<String>,
 ) -> Element {
-    let mut config_sig = config;
-    let html = generate_archive_html(&colors, &config_sig().archive);
-
     rsx! {
-        div { class: "editor-field-group",
-            h4 { "Archive Page Settings" }
-            label {
-                span { class: "editor-label-text", "Title" }
-                input {
-                    class: "editor-input", r#type: "text", value: "{config_sig().archive.title}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.archive.title = evt.value().clone(); config_sig.set(c);
-                    }
+        label {
+            span { class: "editor-label-text", "{label}" }
+            if multiline {
+                textarea {
+                    class: "editor-textarea", rows: 4, value: "{value}",
+                    oninput: move |evt| on_change.call(evt.value()),
                 }
-            }
-            button {
-                class: "editor-button",
-                onclick: move |_| {
-                    copy_to_clipboard(html.clone());
-                    status.set("Archive HTML copied to clipboard!".to_string());
-                },
-                "Copy Archive HTML"
+            } else {
+                input {
+                    class: "editor-input", r#type: "text", value: "{value}",
+                    oninput: move |evt| on_change.call(evt.value()),
+                }
             }
         }
     }
 }
 
+/// A button that copies `html` and reports `copied_msg` to the shared status line.
 #[component]
-fn CategoriesBuilder(
-    config: Signal<StaticPagesConfig>,
-    colors: ColorConfig,
+fn CopyButton(
+    html: String,
     status: Signal<String>,
+    copied_msg: String,
+    label: String,
 ) -> Element {
-    let mut config_sig = config;
-    let html = generate_categories_html(&colors, &config_sig().categories);
+    let mut status = status;
+    rsx! {
+        button {
+            class: "editor-button",
+            onclick: move |_| {
+                copy_to_clipboard(html.clone());
+                status.set(copied_msg.clone());
+            },
+            "{label}"
+        }
+    }
+}
 
+// ---------------------------------------------------------
+// Builders
+// ---------------------------------------------------------
+
+/// Archive / Directory / Portfolio: title field, bundle checkbox, copy button.
+#[component]
+fn SinglePageBuilder(
+    heading: String,
+    title: String,
+    include_in_bundle: bool,
+    html: String,
+    copy_label: String,
+    copied_msg: String,
+    status: Signal<String>,
+    on_title: EventHandler<String>,
+    on_toggle_bundle: EventHandler<bool>,
+) -> Element {
     rsx! {
         div { class: "editor-field-group",
-            h4 { "Directory Settings" }
-            label {
-                span { class: "editor-label-text", "Title" }
+            h4 { "{heading}" }
+            
+            label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px;",
                 input {
-                    class: "editor-input", r#type: "text", value: "{config_sig().categories.title}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.categories.title = evt.value().clone(); config_sig.set(c);
-                    }
+                    r#type: "checkbox",
+                    checked: include_in_bundle,
+                    onchange: move |evt| on_toggle_bundle.call(evt.checked()),
                 }
+                " Include in ZIP Bundle"
             }
-            button {
-                class: "editor-button",
-                onclick: move |_| {
-                    copy_to_clipboard(html.clone());
-                    status.set("Directory HTML copied to clipboard!".to_string());
-                },
-                "Copy Directory HTML"
+
+            TextField {
+                label: "Title",
+                value: title,
+                on_change: move |v| on_title.call(v),
             }
+            CopyButton { html, status, copied_msg, label: copy_label }
         }
     }
 }
@@ -138,73 +233,39 @@ fn CategoriesBuilder(
 #[component]
 fn AboutBuilder(
     config: Signal<StaticPagesConfig>,
-    colors: ColorConfig,
     status: Signal<String>,
 ) -> Element {
-    let mut config_sig = config;
-    let html = generate_about_html(&colors, &config_sig().about);
+    let mut config = config;
+    let html = generate_about_html(&config().about);
 
     rsx! {
         div { class: "editor-field-group",
             h4 { "Profile & About Settings" }
-            label {
-                span { class: "editor-label-text", "Profile Image URL" }
+            
+            label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px;",
                 input {
-                    class: "editor-input", r#type: "text", value: "{config_sig().about.profile_image_url}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.about.profile_image_url = evt.value().clone(); config_sig.set(c);
-                    }
+                    r#type: "checkbox",
+                    checked: config().about.include_in_bundle,
+                    onchange: move |evt| { let mut c = config(); c.about.include_in_bundle = evt.checked(); config.set(c); },
                 }
+                " Include in ZIP Bundle"
             }
-            label {
-                span { class: "editor-label-text", "Biography" }
-                textarea {
-                    class: "editor-textarea", rows: 4, value: "{config_sig().about.bio_text}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.about.bio_text = evt.value().clone(); config_sig.set(c);
-                    }
-                }
-            }
-            button {
-                class: "editor-button",
-                onclick: move |_| {
-                    copy_to_clipboard(html.clone());
-                    status.set("About HTML copied to clipboard!".to_string());
-                },
-                "Copy About HTML"
-            }
-        }
-    }
-}
 
-#[component]
-fn PortfolioBuilder(
-    config: Signal<StaticPagesConfig>,
-    colors: ColorConfig,
-    status: Signal<String>,
-) -> Element {
-    let mut config_sig = config;
-    let html = generate_portfolio_html(&colors, &config_sig().portfolio);
-
-    rsx! {
-        div { class: "editor-field-group",
-            h4 { "Art Portfolio Settings" }
-            label {
-                span { class: "editor-label-text", "Gallery Title" }
-                input {
-                    class: "editor-input", r#type: "text", value: "{config_sig().portfolio.title}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.portfolio.title = evt.value().clone(); config_sig.set(c);
-                    }
-                }
+            TextField {
+                label: "Profile Image URL",
+                value: config().about.profile_image_url,
+                on_change: move |v| { let mut c = config(); c.about.profile_image_url = v; config.set(c); },
             }
-            button {
-                class: "editor-button",
-                onclick: move |_| {
-                    copy_to_clipboard(html.clone());
-                    status.set("Portfolio HTML copied to clipboard!".to_string());
-                },
-                "Copy Portfolio HTML"
+            TextField {
+                label: "Biography",
+                value: config().about.bio_text,
+                multiline: true,
+                on_change: move |v| { let mut c = config(); c.about.bio_text = v; config.set(c); },
+            }
+            CopyButton {
+                html, status,
+                copied_msg: "About HTML copied to clipboard!",
+                label: "Copy About HTML",
             }
         }
     }
@@ -213,42 +274,50 @@ fn PortfolioBuilder(
 #[component]
 fn LmsBuilder(
     config: Signal<StaticPagesConfig>,
-    colors: ColorConfig,
     status: Signal<String>,
 ) -> Element {
-    let mut config_sig = config;
-    let catalog_html = generate_course_catalog_html(&colors, &config_sig().lms);
-    let syllabus_html = generate_syllabus_html(&colors, &config_sig().lms);
+    let mut config = config;
+    let catalog_html = generate_course_catalog_html(&config().lms);
+    let syllabus_html = generate_syllabus_html(&config().lms);
 
     rsx! {
         div { class: "editor-field-group",
             h4 { "Learning Management System" }
-            label {
-                span { class: "editor-label-text", "Course Title" }
+            
+            label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px;",
                 input {
-                    class: "editor-input", r#type: "text", value: "{config_sig().lms.course_title}",
-                    oninput: move |evt| {
-                        let mut c = config_sig(); c.lms.course_title = evt.value().clone(); config_sig.set(c);
-                    }
+                    r#type: "checkbox",
+                    checked: config().lms.include_catalog_in_bundle,
+                    onchange: move |evt| { let mut c = config(); c.lms.include_catalog_in_bundle = evt.checked(); config.set(c); },
                 }
+                " Include Catalog in ZIP Bundle"
+            }
+
+            label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px;",
+                input {
+                    r#type: "checkbox",
+                    checked: config().lms.include_syllabus_in_bundle,
+                    onchange: move |evt| { let mut c = config(); c.lms.include_syllabus_in_bundle = evt.checked(); config.set(c); },
+                }
+                " Include Syllabus in ZIP Bundle"
+            }
+
+            TextField {
+                label: "Course Title",
+                value: config().lms.course_title,
+                on_change: move |v| { let mut c = config(); c.lms.course_title = v; config.set(c); },
             }
             div {
                 style: "display: flex; gap: 12px; margin-top: 16px;",
-                button {
-                    class: "editor-button",
-                    onclick: move |_| {
-                        copy_to_clipboard(catalog_html.clone());
-                        status.set("Course Catalog HTML copied to clipboard!".to_string());
-                    },
-                    "Copy Master Catalog"
+                CopyButton {
+                    html: catalog_html, status,
+                    copied_msg: "Course Catalog HTML copied to clipboard!",
+                    label: "Copy Master Catalog",
                 }
-                button {
-                    class: "editor-button",
-                    onclick: move |_| {
-                        copy_to_clipboard(syllabus_html.clone());
-                        status.set("Course Syllabus HTML copied to clipboard!".to_string());
-                    },
-                    "Copy Syllabus Page"
+                CopyButton {
+                    html: syllabus_html, status,
+                    copied_msg: "Course Syllabus HTML copied to clipboard!",
+                    label: "Copy Syllabus Page",
                 }
             }
         }

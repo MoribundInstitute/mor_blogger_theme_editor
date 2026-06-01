@@ -96,8 +96,6 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                         props.signals.swap_palette(&preset.light);
                                     }
 
-                                    // Important: changing dark/light mode must not accidentally
-                                    // leave the export config with empty preset_css.
                                     props.signals.apply_preset_css(preset);
                                 }
                             }
@@ -234,7 +232,21 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
 
                     p {
                         class: "editor-note-body",
-                        "Paste a raw GitHub/compendium JSON URL, paste raw JSON/TOML, or load a local .json/.toml file."
+                        "Browse community themes at the "
+                        a {
+                            href: "https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium",
+                            target: "_blank",
+                            style: "color: #4da6ff; text-decoration: underline;",
+                            "GitHub Compendium"
+                        }
+                        " or "
+                        a {
+                            href: "https://mor-theme-compendium.blogspot.com/",
+                            target: "_blank",
+                            style: "color: #4da6ff; text-decoration: underline;",
+                            "Live Gallery"
+                        }
+                        ". Paste the URL below."
                     }
 
                     div {
@@ -250,7 +262,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             input {
                                 class: "editor-field editor-flex-1",
                                 r#type: "text",
-                                placeholder: "https://raw.githubusercontent.com/.../theme.json",
+                                placeholder: "https://github.com/MoribundInstitute/...",
                                 value: "{remote_url}",
                                 oninput: move |evt| {
                                     remote_url.set(evt.value());

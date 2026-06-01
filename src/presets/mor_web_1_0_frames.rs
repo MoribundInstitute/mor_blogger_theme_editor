@@ -3,7 +3,7 @@ use crate::config::{
     SiteConfig, SurfaceFill, TypographyConfig,
 };
 
-use super::{build_base, Preset, PresetPalette, STACK_WIN95};
+use super::{build_base, Preset, PresetPalette};
 
 const PRESET_CSS: &str = include_str!("css/mor_web_1_0_frames.css");
 
@@ -16,10 +16,10 @@ pub fn mor_web_1_0_frames() -> Preset {
             home_url: "/".to_string(),
         },
         TypographyConfig {
-            body_font_stack: STACK_WIN95.to_string(),
-            heading_font_stack: STACK_WIN95.to_string(),
+            body_font_stack: "'Times New Roman', Times, serif".to_string(),
+            heading_font_stack: "'Times New Roman', Times, serif".to_string(),
             mono_font_stack: "'Courier New', Courier, monospace".to_string(),
-            base_size: "14px".to_string(),
+            base_size: "16px".to_string(),
             scale_ratio: "1.15".to_string(),
             line_height: "1.45".to_string(),
             heading_weight: "700".to_string(),
@@ -46,10 +46,6 @@ pub fn mor_web_1_0_frames() -> Preset {
                 url: "/p/about.html".to_string(),
             },
             MenuLink {
-                label: "Guestbook".to_string(),
-                url: "/p/guestbook.html".to_string(),
-            },
-            MenuLink {
                 label: "Links".to_string(),
                 url: "/p/links.html".to_string(),
             },
@@ -68,8 +64,6 @@ pub fn mor_web_1_0_frames() -> Preset {
         base_config: base,
         preset_css: PRESET_CSS,
         dark: PresetPalette {
-            // Web 1.0 didn't really do dark mode — use a deep teal screensaver-y palette
-            // as the "dark" variant for users who want low-light. Still chunky/ridged.
             colors: ColorConfig {
                 bg_base: "#002b36".to_string(),
                 bg_panel: SurfaceFill::solid("#073642"),
@@ -87,13 +81,12 @@ pub fn mor_web_1_0_frames() -> Preset {
         },
         light: PresetPalette {
             colors: ColorConfig {
-                // The signature Windows 9x grey.
-                bg_base: "#008080".to_string(), // Teal desktop background
+                bg_base: "#008080".to_string(), 
                 bg_panel: SurfaceFill::solid("#c0c0c0"),
                 bg_elevated: SurfaceFill::solid("#dfdfdf"),
                 fg_base: "#000000".to_string(),
                 fg_muted: "#404040".to_string(),
-                accent: "#0000ee".to_string(), // Unvisited link blue
+                accent: "#0000ee".to_string(), 
                 border: "#808080".to_string(),
             },
             background: BackgroundConfig {

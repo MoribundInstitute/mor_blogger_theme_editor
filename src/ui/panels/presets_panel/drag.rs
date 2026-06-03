@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_html::HasFileData;
+use dioxus::html::HasFileData;
 
 use crate::config::ThemeConfig;
 use crate::rehydration::extract_and_decode;
@@ -81,15 +81,13 @@ pub fn ThemeRestoreDropZone(
         div {
             class: if is_hovered() { "restore-workspace-drawer hovered" } else { "restore-workspace-drawer" },
 
-            // Dioxus handles browser-level prevention here. Do not call evt.prevent_default()
-            // inside the Rust handlers; Event<DragData> does not expose that method in this app.
-            prevent_default: "ondragover ondragenter ondrop",
-
-            ondragover: move |_evt| {
+            ondragover: move |evt| {
+                evt.prevent_default();
                 is_hovered.set(true);
                 import_status.set("Drop the XML file to restore the workspace.".to_string());
             },
-            ondragenter: move |_evt| {
+            ondragenter: move |evt| {
+                evt.prevent_default();
                 is_hovered.set(true);
             },
             ondragleave: move |_| {
@@ -100,18 +98,12 @@ pub fn ThemeRestoreDropZone(
 
                 move |evt| {
                     async move {
+                        evt.prevent_default();
                         is_hovered.set(false);
                         import_status.set("Reading dropped XML file...".to_string());
 
-                        let Some(file_engine) = evt.files() else {
-                            import_status.set(
-                                "Drop detected, but this desktop webview did not expose the file. Use Choose XML instead."
-                                    .to_string(),
-                            );
-                            return;
-                        };
-
-                        let Some(file_name) = file_engine.files().first().cloned() else {
+                        let files = evt.files();
+                        let Some(file) = files.first() else {
                             import_status.set(
                                 "Drop detected, but no readable file was provided. Use Choose XML instead."
                                     .to_string(),
@@ -119,7 +111,9 @@ pub fn ThemeRestoreDropZone(
                             return;
                         };
 
-                        let Some(contents) = file_engine.read_file_to_string(&file_name).await else {
+                        let file_name = file.name();
+
+                        let Ok(bytes) = file.read_bytes().await else {
                             import_status.set(format!(
                                 "Could not read dropped file: {}. Use Choose XML instead.",
                                 file_name
@@ -127,6 +121,7 @@ pub fn ThemeRestoreDropZone(
                             return;
                         };
 
+                        let contents = String::from_utf8_lossy(&bytes).into_owned();
                         restore_from_xml(contents, file_name);
                     }
                 }
@@ -177,23 +172,15 @@ pub fn ThemeRestoreDropZone(
                                     async move {
                                         import_status.set("Reading selected file...".to_string());
 
-                                        let Some(file_engine) = evt.files() else {
-                                            import_status.set(
-                                                "Selected file did not include readable file data."
-                                                    .to_string(),
-                                            );
-                                            return;
-                                        };
-
-                                        let Some(file_name) = file_engine.files().first().cloned() else {
+                                        let files = evt.files();
+                                        let Some(file) = files.first() else {
                                             import_status.set("No file was selected.".to_string());
                                             return;
                                         };
 
-                                        let Some(contents) = file_engine
-                                            .read_file_to_string(&file_name)
-                                            .await
-                                        else {
+                                        let file_name = file.name();
+
+                                        let Ok(bytes) = file.read_bytes().await else {
                                             import_status.set(format!(
                                                 "Could not read selected file: {}",
                                                 file_name
@@ -201,6 +188,7 @@ pub fn ThemeRestoreDropZone(
                                             return;
                                         };
 
+                                        let contents = String::from_utf8_lossy(&bytes).into_owned();
                                         restore_from_xml(contents, file_name);
                                     }
                                 }

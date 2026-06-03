@@ -1,0 +1,37 @@
+/* Form controls: dark-mode rendering + the contrast fix the <select> needed.
+
+   .editor-select inherits the right styling from 21-ui-inputs.css (dark
+   translucent background, light text). The problem was that <select> renders
+   with native OS chrome by default and ignores most authored CSS for its
+   background and value text. Disabling `appearance` hands styling back to
+   CSS; we then draw our own chevron since the native one disappears with it. */
+
+/* Render native UA bits (page scrollbars, the open <option> popup, etc.) in
+   dark mode so they don't fall back to light defaults. */
+:root {
+  color-scheme: dark;
+}
+
+.editor-select {
+  /* Turn off the native control chrome so 21-ui-inputs.css actually wins. */
+  appearance: none;
+  -webkit-appearance: none;
+
+  /* Replace the now-missing dropdown arrow with a themed chevron.
+     The stroke (#8b949e) is meant to match --editor-muted in 00-tokens.css;
+     update the hex below if your token uses a different muted grey. */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%238b949e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+
+  /* Reserve room so the selected value never runs under the chevron. */
+  padding-right: 32px;
+}
+
+/* The OPEN dropdown list. color-scheme handles most engines, but setting
+   the option colours explicitly keeps them legible everywhere. */
+.editor-select option {
+  color: var(--editor-text);
+  background-color: var(--editor-panel-raised);
+}

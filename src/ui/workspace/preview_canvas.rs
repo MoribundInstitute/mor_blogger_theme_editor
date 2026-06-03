@@ -2,8 +2,6 @@ use dioxus::prelude::*;
 
 use crate::ui::workspace::layout::PreviewViewport;
 
-// EXTRACTED TO CONST: Feed the scale to a CSS variable to let the
-// Absolute Centering stylesheet handle the heavy lifting.
 const SCALER_JS: &str = r#"
 (function() {
     function initScaler() {
@@ -20,7 +18,6 @@ const SCALER_JS: &str = r#"
             const targetWidth = parseFloat(frame.style.width);
             if (!targetWidth) return;
 
-            // Include a 48px padding buffer so it doesn't touch the exact edges
             const availableWidth = wrapper.clientWidth - 48; 
             
             if (targetWidth > availableWidth && availableWidth > 0) {
@@ -103,7 +100,7 @@ pub fn PreviewCanvas(
                         src: "about:blank",
                         onmounted: move |_| {
                             spawn(async move {
-                                let _ = eval(
+                                let _ = dioxus::document::eval(
                                     r#"
                                     (function installMorPreviewBridge() {
                                         const sourceId = "mor-preview-html-source";

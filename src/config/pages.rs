@@ -12,6 +12,7 @@ pub struct StaticPagesConfig {
 
     pub archive: ArchivePageConfig,
     pub categories: CategoriesPageConfig,
+    pub analytics: AnalyticsDashboardPageConfig,
     pub about: AboutPageConfig,
     pub portfolio: PortfolioPageConfig,
     pub lms: LmsConfig,
@@ -26,6 +27,7 @@ impl Default for StaticPagesConfig {
 
             archive: ArchivePageConfig::default(),
             categories: CategoriesPageConfig::default(),
+            analytics: AnalyticsDashboardPageConfig::default(),
             about: AboutPageConfig::default(),
             portfolio: PortfolioPageConfig::default(),
             lms: LmsConfig::default(),
@@ -46,11 +48,41 @@ pub struct ArchivePageConfig {
 impl Default for ArchivePageConfig {
     fn default() -> Self {
         Self {
-            include_in_bundle: false, // Changed
+            include_in_bundle: false,
             kicker: "THE_MORIBUND_INSTITUTE // ARCHIVE".to_string(),
             title: "Chronological Archive".to_string(),
             description: "A date-sorted index of Institute posts, lessons, wiki walks, commentaries, and assorted textual machinery.".to_string(),
             max_results: 150,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct AnalyticsDashboardPageConfig {
+    pub include_in_bundle: bool,
+    pub kicker: String,
+    pub title: String,
+    pub description: String,
+    pub max_results: u32,
+    pub manual_followers: String,
+    pub manual_thirty_day_views: String,
+    pub manual_total_views: String,
+    pub manual_storage_used: String,
+}
+
+impl Default for AnalyticsDashboardPageConfig {
+    fn default() -> Self {
+        Self {
+            include_in_bundle: false,
+            kicker: "THE_MORIBUND_INSTITUTE // ANALYTICS".to_string(),
+            title: "Analytics Dashboard".to_string(),
+            description: "A Blogger HTML page dashboard for public feed activity, category balance, publishing rhythm, and manual analytics metrics.".to_string(),
+            max_results: 150,
+            manual_followers: "Manual".to_string(),
+            manual_thirty_day_views: "Manual".to_string(),
+            manual_total_views: "Manual".to_string(),
+            manual_storage_used: "Manual".to_string(),
         }
     }
 }
@@ -68,7 +100,7 @@ pub struct CategoriesPageConfig {
 impl Default for CategoriesPageConfig {
     fn default() -> Self {
         Self {
-            include_in_bundle: false, // Changed
+            include_in_bundle: false,
             kicker: "THE_MORIBUND_INSTITUTE // CATEGORIES".to_string(),
             title: "Browse Categories".to_string(),
             description: "A subject index for Institute posts, lessons, wiki walks, lexicographical rummaging, video commentary, and other classified whatnot.".to_string(),
@@ -103,7 +135,7 @@ pub struct AboutPageConfig {
 impl Default for AboutPageConfig {
     fn default() -> Self {
         Self {
-            include_in_bundle: false, // Changed
+            include_in_bundle: false,
             kicker: "THE_MORIBUND_INSTITUTE // ABOUT".to_string(),
             title: "About".to_string(),
             profile_image_url: String::new(),
@@ -139,7 +171,7 @@ pub struct PortfolioPageConfig {
 impl Default for PortfolioPageConfig {
     fn default() -> Self {
         Self {
-            include_in_bundle: false, // Changed
+            include_in_bundle: false,
             kicker: "THE_MORIBUND_INSTITUTE // PORTFOLIO".to_string(),
             title: "Portfolio".to_string(),
             description:
@@ -167,8 +199,8 @@ pub struct LmsConfig {
 impl Default for LmsConfig {
     fn default() -> Self {
         Self {
-            include_catalog_in_bundle: false, // Changed
-            include_syllabus_in_bundle: false, // Changed
+            include_catalog_in_bundle: false,
+            include_syllabus_in_bundle: false,
             kicker: "THE_MORIBUND_INSTITUTE // LESSONS".to_string(),
             title: "Learning Hub".to_string(),
             description: "A structured index for lessons, study paths, course notes, and educational machinery.".to_string(),

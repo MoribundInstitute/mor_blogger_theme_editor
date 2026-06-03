@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_html::HasFileData;
+use dioxus::html::HasFileData;
 
 use crate::ui::components::inputs::EditorCard;
 
@@ -13,7 +13,6 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
 
             div {
                 class: "editor-note",
-
                 p {
                     class: "editor-note-body",
                     "Drop a .js file here, or paste JavaScript below. Plain JavaScript will be wrapped in Blogger CDATA before export. Already-wrapped <script> blocks are preserved."
@@ -22,28 +21,21 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
 
             div {
                 class: "editor-dropzone",
-                prevent_default: "ondragover ondrop",
-
-                ondragover: move |_| {},
-
+                // Handle default prevention directly in Rust, not HTML strings
+                ondragover: move |evt| evt.prevent_default(),
                 ondrop: move |event| async move {
-                    if let Some(file_engine) = event.files() {
-                        let file_names = file_engine.files();
+                    event.prevent_default();
+                    for file in event.files() {
+                        let file_name = file.name();
+                        if !file_name.to_lowercase().ends_with(".js") {
+                            log::warn!("Skipped non-JavaScript file: {}", file_name);
+                            continue;
+                        }
 
-                        for file_name in file_names {
-                            if !file_name.to_lowercase().ends_with(".js") {
-                                log::warn!("Skipped non-JavaScript file: {}", file_name);
-                                continue;
-                            }
-
-                            match file_engine.read_file_to_string(&file_name).await {
-                                Some(contents) => {
-                                    custom_js.set(contents);
-                                }
-                                None => {
-                                    log::warn!("Failed to read file: {}", file_name);
-                                }
-                            }
+                        // Read raw bytes directly. Zero intermediate engine slop.
+                        if let Ok(bytes) = file.read_bytes().await {
+                            let contents = String::from_utf8_lossy(&bytes).into_owned();
+                            custom_js.set(contents);
                         }
                     }
                 },
@@ -72,7 +64,6 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
 
             div {
                 class: "editor-helper-row",
-
                 span {
                     class: "editor-helper-text",
                     if has_js {
@@ -81,7 +72,6 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
                         "No custom JavaScript will be injected."
                     }
                 }
-
                 button {
                     class: "editor-button editor-button-small editor-button-danger",
                     onclick: move |_| {

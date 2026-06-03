@@ -66,7 +66,7 @@ pub fn PresetFloatingWindow(props: PresetFloatingWindowProps) -> Element {
                         PresetCard {
                             key: "undocked-{preset.id}",
                             preset: preset.clone(),
-                            is_active: active.read().map(|id| id == preset.id).unwrap_or(false),
+                            is_active: active() == Some(preset.id),
                             signals: props.signals,
                             active_preset: active,
                         }

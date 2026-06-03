@@ -546,13 +546,6 @@ pub(super) fn render_template(
         .replace("{{BLOG_TIMESTAMP_FORMAT}}", "d MMM, yyyy")
         .replace("{{POST_TAGS_PREFIX}}", "Tags: ")
 
-        // --- NEW: MORIBUND LMS TRACKING HOOKS ---
-        .replace(
-            "{{MOR_LMS_HOOKS}}",
-            "expr:data-mor-id='data:post.id' expr:data-mor-labels='data:post.labels ? (data:post.labels map (l =&gt; l.name) join &quot;,&quot;) : &quot;&quot;'"
-        )
-        // ----------------------------------------
-
         .replace("{{PAGER_NEWER_LABEL}}", "Newer")
         .replace("{{PAGER_HOME_LABEL}}", "Home")
         .replace("{{PAGER_OLDER_LABEL}}", "Older")

@@ -36,7 +36,7 @@
   text-align: left;
   font-family: inherit;
   color: inherit;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .editor-presets__card:hover {

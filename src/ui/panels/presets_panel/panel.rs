@@ -320,23 +320,26 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     let signals = props.signals;
 
                                     async move {
-                                        if let Some(file_engine) = evt.files() {
-                                            if let Some(file_name) = file_engine.files().first() {
-                                                match file_engine.read_file_to_string(file_name).await {
-                                                    Some(contents) => match parse_theme_text(&contents) {
+                                        if let Some(file) = evt.files().first() {
+                                            match file.read_bytes().await {
+                                                Ok(bytes) => {
+                                                    let contents =
+                                                        String::from_utf8_lossy(&bytes).into_owned();
+
+                                                    match parse_theme_text(&contents) {
                                                         Ok(config) => {
                                                             signals.apply_config(&config);
                                                             active.set(None);
                                                             last_imported_gtk.set(None);
-                                                            import_status.set(format!("Imported {}", file_name));
+                                                            import_status.set("Imported local theme file.".to_string());
                                                         }
                                                         Err(err) => {
                                                             import_status.set(format!("Import failed: {}", err));
                                                         }
-                                                    },
-                                                    None => {
-                                                        import_status.set(format!("Could not read {}", file_name));
                                                     }
+                                                }
+                                                Err(err) => {
+                                                    import_status.set(format!("Could not read file: {}", err));
                                                 }
                                             }
                                         }
@@ -409,7 +412,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     PresetCard {
                         key: "{preset.id}",
                         preset: preset.clone(),
-                        is_active: active.read().map(|id| id == preset.id).unwrap_or(false),
+                        is_active: active() == Some(preset.id),
                         signals: props.signals,
                         active_preset: active,
                     }

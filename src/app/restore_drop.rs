@@ -8,7 +8,7 @@ pub fn use_restore_drop_bridge(
     active_preset: Signal<Option<&'static str>>,
 ) {
     use_effect(move || {
-        let mut eval = eval(
+        let mut eval = dioxus::document::eval(
             r#"
             (function () {
                 if (window.__morRestoreXmlNativeDropInstalled) {
@@ -112,7 +112,7 @@ pub fn use_restore_drop_bridge(
         let mut restored_active_preset = active_preset;
 
         spawn(async move {
-            while let Ok(value) = eval.recv().await {
+            while let Ok(value) = eval.recv::<serde_json::Value>().await {
                 let Some(kind) = value.get("kind").and_then(|v| v.as_str()) else {
                     continue;
                 };

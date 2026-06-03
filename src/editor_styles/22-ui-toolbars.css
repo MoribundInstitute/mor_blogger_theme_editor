@@ -22,7 +22,7 @@
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
 
 .editor-mini-button:hover {
@@ -33,5 +33,5 @@
 .editor-mini-button-active {
   border-color: var(--editor-accent);
   color: var(--editor-accent);
-  background: rgba(88, 166, 255, 0.1);
+  background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
 }

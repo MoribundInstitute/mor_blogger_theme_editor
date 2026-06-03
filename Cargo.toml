@@ -10,10 +10,8 @@ desktop = ["dioxus/desktop"]
 web = ["dioxus/web"]
 
 [dependencies]
-# Restored the default features so rsx!, Signals, and Hooks work again
-dioxus = { version = "=0.5.6" }
-dioxus-html = "=0.5.6"
-dioxus-logger = "=0.5.1"
+dioxus = "0.7"
+dioxus-logger = "0.5.1"
 log = "0.4"
 roxmltree = "0.20"
 base64 = "0.22"
@@ -22,6 +20,7 @@ serde_json = "1.0"
 toml = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
 rfd = "0.17.2"
+mor_rust_dioxus_ui_kit = { path = "../dioxus/mor_rust_dioxus_ui_kit" }
 
 # --- New Dependencies for Binary/Compressed Rehydration ---
 postcard = { version = "1.0", features = ["alloc"] }
@@ -34,12 +33,12 @@ arboard = "3.3"
 
 # Browser-only WebAssembly dependencies
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "=0.2.92"
-wasm-bindgen-futures = "=0.4.42"
-js-sys = "=0.3.69"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
-version = "=0.3.69"
+version = "0.3"
 features = [
     "Window",
     "Navigator",

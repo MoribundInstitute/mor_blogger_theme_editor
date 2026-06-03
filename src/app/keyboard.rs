@@ -9,7 +9,7 @@ pub fn use_keyboard_shortcuts(layout: AppLayoutState) {
     let mut right_layout = layout.right_layout;
 
     use_effect(move || {
-        let mut eval = eval(
+        let mut eval = dioxus::document::eval(
             r#"
             window.addEventListener('keydown', function(e) {
                 let k = e.key.toLowerCase();
@@ -29,7 +29,7 @@ pub fn use_keyboard_shortcuts(layout: AppLayoutState) {
         );
 
         spawn(async move {
-            while let Ok(value) = eval.recv().await {
+            while let Ok(value) = eval.recv::<serde_json::Value>().await {
                 if let Some(cmd) = value.as_str() {
                     match cmd {
                         "toggle_left" => {

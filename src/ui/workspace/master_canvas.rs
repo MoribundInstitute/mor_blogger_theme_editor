@@ -26,7 +26,6 @@ pub fn CenterWorkspacePanel(
     on_restore: EventHandler<ThemeConfig>,
     on_load_hotswap: EventHandler<String>,
 ) -> Element {
-    // Parse the TOML into our struct so we can pass it into the new binary injection pipeline
     let export_xml = match toml::from_str::<ThemeConfig>(&config_toml) {
         Ok(config) => crate::rehydration::inject_state(&generated_xml, &config)
             .unwrap_or_else(|err| {
@@ -192,7 +191,7 @@ pub fn CenterWorkspacePanel(
                         onclick: move |_| {
                             let xml = xml_for_download.clone();
                             async move {
-                                let mut eval = eval(r#"
+                                let mut eval = dioxus::document::eval(r#"
                                     let text = await dioxus.recv();
                                     let blob = new Blob([text], { type: 'text/xml' });
                                     let url = URL.createObjectURL(blob);
@@ -200,8 +199,8 @@ pub fn CenterWorkspacePanel(
                                     document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
                                     dioxus.send("done");
                                 "#);
-                                let _ = eval.send(xml.into());
-                                let _ = eval.recv().await; 
+                                let _ = eval.send(xml);
+                                let _ = eval.recv::<serde_json::Value>().await; 
                             }
                         },
                         "Download .xml"
@@ -221,12 +220,11 @@ pub fn CenterWorkspacePanel(
                                 move |evt| {
                                     let on_load_theme = on_load_theme.clone();
                                     async move {
-                                        if let Some(file_engine) = evt.files() {
-                                            if let Some(file_name) = file_engine.files().first() {
-                                                if let Some(contents) = file_engine.read_file_to_string(file_name).await {
-                                                    on_load_theme.call(contents);
-                                                    status_msg.set(format!("Loaded: {}", file_name));
-                                                }
+                                        if let Some(file) = evt.files().first() {
+                                            if let Ok(bytes) = file.read_bytes().await {
+                                                let contents = String::from_utf8_lossy(&bytes).into_owned();
+                                                on_load_theme.call(contents);
+                                                status_msg.set("Theme loaded successfully.".to_string());
                                             }
                                         }
                                     }
@@ -240,7 +238,7 @@ pub fn CenterWorkspacePanel(
                         onclick: move |_| {
                             let toml_data = toml_for_backup.clone();
                             async move {
-                                let mut eval = eval(r#"
+                                let mut eval = dioxus::document::eval(r#"
                                     let text = await dioxus.recv();
                                     let blob = new Blob([text], { type: 'text/plain' });
                                     let url = URL.createObjectURL(blob);
@@ -248,8 +246,8 @@ pub fn CenterWorkspacePanel(
                                     document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
                                     dioxus.send("done");
                                 "#);
-                                let _ = eval.send(toml_data.into());
-                                let _ = eval.recv().await;
+                                let _ = eval.send(toml_data);
+                                let _ = eval.recv::<serde_json::Value>().await;
                                 status_msg.set("Theme saved!".to_string());
                             }
                         },
@@ -451,7 +449,6 @@ pub fn CenterWorkspacePanel(
                             "Export XML to Disk"
                         }
 
-                        // NEW: Export the full theme bundle (.zip) with generated stencils + static pages
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
@@ -465,7 +462,6 @@ pub fn CenterWorkspacePanel(
                                     }
                                 };
 
-                                // Re-parse the TOML to recover the StaticPagesConfig the bundler needs
                                 let config = match toml::from_str::<ThemeConfig>(&toml_for_bundle) {
                                     Ok(c) => c,
                                     Err(err) => {

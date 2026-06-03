@@ -1,0 +1,225 @@
+/* ---------------------------------------------------------
+   26 - Analytics Dashboard Static Page
+   Paste-ready HTML page stencil styles. Uses Mor theme tokens.
+   --------------------------------------------------------- */
+
+.mor-analytics-dashboard {
+  display: grid;
+  gap: 1rem;
+  color: var(--fg-base);
+}
+
+.mor-analytics-intro,
+.mor-analytics-summary,
+.mor-analytics-card,
+.mor-analytics-updated,
+.mor-analytics-notice {
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-elevated);
+}
+
+.mor-analytics-intro {
+  padding: 1.25rem;
+}
+
+.mor-analytics-kicker {
+  margin-bottom: 0.35rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.mor-analytics-title {
+  margin: 0;
+  color: var(--fg-base);
+}
+
+.mor-analytics-desc {
+  max-width: 72ch;
+  margin: 0.75rem 0 0;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-notice {
+  padding: 0.9rem 1rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-summary {
+  padding: 1.25rem;
+}
+
+.mor-analytics-summary h3,
+.mor-analytics-card h3 {
+  margin-top: 0;
+}
+
+.mor-analytics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-stat-grid li {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+}
+
+.mor-analytics-stat-grid span {
+  display: block;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.mor-analytics-stat-grid strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--fg-base);
+  font-size: 1.45rem;
+}
+
+.mor-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mor-analytics-card {
+  padding: 1.25rem;
+}
+
+.mor-analytics-card-head p {
+  margin-top: 0.3rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.mor-analytics-button {
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--fg-base);
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+}
+
+.mor-analytics-button:hover,
+.mor-analytics-button:focus,
+.mor-analytics-button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
+.mor-analytics-chart {
+  min-height: 17rem;
+  border: 1px dashed var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.mor-analytics-placeholder {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.mor-analytics-bars {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 13rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.mor-analytics-bar {
+  flex: 1;
+  min-width: 0.5rem;
+  background: var(--accent);
+  opacity: 0.82;
+}
+
+.mor-analytics-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+.mor-analytics-category-layout {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.mor-analytics-pie {
+  width: 11rem;
+  height: 11rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      var(--accent) 0 38%,
+      var(--fg-muted) 38% 61%,
+      var(--border-color) 61% 78%,
+      var(--bg-elevated) 78% 100%
+    );
+}
+
+.mor-analytics-legend {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-legend li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 0.4rem;
+}
+
+.mor-analytics-legend strong {
+  color: var(--accent);
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.mor-analytics-updated {
+  padding: 0.85rem 1rem;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .mor-analytics-stat-grid,
+  .mor-analytics-grid,
+  .mor-analytics-category-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mor-analytics-pie {
+    justify-self: center;
+  }
+}

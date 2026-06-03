@@ -1,5 +1,12 @@
 /* Modern, slim, floating scrollbars */
 
+/* Firefox / standard properties (the rules below are WebKit/Blink only).
+   These inherit, so setting them on the root covers every scrollable element. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

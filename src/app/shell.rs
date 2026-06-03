@@ -1,4 +1,6 @@
 use dioxus::prelude::*;
+use mor_rust_dioxus_ui_kit::{MorStyleProvider, MorShell, MorHeaderBar, MorWindowTitle, Menu, MenuItem, MenuSeparator, Modal};
+use mor_rust_dioxus_ui_kit::theme::GTK4_DARK_TOML;
 
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
@@ -7,6 +9,7 @@ use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
+use crate::ui::workspace::layout::PanelLayout;
 
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
@@ -25,91 +28,209 @@ pub fn render_app_shell(
     let current_config = theme.current_config;
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
-    let show_undocked_presets = theme.show_undocked_presets;
+    let mut show_undocked_presets = theme.show_undocked_presets;
     
-    // NEW: Local switch for static pages undocking
-    let mut show_undocked_pages = use_signal(|| false);
+    let show_undocked_pages = use_signal(|| false);
+
+    let mut left_layout = layout.left_layout;
+    let mut right_layout = layout.right_layout;
+
+    let mut open_menu = use_signal(|| None::<&'static str>);
+    let mut show_about = use_signal(|| false);
+    let mut show_prefs = use_signal(|| false);
+
+    let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
+    
+    // Matrix of UI state based on mode
+    let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
+    let show_window_buttons = active_ui_mode == "frameless";
+    let show_custom_title = active_ui_mode != "native";
 
     rsx! {
+        MorStyleProvider { theme_toml: GTK4_DARK_TOML.to_string() }
         style { "{EDITOR_UI_CSS}" }
 
-        div { class: "editor-shell",
-            header { class: "editor-main-header",
-                h1 { class: "editor-brand", "Moribund Institute Theme Architect" }
-            }
-
-            div {
-                class: "editor-main",
-                "data-left-layout": panel_layout_class((layout.left_layout)()),
-                "data-right-layout": panel_layout_class((layout.right_layout)()),
-
-                LeftVisualsPanel {
-                    active_tab: layout.active_left_tab,
-                    layout: layout.left_layout,
-                    active_preset,
-                    signals,
-                    show_preview,
-                    current_config: current_config(),
-                    on_apply_theme: move |new_config: ThemeConfig| {
-                        signals.apply_config(&new_config);
-                        active_preset.set(None);
-                    },
-                    show_undocked_presets,
-                    show_undocked_pages,
-                }
-
-                CenterWorkspacePanel {
-                    preview_viewport: layout.preview_viewport,
-                    preview_width: layout.preview_width,
-                    preview_template_mode: layout.preview_template_mode,
-                    generated_xml: (render.generated_xml)(),
-                    preview_html: (render.preview_html)(),
-                    show_preview,
-                    diag: render.diag,
-                    config_toml: toml::to_string_pretty(&current_config()).unwrap_or_default(),
-                    active_preset,
-                    on_load_theme: move |toml_text: String| {
-                        if let Ok(new_config) = toml::from_str::<ThemeConfig>(&toml_text) {
-                            signals.apply_config(&new_config);
+        MorShell {
+            MorHeaderBar {
+                show_controls: show_window_buttons,
+                
+                start: rsx! {
+                    Menu { label: "File", id: "file", open_menu: open_menu,
+                        MenuItem { 
+                            label: "Preferences...".to_string(), 
+                            shortcut: Some("Ctrl+,".to_string()), 
+                            on_action: move |_| { show_prefs.set(true); open_menu.set(None); } 
                         }
-                    },
-                    on_restore: move |new_config: ThemeConfig| {
-                        signals.apply_config(&new_config);
-                    },
-                    on_load_hotswap: move |json_text: String| {
-                        apply_hotswap_json(signals, json_text);
-                    },
-                }
+                        MenuSeparator {}
+                        MenuItem { 
+                            label: "Quit".to_string(), 
+                            shortcut: Some("Ctrl+Q".to_string()), 
+                            on_action: move |_| -> () { std::process::exit(0); } 
+                        }
+                    }
+                    Menu { label: "View", id: "view", open_menu: open_menu,
+                        MenuItem {
+                            label: "Toggle Left Dock".to_string(),
+                            shortcut: Some("Ctrl+B".to_string()),
+                            on_action: move |_| {
+                                if left_layout() == PanelLayout::Hidden { left_layout.set(PanelLayout::Split); }
+                                else { left_layout.set(PanelLayout::Hidden); }
+                                open_menu.set(None);
+                            }
+                        }
+                        MenuItem {
+                            label: "Toggle Right Dock".to_string(),
+                            shortcut: Some("Ctrl+E".to_string()),
+                            on_action: move |_| {
+                                if right_layout() == PanelLayout::Hidden { right_layout.set(PanelLayout::Split); }
+                                else { right_layout.set(PanelLayout::Hidden); }
+                                open_menu.set(None);
+                            }
+                        }
+                        MenuSeparator {}
+                        MenuItem {
+                            label: "Undocked Presets".to_string(),
+                            on_action: move |_| {
+                                show_undocked_presets.set(!show_undocked_presets());
+                                open_menu.set(None);
+                            }
+                        }
+                    }
+                    Menu { label: "Help", id: "help", open_menu: open_menu,
+                        MenuItem { 
+                            label: "About Architect".to_string(), 
+                            on_action: move |_| { show_about.set(true); open_menu.set(None); } 
+                        }
+                    }
+                },
 
-                RightDataPanel {
-                    active_tab: layout.active_right_tab,
-                    layout: layout.right_layout,
-                    signals,
-                    current_config: current_config(),
-                    on_apply_theme: move |new_config: ThemeConfig| {
-                        signals.apply_config(&new_config);
-                    },
+                center: rsx! {
+                    if show_custom_title {
+                        MorWindowTitle { 
+                            title: "Moribund Theme Architect".to_string(),
+                            subtitle: Some(format!("{} Mode", active_ui_mode))
+                        }
+                    }
+                },
+
+                end: rsx! {
+                    div { style: "width: 16px;" }
                 }
             }
 
-            if show_undocked_presets() {
-                PresetFloatingWindow {
-                    signals,
-                    active_preset,
-                    show_undocked_presets,
+            Modal {
+                title: "About Moribund Architect".to_string(),
+                open: show_about,
+                on_close: move |_| show_about.set(false),
+                div { class: "editor-note",
+                    p { class: "editor-note-title", "Version 0.1.0" }
+                    p { class: "editor-note-body", "Frugal desktop theme engine for Blogger." }
                 }
             }
 
-            // NEW: Render the floating window if the switch is flipped
-            if show_undocked_pages() {
-                StaticPagesFloatingWindow {
-                    signals,
-                    show_undocked_pages,
+            Modal {
+                title: "Preferences".to_string(),
+                open: show_prefs,
+                on_close: move |_| show_prefs.set(false),
+                div { class: "editor-field-group",
+                    label { class: "editor-field-label", "Window Mode" }
+                    select {
+                        class: "editor-select",
+                        value: "{ui_mode_pref}",
+                        onchange: move |evt| {
+                            let new_mode = evt.value();
+                            ui_mode_pref.set(new_mode.clone());
+                            let json = format!(r#"{{"ui_mode":"{}"}}"#, new_mode);
+                            let _ = std::fs::write("editor_prefs.json", json);
+                        },
+                        option { value: "frameless", "Frameless (Custom OS Buttons)" }
+                        option { value: "native", "Native OS Window" }
+                        option { value: "tiling", "Tiling WM (No Buttons)" }
+                    }
+                    
+                    if ui_mode_pref() != active_ui_mode {
+                        div { class: "editor-note", style: "margin-top: 12px; border-color: var(--editor-warning); background: rgba(210, 153, 34, 0.05);",
+                            p { class: "editor-note-title", style: "color: var(--editor-warning);", "Restart Required" }
+                            p { class: "editor-note-body", "You must restart the application for the new window borders to take effect." }
+                        }
+                    }
                 }
             }
 
-            footer { class: "editor-footer",
-                DiagnosticsPanel { result: render.diag }
+            div { class: "editor-shell", style: "height: 100%;",
+                
+                div {
+                    class: "editor-main",
+                    "data-left-layout": panel_layout_class((layout.left_layout)()),
+                    "data-right-layout": panel_layout_class((layout.right_layout)()),
+
+                    LeftVisualsPanel {
+                        active_tab: layout.active_left_tab,
+                        layout: layout.left_layout,
+                        active_preset,
+                        signals,
+                        show_preview,
+                        current_config: current_config(),
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            signals.apply_config(&new_config);
+                            active_preset.set(None);
+                        },
+                        show_undocked_presets,
+                        show_undocked_pages,
+                    }
+
+                    CenterWorkspacePanel {
+                        preview_viewport: layout.preview_viewport,
+                        preview_width: layout.preview_width,
+                        preview_template_mode: layout.preview_template_mode,
+                        generated_xml: (render.generated_xml)(),
+                        preview_html: (render.preview_html)(),
+                        show_preview,
+                        diag: render.diag,
+                        config_toml: toml::to_string_pretty(&current_config()).unwrap_or_default(),
+                        active_preset,
+                        on_load_theme: move |toml_text: String| {
+                            if let Ok(new_config) = toml::from_str::<ThemeConfig>(&toml_text) {
+                                signals.apply_config(&new_config);
+                            }
+                        },
+                        on_restore: move |new_config: ThemeConfig| {
+                            signals.apply_config(&new_config);
+                        },
+                        on_load_hotswap: move |json_text: String| {
+                            apply_hotswap_json(signals, json_text);
+                        },
+                    }
+
+                    RightDataPanel {
+                        active_tab: layout.active_right_tab,
+                        layout: layout.right_layout,
+                        signals,
+                        current_config: current_config(),
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            signals.apply_config(&new_config);
+                        },
+                    }
+                }
+
+                if show_undocked_presets() {
+                    PresetFloatingWindow {
+                        signals,
+                        active_preset,
+                        show_undocked_presets,
+                    }
+                }
+
+                if show_undocked_pages() {
+                    StaticPagesFloatingWindow {
+                        signals,
+                        show_undocked_pages,
+                    }
+                }
+
+                footer { class: "editor-footer",
+                    DiagnosticsPanel { result: render.diag }
+                }
             }
         }
     }

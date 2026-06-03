@@ -40,7 +40,7 @@
 }
 
 .ads-banner-radio.is-selected {
-  background: rgba(88, 166, 255, 0.1);
+  background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
   color: var(--editor-accent);
-  border-color: rgba(88, 166, 255, 0.2);
+  border-color: color-mix(in srgb, var(--editor-accent) 20%, transparent);
 }

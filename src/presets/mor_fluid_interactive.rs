@@ -1,255 +1,108 @@
-/* ============================================================
-   Fluid Interactive preset
-   2024-era CSS in service of a blog that breathes. Animated
-   gradient mesh background, scroll-driven reveals on posts,
-   focus-within rings on cards, hover lifts, view transitions.
-   Degrades gracefully (old browsers see a static gradient
-   and flat, but still pleasant, panels).
-   ============================================================ */
+use crate::config::{
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    SiteConfig, SurfaceFill, TypographyConfig,
+};
 
-/* Kill the base theme's terminal vignette. */
-body::before {
-  background: none;
-  opacity: 0;
-}
+use super::{build_base, Preset, PresetPalette, STACK_MONO, STACK_SYSTEM_UI};
 
-/* The animated gradient mesh: three soft color blobs that drift
-   slowly behind everything. background-position animation is
-   cheap and GPU compositor-friendly. */
-body {
-  background:
-    radial-gradient(circle at var(--blob-1-x, 20%) var(--blob-1-y, 30%),
-      color-mix(in srgb, var(--accent) 35%, transparent) 0,
-      transparent 45%),
-    radial-gradient(circle at var(--blob-2-x, 80%) var(--blob-2-y, 20%),
-      color-mix(in srgb, #0077b6 30%, transparent) 0,
-      transparent 50%),
-    radial-gradient(circle at var(--blob-3-x, 50%) var(--blob-3-y, 90%),
-      color-mix(in srgb, #023e8a 35%, transparent) 0,
-      transparent 55%),
-    var(--bg-base);
-  background-attachment: fixed;
-  animation: fluid-mesh-drift 24s ease-in-out infinite alternate;
-}
+const PRESET_CSS: &str = include_str!("css/mor_fluid_interactive.css");
 
-@keyframes fluid-mesh-drift {
-  0% {
-    --blob-1-x: 20%; --blob-1-y: 30%;
-    --blob-2-x: 80%; --blob-2-y: 20%;
-    --blob-3-x: 50%; --blob-3-y: 90%;
-  }
-  50% {
-    --blob-1-x: 35%; --blob-1-y: 55%;
-    --blob-2-x: 60%; --blob-2-y: 40%;
-    --blob-3-x: 70%; --blob-3-y: 70%;
-  }
-  100% {
-    --blob-1-x: 15%; --blob-1-y: 70%;
-    --blob-2-x: 90%; --blob-2-y: 50%;
-    --blob-3-x: 30%; --blob-3-y: 95%;
-  }
-}
+pub fn mor_fluid_interactive() -> Preset {
+    let base = build_base(
+        SiteConfig {
+            site_title: "Mor Fluid Ledger".to_string(),
+            site_subtitle: "A living surface for notes, essays, dashboards, and project telemetry."
+                .to_string(),
+            header_logo_url: String::new(),
+            home_url: "/".to_string(),
+        },
+        TypographyConfig {
+            body_font_stack: STACK_SYSTEM_UI.to_string(),
+            heading_font_stack: STACK_SYSTEM_UI.to_string(),
+            mono_font_stack: STACK_MONO.to_string(),
+            base_size: "16px".to_string(),
+            scale_ratio: "1.22".to_string(),
+            line_height: "1.65".to_string(),
+            heading_weight: "700".to_string(),
+        },
+        ButtonConfig {
+            radius: "8px".to_string(),
+            border_width: "1px".to_string(),
+            text_transform: "none".to_string(),
+        },
+        SeoConfig {
+            meta_description:
+                "A fluid interactive Blogger theme preset with readable motion, luminous panels, and responsive dashboard-friendly surfaces."
+                    .to_string(),
+            meta_keywords: "blogger, theme, fluid, interactive, dashboard, writing".to_string(),
+            custom_robots: "index, follow".to_string(),
+            license_url: String::new(),
+            author_name: String::new(),
+        },
+        vec![
+            MenuLink {
+                label: "Home".to_string(),
+                url: "/".to_string(),
+            },
+            MenuLink {
+                label: "Archive".to_string(),
+                url: "/p/archive.html".to_string(),
+            },
+            MenuLink {
+                label: "Dashboard".to_string(),
+                url: "/p/analytics-dashboard.html".to_string(),
+            },
+            MenuLink {
+                label: "About".to_string(),
+                url: "/p/about.html".to_string(),
+            },
+        ],
+        FooterConfig {
+            footer_text: "Rendered through the Mor Blogger Theme Editor.".to_string(),
+            footer_license_label: "Source".to_string(),
+            footer_license_url: "https://github.com/MoribundInstitute/mor_blogger_theme_editor"
+                .to_string(),
+        },
+    );
 
-/* Register the CSS custom properties so they can be animated.
-   Without @property, animation between values is a step-change. */
-@property --blob-1-x { syntax: '<percentage>'; inherits: false; initial-value: 20%; }
-@property --blob-1-y { syntax: '<percentage>'; inherits: false; initial-value: 30%; }
-@property --blob-2-x { syntax: '<percentage>'; inherits: false; initial-value: 80%; }
-@property --blob-2-y { syntax: '<percentage>'; inherits: false; initial-value: 20%; }
-@property --blob-3-x { syntax: '<percentage>'; inherits: false; initial-value: 50%; }
-@property --blob-3-y { syntax: '<percentage>'; inherits: false; initial-value: 90%; }
-
-/* Surfaces float on the mesh with a subtle backdrop blur,
-   softer than full glassmorphism, just enough to ground them. */
-.canvas-core,
-.mor-post,
-.runelite-panel,
-.main-header,
-.mor-footer,
-.mor-catalog-dropdown {
-  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
-  border-radius: 20px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 12px 32px rgba(0, 0, 0, 0.12);
-}
-
-/* Posts get a hover lift and scroll-driven reveal. The reveal uses
-   animation-timeline: view(), which animates an element as it
-   enters the viewport. Old browsers ignore this gracefully. */
-.mor-post {
-  padding: 28px 32px;
-  margin-bottom: 22px;
-  transition:
-    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    box-shadow 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-color 320ms ease;
-  animation: fluid-post-reveal linear;
-  animation-timeline: view();
-  animation-range: entry 0% entry 60%;
-}
-
-@keyframes fluid-post-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.mor-post:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 18px 48px rgba(0, 0, 0, 0.18);
-  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-}
-
-/* Focus-within ring: when any input inside a card receives focus,
-   the whole card lights up. Modern keyboard-friendly UX. */
-.mor-post:focus-within,
-.runelite-panel:focus-within {
-  border-color: var(--accent);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent),
-    0 18px 48px rgba(0, 0, 0, 0.18);
-}
-
-/* Post titles: gradient text that subtly shifts hue on hover. */
-.mor-post .post-title,
-.mor-post .post-title a {
-  background:
-    linear-gradient(110deg,
-      var(--fg-base) 0%,
-      var(--fg-base) 50%,
-      var(--accent) 100%);
-  background-size: 200% 100%;
-  background-position: 0% 0%;
-  -webkit-background-clip: text;
-          background-clip: text;
-  color: transparent;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  text-shadow: none;
-  transition: background-position 600ms ease;
-}
-
-.mor-post:hover .post-title,
-.mor-post:hover .post-title a {
-  background-position: 100% 0%;
-}
-
-/* Body text: clean, no decoration. */
-.mor-post .post-body {
-  color: var(--fg-base);
-  text-shadow: none;
-  font-size: 1.02rem;
-}
-
-/* Buttons: pill-shaped with a subtle gradient sweep on hover. */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger,
-.main-header .mor-nav button {
-  position: relative !important;
-  overflow: hidden !important;
-  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent) !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 999px !important;
-  padding: 9px 20px !important;
-  font-family: var(--font-body) !important;
-  font-weight: 600 !important;
-  font-size: 0.92rem !important;
-  text-transform: none !important;
-  text-shadow: none !important;
-  cursor: pointer !important;
-  transition:
-    transform 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-.pager-btn::before,
-.panel-toggle::before,
-.toc-jump-link::before,
-.back-to-top-btn::before,
-.mor-catalog-trigger::before,
-.main-header .mor-nav button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    110deg,
-    transparent 35%,
-    color-mix(in srgb, var(--accent) 30%, transparent) 50%,
-    transparent 65%
-  );
-  transform: translateX(-100%);
-  transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
-  pointer-events: none;
-}
-
-.pager-btn:hover::before,
-.panel-toggle:hover::before,
-.toc-jump-link:hover::before,
-.back-to-top-btn:hover::before,
-.mor-catalog-trigger:hover::before,
-.main-header .mor-nav button:hover::before {
-  transform: translateX(100%);
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover,
-.main-header .mor-nav button:hover {
-  transform: translateY(-1px) !important;
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
-  box-shadow:
-    0 8px 22px rgba(0, 0, 0, 0.12),
-    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent) !important;
-}
-
-.pager-btn:active,
-.panel-toggle:active,
-.toc-jump-link:active,
-.back-to-top-btn:active,
-.mor-catalog-trigger:active,
-.main-header .mor-nav button:active {
-  transform: translateY(0) !important;
-}
-
-/* Links in body copy: highly legible and visible by default */
-.mor-post .post-body a,
-.panel-content a {
-  position: relative;
-  color: var(--accent) !important; /* Force links to use the bright accent color */
-  text-decoration: none;
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 100% 1px; /* Persistent thin underline so users know it's a link */
-  padding-bottom: 2px;
-  transition:
-    background-size 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    color 320ms ease;
-}
-
-.mor-post .post-body a:hover,
-.panel-content a:hover {
-  background-size: 100% 2px; /* Underline thickens on hover */
-  filter: brightness(1.2); /* Slight glow effect */
+    Preset {
+        id: "mor_fluid_interactive",
+        name: "Mor Fluid Interactive",
+        description:
+            "Readable liquid-motion UI: luminous panels, gentle hover physics, and dashboard-friendly surfaces.",
+        base_config: base,
+        preset_css: PRESET_CSS,
+        dark: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#080d12".to_string(),
+                bg_panel: SurfaceFill::solid("#101923"),
+                bg_elevated: SurfaceFill::solid("#172635"),
+                fg_base: "#edf7f3".to_string(),
+                fg_muted: "#9fb8b0".to_string(),
+                accent: "#05a581".to_string(),
+                border: "#27423d".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid {
+                    color: "#080d12".to_string(),
+                },
+            },
+        },
+        light: PresetPalette {
+            colors: ColorConfig {
+                bg_base: "#ecf8f2".to_string(),
+                bg_panel: SurfaceFill::solid("#ffffff"),
+                bg_elevated: SurfaceFill::solid("#dff2eb"),
+                fg_base: "#132520".to_string(),
+                fg_muted: "#58706a".to_string(),
+                accent: "#087f67".to_string(),
+                border: "#a9cbc0".to_string(),
+            },
+            background: BackgroundConfig {
+                mode: BackgroundMode::Solid {
+                    color: "#ecf8f2".to_string(),
+                },
+            },
+        },
+    }
 }

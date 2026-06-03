@@ -7,7 +7,7 @@ Design, customize, and export complete Blogger themes without ever touching raw 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Built with Rust](https://img.shields.io/badge/Built_with-Rust-dca282.svg?logo=rust)](https://www.rust-lang.org/)
-[![UI by Dioxus](https://img.shields.io/badge/UI-Dioxus-black.svg)](https://dioxuslabs.com/)
+[![UI by Dioxus](https://img.shields.io/badge/UI-Dioxus_0.7-black.svg)](https://dioxuslabs.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
 
 <img src="docs/screenshots/editor_preview.png" alt="Editor Preview" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
@@ -41,7 +41,8 @@ The **Moribund Theme Architect** replaces the monolith with a strict, component-
 
 ### 🖥️ Fluid Workspace UI
 
-- **Custom Window Manager:** Features a custom-built, floating, drag-and-drop window system inside the app.
+- **Modular UI Kit:** Powered by our custom `mor_rust_dioxus_ui_kit` running on Dioxus 0.7.
+- **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
 - **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
@@ -84,9 +85,17 @@ git clone https://github.com/MoribundInstitute/mor_blogger_theme_editor.git
 # Navigate to the project directory
 cd mor_blogger_theme_editor
 
-# Launch the Architect with hot-reloading
-dx serve --hot-reload
+# Launch the Architect with the default frameless UI
+cargo run
+
+# Alternatively, launch with OS-native window borders
+MOR_UI_MODE=native cargo run
+
+# Or launch optimized for tiling window managers
+MOR_UI_MODE=tiling cargo run
 ```
+
+> Window preferences can also be saved persistently via the in-app Preferences modal.
 
 ---
 

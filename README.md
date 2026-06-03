@@ -2,8 +2,8 @@
 
 # 🏛️ Moribund Blogger Theme Architect
 
-**A low-level XML generator with a modern, reactive GUI built in Rust.**<br>
-Design, customize, and export complete Blogger themes without ever touching raw XML.
+**A visual Blogger theme builder that handles the ugly XML machinery for you.**<br>
+Design your theme in a modern Rust-powered interface, then export clean Blogger XML, matching HTML pages, or a ready-to-upload ZIP without manually touching raw template code.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Built with Rust](https://img.shields.io/badge/Built_with-Rust-dca282.svg?logo=rust)](https://www.rust-lang.org/)
@@ -22,8 +22,7 @@ Editing a custom Blogger theme traditionally means wrestling with a monolithic, 
 
 ## ✨ The Solution
 
-The **Moribund Theme Architect** replaces the monolith with a strict, component-driven pipeline. You work visually with structured modules in a highly responsive desktop-class UI. When you are ready, the Rust engine safely compiles your palettes, typography, and modular CSS into a single, bulletproof XML file ready for upload.
-
+The **MorBlogger GUI Theme Builder** replaces the monolith with a strict, component-driven pipeline. You work visually with structured modules in a highly responsive, desktop-class UI. When you are ready, the Rust engine safely compiles your palettes, typography, and modular CSS into a single, bulletproof XML file, matching HTML pages, or a ZIP archive containing the whole lot, ready for upload.
 ---
 
 ## 🚀 Core Capabilities
@@ -45,6 +44,21 @@ The **Moribund Theme Architect** replaces the monolith with a strict, component-
 - **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
 - **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
+
+## 🌐 Ecosystem & Live Demos
+
+The Architect is part of a larger ecosystem of tools and live examples:
+
+### Core Libraries
+* [**MOR UI Kit**](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
+* [**Theme Compendium**](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
+
+### Live Production Sites
+See the exported themes running live on Blogger's infrastructure:
+* [**Theme Gallery**](https://mor-theme-compendium.blogspot.com/) — To keep the app lean, theme presets that didn't meet my arbitary cut to be hosted locally within the app are hosted externally on a companion Blogger site. Users can browse the collection there, copy a preset, and import it directly into the GUI Blogger theme maker.
+* [**XML Architecture**](https://morxml.blogspot.com/) — It's a place to share XML bits like Blog post sections, custom sidebars, custom footers, etc.
+* [**Custom Post Types**](https://morcustomposttypes.blogspot.com/) — Demonstrating advanced Blogger data tags and post routing.
+* [**Static Pages**](https://morpages.blogspot.com/) — Demonstrating standalone page layouts.
 
 ### ⚠️ Real-Time Diagnostics
 

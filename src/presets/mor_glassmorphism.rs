@@ -58,6 +58,7 @@ pub fn mor_glassmorphism() -> Preset {
             footer_text: "Made with Blogger.".to_string(),
             footer_license_label: "CC BY".to_string(),
             footer_license_url: "https://creativecommons.org/licenses/by/4.0/".to_string(),
+            ..Default::default()
         },
     );
 

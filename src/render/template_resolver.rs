@@ -1,4 +1,4 @@
-use crate::config::ThemeConfig; 
+use crate::config::ThemeConfig;
 use crate::render::css_builder::build_master_css;
 
 pub struct TemplateParts {
@@ -46,7 +46,7 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
 
     // 6. Resolve Footers
     let footer = match pack.footer_variant.as_str() {
-        "mor" | _ => include_str!("../template_parts/footers/MorFooterBaseline.xml"),
+        "mor" | _ => include_str!("../template_parts/footers/MorFooterMega.xml"),
     };
 
     // 7. Resolve Scripts

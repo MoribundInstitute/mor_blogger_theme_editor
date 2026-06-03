@@ -28,7 +28,7 @@ fn main() {
         .with_menu(None::<dioxus::desktop::muda::Menu>) 
         .with_window(
             WindowBuilder::new()
-                .with_title("Moribund Theme Architect")
+                .with_title("MorBlogger GUI Theme Builder")
                 .with_inner_size(LogicalSize::new(1280.0, 800.0))
                 .with_decorations(is_native)
                 .with_transparent(!is_native)

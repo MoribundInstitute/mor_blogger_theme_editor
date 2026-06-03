@@ -58,6 +58,7 @@ pub fn mor_web_2_0_skeuo() -> Preset {
             footer_text: "Beta Blog 2.0 — Powered by the Web.".to_string(),
             footer_license_label: "RSS".to_string(),
             footer_license_url: "/feeds/posts/default".to_string(),
+            ..Default::default()
         },
     );
 

@@ -1,0 +1,5 @@
+<footer class='mor-footer mor-footer-compact'>
+  <div class='footer-sys-info' style='justify-content: center; border-top: none;'>
+    <span class='footer-copyright'>&#169; 2026 {{SITE_TITLE}}. All rights reserved.</span>
+  </div>
+</footer>

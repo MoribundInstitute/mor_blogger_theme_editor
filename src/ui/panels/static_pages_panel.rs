@@ -17,10 +17,23 @@ const TABS: &[(&str, &str)] = &[
     ("LMS", "Courses"),
 ];
 
+fn preview_html_for_tab(id: &str, pages: &StaticPagesConfig) -> String {
+    match id {
+        "Archive" => generate_archive_html(&pages.archive),
+        "Directory" => generate_categories_html(&pages.categories),
+        "Portfolio" => generate_portfolio_html(&pages.portfolio),
+        "About" => generate_about_html(&pages.about),
+        "LMS" => generate_course_catalog_html(&pages.lms),
+        _ => String::new(),
+    }
+}
+
 #[component]
 pub fn StaticPagesFloatingWindow(
     signals: ThemeSignals,
     mut show_undocked_pages: Signal<bool>,
+    mut preview_html: Signal<String>,
+    base_preview_html: ReadSignal<String>,
 ) -> Element {
     rsx! {
         div {
@@ -42,17 +55,36 @@ pub fn StaticPagesFloatingWindow(
             
             div {
                 style: "padding: 16px; overflow-y: auto;",
-                StaticPagesPanel { signals, show_undocked_pages }
+                StaticPagesPanel {
+                    signals,
+                    show_undocked_pages,
+                    preview_html,
+                    base_preview_html,
+                }
             }
         }
     }
 }
 
 #[component]
-pub fn StaticPagesPanel(signals: ThemeSignals, mut show_undocked_pages: Signal<bool>) -> Element {
+pub fn StaticPagesPanel(
+    signals: ThemeSignals,
+    mut show_undocked_pages: Signal<bool>,
+    mut preview_html: Signal<String>,
+    base_preview_html: ReadSignal<String>,
+) -> Element {
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
     let mut active_tab = use_signal(|| "Archive");
+
+    // Wrap the selected static page inside the active generated theme preview.
+    // This keeps the iframe CSS/fonts/colors intact and mocks Blogger feed calls offline.
+    use_effect(move || {
+        let base = base_preview_html();
+        let pages_snapshot = pages();
+        let new_html = preview_html_for_tab(active_tab(), &pages_snapshot);
+        preview_html.set(inject_static_page(&base, &new_html));
+    });
 
     rsx! {
         div { class: "editor-panel",
@@ -322,4 +354,75 @@ fn LmsBuilder(
             }
         }
     }
+}
+/// Wraps static HTML in the master theme CSS and mocks offline Blogger feed calls.
+pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
+    let mock_fetch = r##"<script>
+    const _origFetch = window.fetch;
+    window.fetch = async function(url, opts) {
+        if (typeof url === 'string' && url.includes('/feeds/')) {
+            return {
+                ok: true,
+                json: async () => ({
+                    feed: {
+                        openSearch$totalResults: { $t: "3" },
+                        entry: [
+                            {
+                                title: { $t: "Archive Feed Intercepted" },
+                                link: [{ rel: "alternate", href: "#" }],
+                                summary: { $t: "Offline preview routing successful. Theme layout nominal." },
+                                published: { $t: new Date().toISOString() },
+                                category: [{ term: "System" }]
+                            },
+                            {
+                                title: { $t: "Patch Notes v1.2" },
+                                link: [{ rel: "alternate", href: "#" }],
+                                summary: { $t: "Guild UI updated. Potions nerfed." },
+                                published: { $t: "2025-06-03T10:00:00Z" },
+                                category: [{ term: "Updates" }]
+                            }
+                        ]
+                    }
+                })
+            };
+        }
+
+        return _origFetch(url, opts);
+    };
+    </script>"##;
+
+    // Visually hide default blog content before the static page is mounted.
+    let hide_css = "<style>main, .mor-main, #main, .main-section { display: none !important; }</style>";
+    let head_injected = base_html.replace("<head>", &format!("<head>\n{}\n{}", mock_fetch, hide_css));
+
+    let template_html = format!(
+        r#"
+    <template id="mor-static-injector">
+        {}
+    </template>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {{
+        const target = document.querySelector('main, .mor-main, #main, .main-section, .mor-workspace');
+        const template = document.getElementById('mor-static-injector');
+
+        if (target && template) {{
+            target.innerHTML = '';
+            target.appendChild(template.content.cloneNode(true));
+            target.style.display = 'block';
+
+            // cloneNode does not execute script tags. Recreate them manually.
+            target.querySelectorAll('script').forEach(oldScript => {{
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            }});
+        }}
+    }});
+    </script>
+    "#,
+        static_html
+    );
+
+    head_injected.replace("</body>", &format!("{}\n</body>", template_html))
 }

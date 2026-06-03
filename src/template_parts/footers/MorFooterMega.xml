@@ -1,0 +1,81 @@
+<footer class='mor-footer mor-footer-mega'>
+  <div class='footer-mega-grid'>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_1_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_1_LINK_1_URL}}' rel='noopener'>{{FOOTER_1_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_2_URL}}' rel='noopener'>{{FOOTER_1_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_3_URL}}' rel='noopener'>{{FOOTER_1_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_4_URL}}' rel='noopener'>{{FOOTER_1_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_5_URL}}' rel='noopener'>{{FOOTER_1_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_2_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_2_LINK_1_URL}}' rel='noopener'>{{FOOTER_2_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_2_URL}}' rel='noopener'>{{FOOTER_2_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_3_URL}}' rel='noopener'>{{FOOTER_2_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_4_URL}}' rel='noopener'>{{FOOTER_2_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_5_URL}}' rel='noopener'>{{FOOTER_2_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_3_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_3_LINK_1_URL}}' rel='noopener'>{{FOOTER_3_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_2_URL}}' rel='noopener'>{{FOOTER_3_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_3_URL}}' rel='noopener'>{{FOOTER_3_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_4_URL}}' rel='noopener'>{{FOOTER_3_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_5_URL}}' rel='noopener'>{{FOOTER_3_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_4_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_4_LINK_1_URL}}' rel='noopener'>{{FOOTER_4_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_2_URL}}' rel='noopener'>{{FOOTER_4_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_3_URL}}' rel='noopener'>{{FOOTER_4_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_4_URL}}' rel='noopener'>{{FOOTER_4_LINK_4_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_5_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_5_LINK_1_URL}}' rel='noopener'>{{FOOTER_5_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_2_URL}}' rel='noopener'>{{FOOTER_5_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_3_URL}}' rel='noopener'>{{FOOTER_5_LINK_3_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4>{{FOOTER_COL_6_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_6_LINK_1_URL}}' rel='noopener'>{{FOOTER_6_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_2_URL}}' rel='noopener'>{{FOOTER_6_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_3_URL}}' rel='noopener'>{{FOOTER_6_LINK_3_LABEL}}</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class='footer-brand-center'>
+    <img class='footer-logo' src='{{HEADER_LOGO_URL}}' alt='Logo' />
+    <span class='footer-brand-name'>{{SITE_TITLE}}</span>
+  </div>
+
+  <div class='footer-sys-info'>
+    <p class='footer-copyright'>&#169; 2026 {{SITE_TITLE}} and others</p>
+    <div class='footer-legal-links'>
+      <a href='{{FOOTER_LEGAL_1_URL}}'>{{FOOTER_LEGAL_1_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_2_URL}}'>{{FOOTER_LEGAL_2_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_3_URL}}'>{{FOOTER_LEGAL_3_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_4_URL}}'>{{FOOTER_LEGAL_4_LABEL}}</a>
+    </div>
+  </div>
+</footer>

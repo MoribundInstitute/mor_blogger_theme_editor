@@ -152,7 +152,10 @@ pub(super) fn render_template(
     );
 
     let rendered = base_xml
-        // Optional legacy widget sockets, for older parts or experiments.
+        // 1. Inject structural modules FIRST so their internal tokens get painted
+        .replace("{{MAIN_CONTENT_MODULE}}", parts.content)
+        .replace("{{FOOTER_MODULE}}", parts.footer)
+        // 2. Optional legacy widget sockets, for older parts or experiments.
         .replace("{{WIDGET_ADSENSE_SIDEBAR}}", &ads_widget_sidebar)
         // Head / SEO.
         .replace("{{GOOGLE_FONTS_LINK}}", &google_fonts_link)
@@ -535,8 +538,6 @@ pub(super) fn render_template(
         .replace("{{TOC_ITEM_MARGIN_BOTTOM}}", "8px")
         .replace("{{TOC_ITEM_FONT_SIZE}}", "0.85rem")
         // Blog and footer.
-        .replace("{{MAIN_CONTENT_MODULE}}", parts.content)
-        .replace("{{FOOTER_MODULE}}", parts.footer)
         .replace("{{BLOG_WIDGET_TITLE}}", "Blog Posts")
         .replace("{{BLOG_COMMENT_LABEL}}", "Comment")
         .replace(
@@ -560,53 +561,7 @@ pub(super) fn render_template(
         )
         .replace("{{PUBLISHER_LOGO_WIDTH}}", "206")
         .replace("{{PUBLISHER_LOGO_HEIGHT}}", "60")
-        .replace("{{FOOTER_SOCIALS_HEADING}}", "DIR_SOCIALS")
-        .replace(
-            "{{FOOTER_SOCIAL_1_URL}}",
-            "https://www.youtube.com/@harrisfamilyregister",
-        )
-        .replace("{{FOOTER_SOCIAL_1_LABEL}}", "YouTube")
-        .replace("{{FOOTER_SOCIAL_2_URL}}", "https://x.com/FamilyRegister")
-        .replace("{{FOOTER_SOCIAL_2_LABEL}}", "Twitter")
-        .replace(
-            "{{FOOTER_SOCIAL_3_URL}}",
-            "https://www.reddit.com/user/HarrisFamilyRegister/",
-        )
-        .replace("{{FOOTER_SOCIAL_3_LABEL}}", "Reddit")
-        .replace(
-            "{{FOOTER_SOCIAL_4_URL}}",
-            "https://www.tumblr.com/harrisfamilyregister",
-        )
-        .replace("{{FOOTER_SOCIAL_4_LABEL}}", "Tumblr")
-        .replace("{{FOOTER_LINKS_HEADING}}", "DIR_QUICK_LINKS")
-        .replace("{{FOOTER_LINK_1_URL}}", &escape_attr(&menu_1.url))
-        .replace("{{FOOTER_LINK_1_LABEL}}", &escape_html(&menu_1.label))
-        .replace("{{FOOTER_LINK_2_URL}}", &escape_attr(&menu_2.url))
-        .replace("{{FOOTER_LINK_2_LABEL}}", &escape_html(&menu_2.label))
-        .replace("{{FOOTER_LINK_3_URL}}", &escape_attr(&menu_3.url))
-        .replace("{{FOOTER_LINK_3_LABEL}}", &escape_html(&menu_3.label))
-        .replace("{{FOOTER_LINK_4_URL}}", &escape_attr(&menu_4.url))
-        .replace("{{FOOTER_LINK_4_LABEL}}", &escape_html(&menu_4.label))
-        .replace("{{FOOTER_RESOURCES_HEADING}}", "DIR_WIKI_RES")
-        .replace("{{FOOTER_RESOURCE_1_URL}}", "https://commons.wikimedia.org")
-        .replace("{{FOOTER_RESOURCE_1_LABEL}}", "Wiki_Commons")
-        .replace("{{FOOTER_RESOURCE_2_URL}}", "https://www.wikiversity.org")
-        .replace("{{FOOTER_RESOURCE_2_LABEL}}", "Wikiversity")
-        .replace("{{FOOTER_RESOURCE_3_URL}}", "https://www.wiktionary.org")
-        .replace("{{FOOTER_RESOURCE_3_LABEL}}", "Wiktionary")
-        .replace("{{FOOTER_RESOURCE_4_URL}}", "https://www.wikibooks.org")
-        .replace("{{FOOTER_RESOURCE_4_LABEL}}", "WikiBooks")
-        .replace("{{FOOTER_RESOURCE_5_URL}}", "https://www.wikipedia.org")
-        .replace("{{FOOTER_RESOURCE_5_LABEL}}", "Wikipedia")
-        .replace("{{FOOTER_TOOLS_HEADING}}", "DIR_AI_TOOLS")
-        .replace("{{FOOTER_TOOL_1_URL}}", "https://chatgpt.com/")
-        .replace("{{FOOTER_TOOL_1_LABEL}}", "ChatGPT")
-        .replace("{{FOOTER_TOOL_2_URL}}", "https://gemini.google.com/")
-        .replace("{{FOOTER_TOOL_2_LABEL}}", "Gemini")
-        .replace("{{FOOTER_TOOL_3_URL}}", "https://openai.com/dall-e")
-        .replace("{{FOOTER_TOOL_3_LABEL}}", "DALL-E")
-        .replace("{{FOOTER_TOOL_4_URL}}", "https://www.midjourney.com/")
-        .replace("{{FOOTER_TOOL_4_LABEL}}", "Midjourney")
+        // Footer Sys Info
         .replace(
             "{{FOOTER_SYS_MESSAGE}}",
             &escape_html(&config.footer.footer_text),
@@ -619,15 +574,66 @@ pub(super) fn render_template(
             "{{FOOTER_LICENSE_LABEL}}",
             &escape_html(&config.footer.footer_license_label),
         )
-        .replace(
-            "{{FOOTER_SOURCE_URL}}",
-            "https://github.com/MoribundInstitute/blogger-theme-moribund-institute",
-        )
-        .replace("{{FOOTER_SOURCE_LABEL}}", "GitHub Repository")
         .replace("{{BACK_TO_TOP_LABEL}}", "Back to Top")
         // Optional custom plugin JS lives inside javascript_before_body_tag.xml's
         // DOMContentLoaded handler, so do not wrap it in a second <script>.
         .replace("{{CUSTOM_BEFORE_BODY_JS}}", &config.plugins.custom_js);
 
-    render_header_sockets(rendered, config)
+    // Dynamic Mega Footer Loop
+    // Injects config values into the specific 6-column {{FOOTER_X_LINK_Y}} grid.
+    let mut final_xml = rendered;
+
+    for (col_idx, col) in config.footer.columns.iter().enumerate() {
+        let c = col_idx + 1; // 1-indexed for XML
+        final_xml = final_xml.replace(
+            &format!("{{{{FOOTER_COL_{}_HEADING}}}}", c),
+            &escape_html(&col.heading),
+        );
+
+        for (link_idx, link) in col.links.iter().enumerate() {
+            let l = link_idx + 1; // 1-indexed for XML
+            final_xml = final_xml.replace(
+                &format!("{{{{FOOTER_{}_LINK_{}_LABEL}}}}", c, l),
+                &escape_html(&link.label),
+            );
+            final_xml = final_xml.replace(
+                &format!("{{{{FOOTER_{}_LINK_{}_URL}}}}", c, l),
+                &escape_attr(&link.url),
+            );
+        }
+    }
+
+    for (leg_idx, link) in config.footer.legal_links.iter().enumerate() {
+        let l = leg_idx + 1;
+        final_xml = final_xml.replace(
+            &format!("{{{{FOOTER_LEGAL_{}_LABEL}}}}", l),
+            &escape_html(&link.label),
+        );
+        final_xml = final_xml.replace(
+            &format!("{{{{FOOTER_LEGAL_{}_URL}}}}", l),
+            &escape_attr(&link.url),
+        );
+    }
+
+    // Scrub any remaining unused {{FOOTER_...}} sockets so they don't leak into the HTML.
+    for c in 1..=6 {
+        final_xml = final_xml.replace(&format!("{{{{FOOTER_COL_{}_HEADING}}}}", c), "");
+        for l in 1..=5 {
+            final_xml = final_xml.replace(
+                &format!("{{{{FOOTER_{}_LINK_{}_LABEL}}}}", c, l),
+                "",
+            );
+            final_xml = final_xml.replace(
+                &format!("{{{{FOOTER_{}_LINK_{}_URL}}}}", c, l),
+                "#",
+            );
+        }
+    }
+
+    for l in 1..=4 {
+        final_xml = final_xml.replace(&format!("{{{{FOOTER_LEGAL_{}_LABEL}}}}", l), "");
+        final_xml = final_xml.replace(&format!("{{{{FOOTER_LEGAL_{}_URL}}}}", l), "#");
+    }
+
+    render_header_sockets(final_xml, config)
 }

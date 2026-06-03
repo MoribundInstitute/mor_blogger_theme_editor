@@ -20,12 +20,9 @@ use crate::config::{
 
 pub mod mor_fluid_interactive;
 pub mod mor_glassmorphism;
-pub mod mor_minimal;
-pub mod mor_modern_editorial;
 pub mod mor_neon_cyberpunk;
 pub mod mor_newspaper;
 pub mod mor_retro_mmorpg;
-pub mod mor_terminal_classic;
 pub mod mor_web_1_0_frames;
 pub mod mor_web_2_0_skeuo;
 pub mod user_presets;
@@ -49,16 +46,13 @@ pub struct Preset {
 
 pub fn all_builtin_presets() -> Vec<Preset> {
     vec![
-        mor_modern_editorial::mor_modern_editorial(),
         mor_web_1_0_frames::mor_web_1_0_frames(),
         mor_newspaper::mor_newspaper(),
         mor_web_2_0_skeuo::mor_web_2_0_skeuo(),
         mor_glassmorphism::mor_glassmorphism(),
         mor_neon_cyberpunk::mor_neon_cyberpunk(),
         mor_fluid_interactive::mor_fluid_interactive(),
-        mor_terminal_classic::mor_terminal_classic(),
         mor_retro_mmorpg::mor_retro_mmorpg(),
-        mor_minimal::mor_minimal(),
     ]
 }
 

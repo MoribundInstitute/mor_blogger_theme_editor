@@ -46,6 +46,7 @@ pub fn PreviewCanvas(
     preview_viewport: Signal<PreviewViewport>,
     preview_width: Signal<u32>,
     preview_html: String,
+    #[props(default)] on_navigate: Option<EventHandler<String>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -100,7 +101,7 @@ pub fn PreviewCanvas(
                         src: "about:blank",
                         onmounted: move |_| {
                             spawn(async move {
-                                let _ = dioxus::document::eval(
+                                let mut eval = dioxus::document::eval(
                                     r#"
                                     (function installMorPreviewBridge() {
                                         const sourceId = "mor-preview-html-source";
@@ -119,6 +120,25 @@ pub fn PreviewCanvas(
                                             doc.open();
                                             doc.write(html);
                                             doc.close();
+
+                                            doc.addEventListener('click', function(e) {
+                                                const target = e.target && e.target.closest
+                                                    ? e.target
+                                                    : (e.target && e.target.parentElement);
+                                                const anchor = target && target.closest
+                                                    ? target.closest('a')
+                                                    : null;
+
+                                                if (!anchor) return;
+
+                                                const href = anchor.getAttribute('href');
+                                                if (!href) return;
+
+                                                if (href.startsWith('/') || href.startsWith('#')) {
+                                                    e.preventDefault();
+                                                    dioxus.send(href);
+                                                }
+                                            });
                                         }
 
                                         function install(attempt) {
@@ -154,6 +174,14 @@ pub fn PreviewCanvas(
                                     })();
                                     "#
                                 );
+
+                                while let Ok(json) = eval.recv::<serde_json::Value>().await {
+                                    if let Some(href) = json.as_str() {
+                                        if let Some(handler) = on_navigate.as_ref() {
+                                            handler.call(href.to_string());
+                                        }
+                                    }
+                                }
                             });
                         }
                     }

@@ -54,6 +54,7 @@ pub fn mor_web_1_0_frames() -> Preset {
             footer_text: "Best viewed in Netscape Navigator 4.0+ at 800x600".to_string(),
             footer_license_label: "Email Me".to_string(),
             footer_license_url: "mailto:webmaster@example.com".to_string(),
+            ..Default::default()
         },
     );
 

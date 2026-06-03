@@ -191,6 +191,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
             footer_text: footer_text(),
             footer_license_label: footer_license_label(),
             footer_license_url: footer_license_url(),
+            ..Default::default()
         },
         plugins: crate::config::PluginConfig {
             custom_js: custom_js(),

@@ -46,6 +46,18 @@ pub fn render_app_shell(
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
+    let config_toml_signal = use_memo(move || {
+        toml::to_string_pretty(&current_config()).unwrap_or_default()
+    });
+
+    // Writable TV monitor for preview output.
+    // render.preview_html is derived read-only state; static page tabs need a write target.
+    let mut tv_monitor = use_signal(|| String::new());
+
+    use_effect(move || {
+        tv_monitor.set((render.preview_html)());
+    });
+
     rsx! {
         MorStyleProvider { theme_toml: GTK4_DARK_TOML.to_string() }
         style { "{EDITOR_UI_CSS}" }
@@ -177,17 +189,19 @@ pub fn render_app_shell(
                         },
                         show_undocked_presets,
                         show_undocked_pages,
+                        preview_html: tv_monitor,
+                        base_preview_html: render.preview_html,
                     }
 
                     CenterWorkspacePanel {
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
                         preview_template_mode: layout.preview_template_mode,
-                        generated_xml: (render.generated_xml)(),
-                        preview_html: (render.preview_html)(),
+                        generated_xml: render.generated_xml,
+                        preview_html: tv_monitor,
                         show_preview,
                         diag: render.diag,
-                        config_toml: toml::to_string_pretty(&current_config()).unwrap_or_default(),
+                        config_toml: config_toml_signal,
                         active_preset,
                         on_load_theme: move |toml_text: String| {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&toml_text) {
@@ -199,6 +213,29 @@ pub fn render_app_shell(
                         },
                         on_load_hotswap: move |json_text: String| {
                             apply_hotswap_json(signals, json_text);
+                        },
+                        on_navigate: move |href: String| {
+                            let base = (render.preview_html)();
+                            let pages = (signals.static_pages)();
+
+                            let new_html = if href.contains("archive") {
+                                crate::render::pages::generate_archive_html(&pages.archive)
+                            } else if href.contains("categories") || href.contains("directory") {
+                                crate::render::pages::generate_categories_html(&pages.categories)
+                            } else if href.contains("about") {
+                                crate::render::pages::generate_about_html(&pages.about)
+                            } else if href.contains("portfolio") {
+                                crate::render::pages::generate_portfolio_html(&pages.portfolio)
+                            } else if href.contains("catalog") || href.contains("lessons") || href.contains("courses") {
+                                crate::render::pages::generate_course_catalog_html(&pages.lms)
+                            } else {
+                                tv_monitor.set(base);
+                                return;
+                            };
+
+                            tv_monitor.set(
+                                crate::ui::panels::static_pages_panel::inject_static_page(&base, &new_html),
+                            );
                         },
                     }
 
@@ -225,11 +262,16 @@ pub fn render_app_shell(
                     StaticPagesFloatingWindow {
                         signals,
                         show_undocked_pages,
+                        preview_html: tv_monitor,
+                        base_preview_html: render.preview_html,
                     }
                 }
 
-                footer { class: "editor-footer",
-                    DiagnosticsPanel { result: render.diag }
+                // Only render the diagnostics footer if there is a warning or an error
+                if !(render.diag)().errors.is_empty() || !(render.diag)().warnings.is_empty() {
+                    footer { class: "editor-footer",
+                        DiagnosticsPanel { result: render.diag }
+                    }
                 }
             }
         }

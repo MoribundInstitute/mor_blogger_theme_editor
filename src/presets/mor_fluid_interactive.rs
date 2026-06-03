@@ -62,6 +62,7 @@ pub fn mor_fluid_interactive() -> Preset {
             footer_license_label: "Source".to_string(),
             footer_license_url: "https://github.com/MoribundInstitute/mor_blogger_theme_editor"
                 .to_string(),
+            ..Default::default()
         },
     );
 

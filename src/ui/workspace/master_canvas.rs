@@ -15,47 +15,39 @@ pub fn CenterWorkspacePanel(
     preview_width: Signal<u32>,
     preview_template_mode: Signal<PreviewTemplateMode>,
 
-    generated_xml: String,
-    preview_html: String,
+    generated_xml: ReadSignal<String>, // Accepts Memos or Signals.
+    preview_html: ReadSignal<String>,  // Accepts Memos or Signals.
     show_preview: Signal<bool>,
     diag: Signal<DiagnosticResult>,
 
-    config_toml: String,
+    config_toml: ReadSignal<String>, // Accepts Memos or Signals.
     active_preset: Signal<Option<&'static str>>,
     on_load_theme: EventHandler<String>,
     on_restore: EventHandler<ThemeConfig>,
     on_load_hotswap: EventHandler<String>,
+    #[props(default)] on_navigate: Option<EventHandler<String>>,
 ) -> Element {
-    let export_xml = match toml::from_str::<ThemeConfig>(&config_toml) {
-        Ok(config) => crate::rehydration::inject_state(&generated_xml, &config)
-            .unwrap_or_else(|err| {
-                log::error!("Failed to inject state: {}", err);
-                generated_xml.clone()
-            }),
-        Err(err) => {
-            log::error!("Failed to parse config for state injection: {}", err);
-            generated_xml.clone()
-        }
-    };
-
-    let xml_for_copy = export_xml.clone();
-    let xml_for_download = export_xml.clone();
-    let toml_for_backup = config_toml.clone();
-    let toml_for_hotswap = config_toml.clone();
-    let toml_for_save_data = config_toml.clone();
-    let toml_for_bottom_copy = config_toml.clone();
-    let toml_for_disk = config_toml.clone();
-    let toml_for_bundle = config_toml.clone();
-
-    let preset_for_bottom_copy = active_preset();
-    let preset_for_disk = active_preset();
-    let preset_for_bundle = active_preset();
-
     let is_valid = diag.read().is_valid;
     let error_count = diag.read().errors.len();
 
-    let mut status_msg = use_signal(|| "".to_string());
+    let mut status_msg = use_signal(String::new);
     let mut show_restore = use_signal(|| false);
+
+    // Derived signal. Computes only when xml or toml signals change.
+    // Zero manual clone bloat.
+    let export_xml = use_memo(move || {
+        match toml::from_str::<ThemeConfig>(&config_toml()) {
+            Ok(config) => crate::rehydration::inject_state(&generated_xml(), &config)
+                .unwrap_or_else(|err| {
+                    log::error!("Failed to inject state: {}", err);
+                    generated_xml()
+                }),
+            Err(err) => {
+                log::error!("Failed to parse config for state injection: {}", err);
+                generated_xml()
+            }
+        }
+    });
 
     rsx! {
         div {
@@ -79,8 +71,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
                             onclick: move |_| {
-                                let mut viewport = preview_viewport;
-                                viewport.set(PreviewViewport::Desktop);
+                                preview_viewport.set(PreviewViewport::Desktop);
                                 apply_preview_viewport(PreviewViewport::Desktop, preview_width);
                             },
                             "Desktop"
@@ -89,8 +80,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
                             onclick: move |_| {
-                                let mut viewport = preview_viewport;
-                                viewport.set(PreviewViewport::Laptop);
+                                preview_viewport.set(PreviewViewport::Laptop);
                                 apply_preview_viewport(PreviewViewport::Laptop, preview_width);
                             },
                             "Laptop"
@@ -99,8 +89,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
                             onclick: move |_| {
-                                let mut viewport = preview_viewport;
-                                viewport.set(PreviewViewport::Tablet);
+                                preview_viewport.set(PreviewViewport::Tablet);
                                 apply_preview_viewport(PreviewViewport::Tablet, preview_width);
                             },
                             "Tablet"
@@ -109,8 +98,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
                             onclick: move |_| {
-                                let mut viewport = preview_viewport;
-                                viewport.set(PreviewViewport::Phone);
+                                preview_viewport.set(PreviewViewport::Phone);
                                 apply_preview_viewport(PreviewViewport::Phone, preview_width);
                             },
                             "Phone"
@@ -119,8 +107,7 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
                             onclick: move |_| {
-                                let mut viewport = preview_viewport;
-                                viewport.set(PreviewViewport::Fit);
+                                preview_viewport.set(PreviewViewport::Fit);
                                 apply_preview_viewport(PreviewViewport::Fit, preview_width);
                             },
                             "Fit"
@@ -131,9 +118,7 @@ pub fn CenterWorkspacePanel(
                             title: "Rotate tablet, phone, or custom preview width",
                             onclick: move |_| {
                                 if preview_viewport().is_rotatable() {
-                                    let next_width = rotate_preview_width(preview_viewport(), preview_width());
-                                    let mut width = preview_width;
-                                    width.set(next_width);
+                                    preview_width.set(rotate_preview_width(preview_viewport(), preview_width()));
                                 }
                             },
                             "Rotate"
@@ -146,10 +131,8 @@ pub fn CenterWorkspacePanel(
                                 class: "preview-width-input", r#type: "number", min: "240", max: "2400", step: "10", value: "{preview_width()}",
                                 oninput: move |evt| {
                                     if let Ok(width_value) = evt.value().parse::<u32>() {
-                                        let mut width = preview_width;
-                                        let mut viewport = preview_viewport;
-                                        width.set(clamp_preview_width(width_value));
-                                        viewport.set(PreviewViewport::Custom);
+                                        preview_width.set(clamp_preview_width(width_value));
+                                        preview_viewport.set(PreviewViewport::Custom);
                                     }
                                 },
                             }
@@ -161,12 +144,12 @@ pub fn CenterWorkspacePanel(
                         span { class: "preview-width-label", "Layout" }
                         button {
                             class: if preview_template_mode() == PreviewTemplateMode::Modern { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { let mut mode = preview_template_mode; mode.set(PreviewTemplateMode::Modern); },
+                            onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Modern); },
                             "Modern"
                         }
                         button {
                             class: if preview_template_mode() == PreviewTemplateMode::Sidebars { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { let mut mode = preview_template_mode; mode.set(PreviewTemplateMode::Sidebars); },
+                            onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Sidebars); },
                             "Sidebars"
                         }
                     }
@@ -181,7 +164,7 @@ pub fn CenterWorkspacePanel(
                     button {
                         class: "editor-button",
                         onclick: move |_| {
-                            copy_to_clipboard(xml_for_copy.clone());
+                            copy_to_clipboard(export_xml());
                             status_msg.set("XML copied to clipboard!".to_string());
                         },
                         "Copy XML"
@@ -189,7 +172,6 @@ pub fn CenterWorkspacePanel(
                     button {
                         class: "editor-button",
                         onclick: move |_| {
-                            let xml = xml_for_download.clone();
                             async move {
                                 let mut eval = dioxus::document::eval(r#"
                                     let text = await dioxus.recv();
@@ -199,7 +181,7 @@ pub fn CenterWorkspacePanel(
                                     document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
                                     dioxus.send("done");
                                 "#);
-                                let _ = eval.send(xml);
+                                let _ = eval.send(export_xml());
                                 let _ = eval.recv::<serde_json::Value>().await; 
                             }
                         },
@@ -215,17 +197,14 @@ pub fn CenterWorkspacePanel(
                         "Load Theme (.toml)"
                         input {
                             r#type: "file", accept: ".toml", style: "display: none;",
-                            onchange: {
-                                let on_load_theme = on_load_theme.clone();
-                                move |evt| {
-                                    let on_load_theme = on_load_theme.clone();
-                                    async move {
-                                        if let Some(file) = evt.files().first() {
-                                            if let Ok(bytes) = file.read_bytes().await {
-                                                let contents = String::from_utf8_lossy(&bytes).into_owned();
-                                                on_load_theme.call(contents);
-                                                status_msg.set("Theme loaded successfully.".to_string());
-                                            }
+                            onchange: move |evt| {
+                                let on_load = on_load_theme.clone();
+                                async move {
+                                    if let Some(file) = evt.files().first() {
+                                        if let Ok(bytes) = file.read_bytes().await {
+                                            let contents = String::from_utf8_lossy(&bytes).into_owned();
+                                            on_load.call(contents);
+                                            status_msg.set("Theme loaded successfully.".to_string());
                                         }
                                     }
                                 }
@@ -236,7 +215,6 @@ pub fn CenterWorkspacePanel(
                     button {
                         class: "editor-button",
                         onclick: move |_| {
-                            let toml_data = toml_for_backup.clone();
                             async move {
                                 let mut eval = dioxus::document::eval(r#"
                                     let text = await dioxus.recv();
@@ -246,7 +224,7 @@ pub fn CenterWorkspacePanel(
                                     document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
                                     dioxus.send("done");
                                 "#);
-                                let _ = eval.send(toml_data);
+                                let _ = eval.send(config_toml());
                                 let _ = eval.recv::<serde_json::Value>().await;
                                 status_msg.set("Theme saved!".to_string());
                             }
@@ -259,68 +237,53 @@ pub fn CenterWorkspacePanel(
                     class: "export-action-group",
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
-                        onclick: {
-                            let on_restore = on_restore.clone();
-                            move |_| {
-                                let toml_copy = toml_for_hotswap.clone();
-
-                                let mut updated_config = match toml::from_str::<ThemeConfig>(&toml_copy) {
-                                    Ok(config) => config,
-                                    Err(err) => {
-                                        let msg = format!("Load Data failed: could not parse current ThemeConfig TOML: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
-                                };
-
-                                let Some(path) = rfd::FileDialog::new()
-                                    .set_title("Load Site Data Profile")
-                                    .add_filter("JSON", &["json"])
-                                    .pick_file()
-                                else {
-                                    status_msg.set("Load Data cancelled.".to_string());
+                        onclick: move |_| {
+                            let mut updated_config = match toml::from_str::<ThemeConfig>(&config_toml()) {
+                                Ok(config) => config,
+                                Err(err) => {
+                                    status_msg.set(format!("Load Data failed: invalid TOML: {}", err));
                                     return;
-                                };
+                                }
+                            };
 
-                                let json_string = match std::fs::read_to_string(&path) {
-                                    Ok(contents) => contents,
-                                    Err(err) => {
-                                        let msg = format!("Load Data failed: could not read {}: {}", path.display(), err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
-                                };
+                            let Some(path) = rfd::FileDialog::new()
+                                .set_title("Load Site Data Profile")
+                                .add_filter("JSON", &["json"])
+                                .pick_file()
+                            else {
+                                status_msg.set("Load Data cancelled.".to_string());
+                                return;
+                            };
 
-                                let loaded_data = match serde_json::from_str::<ThemeConfig>(&json_string) {
-                                    Ok(config) => config,
-                                    Err(err) => {
-                                        let msg = format!("Load Data failed: invalid ThemeConfig JSON: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
-                                };
+                            let json_string = match std::fs::read_to_string(&path) {
+                                Ok(contents) => contents,
+                                Err(err) => {
+                                    status_msg.set(format!("Read failed {}: {}", path.display(), err));
+                                    return;
+                                }
+                            };
 
-                                updated_config.apply_site_data(&loaded_data);
-                                on_restore.call(updated_config);
-                                status_msg.set(format!("Site data loaded: {}", path.display()));
-                            }
+                            let loaded_data = match serde_json::from_str::<ThemeConfig>(&json_string) {
+                                Ok(config) => config,
+                                Err(err) => {
+                                    status_msg.set(format!("Invalid JSON: {}", err));
+                                    return;
+                                }
+                            };
+
+                            updated_config.apply_site_data(&loaded_data);
+                            on_restore.call(updated_config);
+                            status_msg.set(format!("Site data loaded: {}", path.display()));
                         },
                         "Load Data (.json)"
                     }
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
                         onclick: move |_| {
-                            let toml_copy = toml_for_save_data.clone();
-
-                            let current_config = match toml::from_str::<ThemeConfig>(&toml_copy) {
+                            let current_config = match toml::from_str::<ThemeConfig>(&config_toml()) {
                                 Ok(config) => config,
                                 Err(err) => {
-                                    let msg = format!("Save Data failed: could not parse current ThemeConfig TOML: {}", err);
-                                    eprintln!("{}", msg);
-                                    status_msg.set(msg);
+                                    status_msg.set(format!("Parse failed: {}", err));
                                     return;
                                 }
                             };
@@ -330,27 +293,14 @@ pub fn CenterWorkspacePanel(
                                 .set_file_name("my_site_data.json")
                                 .add_filter("JSON", &["json"])
                                 .save_file()
-                            else {
-                                status_msg.set("Save Data cancelled.".to_string());
-                                return;
-                            };
+                            else { return; };
 
                             match serde_json::to_string_pretty(&current_config) {
                                 Ok(json_string) => match std::fs::write(&path, json_string) {
-                                    Ok(()) => {
-                                        status_msg.set(format!("Site data saved: {}", path.display()));
-                                    }
-                                    Err(err) => {
-                                        let msg = format!("Save Data failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
+                                    Ok(()) => status_msg.set(format!("Site data saved: {}", path.display())),
+                                    Err(err) => status_msg.set(format!("Save failed: {}", err)),
                                 },
-                                Err(err) => {
-                                    let msg = format!("Save Data failed: could not serialize ThemeConfig: {}", err);
-                                    eprintln!("{}", msg);
-                                    status_msg.set(msg);
-                                }
+                                Err(err) => status_msg.set(format!("Serialize failed: {}", err))
                             }
                         },
                         "Save Data (.json)"
@@ -380,11 +330,20 @@ pub fn CenterWorkspacePanel(
             }
 
             if show_preview() {
-                PreviewCanvas { preview_viewport, preview_width, preview_html }
+                PreviewCanvas {
+                    preview_viewport,
+                    preview_width,
+                    preview_html: preview_html(),
+                    on_navigate: move |href: String| {
+                        if let Some(handler) = on_navigate.as_ref() {
+                            handler.call(href);
+                        }
+                    },
+                }
             } else {
                 div {
                     class: "export-viewport",
-                    textarea { class: "export-xml-textarea", readonly: true, value: "{export_xml}" }
+                    textarea { class: "export-xml-textarea", readonly: true, value: "{export_xml()}" }
                 }
             }
 
@@ -406,16 +365,12 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                match build_fresh_export_xml(&toml_for_bottom_copy, preset_for_bottom_copy) {
+                                match build_fresh_export_xml(&config_toml(), active_preset()) {
                                     Ok(fresh_xml) => {
                                         copy_to_clipboard(fresh_xml);
                                         status_msg.set("XML copied to clipboard!".to_string());
                                     }
-                                    Err(err) => {
-                                        let msg = format!("Copy failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
+                                    Err(err) => status_msg.set(err),
                                 }
                             },
                             "Copy XML"
@@ -424,26 +379,14 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                let fresh_xml = match build_fresh_export_xml(&toml_for_disk, preset_for_disk) {
+                                let fresh_xml = match build_fresh_export_xml(&config_toml(), active_preset()) {
                                     Ok(xml) => xml,
-                                    Err(err) => {
-                                        let msg = format!("Export failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
+                                    Err(err) => { status_msg.set(err); return; }
                                 };
 
                                 match crate::render::save_xml_to_disk(&fresh_xml, "Moribund_Institute") {
-                                    Ok(msg) => {
-                                        println!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
-                                    Err(err) => {
-                                        let msg = format!("Export failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
+                                    Ok(msg) => status_msg.set(msg),
+                                    Err(err) => status_msg.set(format!("Export failed: {}", err)),
                                 }
                             },
                             "Export XML to Disk"
@@ -452,44 +395,27 @@ pub fn CenterWorkspacePanel(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                let fresh_xml = match build_fresh_export_xml(&toml_for_bundle, preset_for_bundle) {
+                                let fresh_xml = match build_fresh_export_xml(&config_toml(), active_preset()) {
                                     Ok(xml) => xml,
-                                    Err(err) => {
-                                        let msg = format!("Bundle failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
+                                    Err(err) => { status_msg.set(err); return; }
                                 };
 
-                                let config = match toml::from_str::<ThemeConfig>(&toml_for_bundle) {
+                                let config = match toml::from_str::<ThemeConfig>(&config_toml()) {
                                     Ok(c) => c,
-                                    Err(err) => {
-                                        let msg = format!("Bundle failed: config error: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                        return;
-                                    }
+                                    Err(err) => { status_msg.set(format!("Config error: {}", err)); return; }
                                 };
 
                                 match crate::render::save_bundle_to_disk(&fresh_xml, "Moribund_Institute", &config.static_pages) {
-                                    Ok(msg) => {
-                                        println!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
-                                    Err(err) => {
-                                        let msg = format!("Bundle failed: {}", err);
-                                        eprintln!("{}", msg);
-                                        status_msg.set(msg);
-                                    }
+                                    Ok(msg) => status_msg.set(msg),
+                                    Err(err) => status_msg.set(format!("Bundle failed: {}", err)),
                                 }
                             },
                             "Export Theme Bundle (.zip)"
                         }
                     } else {
-                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Copy XML" }
-                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Export XML to Disk" }
-                        button { class: "editor-button editor-button-disabled", title: "Fix template integrity errors before exporting", "Export Theme Bundle (.zip)" }
+                        button { class: "editor-button editor-button-disabled", title: "Fix errors", "Copy XML" }
+                        button { class: "editor-button editor-button-disabled", title: "Fix errors", "Export XML to Disk" }
+                        button { class: "editor-button editor-button-disabled", title: "Fix errors", "Export Theme Bundle (.zip)" }
                     }
                 }
             }
@@ -502,13 +428,11 @@ fn build_fresh_export_xml(
     active_preset_name: Option<&'static str>,
 ) -> Result<String, String> {
     let config = toml::from_str::<ThemeConfig>(config_toml)
-        .map_err(|err| format!("could not parse current ThemeConfig TOML: {}", err))?;
+        .map_err(|err| format!("could not parse TOML: {}", err))?;
 
     let (light_palette, dark_palette) =
         crate::presets::resolve_palette_pair(active_preset_name, &config);
 
-    let rendered_xml =
-        crate::render::render_theme(&config, &light_palette, &dark_palette);
-        
+    let rendered_xml = crate::render::render_theme(&config, &light_palette, &dark_palette);
     crate::rehydration::inject_state(&rendered_xml, &config)
 }

@@ -60,6 +60,7 @@ pub fn mor_retro_mmorpg() -> Preset {
             footer_text: "Guild notices updated. Adventure continues.".to_string(),
             footer_license_label: "Copyright".to_string(),
             footer_license_url: "#".to_string(),
+            ..Default::default()
         },
     );
 

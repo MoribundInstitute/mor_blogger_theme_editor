@@ -144,10 +144,41 @@ impl Default for MenuLink {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+pub struct FooterColumn {
+    pub heading: String,
+    pub links: Vec<MenuLink>,
+}
+
+impl Default for FooterColumn {
+    fn default() -> Self {
+        Self {
+            heading: "Column".to_string(),
+            links: vec![
+                MenuLink {
+                    label: "Link 1".to_string(),
+                    url: "#".to_string(),
+                },
+                MenuLink {
+                    label: "Link 2".to_string(),
+                    url: "#".to_string(),
+                },
+                MenuLink {
+                    label: "Link 3".to_string(),
+                    url: "#".to_string(),
+                },
+            ],
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct FooterConfig {
     pub footer_text: String,
     pub footer_license_label: String,
     pub footer_license_url: String,
+    pub columns: Vec<FooterColumn>,
+    pub legal_links: Vec<MenuLink>,
 }
 
 impl Default for FooterConfig {
@@ -156,6 +187,68 @@ impl Default for FooterConfig {
             footer_text: "Published with Blogger.".to_string(),
             footer_license_label: "License".to_string(),
             footer_license_url: String::new(),
+            columns: vec![
+                FooterColumn {
+                    heading: "Introduction".to_string(),
+                    links: vec![MenuLink {
+                        label: "Getting Started".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+                FooterColumn {
+                    heading: "Downloads".to_string(),
+                    links: vec![MenuLink {
+                        label: "Source Code".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+                FooterColumn {
+                    heading: "Documentation".to_string(),
+                    links: vec![MenuLink {
+                        label: "Guides".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+                FooterColumn {
+                    heading: "News".to_string(),
+                    links: vec![MenuLink {
+                        label: "Announcements".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+                FooterColumn {
+                    heading: "Team".to_string(),
+                    links: vec![MenuLink {
+                        label: "Core Team".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+                FooterColumn {
+                    heading: "Donate".to_string(),
+                    links: vec![MenuLink {
+                        label: "How to contribute".to_string(),
+                        url: "/".to_string(),
+                    }],
+                },
+            ],
+            legal_links: vec![
+                MenuLink {
+                    label: "Website source code".to_string(),
+                    url: "#".to_string(),
+                },
+                MenuLink {
+                    label: "Privacy policy".to_string(),
+                    url: "#".to_string(),
+                },
+                MenuLink {
+                    label: "Terms of use".to_string(),
+                    url: "#".to_string(),
+                },
+                MenuLink {
+                    label: "Sitemap".to_string(),
+                    url: "#".to_string(),
+                },
+            ],
         }
     }
 }

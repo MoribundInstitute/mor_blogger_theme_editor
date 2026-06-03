@@ -65,6 +65,7 @@ pub fn mor_newspaper() -> Preset {
                 .to_string(),
             footer_license_label: "Terms".to_string(),
             footer_license_url: "/p/terms.html".to_string(),
+            ..Default::default()
         },
     );
 

@@ -58,6 +58,7 @@ pub fn mor_neon_cyberpunk() -> Preset {
             footer_text: "// signal integrity: nominal //".to_string(),
             footer_license_label: "wtfpl".to_string(),
             footer_license_url: "http://www.wtfpl.net/".to_string(),
+            ..Default::default()
         },
     );
 

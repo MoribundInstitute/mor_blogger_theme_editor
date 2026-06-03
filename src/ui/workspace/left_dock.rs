@@ -22,8 +22,17 @@ pub fn LeftVisualsPanel(
     on_apply_theme: EventHandler<ThemeConfig>,
     show_undocked_presets: Signal<bool>,
     show_undocked_pages: Signal<bool>,
+    mut preview_html: Signal<String>,
+    base_preview_html: ReadSignal<String>,
 ) -> Element {
     let _ = show_preview;
+
+    // Restore the normal generated theme preview when leaving Static Pages.
+    use_effect(move || {
+        if active_tab() != "Pages" && !show_undocked_pages() {
+            preview_html.set(base_preview_html());
+        }
+    });
 
     if layout() == PanelLayout::Hidden {
         return rsx! {
@@ -158,7 +167,12 @@ pub fn LeftVisualsPanel(
                     }
                 }
                 EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
-                    StaticPagesPanel { signals, show_undocked_pages }
+                    StaticPagesPanel {
+                        signals,
+                        show_undocked_pages,
+                        preview_html,
+                        base_preview_html,
+                    }
                 }
             }
         }

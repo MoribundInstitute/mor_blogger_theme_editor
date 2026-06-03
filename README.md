@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏛️ Moribund Blogger Theme Architect
+# 🏛️ MorBlogger GUI Theme Builder
 
 **A visual Blogger theme builder that handles the ugly XML machinery for you.**<br>
 Design your theme in a modern Rust-powered interface, then export clean Blogger XML, matching HTML pages, or a ready-to-upload ZIP without manually touching raw template code.

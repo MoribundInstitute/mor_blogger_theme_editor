@@ -1,52 +1,13 @@
 //! Typography panel.
 //!
-//! Three font-stack pickers (body, heading, mono), each with a dropdown of
-//! curated system stacks plus a "Custom…" option that reveals a text input.
-//! Plus four numeric/text inputs for base size, scale ratio, line height,
-//! and heading weight.
+//! Font pickers use a static local registry: no font files, no network calls,
+//! and no per-render option vector cloning. Custom entries are stored as raw
+//! names/stacks and resolved by the XML generator during export.
 
 use dioxus::prelude::*;
 
+use crate::config::fonts::{FontPreset, FONT_REGISTRY, MONO_FONT_REGISTRY};
 use crate::ui::components::inputs::{EditorCard, EditorInput};
-
-const STACK_MONO: &str = "'Courier New', Courier, monospace";
-const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-const STACK_SANS: &str =
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
-const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
-const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
-const STACK_HELVETICA: &str = "Helvetica, Arial, sans-serif";
-
-const BODY_OPTIONS: &[(&str, &str)] = &[
-    ("Serif (Georgia)", STACK_SERIF),
-    ("Sans (System)", STACK_SANS),
-    ("Sans (Helvetica)", STACK_HELVETICA),
-    ("Mono (Courier)", STACK_MONO),
-    ("Newspaper (Times)", STACK_NEWSPAPER),
-    ("System UI", STACK_SYSTEM_UI),
-];
-
-const HEADING_OPTIONS: &[(&str, &str)] = &[
-    ("Match body", ""),
-    ("Serif (Georgia)", STACK_SERIF),
-    ("Sans (System)", STACK_SANS),
-    ("Sans (Helvetica)", STACK_HELVETICA),
-    ("Mono (Courier)", STACK_MONO),
-    ("Newspaper (Times)", STACK_NEWSPAPER),
-    ("System UI", STACK_SYSTEM_UI),
-];
-
-const MONO_OPTIONS: &[(&str, &str)] = &[
-    ("Courier New", STACK_MONO),
-    (
-        "Menlo / Consolas",
-        "Menlo, Consolas, 'Liberation Mono', monospace",
-    ),
-    (
-        "SF Mono",
-        "'SF Mono', SFMono-Regular, ui-monospace, monospace",
-    ),
-];
 
 const WEIGHT_OPTIONS: &[(&str, &str)] = &[
     ("Regular (400)", "400"),
@@ -54,6 +15,8 @@ const WEIGHT_OPTIONS: &[(&str, &str)] = &[
     ("Semibold (600)", "600"),
     ("Bold (700)", "700"),
 ];
+
+const CUSTOM_SENTINEL: &str = "__custom__";
 
 #[component]
 pub fn TypographyPanel(
@@ -69,22 +32,31 @@ pub fn TypographyPanel(
         EditorCard {
             title: "Typography".to_string(),
 
+            p {
+                class: "editor-mini-label",
+                title: "The app stays offline. Exported Blogger XML gets Google Fonts links for active Google font names.",
+                "Offline preview uses local fallbacks. Export loads Google Fonts on live Blogger. ⓘ"
+            }
+
             FontStackPicker {
                 label: "Body Font".to_string(),
                 value: body_font_stack,
-                options: BODY_OPTIONS.to_vec(),
+                options: FONT_REGISTRY,
+                include_match_body: false,
             }
 
             FontStackPicker {
                 label: "Heading Font".to_string(),
                 value: heading_font_stack,
-                options: HEADING_OPTIONS.to_vec(),
+                options: FONT_REGISTRY,
+                include_match_body: true,
             }
 
             FontStackPicker {
                 label: "Monospace Font".to_string(),
                 value: mono_font_stack,
-                options: MONO_OPTIONS.to_vec(),
+                options: MONO_FONT_REGISTRY,
+                include_match_body: false,
             }
 
             EditorInput {
@@ -111,31 +83,38 @@ pub fn TypographyPanel(
             SimpleSelect {
                 label: "Heading Weight".to_string(),
                 value: heading_weight,
-                options: WEIGHT_OPTIONS.to_vec(),
+                options: WEIGHT_OPTIONS,
             }
         }
     }
 }
 
-const CUSTOM_SENTINEL: &str = "__custom__";
-
 #[component]
 fn FontStackPicker(
     label: String,
     value: Signal<String>,
-    options: Vec<(&'static str, &'static str)>,
+    options: &'static [FontPreset],
+    include_match_body: bool,
 ) -> Element {
     let mut value = value;
-    let opts = options.clone();
-
     let current = value.read().clone();
-    let selected_key = opts
-        .iter()
-        .find(|(_, css)| **css == current)
-        .map(|_| current.clone())
-        .unwrap_or_else(|| CUSTOM_SENTINEL.to_string());
+    let current_trimmed = current.trim();
+
+    let selected_key = if include_match_body && current_trimmed.is_empty() {
+        "__match_body__".to_string()
+    } else {
+        options
+            .iter()
+            .find(|font| {
+                font.name.eq_ignore_ascii_case(current_trimmed)
+                    || font.css_stack.eq_ignore_ascii_case(current_trimmed)
+            })
+            .map(|font| font.name.to_string())
+            .unwrap_or_else(|| CUSTOM_SENTINEL.to_string())
+    };
 
     let is_custom = selected_key == CUSTOM_SENTINEL;
+    let current_is_preset = !is_custom;
 
     rsx! {
         div {
@@ -151,24 +130,34 @@ fn FontStackPicker(
                 value: "{selected_key}",
                 onchange: move |e| {
                     let chosen = e.value();
+
                     if chosen == CUSTOM_SENTINEL {
-                        let existing = value.read().clone();
-                        let on_preset = opts.iter().any(|(_, css)| *css == existing);
-                        if on_preset {
+                        if current_is_preset {
                             value.set(String::new());
                         }
+                    } else if chosen == "__match_body__" {
+                        value.set(String::new());
                     } else {
                         value.set(chosen);
                     }
                 },
 
-                for (name, css) in opts.iter() {
+                if include_match_body {
                     option {
-                        value: "{css}",
-                        selected: *css == selected_key.as_str(),
-                        "{name}"
+                        value: "__match_body__",
+                        selected: selected_key == "__match_body__",
+                        "Match body"
                     }
                 }
+
+                for font in options.iter() {
+                    option {
+                        value: "{font.name}",
+                        selected: selected_key == font.name,
+                        "{font.name} ({font.category})"
+                    }
+                }
+
                 option {
                     value: "{CUSTOM_SENTINEL}",
                     selected: is_custom,
@@ -179,14 +168,14 @@ fn FontStackPicker(
             if is_custom {
                 input {
                     r#type: "text",
-                    value: "{value}",
-                    placeholder: "e.g., 'Fira Code' or 'Georgia, serif'",
+                    value: "{current}",
+                    placeholder: "e.g. Fira Code, Noto Serif KR, or Georgia, serif",
                     class: "editor-field",
                     oninput: move |e| value.set(e.value()),
                 }
                 p {
                     class: "editor-mini-label",
-                    "Type a Google Font name to auto-load it, or paste a standard CSS stack."
+                    "Type a Google Font family name, or paste a full CSS stack."
                 }
             }
         }
@@ -197,7 +186,7 @@ fn FontStackPicker(
 fn SimpleSelect(
     label: String,
     value: Signal<String>,
-    options: Vec<(&'static str, &'static str)>,
+    options: &'static [(&'static str, &'static str)],
 ) -> Element {
     let mut value = value;
     let current = value.read().clone();

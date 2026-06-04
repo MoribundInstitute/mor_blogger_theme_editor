@@ -236,6 +236,7 @@ fn apply_color_vars_to_config(vars: &HashMap<String, String>, config: &mut Theme
         fg_muted,
         accent,
         border,
+        ..Default::default()
     };
 
     config.background = BackgroundConfig {

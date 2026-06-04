@@ -82,6 +82,7 @@ pub fn mor_fluid_interactive() -> Preset {
                 fg_muted: "#9fb8b0".to_string(),
                 accent: "#05a581".to_string(),
                 border: "#27423d".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {
@@ -98,6 +99,7 @@ pub fn mor_fluid_interactive() -> Preset {
                 fg_muted: "#58706a".to_string(),
                 accent: "#087f67".to_string(),
                 border: "#a9cbc0".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {

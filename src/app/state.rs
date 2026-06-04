@@ -30,6 +30,12 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let fg_muted = use_signal(|| defaults.colors.fg_muted.clone());
     let accent = use_signal(|| defaults.colors.accent.clone());
     let border = use_signal(|| defaults.colors.border.clone());
+    let panel_border_width = use_signal(|| defaults.colors.panel_border_width.clone());
+    let glow_spread = use_signal(|| defaults.colors.glow_spread.clone());
+    let hover_scale = use_signal(|| defaults.colors.hover_scale.clone());
+    let panel_border_image_url = use_signal(|| defaults.colors.panel_border_image_url.clone());
+    let panel_border_image_slice = use_signal(|| defaults.colors.panel_border_image_slice.clone());
+    let panel_border_image_repeat = use_signal(|| defaults.colors.panel_border_image_repeat.clone());
 
     let btn_radius = use_signal(|| defaults.buttons.radius.clone());
     let btn_border_width = use_signal(|| defaults.buttons.border_width.clone());
@@ -90,6 +96,12 @@ pub fn use_theme_app_state() -> ThemeAppState {
         fg_muted,
         accent,
         border,
+        panel_border_width,
+        glow_spread,
+        hover_scale,
+        panel_border_image_url,
+        panel_border_image_slice,
+        panel_border_image_repeat,
         btn_radius,
         btn_border_width,
         btn_text_transform,
@@ -141,6 +153,13 @@ pub fn use_theme_app_state() -> ThemeAppState {
             fg_muted: fg_muted(),
             accent: accent(),
             border: border(),
+            panel_border_width: panel_border_width(),
+            glow_spread: glow_spread(),
+            hover_scale: hover_scale(),
+            panel_border_image_url: panel_border_image_url(),
+            panel_border_image_slice: panel_border_image_slice(),
+            panel_border_image_repeat: panel_border_image_repeat(),
+            ..Default::default()
         },
         icons: icons(),
         buttons: crate::config::ButtonConfig {

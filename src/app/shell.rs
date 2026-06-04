@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use mor_rust_dioxus_ui_kit::{MorStyleProvider, MorShell, MorHeaderBar, MorWindowTitle, Menu, MenuItem, MenuSeparator, Modal};
+use mor_rust_dioxus_ui_kit::{MorStyleProvider, MorShell, MorHeaderBar, MorWindowTitle, Modal};
 use mor_rust_dioxus_ui_kit::theme::GTK4_DARK_TOML;
 
 use crate::config::ThemeConfig;
@@ -9,7 +9,7 @@ use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
-use crate::ui::workspace::layout::PanelLayout;
+use crate::ui::shell::menu_bar::MenuBar;
 
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
@@ -32,10 +32,6 @@ pub fn render_app_shell(
     
     let show_undocked_pages = use_signal(|| false);
 
-    let mut left_layout = layout.left_layout;
-    let mut right_layout = layout.right_layout;
-
-    let mut open_menu = use_signal(|| None::<&'static str>);
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
 
@@ -67,53 +63,7 @@ pub fn render_app_shell(
                 show_controls: show_window_buttons,
                 
                 start: rsx! {
-                    Menu { label: "File", id: "file", open_menu: open_menu,
-                        MenuItem { 
-                            label: "Preferences...".to_string(), 
-                            shortcut: Some("Ctrl+,".to_string()), 
-                            on_action: move |_| { show_prefs.set(true); open_menu.set(None); } 
-                        }
-                        MenuSeparator {}
-                        MenuItem { 
-                            label: "Quit".to_string(), 
-                            shortcut: Some("Ctrl+Q".to_string()), 
-                            on_action: move |_| -> () { std::process::exit(0); } 
-                        }
-                    }
-                    Menu { label: "View", id: "view", open_menu: open_menu,
-                        MenuItem {
-                            label: "Toggle Left Dock".to_string(),
-                            shortcut: Some("Ctrl+B".to_string()),
-                            on_action: move |_| {
-                                if left_layout() == PanelLayout::Hidden { left_layout.set(PanelLayout::Split); }
-                                else { left_layout.set(PanelLayout::Hidden); }
-                                open_menu.set(None);
-                            }
-                        }
-                        MenuItem {
-                            label: "Toggle Right Dock".to_string(),
-                            shortcut: Some("Ctrl+E".to_string()),
-                            on_action: move |_| {
-                                if right_layout() == PanelLayout::Hidden { right_layout.set(PanelLayout::Split); }
-                                else { right_layout.set(PanelLayout::Hidden); }
-                                open_menu.set(None);
-                            }
-                        }
-                        MenuSeparator {}
-                        MenuItem {
-                            label: "Undocked Presets".to_string(),
-                            on_action: move |_| {
-                                show_undocked_presets.set(!show_undocked_presets());
-                                open_menu.set(None);
-                            }
-                        }
-                    }
-                    Menu { label: "Help", id: "help", open_menu: open_menu,
-                        MenuItem { 
-                            label: "About Architect".to_string(), 
-                            on_action: move |_| { show_about.set(true); open_menu.set(None); } 
-                        }
-                    }
+                    div { style: "width: 16px;" }
                 },
 
                 center: rsx! {
@@ -170,6 +120,10 @@ pub fn render_app_shell(
             }
 
             div { class: "editor-shell", style: "height: 100%;",
+                MenuBar {
+                    show_prefs,
+                    show_about,
+                }
                 
                 div {
                     class: "editor-main",

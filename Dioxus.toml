@@ -1,0 +1,30 @@
+[application]
+name = "MorBlogger Theme Editor"
+asset_dir = "assets"
+
+[web.app]
+title = "MorBlogger Theme Editor"
+
+[web.watcher]
+reload_html = true
+watch_path = ["src", "assets"]
+
+[web.resource]
+style = []
+
+[web.resource.dev]
+style = []
+
+[bundle]
+identifier = "com.moribundinstitute.morblogger-theme-editor"
+publisher = "Moribund Institute"
+icon = [
+    "icons/32x32.png",
+    "icons/64x64.png",
+    "icons/128x128.png",
+    "icons/256x256.png",
+    "icons/icon.ico"
+]
+category = "DeveloperTool"
+short_description = "A visual Blogger theme editor."
+long_description = "MorBlogger Theme Editor is a Dioxus desktop app for visually building, previewing, and exporting Blogger themes."

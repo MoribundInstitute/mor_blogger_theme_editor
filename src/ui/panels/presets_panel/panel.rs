@@ -405,17 +405,46 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             }
 
             div {
-                class: "preset-rail",
-                style: "display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; scroll-snap-type: x proximity;",
+                style: "display: flex; align-items: center; gap: 4px; margin-top: 16px;",
 
-                for preset in presets.iter() {
-                    PresetCard {
-                        key: "{preset.id}",
-                        preset: preset.clone(),
-                        is_active: active() == Some(preset.id),
-                        signals: props.signals,
-                        active_preset: active,
+                button {
+                    class: "editor-mini-button",
+                    style: "padding: 16px 4px; font-size: 10px;",
+                    title: "Scroll Left",
+                    onclick: move |_| {
+                        let _ = dioxus::document::eval(
+                            "document.getElementById('presets-scroll-rail').scrollBy({ left: -220, behavior: 'smooth' });"
+                        );
+                    },
+                    "◀"
+                }
+
+                div {
+                    id: "presets-scroll-rail",
+                    class: "preset-rail",
+                    style: "display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; scroll-snap-type: x proximity; flex: 1;",
+
+                    for preset in presets.iter() {
+                        PresetCard {
+                            key: "{preset.id}",
+                            preset: preset.clone(),
+                            is_active: active() == Some(preset.id),
+                            signals: props.signals,
+                            active_preset: active,
+                        }
                     }
+                }
+
+                button {
+                    class: "editor-mini-button",
+                    style: "padding: 16px 4px; font-size: 10px;",
+                    title: "Scroll Right",
+                    onclick: move |_| {
+                        let _ = dioxus::document::eval(
+                            "document.getElementById('presets-scroll-rail').scrollBy({ left: 220, behavior: 'smooth' });"
+                        );
+                    },
+                    "▶"
                 }
             }
         }

@@ -4,6 +4,7 @@
 //! source of truth. The old `src/template.xml` monolith should be kept only as
 //! a reference/legacy fallback, not as the export input.
 
+use crate::config::fonts::{build_google_font_imports, resolve_font_stack_with_fallback};
 use crate::config::{BackgroundMode, ThemeConfig};
 use crate::presets::PresetPalette;
 use crate::render::template_resolver::resolve_template_parts;
@@ -12,7 +13,7 @@ use super::ads::{
     render_ads_consent_banner, render_ads_head_script, render_ads_runtime_script,
     render_ads_widget_sidebar,
 };
-use super::util::{build_google_fonts_link, escape_attr, escape_html, menu_link_or_empty};
+use super::util::{escape_attr, escape_html, menu_link_or_empty};
 use super::xml_parts::header_generator::render_header_sockets;
 
 fn hex_to_rgba(hex: &str, alpha: f32) -> String {
@@ -42,6 +43,35 @@ fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
     } else {
         primary
     }
+}
+
+fn sanitize_border_image_repeat(value: &str) -> &str {
+    match value.trim() {
+        "repeat" => "repeat",
+        "round" => "round",
+        "space" => "space",
+        "stretch" => "stretch",
+        _ => "stretch",
+    }
+}
+
+fn generate_border_image_css(url: &str, slice: &str, repeat: &str) -> String {
+    let url = url.trim();
+
+    if url.is_empty() {
+        return String::new();
+    }
+
+    let slice = first_non_empty(slice, "30%");
+    let repeat = sanitize_border_image_repeat(repeat);
+
+    format!(
+        "border-style: solid;
+  border-image: url('{}') {} {};",
+        escape_attr(url),
+        escape_attr(slice),
+        escape_attr(repeat)
+    )
 }
 
 fn generate_background_css(bg: &BackgroundMode) -> String {
@@ -106,15 +136,21 @@ pub(super) fn render_template(
         _ => String::new(),
     };
 
+    let body_stack =
+        resolve_font_stack_with_fallback(&config.typography.body_font_stack, "serif");
+
     let heading_stack = if config.typography.heading_font_stack.trim().is_empty() {
-        config.typography.body_font_stack.clone()
+        body_stack.clone()
     } else {
-        config.typography.heading_font_stack.clone()
+        resolve_font_stack_with_fallback(&config.typography.heading_font_stack, "serif")
     };
 
-    let google_fonts_link = build_google_fonts_link(&[
+    let mono_stack =
+        resolve_font_stack_with_fallback(&config.typography.mono_font_stack, "monospace");
+
+    let google_fonts_link = build_google_font_imports(&[
         &config.typography.body_font_stack,
-        &heading_stack,
+        &config.typography.heading_font_stack,
         &config.typography.mono_font_stack,
     ]);
 
@@ -132,6 +168,29 @@ pub(super) fn render_template(
     let color_accent_shadow = hex_to_rgba(&config.colors.accent, 0.25);
     let color_accent_wash = hex_to_rgba(&config.colors.accent, 0.08);
     let fluid_glow = fluid_glow_css(&config.colors.accent);
+    let glow_spread = first_non_empty(&config.colors.glow_spread, "8px");
+    let panel_border_width = first_non_empty(&config.colors.panel_border_width, "1px");
+    let panel_border_image_slice = first_non_empty(&config.colors.panel_border_image_slice, "30%");
+    let panel_border_image_repeat = sanitize_border_image_repeat(&config.colors.panel_border_image_repeat);
+    let panel_border_image_css = generate_border_image_css(
+        &config.colors.panel_border_image_url,
+        panel_border_image_slice,
+        panel_border_image_repeat,
+    );
+    let light_panel_border_image_slice = first_non_empty(&light_palette.colors.panel_border_image_slice, "30%");
+    let light_panel_border_image_repeat = sanitize_border_image_repeat(&light_palette.colors.panel_border_image_repeat);
+    let light_panel_border_image_css = generate_border_image_css(
+        &light_palette.colors.panel_border_image_url,
+        light_panel_border_image_slice,
+        light_panel_border_image_repeat,
+    );
+    let dark_panel_border_image_slice = first_non_empty(&dark_palette.colors.panel_border_image_slice, "30%");
+    let dark_panel_border_image_repeat = sanitize_border_image_repeat(&dark_palette.colors.panel_border_image_repeat);
+    let dark_panel_border_image_css = generate_border_image_css(
+        &dark_palette.colors.panel_border_image_url,
+        dark_panel_border_image_slice,
+        dark_panel_border_image_repeat,
+    );
 
     let site_home_url = first_non_empty(&config.site.home_url, "/");
     let favicon_url = first_non_empty(&config.assets.favicon_url, "https://imgur.com/QZ7pbY6");
@@ -159,6 +218,7 @@ pub(super) fn render_template(
         .replace("{{WIDGET_ADSENSE_SIDEBAR}}", &ads_widget_sidebar)
         // Head / SEO.
         .replace("{{GOOGLE_FONTS_LINK}}", &google_fonts_link)
+        .replace("{{GOOGLE_FONT_IMPORTS}}", &google_fonts_link)
         .replace("{{ADS_HEAD_SCRIPT}}", &ads_head_script)
         .replace("{{CUSTOM_HEAD_HTML}}", "")
         .replace(
@@ -407,6 +467,13 @@ pub(super) fn render_template(
         .replace("{{LIGHT_FG_MUTED}}", &escape_attr(&light_palette.colors.fg_muted))
         .replace("{{LIGHT_ACCENT}}", &escape_attr(&light_palette.colors.accent))
         .replace("{{LIGHT_BORDER}}", &escape_attr(&light_palette.colors.border))
+        .replace("{{LIGHT_PANEL_BORDER_WIDTH}}", &escape_attr(&light_palette.colors.panel_border_width))
+        .replace("{{LIGHT_GLOW_SPREAD}}", &escape_attr(&light_palette.colors.glow_spread))
+        .replace("{{LIGHT_HOVER_SCALE}}", &escape_attr(&light_palette.colors.hover_scale))
+        .replace("{{LIGHT_PANEL_BORDER_IMAGE_URL}}", &escape_attr(&light_palette.colors.panel_border_image_url))
+        .replace("{{LIGHT_PANEL_BORDER_IMAGE_SLICE}}", &escape_attr(light_panel_border_image_slice))
+        .replace("{{LIGHT_PANEL_BORDER_IMAGE_REPEAT}}", &escape_attr(light_panel_border_image_repeat))
+        .replace("{{LIGHT_PANEL_BORDER_IMAGE_CSS}}", &light_panel_border_image_css)
         .replace("{{LIGHT_BACKGROUND_TILE_CSS}}", &light_bg_css)
 
         // --- INJECT DARK PALETTE ---
@@ -417,6 +484,13 @@ pub(super) fn render_template(
         .replace("{{DARK_FG_MUTED}}", &escape_attr(&dark_palette.colors.fg_muted))
         .replace("{{DARK_ACCENT}}", &escape_attr(&dark_palette.colors.accent))
         .replace("{{DARK_BORDER}}", &escape_attr(&dark_palette.colors.border))
+        .replace("{{DARK_PANEL_BORDER_WIDTH}}", &escape_attr(&dark_palette.colors.panel_border_width))
+        .replace("{{DARK_GLOW_SPREAD}}", &escape_attr(&dark_palette.colors.glow_spread))
+        .replace("{{DARK_HOVER_SCALE}}", &escape_attr(&dark_palette.colors.hover_scale))
+        .replace("{{DARK_PANEL_BORDER_IMAGE_URL}}", &escape_attr(&dark_palette.colors.panel_border_image_url))
+        .replace("{{DARK_PANEL_BORDER_IMAGE_SLICE}}", &escape_attr(dark_panel_border_image_slice))
+        .replace("{{DARK_PANEL_BORDER_IMAGE_REPEAT}}", &escape_attr(dark_panel_border_image_repeat))
+        .replace("{{DARK_PANEL_BORDER_IMAGE_CSS}}", &dark_panel_border_image_css)
         .replace("{{DARK_BACKGROUND_TILE_CSS}}", &dark_bg_css)
 
         // Keep these legacy active-config fallbacks so we don't break older templates
@@ -424,15 +498,9 @@ pub(super) fn render_template(
         .replace("{{COLOR_ACCENT_SHADOW}}", &escape_attr(&color_accent_shadow))
         .replace("{{COLOR_ACCENT_WASH}}", &escape_attr(&color_accent_wash))
         .replace("{{FLUID_GLOW_CSS}}", &fluid_glow)
-        .replace(
-            "{{FONT_BODY}}",
-            &escape_attr(&config.typography.body_font_stack),
-        )
+        .replace("{{FONT_BODY}}", &escape_attr(&body_stack))
         .replace("{{FONT_HEADING}}", &escape_attr(&heading_stack))
-        .replace(
-            "{{FONT_MONO}}",
-            &escape_attr(&config.typography.mono_font_stack),
-        )
+        .replace("{{FONT_MONO}}", &escape_attr(&mono_stack))
         .replace("{{BASE_SIZE}}", &escape_attr(&config.typography.base_size))
         .replace(
             "{{SCALE_RATIO}}",
@@ -455,14 +523,33 @@ pub(super) fn render_template(
             "{{BTN_TEXT_TRANSFORM}}",
             &escape_attr(&config.buttons.text_transform),
         )
+        .replace("{{PANEL_BORDER_WIDTH}}", &escape_attr(panel_border_width))
+        .replace("{{CONTAINER_BORDER_WIDTH}}", &escape_attr(panel_border_width))
+        .replace("{{FRAME_BORDER_WIDTH}}", &escape_attr(panel_border_width))
+        .replace("{{PANEL_BORDER_IMAGE_URL}}", &escape_attr(&config.colors.panel_border_image_url))
+        .replace("{{PANEL_BORDER_IMAGE_SLICE}}", &escape_attr(panel_border_image_slice))
+        .replace("{{PANEL_BORDER_IMAGE_REPEAT}}", &escape_attr(panel_border_image_repeat))
+        .replace("{{PANEL_BORDER_IMAGE_CSS}}", &panel_border_image_css)
+        .replace("{{CONTAINER_BORDER_IMAGE_CSS}}", &panel_border_image_css)
+        .replace("{{FRAME_BORDER_IMAGE_CSS}}", &panel_border_image_css)
+        .replace("{{GLOW_SPREAD}}", &escape_attr(glow_spread))
+        .replace("{{HOVER_SCALE}}", &escape_attr(&config.colors.hover_scale))
         .replace("{{SIDEBAR_WIDTH}}", "300px")
         .replace(
             "{{GLOW_SOFT}}",
-            &format!("0 0 4px {}", escape_attr(&color_accent_soft)),
+            &format!(
+                "0 0 calc({} / 2) {}",
+                escape_attr(glow_spread),
+                escape_attr(&color_accent_soft)
+            ),
         )
         .replace(
             "{{GLOW_STRONG}}",
-            &format!("0 0 8px {}", escape_attr(&config.colors.accent)),
+            &format!(
+                "0 0 {} {}",
+                escape_attr(glow_spread),
+                escape_attr(&config.colors.accent)
+            ),
         )
         .replace("{{SHADOW_ELEVATED}}", "0 18px 45px rgba(0, 0, 0, 0.65)")
         .replace("{{HEADER_LOGO_SIZE}}", "72px")

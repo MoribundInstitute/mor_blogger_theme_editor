@@ -1,4 +1,5 @@
 pub mod ads;
+pub mod fonts;
 pub mod gtk_theme;
 pub mod pages;
 pub mod styling;
@@ -11,10 +12,11 @@ use serde::{Deserialize, Serialize};
 // application can reach the config subtypes directly.
 // ---------------------------------------------------------
 pub use ads::*;
+pub use fonts::*;
+pub use gtk_theme::*;
 pub use pages::*;
 pub use styling::*;
 pub use template_pack::*;
-pub use gtk_theme::*; // Added to expose the refactored GTK module types
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]

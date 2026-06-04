@@ -81,6 +81,7 @@ pub fn mor_glassmorphism() -> Preset {
                 fg_muted: "#a8aedd".to_string(),
                 accent: "#8b5cf6".to_string(),
                 border: "#3d4280".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {
@@ -99,6 +100,7 @@ pub fn mor_glassmorphism() -> Preset {
                 fg_muted: "#6b7099".to_string(),
                 accent: "#7c3aed".to_string(),
                 border: "#c8d2f0".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {

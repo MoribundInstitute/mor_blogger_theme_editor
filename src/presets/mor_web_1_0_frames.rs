@@ -73,6 +73,7 @@ pub fn mor_web_1_0_frames() -> Preset {
                 fg_muted: "#93a1a1".to_string(),
                 accent: "#b58900".to_string(),
                 border: "#002b36".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {
@@ -89,6 +90,7 @@ pub fn mor_web_1_0_frames() -> Preset {
                 fg_muted: "#404040".to_string(),
                 accent: "#0000ee".to_string(), 
                 border: "#808080".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {

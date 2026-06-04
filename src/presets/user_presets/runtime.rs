@@ -106,6 +106,13 @@ fn palette_from_config(config: &ThemeConfig) -> PresetPalette {
             fg_muted: config.colors.fg_muted.clone(),
             accent: config.colors.accent.clone(),
             border: config.colors.border.clone(),
+            panel_border_width: config.colors.panel_border_width.clone(),
+            glow_spread: config.colors.glow_spread.clone(),
+            hover_scale: config.colors.hover_scale.clone(),
+            panel_border_image_url: config.colors.panel_border_image_url.clone(),
+            panel_border_image_slice: config.colors.panel_border_image_slice.clone(),
+            panel_border_image_repeat: config.colors.panel_border_image_repeat.clone(),
+            ..Default::default()
         },
         background: config.background.clone(),
     }

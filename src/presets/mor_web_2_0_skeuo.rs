@@ -78,6 +78,7 @@ pub fn mor_web_2_0_skeuo() -> Preset {
                 fg_muted: "#9bb0d0".to_string(),
                 accent: "#4aa3ff".to_string(),
                 border: "#3d4d6a".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {
@@ -98,6 +99,7 @@ pub fn mor_web_2_0_skeuo() -> Preset {
                 fg_muted: "#5a6b80".to_string(),
                 accent: "#1e6fd9".to_string(),
                 border: "#a8bcd4".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {

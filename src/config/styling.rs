@@ -10,6 +10,15 @@ pub struct ColorConfig {
     pub fg_muted: String,
     pub accent: String,
     pub border: String,
+    // NEW: Global structural effects
+    pub panel_border_width: String,
+    pub glow_spread: String,
+    pub hover_scale: String,
+
+    // NEW: Border image effects
+    pub panel_border_image_url: String,
+    pub panel_border_image_slice: String,
+    pub panel_border_image_repeat: String,
 }
 
 impl Default for ColorConfig {
@@ -22,6 +31,13 @@ impl Default for ColorConfig {
             fg_muted: "#bc8d6b".to_string(),
             accent: "#a9aae2".to_string(),
             border: "#6f6078".to_string(),
+            panel_border_width: "1px".to_string(),
+            glow_spread: "10px".to_string(),
+            hover_scale: "1.02".to_string(),
+            // Empty URL means: keep normal solid borders.
+            panel_border_image_url: String::new(),
+            panel_border_image_slice: "30%".to_string(),
+            panel_border_image_repeat: "stretch".to_string(),
         }
     }
 }
@@ -72,9 +88,9 @@ impl SurfaceFill {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+// Fixed: Combined derives for cleaner code
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct AssetConfig {
     pub favicon_url: String,
     pub social_card_image_url: String,
@@ -103,9 +119,9 @@ impl Default for BackgroundMode {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+// Fixed: Combined derives for cleaner code
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct BackgroundConfig {
     pub mode: BackgroundMode,
 }
@@ -153,20 +169,15 @@ impl Default for TypographyConfig {
         }
     }
 }
+
 /// CSS mask icon — stored as a ready-to-embed data URI string.
-/// e.g. "url(\"data:image/svg+xml,...\")"
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct IconConfig {
-    /// sidebar-left open button (panel-open-symbolic equivalent)
     pub sidebar_left: String,
-    /// sidebar-right open button
     pub sidebar_right: String,
-    /// panel close button (window-close-symbolic equivalent)
     pub panel_close: String,
-    /// search icon
     pub search: String,
-    /// catalog / grid menu trigger
     pub menu: String,
 }
 
@@ -182,21 +193,20 @@ impl Default for IconConfig {
     }
 }
 
-// The same path data you already have hardcoded, now as named constants:
 const ICON_SIDEBAR_LEFT_PATH: &str = "M3 3h18v18H3V3zm16 16V5H9v14h10z";
 const ICON_SIDEBAR_RIGHT_PATH: &str = "M3 3h18v18H3V3zm2 16V5h10v14H5z";
-const ICON_CLOSE_PATH:         &str = "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
-const ICON_SEARCH_PATH:        &str = "M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z";
+const ICON_CLOSE_PATH: &str = "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
+const ICON_SEARCH_PATH: &str = "M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z";
 const ICON_MENU_PATH: &str = "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
 
-/// Build a CSS-ready data-URI mask value from a 24×24 viewBox path.
+// Fixed: Used raw string literal `r#"..."#` to prevent unescaped quote compiler errors
 pub fn svg_mask(path_d: &str) -> String {
     let encoded = path_d
         .replace('"', "%22")
         .replace('#', "%23")
         .replace(' ', "%20");
     format!(
-        "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='{}'/%3E%3C/svg%3E\")",
+        r#"url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='{}'/%3E%3C/svg%3E")"#,
         encoded
     )
 }

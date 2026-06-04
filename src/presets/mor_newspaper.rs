@@ -86,6 +86,7 @@ pub fn mor_newspaper() -> Preset {
                 fg_muted: "#9a917f".to_string(),
                 accent: "#c75148".to_string(),
                 border: "#3a3730".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {
@@ -104,6 +105,7 @@ pub fn mor_newspaper() -> Preset {
                 fg_muted: "#5c554b".to_string(),
                 accent: "#a01818".to_string(),
                 border: "#c2b89e".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {

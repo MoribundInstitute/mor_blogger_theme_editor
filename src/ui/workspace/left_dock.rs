@@ -5,6 +5,7 @@ use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::background_panel::BackgroundPanel;
 use crate::ui::panels::buttons_panel::ButtonsPanel;
 use crate::ui::panels::colors_panel::ColorsPanel;
+use crate::ui::panels::effects_panel::EffectsPanel;
 use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
 use crate::ui::panels::presets_panel::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::static_pages_panel::StaticPagesPanel;
@@ -143,6 +144,16 @@ pub fn LeftVisualsPanel(
                         fg_muted: signals.fg_muted,
                         accent: signals.accent,
                         border: signals.border,
+                    }
+                }
+                EditorAccordion { id: "Effects", title: "Borders & Effects", active: active_tab,
+                    EffectsPanel {
+                        panel_border_width: signals.panel_border_width,
+                        glow_spread: signals.glow_spread,
+                        hover_scale: signals.hover_scale,
+                        panel_border_image_url: signals.panel_border_image_url,
+                        panel_border_image_slice: signals.panel_border_image_slice,
+                        panel_border_image_repeat: signals.panel_border_image_repeat,
                     }
                 }
                 EditorAccordion { id: "Background", title: "Background", active: active_tab,

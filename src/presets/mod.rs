@@ -119,6 +119,7 @@ pub fn build_base(
             fg_muted: "#aaa".to_string(),
             accent: "#fff".to_string(),
             border: "#444".to_string(),
+            ..Default::default()
         },
         icons: IconConfig::default(),
         background: BackgroundConfig {

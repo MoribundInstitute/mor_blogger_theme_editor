@@ -9,8 +9,8 @@ use crate::config::ads::AdsConfig;
 pub fn default_theme_config() -> ThemeConfig {
     ThemeConfig {
         site: SiteConfig {
-            site_title: "Moribund Institute".to_string(),
-            site_subtitle: "A minimal approach to lexicography.".to_string(),
+            site_title: "Your Website Title Here".to_string(),
+            site_subtitle: "A blurb about your site here".to_string(),
             header_logo_url: "".to_string(),
             home_url: "/".to_string(),
         },
@@ -22,6 +22,7 @@ pub fn default_theme_config() -> ThemeConfig {
             fg_muted:    "#495265".to_string(),
             accent:      "#5271ad".to_string(),
             border:      "#3b4252".to_string(),
+            ..Default::default()
         },
         typography: TypographyConfig {
             body_font_stack:    "monospace".to_string(),
@@ -47,12 +48,12 @@ pub fn default_theme_config() -> ThemeConfig {
         ads:          AdsConfig::default(),
 
         template_pack: TemplatePackConfig {
-            header_variant:        "mor".to_string(),
+            header_variant:        "mor_header_baseline".to_string(),
             main_variant:          "sidebars".to_string(),
             content_variant:       "blog_standard".to_string(),
             left_sidebar_variant:  "blogger_left".to_string(),
             right_sidebar_variant: "toc_right".to_string(),
-            footer_variant:        "mor".to_string(),
+            footer_variant:        "MorFooterMega".to_string(),
             script_variant:        "mor_panels".to_string(),
             icon_pack:             "default".to_string(),
         },

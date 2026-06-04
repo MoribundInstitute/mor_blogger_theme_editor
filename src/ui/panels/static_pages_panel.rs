@@ -103,14 +103,44 @@ pub fn StaticPagesPanel(
 
             // Tab navigation
             div {
-                style: "display: flex; gap: 8px; margin: 20px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; overflow-x: auto;",
-                for (id, label) in TABS.iter().copied() {
-                    button {
-                        key: "{id}",
-                        class: "editor-button",
-                        onclick: move |_| active_tab.set(id),
-                        "{label}"
+                style: "display: flex; align-items: center; gap: 6px; margin: 20px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;",
+
+                button {
+                    class: "editor-mini-button",
+                    style: "padding: 6px 4px; font-size: 10px;",
+                    title: "Scroll Left",
+                    onclick: move |_| {
+                        let _ = dioxus::document::eval(
+                            "document.getElementById('pages-scroll-tabs').scrollBy({ left: -150, behavior: 'smooth' });"
+                        );
+                    },
+                    "◀"
+                }
+
+                div {
+                    id: "pages-scroll-tabs",
+                    style: "display: flex; gap: 8px; overflow-x: auto; flex: 1; padding-bottom: 4px;",
+
+                    for (id, label) in TABS.iter().copied() {
+                        button {
+                            key: "{id}",
+                            class: if active_tab() == id { "editor-button editor-button-active" } else { "editor-button" },
+                            onclick: move |_| active_tab.set(id),
+                            "{label}"
+                        }
                     }
+                }
+
+                button {
+                    class: "editor-mini-button",
+                    style: "padding: 6px 4px; font-size: 10px;",
+                    title: "Scroll Right",
+                    onclick: move |_| {
+                        let _ = dioxus::document::eval(
+                            "document.getElementById('pages-scroll-tabs').scrollBy({ left: 150, behavior: 'smooth' });"
+                        );
+                    },
+                    "▶"
                 }
             }
 

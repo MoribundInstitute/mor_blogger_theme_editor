@@ -80,6 +80,7 @@ pub fn mor_retro_mmorpg() -> Preset {
                 fg_muted: "#b8a88d".to_string(),
                 accent: "#ffae42".to_string(),
                 border: "#22160f".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {
@@ -98,6 +99,7 @@ pub fn mor_retro_mmorpg() -> Preset {
                 fg_muted: "#c9b99a".to_string(),
                 accent: "#ffd15a".to_string(),
                 border: "#2b1d14".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Gradient {

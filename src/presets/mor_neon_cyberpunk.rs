@@ -77,6 +77,7 @@ pub fn mor_neon_cyberpunk() -> Preset {
                 fg_muted: "#6ee7ff".to_string(),
                 accent: "#ff00ff".to_string(),
                 border: "#ff00ff".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {
@@ -95,6 +96,7 @@ pub fn mor_neon_cyberpunk() -> Preset {
                 fg_muted: "#a89cb8".to_string(),
                 accent: "#d957d9".to_string(),
                 border: "#d957d9".to_string(),
+                ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Solid {

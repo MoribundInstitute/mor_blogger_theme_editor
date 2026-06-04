@@ -5,11 +5,6 @@ use crate::config::gtk_theme::{import_gtk4_preset, ImportedGtkPreset};
 use crate::config::ThemeConfig;
 use crate::presets::user_presets::{save_user_preset_bundle, UserPresetDiskReport};
 
-/// Pick a GTK theme folder and convert it into a reusable imported preset.
-///
-/// This does not save anything to disk. The caller can apply
-/// `imported.config` immediately, then optionally call
-/// `save_imported_gtk_preset` if the user chooses to keep it.
 pub(crate) fn choose_gtk_theme(
     current_config: &ThemeConfig,
 ) -> Result<Option<ImportedGtkPreset>, String> {
@@ -23,7 +18,6 @@ pub(crate) fn choose_gtk_theme(
     import_gtk4_preset(&dir, current_config).map(Some)
 }
 
-/// Save the most recently imported GTK preset as a reusable user preset bundle.
 pub(crate) fn save_imported_gtk_preset(
     imported: &ImportedGtkPreset,
 ) -> Result<UserPresetDiskReport, String> {
@@ -109,7 +103,6 @@ fn parse_json_wrapped_theme(text: &str) -> Result<ThemeConfig, String> {
 pub(crate) fn normalize_preset_url(input: &str) -> String {
     let url = input.trim();
 
-    // 1. Handle standard GitHub Blob URLs
     if url.contains("github.com/") && url.contains("/blob/") {
         let without_scheme = url
             .trim_start_matches("https://")
@@ -130,8 +123,6 @@ pub(crate) fn normalize_preset_url(input: &str) -> String {
         }
     }
 
-    // 2. NEW: Intercept jsDelivr CDN URLs and convert them directly to raw GitHub URLs to bypass the 12-hour cache.
-    // Example: https://cdn.jsdelivr.net/gh/Owner/Repo@main/path/to/theme.json
     if url.contains("cdn.jsdelivr.net/gh/") {
         let without_scheme = url
             .trim_start_matches("https://")

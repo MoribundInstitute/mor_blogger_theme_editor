@@ -6,7 +6,7 @@ use crate::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
     generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
 };
-use crate::ui::panels::presets_panel::ThemeSignals;
+use crate::ui::panels::presets::ThemeSignals;
 
 // (tab id, button label)
 const TABS: &[(&str, &str)] = &[

@@ -7,7 +7,7 @@ use crate::ui::panels::assets_panel::AssetsPanel;
 use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
 use crate::ui::panels::menu_panel::MenuPanel;
 use crate::ui::panels::plugins_panel::PluginsPanel;
-use crate::ui::panels::presets_panel::ThemeSignals;
+use crate::ui::panels::presets::ThemeSignals;
 use crate::ui::panels::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::panels::site_panel::SitePanel;
 

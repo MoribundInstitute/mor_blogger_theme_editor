@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::ui::panels::presets_panel::ThemeSignals;
+use crate::ui::panels::presets::ThemeSignals;
 
 pub fn apply_hotswap_json(signals: ThemeSignals, json_text: String) {
     let Ok(val) = serde_json::from_str::<serde_json::Value>(&json_text) else {

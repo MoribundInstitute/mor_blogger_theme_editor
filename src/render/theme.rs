@@ -3,7 +3,7 @@
 use rfd::FileDialog;
 use std::fs::{self, File};
 use std::io::Write;
-use zip::write::SimpleFileOptions;
+use zip::write::FileOptions;
 use zip::ZipWriter;
 
 use super::xml_generator;
@@ -64,7 +64,7 @@ pub fn save_bundle_to_disk(
 
     let file = File::create(&path).map_err(|e| format!("Failed to create zip file: {}", e))?;
     let mut zip = ZipWriter::new(file);
-    let options = SimpleFileOptions::default()
+    let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
 

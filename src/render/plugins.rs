@@ -2,7 +2,7 @@
 //! This script is injected directly into the exported Blogger XML.
 //! It handles client-side interactivity without external dependencies.
 
-pub const CORE_FRAMEWORK_JS: &str = r#"
+pub const CORE_FRAMEWORK_JS: &str = r##"
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -92,4 +92,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
-"#;
+"##;

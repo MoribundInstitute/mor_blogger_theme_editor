@@ -20,7 +20,6 @@ pub struct ThemeSignals {
     pub accent: Signal<String>,
     pub border: Signal<String>,
 
-    // NEW WIRES
     pub panel_border_width: Signal<String>,
     pub glow_spread: Signal<String>,
     pub hover_scale: Signal<String>,
@@ -103,7 +102,6 @@ impl ThemeSignals {
         self.accent.clone().set(config.colors.accent.clone());
         self.border.clone().set(config.colors.border.clone());
         
-        // NEW WIRES
         self.panel_border_width.clone().set(config.colors.panel_border_width.clone());
         self.glow_spread.clone().set(config.colors.glow_spread.clone());
         self.hover_scale.clone().set(config.colors.hover_scale.clone());
@@ -185,7 +183,6 @@ impl ThemeSignals {
         self.accent.clone().set(palette.colors.accent.clone());
         self.border.clone().set(palette.colors.border.clone());
         
-        // NEW WIRES
         self.panel_border_width.clone().set(palette.colors.panel_border_width.clone());
         self.glow_spread.clone().set(palette.colors.glow_spread.clone());
         self.hover_scale.clone().set(palette.colors.hover_scale.clone());

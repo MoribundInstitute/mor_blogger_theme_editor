@@ -1,9 +1,8 @@
 use crate::config::pages::LmsConfig;
-use crate::render::pages::escape_html;
 
 /// Emits the "My Courses" dashboard. 
 /// Designed for Local-First hydration (LocalStorage or Browser Extension).
-pub fn generate_my_courses_html(config: &LmsConfig) -> String {
+pub fn generate_my_courses_html(_config: &LmsConfig) -> String {
     let mut html = String::new();
 
     // 1. Dashboard CSS

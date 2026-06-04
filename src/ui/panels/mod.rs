@@ -10,6 +10,5 @@ pub mod seo_panel;
 pub mod site_panel;
 pub mod static_pages_panel;
 pub mod typography_panel;
-pub mod presets_panel;
 pub mod template_modules;
-pub mod effects_panel;
+pub mod effects_panel;pub mod presets;

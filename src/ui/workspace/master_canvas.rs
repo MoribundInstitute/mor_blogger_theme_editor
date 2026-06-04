@@ -7,7 +7,7 @@ use crate::ui::workspace::layout::{
     PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
-use crate::ui::panels::presets_panel::ThemeRestoreDropZone;
+use crate::ui::panels::presets::ThemeRestoreDropZone;
 
 #[component]
 pub fn CenterWorkspacePanel(

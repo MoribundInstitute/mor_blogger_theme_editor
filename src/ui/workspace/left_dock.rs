@@ -7,7 +7,7 @@ use crate::ui::panels::buttons_panel::ButtonsPanel;
 use crate::ui::panels::colors_panel::ColorsPanel;
 use crate::ui::panels::effects_panel::EffectsPanel;
 use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
-use crate::ui::panels::presets_panel::{PresetsPanel, ThemeSignals};
+use crate::ui::panels::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::template_modules::TemplateModulesPanel;
 use crate::ui::panels::typography_panel::TypographyPanel;

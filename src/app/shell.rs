@@ -9,7 +9,7 @@ use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::panels::presets_panel::PresetFloatingWindow;
+use crate::ui::panels::presets::PresetFloatingWindow;
 use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;

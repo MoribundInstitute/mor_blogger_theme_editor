@@ -1,5 +1,5 @@
 pub fn generate_portfolio_html<T>(_config: &T) -> String {
-    r#"
+    r##"
     <style>
         .mor-portfolio-container {
             max-width: 1200px;
@@ -197,6 +197,6 @@ pub fn generate_portfolio_html<T>(_config: &T) -> String {
 
         </div>
     </div>
-    "#
+    "##
     .to_string()
 }

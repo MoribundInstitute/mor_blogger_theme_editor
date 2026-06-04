@@ -9,12 +9,13 @@ pub(crate) fn choose_gtk_theme(
     current_config: &ThemeConfig,
 ) -> Result<Option<ImportedGtkPreset>, String> {
     let Some(dir) = FileDialog::new()
-        .set_title("Select GTK4 Theme Folder")
+        // Updated to be explicit about which folder to select
+        .set_title("Select extracted theme root folder (e.g. 'Mojave-Dark-alt')")
         .pick_folder()
     else {
         return Ok(None);
     };
-
+    
     import_gtk4_preset(&dir, current_config).map(Some)
 }
 

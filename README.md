@@ -14,7 +14,7 @@ Design your theme in a modern Rust-powered interface, then export clean Blogger 
 
 </div>
 ## **Why Do We Exist **
-Blogger could literally become a free and highly riceable LMS for teachers worldwide. Google could also have a symbiotic relationship with Blogger by making a boatload of money off ads. The GUI editor has several advertising options, but I leave them off by default, since I think banner ads are not great. There might be a better way of implementing them, but I don't know. Ideally, Google would just create its own sort of Patreon platform and monetize Blogger that way too. Maybe Google could try to make money off of the Blogger stuff by have an opt-in system for LLM training IDK. 
+Blogger could literally become a free and highly riceable LMS for teachers worldwide. Imagine if schools, colleges, teachers, etc. could have their own free khan academies with built in spaced repitition software (that's the end goal). Google could also have a symbiotic relationship with Blogger by making a boatload of money off ads. The GUI editor has several advertising options, but I leave them off by default, since I think banner ads are not great. There might be a better way of implementing them, but I don't know. Ideally, Google would just create its own sort of Patreon platform and monetize Blogger that way too. Maybe Google could try to make money off of the Blogger stuff by have an opt-in system for LLM training IDK. 
 ---
 
 ## ⚡ The Problem

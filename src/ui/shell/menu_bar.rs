@@ -1,93 +1,162 @@
 use dioxus::prelude::*;
+use crate::ui::shell::shortcut::use_shortcut; // <-- Adjust this path if needed
+
+// =========================================================================
+// 1. GENERIC BUILDING BLOCKS (Formerly menu.rs)
+// =========================================================================
+#[derive(Props, Clone, PartialEq)]
+pub struct MorMenuDropdownProps {
+    pub label: String,
+    pub children: Element,
+}
 
 #[component]
-pub fn MenuBar(
-    mut show_prefs: Signal<bool>,
-    mut show_about: Signal<bool>,
-) -> Element {
+pub fn MorMenuDropdown(props: MorMenuDropdownProps) -> Element {
+    rsx! {
+        div { class: "mor-menu-item",
+            "{props.label}"
+            div { class: "mor-menu-dropdown",
+                {props.children}
+            }
+        }
+    }
+}
+
+#[component]
+pub fn MorMenuBar(children: Element) -> Element {
     rsx! {
         nav { class: "mor-menu-bar",
+            {children}
+        }
+    }
+}
+
+#[component]
+pub fn MenuItem(
+    label: String,
+    #[props(default = None)] shortcut: Option<String>,
+    #[props(default = false)] disabled: bool,
+    #[props(default = None)] on_action: Option<EventHandler<()>>,
+) -> Element {
+    let bind_shortcut = if disabled { None } else { shortcut.clone() };
+    use_shortcut(bind_shortcut, on_action.clone());
+    
+    rsx! {
+        button {
+            class: if disabled { "mor-menu-item disabled" } else { "mor-menu-item" },
+            onmousedown: move |evt| evt.stop_propagation(), // Protects action
+            onclick: move |e| {
+                e.stop_propagation();
+                if !disabled {
+                    if let Some(h) = on_action { h.call(()); }
+                }
+            },
+            span { "{label}" }
+            if let Some(sc) = shortcut {
+                span { class: "shortcut", "{sc}" }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn MenuSeparator() -> Element {
+    rsx! { div { class: "mor-menu-divider" } }
+}
+
+// =========================================================================
+// 2. THE APP MENU INSTANCE (Formerly menu_bar.rs)
+// =========================================================================
+#[component]
+pub fn AppMenuBar(
+    mut show_prefs: Signal<bool>,
+    mut show_about: Signal<bool>,
+    on_load_theme: EventHandler<()>,
+    on_save_theme: EventHandler<()>,
+    on_export_xml: EventHandler<()>,
+    on_export_zip: EventHandler<()>,
+) -> Element {
+    rsx! {
+        MorMenuBar {
             // 1. FILE
-            div { class: "mor-menu-item", "File",
-                div { class: "mor-menu-dropdown",
-                    button { "New Workspace" }
-                    div { class: "mor-menu-divider" }
-                    button { "Load Theme (.toml)" }
-                    button { "Save Theme (.toml)" }
-                    div { class: "mor-menu-divider" }
-                    button { "Import Data (.json)" }
-                    button { "Export Data (.json)" }
-                    div { class: "mor-menu-divider" }
-                    button { "Export Blogger XML" }
-                    button { "Export Theme Bundle (.zip)" }
-                    div { class: "mor-menu-divider" }
-                    button {
-                        onclick: move |_| {
-                            std::process::exit(0);
-                        },
-                        "Exit"
-                    }
+            MorMenuDropdown { label: "File".to_string(),
+                MenuItem { label: "New Workspace".to_string() }
+                MenuSeparator {}
+                MenuItem { 
+                    label: "Load Theme (.toml)".to_string(),
+                    on_action: move |_| on_load_theme.call(())
+                }
+                MenuItem { 
+                    label: "Save Theme (.toml)".to_string(),
+                    on_action: move |_| on_save_theme.call(())
+                }
+                MenuSeparator {}
+                MenuItem { label: "Import Data (.json)".to_string() }
+                MenuItem { label: "Export Data (.json)".to_string() }
+                MenuSeparator {}
+                MenuItem { 
+                    label: "Export Blogger XML".to_string(),
+                    on_action: move |_| on_export_xml.call(())
+                }
+                MenuItem { 
+                    label: "Export Theme Bundle (.zip)".to_string(),
+                    on_action: move |_| on_export_zip.call(())
+                }
+                MenuSeparator {}
+                // ✅ 4. Fix the Exit Button Type
+                MenuItem { 
+                    label: "Exit".to_string(),
+                    on_action: move |_| -> () { std::process::exit(0); }
                 }
             }
-
+            
             // 2. EDIT
-            div { class: "mor-menu-item", "Edit",
-                div { class: "mor-menu-dropdown",
-                    button { "Undo" }
-                    button { "Redo" }
-                    div { class: "mor-menu-divider" }
-                    button { "Copy Raw XML to Clipboard" }
-                }
+            MorMenuDropdown { label: "Edit".to_string(),
+                MenuItem { label: "Undo".to_string(), shortcut: "Ctrl+Z".to_string() }
+                MenuItem { label: "Redo".to_string(), shortcut: "Ctrl+Y".to_string() }
+                MenuSeparator {}
+                MenuItem { label: "Copy Raw XML".to_string() }
             }
 
             // 3. VIEW
-            div { class: "mor-menu-item", "View",
-                div { class: "mor-menu-dropdown",
-                    button { "Toggle Preview Monitor" }
-                    button { "Toggle Code Split" }
-                    button { "Reset Viewport Scale" }
-                }
+            MorMenuDropdown { label: "View".to_string(),
+                // ✅ Fixed trailing spaces in labels
+                MenuItem { label: "Toggle Preview Monitor".to_string() }
+                MenuItem { label: "Toggle Code Split".to_string() }
+                MenuItem { label: "Reset Viewport Scale".to_string() }
             }
 
             // 4. DOCKS
-            div { class: "mor-menu-item", "Docks",
-                div { class: "mor-menu-dropdown",
-                    button { "Theme Palette (Left)" }
-                    button { "Site Data (Right)" }
-                    div { class: "mor-menu-divider" }
-                    button { "Lock Docks" }
-                }
+            MorMenuDropdown { label: "Docks".to_string(),
+                MenuItem { label: "Theme Palette (Left)".to_string() }
+                MenuItem { label: "Site Data (Right)".to_string() }
+                MenuSeparator {}
+                MenuItem { label: "Lock Docks".to_string() }
             }
 
             // 5. PROFILE
-            div { class: "mor-menu-item", "Profile",
-                div { class: "mor-menu-dropdown",
-                    button {
-                        onclick: move |_| show_prefs.set(true),
-                        "User Preferences"
-                    }
-                    button { "Editor Settings" }
+            MorMenuDropdown { label: "Profile".to_string(),
+                MenuItem { 
+                    label: "User Preferences".to_string(),
+                    on_action: move |_| show_prefs.set(true)
                 }
+                MenuItem { label: "Editor Settings".to_string() }
             }
 
             // 6. TOOLS
-            div { class: "mor-menu-item", "Tools",
-                div { class: "mor-menu-dropdown",
-                    button { "Theme Diagnostics" }
-                    button { "CSS Token Builder" }
-                }
+            MorMenuDropdown { label: "Tools".to_string(),
+                MenuItem { label: "Theme Diagnostics".to_string() }
+                MenuItem { label: "CSS Token Builder".to_string() }
             }
 
             // 7. HELP
-            div { class: "mor-menu-item", "Help",
-                div { class: "mor-menu-dropdown",
-                    button { "Documentation" }
-                    button { "Keyboard Shortcuts" }
-                    div { class: "mor-menu-divider" }
-                    button {
-                        onclick: move |_| show_about.set(true),
-                        "About MorBlogger"
-                    }
+            MorMenuDropdown { label: "Help".to_string(),
+                MenuItem { label: "Documentation".to_string() }
+                MenuItem { label: "Keyboard Shortcuts".to_string() }
+                MenuSeparator {}
+                MenuItem { 
+                    label: "About MorBlogger".to_string(),
+                    on_action: move |_| show_about.set(true)
                 }
             }
         }

@@ -13,6 +13,9 @@
 
   --border-color: {{LIGHT_BORDER}};
   --border-soft: {{LIGHT_BORDER}};
+  --theme-border-color: {{LIGHT_BORDER}};
+  --panel-border-width: {{PANEL_BORDER_WIDTH}};
+  --theme-border-image: {{LIGHT_PANEL_BORDER_IMAGE_VALUE}};
 
   --font-mono: "IM Fell English", Georgia, "Times New Roman", serif;
   --sidebar-width: 300px;
@@ -42,6 +45,8 @@ html[data-theme="dark"] {
 
   --border-color: {{DARK_BORDER}};
   --border-soft: {{DARK_BORDER}};
+  --theme-border-color: {{DARK_BORDER}};
+  --theme-border-image: {{DARK_PANEL_BORDER_IMAGE_VALUE}};
 
   --glow: 0 0 4px {{DARK_ACCENT}};
   --glow-strong: 0 0 8px {{DARK_ACCENT}};

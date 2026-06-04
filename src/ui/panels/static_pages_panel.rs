@@ -15,6 +15,7 @@ const TABS: &[(&str, &str)] = &[
     ("About", "About Me"),
     ("Portfolio", "Portfolio"),
     ("LMS", "Courses"),
+    ("Community", "Pasteboard"), // <-- NEW TAB ADDED HERE
 ];
 
 fn preview_html_for_tab(id: &str, pages: &StaticPagesConfig) -> String {
@@ -76,10 +77,16 @@ pub fn StaticPagesPanel(
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
     let mut active_tab = use_signal(|| "Archive");
+    
+    // State specifically for the Community Pasteboard
+    let mut custom_html = use_signal(|| String::new());
 
     // Wrap the selected static page inside the active generated theme preview.
     // This keeps the iframe CSS/fonts/colors intact and mocks Blogger feed calls offline.
     use_effect(move || {
+        // Prevent auto-reloading on every keystroke if user is typing in the pasteboard
+        if active_tab() == "Community" { return; } 
+
         let base = base_preview_html();
         let pages_snapshot = pages();
         let new_html = preview_html_for_tab(active_tab(), &pages_snapshot);
@@ -187,6 +194,39 @@ pub fn StaticPagesPanel(
                 },
                 "About" => rsx! { AboutBuilder { config: pages, status } },
                 "LMS" => rsx! { LmsBuilder { config: pages, status } },
+                "Community" => rsx! {
+                    div { class: "editor-field-group",
+                        h4 { "Decentralized Layouts" }
+                        div { class: "editor-help-text",
+                            "Paste raw HTML from any community repository here. The engine will instantly wrap it in your active theme's CSS variables."
+                        }
+
+                        textarea {
+                            class: "editor-textarea",
+                            style: "min-height: 200px; font-family: monospace; font-size: 11px;",
+                            placeholder: "",
+                            value: "{custom_html}",
+                            oninput: move |evt| custom_html.set(evt.value()),
+                        }
+
+                        div { style: "display: flex; gap: 12px; margin-top: 16px;",
+                            button {
+                                class: "editor-button editor-button-active",
+                                onclick: move |_| {
+                                    let base = base_preview_html();
+                                    preview_html.set(inject_static_page(&base, &custom_html()));
+                                },
+                                "Test in Preview Monitor"
+                            }
+                            CopyButton {
+                                html: custom_html(),
+                                status,
+                                copied_msg: "Community Template copied to clipboard!".to_string(),
+                                label: "Copy Final HTML".to_string(),
+                            }
+                        }
+                    }
+                },
                 _ => rsx! {}
             }
 

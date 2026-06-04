@@ -163,14 +163,16 @@ pub fn CenterWorkspacePanel(
                     class: "export-action-group",
                     button {
                         class: "editor-button",
+                        title: "Copies your finished theme as Blogger XML to the clipboard. In Blogger, open Theme → Edit HTML, select all, and paste.",
                         onclick: move |_| {
                             copy_to_clipboard(export_xml());
                             status_msg.set("XML copied to clipboard!".to_string());
                         },
-                        "Copy XML"
+                        "Copy Theme Code"
                     }
                     button {
                         class: "editor-button",
+                        title: "Saves your theme as an .xml file. In Blogger, go to Theme → Restore to upload it.",
                         onclick: move |_| {
                             async move {
                                 let mut eval = dioxus::document::eval(r#"
@@ -185,7 +187,7 @@ pub fn CenterWorkspacePanel(
                                 let _ = eval.recv::<serde_json::Value>().await; 
                             }
                         },
-                        "Download .xml"
+                        "Download Theme"
                     }
                 }
 
@@ -194,7 +196,8 @@ pub fn CenterWorkspacePanel(
 
                     label {
                         class: "editor-button",
-                        "Load Theme (.toml)"
+                        title: "Reopens a saved editor project — a .toml file holding all your settings — so you can keep editing.",
+                        "Open Project"
                         input {
                             r#type: "file", accept: ".toml", style: "display: none;",
                             onchange: move |evt| {
@@ -214,6 +217,7 @@ pub fn CenterWorkspacePanel(
 
                     button {
                         class: "editor-button",
+                        title: "Saves your editor settings as a .toml project file you can reopen later. This is your working file, not the Blogger theme.",
                         onclick: move |_| {
                             async move {
                                 let mut eval = dioxus::document::eval(r#"
@@ -229,7 +233,7 @@ pub fn CenterWorkspacePanel(
                                 status_msg.set("Theme saved!".to_string());
                             }
                         },
-                        "Save .toml"
+                        "Save Project"
                     }
                 }
 
@@ -237,6 +241,7 @@ pub fn CenterWorkspacePanel(
                     class: "export-action-group",
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
+                        title: "Loads example posts and site info from a .json file. This only fills the live preview — it isn't part of your exported theme.",
                         onclick: move |_| {
                             let mut updated_config = match toml::from_str::<ThemeConfig>(&config_toml()) {
                                 Ok(config) => config,
@@ -275,10 +280,11 @@ pub fn CenterWorkspacePanel(
                             on_restore.call(updated_config);
                             status_msg.set(format!("Site data loaded: {}", path.display()));
                         },
-                        "Load Data (.json)"
+                        "Load Sample Content"
                     }
                     button {
                         class: "editor-button", style: "color: var(--editor-accent-warm); border-color: var(--editor-accent-warm);",
+                        title: "Saves the preview's example posts and site info to a .json file to reuse later.",
                         onclick: move |_| {
                             let current_config = match toml::from_str::<ThemeConfig>(&config_toml()) {
                                 Ok(config) => config,
@@ -303,7 +309,7 @@ pub fn CenterWorkspacePanel(
                                 Err(err) => status_msg.set(format!("Serialize failed: {}", err))
                             }
                         },
-                        "Save Data (.json)"
+                        "Save Sample Content"
                     }
                 }
 

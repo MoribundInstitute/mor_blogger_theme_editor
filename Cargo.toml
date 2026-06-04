@@ -20,12 +20,11 @@ serde_json = "1.0"
 toml = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
 rfd = "0.17.2"
-mor_rust_dioxus_ui_kit = { path = "../dioxus/mor_rust_dioxus_ui_kit" }
 
 # --- New Dependencies for Binary/Compressed Rehydration ---
 postcard = { version = "1.0", features = ["alloc"] }
 zstd = "0.13"
-zip = "4.2.0"
+zip = "0.6.3"
 
 # Native Desktop Clipboard (Linux/Mac/Windows)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

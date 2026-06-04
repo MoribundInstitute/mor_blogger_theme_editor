@@ -1,7 +1,12 @@
 use dioxus::prelude::*;
-use mor_rust_dioxus_ui_kit::{MorStyleProvider, MorShell, MorHeaderBar, MorWindowTitle, Modal};
-use mor_rust_dioxus_ui_kit::theme::GTK4_DARK_TOML;
 
+// 1. IMPORT THE LOCAL UI KIT PIECES
+use crate::ui::components::modal::Modal;
+use crate::ui::shell::menu_bar::AppMenuBar;
+use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
+use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
+
+// 2. IMPORT THE EDITOR PANELS
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::presets_panel::PresetFloatingWindow;
@@ -9,7 +14,6 @@ use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
-use crate::ui::shell::menu_bar::MenuBar;
 
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
@@ -28,7 +32,7 @@ pub fn render_app_shell(
     let current_config = theme.current_config;
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
-    let mut show_undocked_presets = theme.show_undocked_presets;
+    let show_undocked_presets = theme.show_undocked_presets;
     
     let show_undocked_pages = use_signal(|| false);
 
@@ -47,7 +51,6 @@ pub fn render_app_shell(
     });
 
     // Writable TV monitor for preview output.
-    // render.preview_html is derived read-only state; static page tabs need a write target.
     let mut tv_monitor = use_signal(|| String::new());
 
     use_effect(move || {
@@ -55,28 +58,31 @@ pub fn render_app_shell(
     });
 
     rsx! {
-        MorStyleProvider { theme_toml: GTK4_DARK_TOML.to_string() }
+        // 3. AUTO OS CHAMELEON
+        MorStyleProvider { theme_toml: get_native_os_theme().to_string() }
         style { "{EDITOR_UI_CSS}" }
 
         MorShell {
-            MorHeaderBar {
-                show_controls: show_window_buttons,
-                
-                start: rsx! {
-                    div { style: "width: 16px;" }
-                },
+            if active_ui_mode != "native" {
+                MorHeaderBar {
+                    show_controls: show_window_buttons,
 
-                center: rsx! {
-                    if show_custom_title {
-                        MorWindowTitle { 
-                            title: "Moribund Theme Architect".to_string(),
-                            subtitle: Some(format!("{} Mode", active_ui_mode))
+                    start: rsx! {
+                        div { style: "width: 16px;" }
+                    },
+
+                    center: rsx! {
+                        if show_custom_title {
+                            MorWindowTitle { 
+                                title: "Moribund Theme Architect".to_string(),
+                                subtitle: Some(format!("{} Mode", active_ui_mode))
+                            }
                         }
-                    }
-                },
+                    },
 
-                end: rsx! {
-                    div { style: "width: 16px;" }
+                    end: rsx! {
+                        div { style: "width: 16px;" }
+                    }
                 }
             }
 
@@ -120,9 +126,27 @@ pub fn render_app_shell(
             }
 
             div { class: "editor-shell", style: "height: 100%;",
-                MenuBar {
+                
+                // 4. WIRED MENU BAR
+                AppMenuBar {
                     show_prefs,
                     show_about,
+                    on_load_theme: move |_| {
+                        if let Some(content) = crate::io::load_toml() {
+                            if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {
+                                signals.apply_config(&new_config);
+                            }
+                        }
+                    },
+                    on_save_theme: move |_| {
+                        crate::io::save_toml(&config_toml_signal());
+                    },
+                    on_export_xml: move |_| {
+                        crate::io::save_xml(&(render.generated_xml)());
+                    },
+                    on_export_zip: move |_| {
+                        crate::io::export_bundle(&(render.generated_xml)(), &config_toml_signal());
+                    },
                 }
                 
                 div {
@@ -221,7 +245,6 @@ pub fn render_app_shell(
                     }
                 }
 
-                // Only render the diagnostics footer if there is a warning or an error
                 if !(render.diag)().errors.is_empty() || !(render.diag)().warnings.is_empty() {
                     footer { class: "editor-footer",
                         DiagnosticsPanel { result: render.diag }

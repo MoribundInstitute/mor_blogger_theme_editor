@@ -9,6 +9,7 @@ pub mod presets;
 pub mod rehydration;
 pub mod render;
 pub mod ui;
+pub mod io;
 
 // Export the App component so binaries can launch it
 pub use app::App;

@@ -1,5 +1,5 @@
 /* Preset browser, horizontal rail, and detached draggable preset window.
-   Add this file to src/editor_styles/34-preset-floating.css, then run ./build_css.sh. */
+   Add this file to src/editor_styles/34-preset-floating.css, then run ./build_editor_styles.sh. */
 
 .preset-panel {
   position: relative;

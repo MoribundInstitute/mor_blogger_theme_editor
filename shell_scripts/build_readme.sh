@@ -8,21 +8,16 @@ PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
 OUTPUT_FILE="$PROJECT_ROOT/README.md"
 SOURCE_DIR="$PROJECT_ROOT/docs/README_PARTS"
 
-# Define the exact order of files to concatenate
-FILES=(
-    "01_header.md"
-    "02_problem_solution.md"
-    "03_core_capabilities.md"
-    "04_ecosystem_demos.md"
-    "05_documentation.md"
-    "06_getting_started.md"
-    "07_contributing.md"
-)
-
 # Clear or create the output file
 > "$OUTPUT_FILE"
 
 echo "🚀 Building README.md from $SOURCE_DIR..."
+
+# Dynamically discover all markdown files and sort them numerically
+FILES=()
+while IFS= read -r filepath; do
+    FILES+=("$(basename "$filepath")")
+done < <(find "$SOURCE_DIR" -maxdepth 1 -name "*.md" | sort)
 
 for file in "${FILES[@]}"; do
     filepath="$SOURCE_DIR/$file"
@@ -32,7 +27,7 @@ for file in "${FILES[@]}"; do
         # Add a clean separator between sections
         echo -e "\n\n---\n\n" >> "$OUTPUT_FILE"
     else
-        echo "  ️  Warning: $filepath not found, skipping."
+        echo "  ⚠️  Warning: $filepath not found, skipping."
     fi
 done
 

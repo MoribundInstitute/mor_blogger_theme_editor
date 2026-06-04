@@ -38,6 +38,12 @@ The MorBlogger GUI Theme Builder replaces the monolith with a strict, component-
 ---
 
 
+
+
+
+---
+
+
 ## 🚀 Core Capabilities
 
 ### 🧩 Modular XML Assembly
@@ -54,6 +60,18 @@ The MorBlogger GUI Theme Builder replaces the monolith with a strict, component-
 - **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
 - **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
+
+---
+
+
+## 📚 Documentation & Deep Dives
+The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
+
+- [Architecture Overview](docs/ARCHITECTURE.md) — How the Rust rendering engine and Dioxus state management interact.
+- [The CSS Assembly Pipeline](docs/CSS_PIPELINE.md) — Understanding the `mor_` namespace and how modular CSS is stitched together.
+- [Creating a Theme Preset](docs/THEME_CREATION.md) — A guide to defining tokens, palettes, and custom layouts for the Compendium.
+- [GTK Theme Parsing](docs/GTK_PARSER.md) — How the engine translates Linux desktop themes into Blogger variables.
+
 
 ---
 
@@ -80,31 +98,6 @@ See the exported themes running live on Blogger's infrastructure:
 ---
 
 
-## 📚 Documentation & Deep Dives
-The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
-
-- [Architecture Overview](docs/ARCHITECTURE.md) — How the Rust rendering engine and Dioxus state management interact.
-- [The CSS Assembly Pipeline](docs/CSS_PIPELINE.md) — Understanding the `mor_` namespace and how modular CSS is stitched together.
-- [Creating a Theme Preset](docs/THEME_CREATION.md) — A guide to defining tokens, palettes, and custom layouts for the Compendium.
-- [GTK Theme Parsing](docs/GTK_PARSER.md) — How the engine translates Linux desktop themes into Blogger variables.
-
-
----
-
-
-## 🛠️ Getting Started
-
-### Prerequisites
-- Rust toolchain → [rustup.rs](https://rustup.rs/)
-- Dioxus CLI
-  ```bash
-  # Install the Dioxus CLI
-  cargo install dioxus-cli
-
-
----
-
-
 ## 🤝 Contributing
 The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium or feature it on the [Theme Gallery](https://mor-theme-compendium.blogspot.com/).
 
@@ -122,4 +115,17 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
   <b>Developed by Murdoch</b><br>
   <i>The Moribund Institute</i>
 </div>
+
+---
+
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Rust toolchain → [rustup.rs](https://rustup.rs/)
+- Dioxus CLI
+  ```bash
+  # Install the Dioxus CLI
+  cargo install dioxus-cli
+
 

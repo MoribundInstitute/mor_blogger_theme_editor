@@ -20,7 +20,7 @@ html, body {{
   background: var(--bg-base) !important;
 }}
 
-/* 2. GTK4 Headerbar */
+/* 2. GTK4 Headerbar & Window Controls */
 .gtk-headerbar {{
   display: flex;
   align-items: center;
@@ -60,12 +60,50 @@ html, body {{
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  cursor: pointer;
 }}
 
 .headerbar-btn:hover {{
   background: color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
 }}
 
+/* 3. The SVG CSS Stencil Engine (Masks) */
+.gtk-mask-icon {{
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--fg-base); /* The solid color block */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}}
+
+/* Map the config Data URIs to the stencils */
+.gtk-icon-close {{
+  -webkit-mask-image: var(--icon-panel-close);
+  mask-image: var(--icon-panel-close);
+}}
+.gtk-icon-search {{
+  -webkit-mask-image: var(--icon-search);
+  mask-image: var(--icon-search);
+}}
+.gtk-icon-menu {{
+  -webkit-mask-image: var(--icon-menu);
+  mask-image: var(--icon-menu);
+}}
+.gtk-icon-sidebar-left {{
+  -webkit-mask-image: var(--icon-sidebar-left);
+  mask-image: var(--icon-sidebar-left);
+}}
+.gtk-icon-sidebar-right {{
+  -webkit-mask-image: var(--icon-sidebar-right);
+  mask-image: var(--icon-sidebar-right);
+}}
+
+/* 4. Inputs & Search */
 .gtk-search-input {{
   background: var(--bg-elevated) !important;
   color: var(--fg-base) !important;
@@ -84,7 +122,7 @@ html, body {{
   outline: none;
 }}
 
-/* 3. GTK Sidebars & Docks */
+/* 5. GTK Sidebars & Docks */
 .runelite-panel {{
   background: var(--bg-panel) !important;
   border-color: var(--border-color) !important;
@@ -104,7 +142,7 @@ html, body {{
   border-bottom: none !important;
 }}
 
-/* 4. Post Cards (Libadwaita Style) */
+/* 6. Post Cards (Libadwaita Style) */
 .mor-post {{
   background: var(--bg-panel) !important;
   border: 1px solid var(--border-color) !important;

@@ -109,7 +109,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             div { class: "preset-panel-header",
                 h3 { class: "editor-card-title", style: "margin-bottom: 0; padding-bottom: 0; border-bottom: none;", "Theme Presets" }
 
-                div { class: "editor-row",
+                div { class: "editor-row", style: "flex-wrap: wrap;",
                     button {
                         class: if show_import() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
                         onclick: move |_| show_import.set(!show_import()),
@@ -148,6 +148,14 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             }
                         },
                         "Import GTK4"
+                    }
+
+                    a {
+                        class: "editor-button editor-button-small",
+                        href: "https://www.gnome-look.org/browse/",
+                        target: "_blank",
+                        title: "Download GTK themes to import",
+                        "Get GTK4"
                     }
 
                     button {
@@ -343,9 +351,8 @@ pub struct PresetFloatingWindowProps {
 
 #[component]
 pub fn PresetFloatingWindow(props: PresetFloatingWindowProps) -> Element {
-    let active = props.active_preset;
     let mut show_undocked_presets = props.show_undocked_presets;
-
+    let active = props.active_preset;
     rsx! {
         script { dangerous_inner_html: "{PRESET_FLOATING_DRAG_JS}" }
         div { class: "preset-floating-window",
@@ -364,13 +371,7 @@ pub fn PresetFloatingWindow(props: PresetFloatingWindowProps) -> Element {
             div { class: "preset-floating-window-body",
                 div { class: "preset-rail preset-rail-undocked",
                     for preset in all_presets().iter() {
-                        PresetCard {
-                            key: "undocked-{preset.id}",
-                            preset: preset.clone(),
-                            is_active: active() == Some(preset.id),
-                            signals: props.signals,
-                            active_preset: active
-                        }
+                        PresetCard { key: "undocked-{preset.id}", preset: preset.clone(), is_active: active() == Some(preset.id), signals: props.signals, active_preset: active }
                     }
                 }
             }

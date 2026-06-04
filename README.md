@@ -17,7 +17,6 @@ Design your theme in a modern Rust-powered interface, then export clean Blogger 
 
 ---
 
-
 🌍 Why Do We Exist?
 Blogger could literally become a free, highly customizable LMS for teachers worldwide. Imagine if schools, colleges, and educators could build their own free Khan Academies with built-in spaced repetition software (that's the ultimate end goal).
 We're experimenting with several LMS options and identity verification methods, Syncthing, Web3, whatnot, OAuth 2.0, Rauthy, you name it. We also take loose inspiration from https://github.com/rebane2001/xikipedia because we really want educational content to become decentralized skinner boxes.
@@ -40,9 +39,7 @@ The MorBlogger GUI Theme Builder replaces the monolith with a strict, component-
 
 
 
-
 ---
-
 
 ## 🚀 Core Capabilities
 
@@ -63,7 +60,6 @@ The MorBlogger GUI Theme Builder replaces the monolith with a strict, component-
 
 ---
 
-
 ## 📚 Documentation & Deep Dives
 The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
 
@@ -74,7 +70,6 @@ The Architect is designed to be extensible. Whether you want to understand the r
 
 
 ---
-
 
 ## 🌐 Ecosystem & Live Demos
 The Architect is part of a larger ecosystem of tools and live examples:
@@ -97,7 +92,6 @@ See the exported themes running live on Blogger's infrastructure:
 
 ---
 
-
 ## 🤝 Contributing
 The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium or feature it on the [Theme Gallery](https://mor-theme-compendium.blogspot.com/).
 
@@ -117,7 +111,6 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
 </div>
 
 ---
-
 
 ## 🛠️ Getting Started
 

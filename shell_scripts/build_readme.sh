@@ -8,16 +8,22 @@ PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
 OUTPUT_FILE="$PROJECT_ROOT/README.md"
 SOURCE_DIR="$PROJECT_ROOT/docs/README_PARTS"
 
+# Exact file list matching your directory
+FILES=(
+    "01_header.md"
+    "02_problem_solution.md"
+    "03_How_to_Import_Native_GTK4_Linux_Themes.md"
+    "04_core_capabilities.md"
+    "05_documentation.md"
+    "06_ecosystem_demos.md"
+    "07_contributing.md"
+    "08_getting_started.md"
+)
+
 # Clear or create the output file
 > "$OUTPUT_FILE"
 
 echo "🚀 Building README.md from $SOURCE_DIR..."
-
-# Dynamically discover all markdown files and sort them numerically
-FILES=()
-while IFS= read -r filepath; do
-    FILES+=("$(basename "$filepath")")
-done < <(find "$SOURCE_DIR" -maxdepth 1 -name "*.md" | sort)
 
 for file in "${FILES[@]}"; do
     filepath="$SOURCE_DIR/$file"
@@ -25,14 +31,16 @@ for file in "${FILES[@]}"; do
         echo "  ➕ Adding: $file"
         cat "$filepath" >> "$OUTPUT_FILE"
         # Add a clean separator between sections
-        echo -e "\n\n---\n\n" >> "$OUTPUT_FILE"
+        printf '\n\n---\n\n' >> "$OUTPUT_FILE"
     else
         echo "  ⚠️  Warning: $filepath not found, skipping."
     fi
 done
 
-# Remove the trailing separator and extra blank lines from the very end
-sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$OUTPUT_FILE"
-sed -i '$ { /^---$/d }' "$OUTPUT_FILE"
+# Remove trailing blank lines and the final separator
+TMP_FILE="${OUTPUT_FILE}.tmp"
+sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$OUTPUT_FILE" > "$TMP_FILE"
+sed -i '$ { /^---$/d }' "$TMP_FILE"
+mv "$TMP_FILE" "$OUTPUT_FILE"
 
 echo "✅ Successfully generated $OUTPUT_FILE"

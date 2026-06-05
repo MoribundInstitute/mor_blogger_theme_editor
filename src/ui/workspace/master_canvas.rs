@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use crate::clipboard::copy_to_clipboard;
+use crate::utils::clipboard::copy_to_clipboard;
 use crate::config::ThemeConfig;
 use crate::diagnostics::DiagnosticResult;
 use crate::ui::workspace::layout::{
@@ -37,7 +37,7 @@ pub fn CenterWorkspacePanel(
     // Zero manual clone bloat.
     let export_xml = use_memo(move || {
         match toml::from_str::<ThemeConfig>(&config_toml()) {
-            Ok(config) => crate::rehydration::inject_state(&generated_xml(), &config)
+            Ok(config) => crate::utils::rehydration::inject_state(&generated_xml(), &config)
                 .unwrap_or_else(|err| {
                     log::error!("Failed to inject state: {}", err);
                     generated_xml()
@@ -440,5 +440,5 @@ fn build_fresh_export_xml(
         crate::presets::resolve_palette_pair(active_preset_name, &config);
 
     let rendered_xml = crate::render::render_theme(&config, &light_palette, &dark_palette);
-    crate::rehydration::inject_state(&rendered_xml, &config)
+    crate::utils::rehydration::inject_state(&rendered_xml, &config)
 }

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::config::{MenuLink, TemplatePackConfig, ThemeConfig};
-use crate::defaults::default_theme_config;
+use crate::config::defaults::default_theme_config;
 use crate::ui::panels::presets::ThemeSignals;
 
 use super::config_bridge::{menu_label, menu_url};

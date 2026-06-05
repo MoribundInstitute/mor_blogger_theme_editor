@@ -4,7 +4,7 @@ use dioxus::html::HasFileData;
 use crate::config::gtk_theme::ImportedGtkPreset;
 use crate::config::ThemeConfig;
 use crate::presets::{all_presets, Preset};
-use crate::rehydration::extract_and_decode;
+use crate::utils::rehydration::extract_and_decode;
 
 use super::importers::{
     choose_gtk_theme, fetch_remote_theme, normalize_preset_url, parse_theme_text,

@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::clipboard::copy_to_clipboard;
+use crate::utils::clipboard::copy_to_clipboard;
 use crate::config::pages::StaticPagesConfig;
 use crate::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,

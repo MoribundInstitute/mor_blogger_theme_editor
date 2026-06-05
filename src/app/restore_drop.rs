@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::rehydration::extract_and_decode;
+use crate::utils::rehydration::extract_and_decode;
 use crate::ui::panels::presets::ThemeSignals;
 
 pub fn use_restore_drop_bridge(

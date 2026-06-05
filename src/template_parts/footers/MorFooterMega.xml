@@ -77,5 +77,6 @@
       <a href='{{FOOTER_LEGAL_3_URL}}'>{{FOOTER_LEGAL_3_LABEL}}</a> |
       <a href='{{FOOTER_LEGAL_4_URL}}'>{{FOOTER_LEGAL_4_LABEL}}</a>
     </div>
+    <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
   </div>
 </footer>

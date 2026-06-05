@@ -1,11 +1,9 @@
 use dioxus::prelude::*;
-
 // 1. IMPORT THE LOCAL UI KIT PIECES
 use crate::ui::components::modal::Modal;
 use crate::ui::shell::menu_bar::AppMenuBar;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
 use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
-
 // 2. IMPORT THE EDITOR PANELS
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
@@ -14,7 +12,6 @@ use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
-
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
 use super::layout_state::AppLayoutState;
@@ -33,14 +30,13 @@ pub fn render_app_shell(
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
     let show_undocked_presets = theme.show_undocked_presets;
-    
     let show_undocked_pages = use_signal(|| false);
 
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-    
+
     // Matrix of UI state based on mode
     let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
     let show_window_buttons = active_ui_mode == "frameless";
@@ -108,7 +104,7 @@ pub fn render_app_shell(
                         onchange: move |evt| {
                             let new_mode = evt.value();
                             ui_mode_pref.set(new_mode.clone());
-                            let json = format!(r#"{{"ui_mode":"{}"}}"#, new_mode);
+                            let json = format!(r#"{{"ui_mode": "{}"}}"#, new_mode);
                             let _ = std::fs::write("editor_prefs.json", json);
                         },
                         option { value: "frameless", "Frameless (Custom OS Buttons)" }
@@ -132,20 +128,20 @@ pub fn render_app_shell(
                     show_prefs,
                     show_about,
                     on_load_theme: move |_| {
-                        if let Some(content) = crate::io::load_toml() {
+                        if let Some(content) = crate::utils::io::load_toml() {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {
                                 signals.apply_config(&new_config);
                             }
                         }
                     },
                     on_save_theme: move |_| {
-                        crate::io::save_toml(&config_toml_signal());
+                        crate::utils::io::save_toml(&config_toml_signal());
                     },
                     on_export_xml: move |_| {
-                        crate::io::save_xml(&(render.generated_xml)());
+                        crate::utils::io::save_xml(&(render.generated_xml)());
                     },
                     on_export_zip: move |_| {
-                        crate::io::export_bundle(&(render.generated_xml)(), &config_toml_signal());
+                        crate::utils::io::export_bundle(&(render.generated_xml)(), &config_toml_signal());
                     },
                 }
                 

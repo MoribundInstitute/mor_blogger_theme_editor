@@ -1,4 +1,5 @@
 pub mod ads;
+pub mod defaults;
 pub mod fonts;
 pub mod gtk_theme;
 pub mod pages;
@@ -12,6 +13,7 @@ use serde::{Deserialize, Serialize};
 // application can reach the config subtypes directly.
 // ---------------------------------------------------------
 pub use ads::*;
+pub use defaults::*;
 pub use fonts::*;
 pub use gtk_theme::*;
 pub use pages::*;

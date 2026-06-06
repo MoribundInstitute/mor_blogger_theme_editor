@@ -6,7 +6,7 @@
    18-Footer-Base.css.
    ========================================================= */
 
-.footer-grid {
+.footer-mega-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 30px;

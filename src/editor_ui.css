@@ -310,6 +310,55 @@ html {
   left: auto;
 }
 
+/* =========================================================
+   Keyboard Shortcuts Modal 
+   ========================================================= */
+
+.mor-shortcuts-wrapper {
+  padding: 10px 5px;
+}
+
+.mor-shortcuts-grid {
+  column-count: 2;
+  column-gap: 40px;
+}
+
+.mor-shortcut-group {
+  break-inside: avoid;
+}
+
+.mor-shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Optional wrapper for the keys to keep them cleanly separated from the label */
+.mor-key-cluster {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mor-action-label {
+  flex: 1;
+}
+
+.mor-keycap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-bottom-width: 2px;
+  border-radius: var(--btn-radius, 4px);
+  font-family: var(--font-mono);
+  
+  /* Added padding and display properties to ensure it shapes like a physical key */
+  padding: 3px 8px;
+  display: inline-block;
+  line-height: 1.2;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
 /* ============================================================
    20-ui-accordion.css
    ============================================================ */

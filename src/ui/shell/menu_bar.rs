@@ -71,6 +71,7 @@ pub fn MenuSeparator() -> Element {
 pub fn AppMenuBar(
     mut show_prefs: Signal<bool>,
     mut show_about: Signal<bool>,
+    mut show_shortcuts: Signal<bool>,
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
     on_export_xml: EventHandler<()>,
@@ -152,7 +153,10 @@ pub fn AppMenuBar(
             // 7. HELP
             MorMenuDropdown { label: "Help".to_string(),
                 MenuItem { label: "Documentation".to_string() }
-                MenuItem { label: "Keyboard Shortcuts".to_string() }
+                MenuItem {
+                    label: "Keyboard Shortcuts".to_string(),
+                    on_action: move |_| show_shortcuts.set(true)
+                }
                 MenuSeparator {}
                 MenuItem { 
                     label: "About MorBlogger".to_string(),

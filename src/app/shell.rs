@@ -34,6 +34,7 @@ pub fn render_app_shell(
 
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
+    let mut show_shortcuts = use_signal(|| false);
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
 
@@ -121,12 +122,44 @@ pub fn render_app_shell(
                 }
             }
 
+            Modal {
+                title: "Keyboard Shortcuts".to_string(),
+                open: show_shortcuts,
+                on_close: move |_| show_shortcuts.set(false),
+                div { class: "editor-field-group",
+                    div { class: "editor-note",
+                        p { class: "editor-note-title", "Keyboard Shortcuts" }
+                        p { class: "editor-note-body", "Fast commands for moving around the MorBlogger editor." }
+                    }
+
+                    div { class: "editor-note", style: "margin-top: 12px;",
+                        p { class: "editor-note-title", "File" }
+                        p { class: "editor-note-body", "Ctrl+S — Save theme" }
+                        p { class: "editor-note-body", "Ctrl+O — Load theme" }
+                        p { class: "editor-note-body", "Ctrl+E — Export Blogger XML" }
+                    }
+
+                    div { class: "editor-note", style: "margin-top: 12px;",
+                        p { class: "editor-note-title", "Edit" }
+                        p { class: "editor-note-body", "Ctrl+Z — Undo" }
+                        p { class: "editor-note-body", "Ctrl+Y — Redo" }
+                    }
+
+                    div { class: "editor-note", style: "margin-top: 12px;",
+                        p { class: "editor-note-title", "View" }
+                        p { class: "editor-note-body", "Ctrl+P — Toggle preview monitor" }
+                        p { class: "editor-note-body", "Ctrl+0 — Reset viewport scale" }
+                    }
+                }
+            }
+
             div { class: "editor-shell", style: "height: 100%;",
                 
                 // 4. WIRED MENU BAR
                 AppMenuBar {
                     show_prefs,
                     show_about,
+                    show_shortcuts,
                     on_load_theme: move |_| {
                         if let Some(content) = crate::utils::io::load_toml() {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {

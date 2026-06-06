@@ -1,0 +1,94 @@
+/* =========================================================
+   32-Content-Minimal.css
+   Layout: Dense, text-heavy horizontal list.
+   Date (Left) | Title (Center/Grow) | Tags (Right)
+   ========================================================= */
+
+.mor-minimal-feed {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mor-post.minimal-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 12px 0;
+  margin-bottom: 0; /* Overrides base .mor-post margins */
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Ensure the very last item doesn't have a double border with pagination */
+.mor-post.minimal-row:last-child {
+  border-bottom: none;
+}
+
+/* 1. Date (Far Left) */
+.minimal-row .post-date {
+  flex: 0 0 130px; /* Fixed width to keep titles aligned */
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2. Title (Middle) */
+.minimal-row .post-title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.minimal-row .post-title a {
+  border-bottom: none;
+}
+
+/* 3. Tags (Far Right) */
+.minimal-row .post-tags {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.minimal-row .minimal-tag {
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  border-bottom: none;
+}
+
+.minimal-row .minimal-tag:hover,
+.minimal-row .minimal-tag:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+/* Responsive Collapse for Mobile */
+@media (max-width: 768px) {
+  .mor-post.minimal-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 0;
+  }
+  
+  .minimal-row .post-date {
+    flex: 1 1 100%;
+    font-size: 0.8rem;
+  }
+  
+  .minimal-row .post-title {
+    flex: 1 1 100%;
+  }
+  
+  .minimal-row .post-tags {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+}

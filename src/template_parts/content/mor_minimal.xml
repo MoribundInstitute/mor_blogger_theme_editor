@@ -1,0 +1,49 @@
+<b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2'>
+  <b:includable id='main'>
+    <div class='mor-minimal-feed'>
+      <b:loop values='data:posts' var='post'>
+        <article class='mor-post minimal-row'>
+          
+          <div class='post-date'>
+            <b:if cond='data:post.dateHeader'>
+              <data:post.dateHeader/>
+            <b:else/>
+              <data:post.timestamp/>
+            </b:if>
+          </div>
+          
+          <h2 class='post-title'>
+            <a expr:href='data:post.url'><data:post.title/></a>
+          </h2>
+          
+          <b:if cond='data:post.labels'>
+            <div class='post-tags'>
+              <b:loop values='data:post.labels' var='label'>
+                <a class='minimal-tag' expr:href='data:label.url'>#<data:label.name/></a>
+              </b:loop>
+            </div>
+          </b:if>
+
+        </article>
+      </b:loop>
+    </div>
+
+    <b:include name='postPagination'/>
+  </b:includable>
+
+  <b:includable id='post'></b:includable>
+  <b:includable id='postBody'></b:includable>
+  <b:includable id='postTitle'></b:includable>
+  <b:includable id='postCommentsAndAd'></b:includable>
+
+  <b:includable id='postPagination'>
+    <div class='mor-pager'>
+      <b:if cond='data:newerPageUrl'>
+        <a class='pager-btn' expr:href='data:newerPageUrl'>&lt; Newer</a>
+      </b:if>
+      <b:if cond='data:olderPageUrl'>
+        <a class='pager-btn' expr:href='data:olderPageUrl'>Older &gt;</a>
+      </b:if>
+    </div>
+  </b:includable>
+</b:widget>

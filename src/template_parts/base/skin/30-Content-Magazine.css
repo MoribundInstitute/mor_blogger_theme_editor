@@ -1,0 +1,59 @@
+/* =========================================================
+   30-Content-Magazine.css
+   Layout: First post spans 100% width with a large hero image.
+   Subsequent posts form a 2-column grid.
+   ========================================================= */
+
+.mor-magazine-feed {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+/* The first post stretches across both columns */
+.mor-post.hero-post {
+  grid-column: 1 / -1;
+  border-bottom: 2px solid var(--theme-border-color);
+  padding-bottom: 30px;
+  margin-bottom: 0; /* Override baseline */
+}
+
+.hero-post .post-title {
+  font-size: 2.5rem;
+}
+
+.hero-post .post-thumbnail {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 20px;
+}
+
+/* The grid posts */
+.mor-post.grid-post {
+  display: flex;
+  flex-direction: column;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.grid-post .post-title {
+  font-size: 1.4rem;
+}
+
+.grid-post .post-thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 15px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mor-magazine-feed { grid-template-columns: 1fr; }
+  .hero-post .post-title { font-size: 1.8rem; }
+  .hero-post .post-thumbnail { height: 250px; }
+}

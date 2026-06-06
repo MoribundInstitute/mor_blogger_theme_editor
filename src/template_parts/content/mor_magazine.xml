@@ -1,0 +1,43 @@
+<b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2'>
+  <b:includable id='main' var='top'>
+    <div class='mor-magazine-feed'>
+      <b:loop index='i' values='data:posts' var='post'>
+        <b:if cond='data:i == 0'>
+          <article class='mor-post hero-post'>
+            <b:if cond='data:post.featuredImage'>
+              <img class='post-thumbnail' expr:src='data:post.featuredImage' expr:alt='data:post.title'/>
+            </b:if>
+            <h2 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h2>
+            <div class='post-meta'><data:post.dateHeader/> | <data:post.author/></div>
+            <div class='post-body'>
+              <data:post.snippet/>
+            </div>
+          </article>
+        <b:else/>
+          <article class='mor-post grid-post'>
+            <b:if cond='data:post.featuredImage'>
+              <img class='post-thumbnail' expr:src='data:post.featuredImage' expr:alt='data:post.title'/>
+            </b:if>
+            <h2 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h2>
+            <div class='post-meta'><data:post.dateHeader/></div>
+            <div class='post-body'>
+              <data:post.snippet/>
+            </div>
+          </article>
+        </b:if>
+      </b:loop>
+    </div>
+    <b:include name='postPagination'/>
+  </b:includable>
+  
+  <b:includable id='post'></b:includable>
+  <b:includable id='postBody'></b:includable>
+  <b:includable id='postTitle'></b:includable>
+  <b:includable id='postCommentsAndAd'></b:includable>
+  <b:includable id='postPagination'>
+    <div class='mor-pager'>
+      <b:if cond='data:newerPageUrl'><a class='pager-btn' expr:href='data:newerPageUrl'>Newer</a></b:if>
+      <b:if cond='data:olderPageUrl'><a class='pager-btn' expr:href='data:olderPageUrl'>Older</a></b:if>
+    </div>
+  </b:includable>
+</b:widget>

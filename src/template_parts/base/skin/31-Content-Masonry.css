@@ -1,0 +1,44 @@
+/* =========================================================
+   31-Content-Masonry.css
+   Layout: Pure CSS columns for a Pinterest-style masonry grid.
+   ========================================================= */
+
+.mor-masonry-feed {
+  column-count: 3;
+  column-gap: 25px;
+  width: 100%;
+}
+
+.mor-post.masonry-card {
+  break-inside: avoid;
+  page-break-inside: avoid; /* Fallback for older browsers */
+  display: block;
+  margin-bottom: 25px; /* Vertical spacing between cards */
+  width: 100%;
+  
+  /* Optional: Reset base margins from standard post styling to fit grid */
+  padding-bottom: 15px; 
+  border-bottom: none;
+}
+
+.masonry-card .post-thumbnail {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 15px;
+}
+
+/* Tablet Responsiveness: 2 Columns */
+@media (max-width: 1024px) {
+  .mor-masonry-feed {
+    column-count: 2;
+  }
+}
+
+/* Mobile Responsiveness: 1 Column */
+@media (max-width: 768px) {
+  .mor-masonry-feed {
+    column-count: 1;
+  }
+}

@@ -1,4 +1,4 @@
-use dioxus::prelude::*;
+ use dioxus::prelude::*;
 use crate::config::ThemeConfig;
 
 #[component]
@@ -56,6 +56,28 @@ pub fn TemplateModulesPanel(
                 }
             }
 
+            // 2.5 Content Layout Variant (NEW)
+            div { class: "editor-card",
+                label { class: "editor-label", style: "display: block; margin-bottom: 4px;", "Content Layout" }
+                select {
+                    class: "editor-input", style: "width: 100%;",
+                    value: "{pack.content_variant}",
+                    onchange: {
+                        let current_config = current_config.clone();
+                        let on_apply_theme = on_apply_theme.clone();
+                        move |evt| {
+                            let mut new_config = current_config.clone();
+                            new_config.template_pack.content_variant = evt.value().clone();
+                            on_apply_theme.call(new_config);
+                        }
+                    },
+                    option { value: "blog_standard", "Standard Feed (Default)" }
+                    option { value: "mor_magazine", "Mor Magazine (Hero + Grid)" }
+                    option { value: "mor_masonry", "Mor Masonry (Pinterest Grid)" }
+                    option { value: "mor_minimal", "Mor Minimal (Dense List)" }
+                }
+            }
+
             // 3. Left Sidebar Variant
             div { class: "editor-card",
                 label { class: "editor-label", style: "display: block; margin-bottom: 4px;", "Left Sidebar Panel" }
@@ -72,7 +94,6 @@ pub fn TemplateModulesPanel(
                         }
                     },
                     option { value: "blogger_left", "Blogger Widgets (Labels, Archive)" }
-                    // option { value: "gtk_dock", "GTK Tool Dock (Coming Soon)" }
                 }
             }
 
@@ -110,7 +131,9 @@ pub fn TemplateModulesPanel(
                             on_apply_theme.call(new_config);
                         }
                     },
-                    option { value: "mor", "Mor (Default)" }
+                    option { value: "mega", "Mega Grid (Default)" }
+                    option { value: "basic", "Basic Columns" }
+                    option { value: "compact", "Compact Centered" }
                 }
             }
 

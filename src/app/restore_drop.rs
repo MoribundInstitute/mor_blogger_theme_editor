@@ -131,6 +131,7 @@ pub fn use_restore_drop_bridge(
 
                         match extract_and_decode(xml_text) {
                             Ok(config) => {
+                                // FIXED: Using apply_config
                                 restore_signals.apply_config(&config);
                                 restored_active_preset.set(None);
                                 log::info!("Workspace restored from dropped XML file: {}", name);

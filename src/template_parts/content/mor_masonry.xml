@@ -1,0 +1,43 @@
+<b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2'>
+  <b:includable id='main'>
+    <div class='mor-masonry-feed'>
+      <b:loop values='data:posts' var='post'>
+        <article class='mor-post masonry-card'>
+          <b:if cond='data:post.featuredImage'>
+            <img class='post-thumbnail' expr:alt='data:post.title' expr:src='data:post.featuredImage'/>
+          </b:if>
+          
+          <h2 class='post-title'>
+            <a expr:href='data:post.url'><data:post.title/></a>
+          </h2>
+          
+          <div class='post-meta'>
+            <data:post.dateHeader/>
+          </div>
+          
+          <div class='post-body'>
+            <data:post.snippet/>
+          </div>
+        </article>
+      </b:loop>
+    </div>
+    
+    <b:include name='postPagination'/>
+  </b:includable>
+
+  <b:includable id='post'></b:includable>
+  <b:includable id='postBody'></b:includable>
+  <b:includable id='postTitle'></b:includable>
+  <b:includable id='postCommentsAndAd'></b:includable>
+
+  <b:includable id='postPagination'>
+    <div class='mor-pager'>
+      <b:if cond='data:newerPageUrl'>
+        <a class='pager-btn' expr:href='data:newerPageUrl'>Newer</a>
+      </b:if>
+      <b:if cond='data:olderPageUrl'>
+        <a class='pager-btn' expr:href='data:olderPageUrl'>Older</a>
+      </b:if>
+    </div>
+  </b:includable>
+</b:widget>

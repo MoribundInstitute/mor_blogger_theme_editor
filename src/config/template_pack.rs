@@ -13,7 +13,6 @@ pub struct TemplatePackConfig {
     pub icon_pack: String,
 }
 
-// These defaults point exactly to your newly moved core layout files
 impl Default for TemplatePackConfig {
     fn default() -> Self {
         Self {
@@ -22,7 +21,7 @@ impl Default for TemplatePackConfig {
             content_variant: "blog_standard".to_string(),
             left_sidebar_variant: "blogger_left".to_string(),
             right_sidebar_variant: "toc_right".to_string(),
-            footer_variant: "mor".to_string(),
+            footer_variant: "mega".to_string(), // Updated default!
             script_variant: "mor_panels".to_string(),
             icon_pack: "default".to_string(),
         }

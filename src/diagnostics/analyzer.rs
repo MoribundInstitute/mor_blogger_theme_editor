@@ -43,7 +43,6 @@ pub fn run_xml_checks(source: &str, active_variants: &TemplatePackConfig, out: &
             check_profile_structure(profile, &facts, out);
             check_panel_toggles(&doc, out);
             
-            // NEW: Run the Smart Registry Check
             check_registry_dependencies(&doc, active_variants, source, out);
         }
         Err(e) => {
@@ -206,7 +205,6 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
             })
             .unwrap_or(false);
 
-        // If it is a toggle but has no routing attributes, it is a dead button.
         if !has_target && !has_onclick && !has_href {
             let tag = node.tag_name().name();
             let id_str = node
@@ -222,11 +220,11 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
     }
 }
 
-// --- NEW: REGISTRY DEPENDENCY CHECKS ---
-
+// --- UPDATED REGISTRY MAPPER ---
 fn required_footer_css(footer_variant: &str) -> Option<&'static str> {
     match footer_variant {
-        "mor" => Some("18-Footer-Mega.css"),
+        "mega" => Some("18-Footer-Mega.css"),
+        "basic" | "compact" => Some("18-Footer-Base.css"),
         _ => None,
     }
 }
@@ -248,20 +246,17 @@ fn check_registry_dependencies(
     warnings.push(Warning::error(
         "REGISTRY_DEPENDENCY_MISSING",
         format!(
-            "Missing Dependency: The active footer requires {required_css} to display correctly. Layout may be broken."
+            "Missing Dependency: The active footer requires {} to display correctly. Layout may be broken.", required_css
         ),
     ));
 }
 
-/// Checks if any CSS block (standard <style>, <b:skin>, or <b:template-skin>) 
-/// contains the specified `needle` string.
 fn style_block_contains(source: &str, doc: &Document, needle: &str) -> bool {
     let mut saw_style_element = false;
 
     for node in doc.descendants().filter(Node::is_element) {
         let tag_name = node.tag_name().name();
 
-        // --- BLOGGER-AWARE CHECK ---
         if tag_name != "style" && tag_name != "skin" && tag_name != "template-skin" {
             continue;
         }
@@ -277,15 +272,12 @@ fn style_block_contains(source: &str, doc: &Document, needle: &str) -> bool {
         }
     }
 
-    // --- DEFENSIVE FALLBACK ---
     if !saw_style_element {
         return source.contains(needle);
     }
 
     false
 }
-
-// --- END NEW REGISTRY CHECKS ---
 
 fn require_id(facts: &StructuralFacts, out: &mut Vec<Warning>, id: &'static str, severity: Severity) {
     if !has_id(facts, id) {

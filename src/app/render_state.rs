@@ -29,9 +29,26 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
     let preview_html =
         use_memo(move || render_preview_html(&current_config_for_preview(), preview_template_mode()));
 
-    let mut diag = use_signal(|| check_integrity(&generated_xml()));
+    let current_config_for_diag_init = theme.current_config;
+    let current_config_for_diag_effect = theme.current_config;
+
+    let generated_xml_for_diag_init = generated_xml;
+    let generated_xml_for_diag_effect = generated_xml;
+
+    let mut diag = use_signal(move || {
+        let config = current_config_for_diag_init();
+        check_integrity(
+            &generated_xml_for_diag_init(),
+            &config.template_pack,
+        )
+    });
+
     use_effect(move || {
-        diag.set(check_integrity(&generated_xml()));
+        let config = current_config_for_diag_effect();
+        diag.set(check_integrity(
+            &generated_xml_for_diag_effect(),
+            &config.template_pack,
+        ));
     });
 
     AppRenderState {

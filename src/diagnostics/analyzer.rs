@@ -1,4 +1,5 @@
 use roxmltree::{Document, Node, ParsingOptions};
+use crate::config::TemplatePackConfig;
 use super::{Severity, Warning};
 
 /// Visual shell detected from the template body.
@@ -27,12 +28,12 @@ const RECOMMENDED_BLOG_INCLUDABLES: &[&str] = &[
     "comments", "commentPicker", "threadedComments", "postFooter", "postLabels", "postTimestamp",
 ];
 
-pub fn run_xml_checks(source: &str, out: &mut Vec<Warning>) {
+pub fn run_xml_checks(source: &str, active_variants: &TemplatePackConfig, out: &mut Vec<Warning>) {
     let opts = ParsingOptions {
         allow_dtd: true,
         ..ParsingOptions::default()
     };
-
+    
     match Document::parse_with_options(source, opts) {
         Ok(doc) => {
             let facts = collect_facts(&doc);
@@ -41,6 +42,9 @@ pub fn run_xml_checks(source: &str, out: &mut Vec<Warning>) {
             check_blogger_engine_layer(&facts, out);
             check_profile_structure(profile, &facts, out);
             check_panel_toggles(&doc, out);
+            
+            // NEW: Run the Smart Registry Check
+            check_registry_dependencies(&doc, active_variants, source, out);
         }
         Err(e) => {
             out.push(Warning::error(
@@ -53,7 +57,6 @@ pub fn run_xml_checks(source: &str, out: &mut Vec<Warning>) {
 
 fn collect_facts(doc: &Document) -> StructuralFacts {
     let mut facts = StructuralFacts::default();
-
     for node in doc.descendants().filter(Node::is_element) {
         if let Some(id) = node.attribute("id") {
             facts.ids.push(id.to_string());
@@ -110,7 +113,7 @@ fn check_blogger_engine_layer(facts: &StructuralFacts, out: &mut Vec<Warning>) {
     if !has_main_blog_section(facts) {
         out.push(Warning::error("BSECTION_MISSING", "Required main Blog section not found. Expected either <b:section id='main'> or <b:section id='main-content'>."));
     }
-
+    
     let has_single_sidebar = has_section(facts, "sidebar");
     let has_split_sidebars = has_section(facts, "sidebar-left") && has_section(facts, "sidebar-right");
 
@@ -177,7 +180,7 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
         let Some(class_attr) = node.attribute("class") else {
             continue;
         };
-
+        
         if !class_attr
             .split_ascii_whitespace()
             .any(|class_name| class_name == "panel-toggle")
@@ -189,10 +192,12 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
             .attribute("data-target")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
+            
         let has_onclick = node
             .attribute("onclick")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
+            
         let has_href = node
             .attribute("href")
             .map(|value| {
@@ -216,6 +221,71 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
         }
     }
 }
+
+// --- NEW: REGISTRY DEPENDENCY CHECKS ---
+
+fn required_footer_css(footer_variant: &str) -> Option<&'static str> {
+    match footer_variant {
+        "mor" => Some("18-Footer-Mega.css"),
+        _ => None,
+    }
+}
+
+fn check_registry_dependencies(
+    doc: &Document,
+    active_variants: &TemplatePackConfig,
+    source: &str,
+    warnings: &mut Vec<Warning>,
+) {
+    let Some(required_css) = required_footer_css(&active_variants.footer_variant) else {
+        return;
+    };
+
+    if style_block_contains(source, doc, required_css) {
+        return;
+    }
+
+    warnings.push(Warning::error(
+        "REGISTRY_DEPENDENCY_MISSING",
+        format!(
+            "Missing Dependency: The active footer requires {required_css} to display correctly. Layout may be broken."
+        ),
+    ));
+}
+
+/// Checks if any CSS block (standard <style>, <b:skin>, or <b:template-skin>) 
+/// contains the specified `needle` string.
+fn style_block_contains(source: &str, doc: &Document, needle: &str) -> bool {
+    let mut saw_style_element = false;
+
+    for node in doc.descendants().filter(Node::is_element) {
+        let tag_name = node.tag_name().name();
+
+        // --- BLOGGER-AWARE CHECK ---
+        if tag_name != "style" && tag_name != "skin" && tag_name != "template-skin" {
+            continue;
+        }
+
+        saw_style_element = true;
+
+        for text_node in node.children().filter(|n| n.is_text()) {
+            if let Some(text) = text_node.text() {
+                if text.contains(needle) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // --- DEFENSIVE FALLBACK ---
+    if !saw_style_element {
+        return source.contains(needle);
+    }
+
+    false
+}
+
+// --- END NEW REGISTRY CHECKS ---
 
 fn require_id(facts: &StructuralFacts, out: &mut Vec<Warning>, id: &'static str, severity: Severity) {
     if !has_id(facts, id) {

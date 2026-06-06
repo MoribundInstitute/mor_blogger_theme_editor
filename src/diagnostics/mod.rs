@@ -1,6 +1,8 @@
 pub mod scanner;
 pub mod analyzer;
 
+use crate::config::TemplatePackConfig;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
     Error,
@@ -56,14 +58,17 @@ impl DiagnosticResult {
 }
 
 /// Run all integrity checks against a Blogger template source string.
-pub fn check_integrity(source: &str) -> DiagnosticResult {
+pub fn check_integrity(
+    source: &str,
+    active_variants: &TemplatePackConfig,
+) -> DiagnosticResult {
     let mut warnings = Vec::new();
 
     // 1. Fast Text-Level Scanning (Catches tokens and fatal HTML entities)
     scanner::run_text_checks(source, &mut warnings);
 
     // 2. Deep XML Structural Analyzing
-    analyzer::run_xml_checks(source, &mut warnings);
+    analyzer::run_xml_checks(source, active_variants, &mut warnings);
 
     DiagnosticResult::from_warnings(warnings)
 }

@@ -9,7 +9,6 @@ use crate::config::{BackgroundMode, ThemeConfig};
 use crate::presets::PresetPalette;
 use crate::render::template_resolver::resolve_template_parts;
 
-use super::plugins::CORE_FRAMEWORK_JS;
 use super::ads::{
     render_ads_consent_banner, render_ads_head_script, render_ads_runtime_script,
     render_ads_widget_sidebar,
@@ -109,6 +108,70 @@ fn generate_background_css(bg: &BackgroundMode) -> String {
     }
 }
 
+const CUSTOM_BEFORE_BODY_JS_TOKEN: &str = "{{CUSTOM_BEFORE_BODY_JS}}";
+
+fn escape_script_end_tags(javascript: &str) -> String {
+    let mut escaped = String::with_capacity(javascript.len());
+    let mut index = 0;
+
+    while let Some(relative_start) = javascript[index..].find("</") {
+        let start = index + relative_start;
+        escaped.push_str(&javascript[index..start]);
+
+        if let Some(tag) = javascript.get(start..start + 8) {
+            if tag.eq_ignore_ascii_case("</script") {
+                escaped.push_str("<\\/");
+                escaped.push_str(&javascript[start + 2..start + 8]);
+                index = start + 8;
+                continue;
+            }
+        }
+
+        escaped.push_str("</");
+        index = start + 2;
+    }
+
+    escaped.push_str(&javascript[index..]);
+    escaped
+}
+
+fn escape_javascript_cdata(javascript: &str) -> String {
+    escape_script_end_tags(javascript).replace("]]>", "]]]]><![CDATA[>")
+}
+
+fn wrap_body_javascript(javascript: &str) -> String {
+    let javascript = javascript.trim();
+
+    if javascript.is_empty() {
+        return String::new();
+    }
+
+    format!(
+        "<script type='text/javascript'>\n//<![CDATA[\n{}\n//]]>\n</script>",
+        escape_javascript_cdata(javascript)
+    )
+}
+
+fn merge_body_javascript(javascript: &str, custom_javascript: &str) -> String {
+    let custom_javascript = custom_javascript.trim();
+
+    if javascript.contains(CUSTOM_BEFORE_BODY_JS_TOKEN) {
+        return javascript.replace(CUSTOM_BEFORE_BODY_JS_TOKEN, custom_javascript);
+    }
+
+    let mut merged = javascript.trim().to_string();
+
+    if !custom_javascript.is_empty() {
+        if !merged.is_empty() {
+            merged.push_str("\n\n");
+        }
+
+        merged.push_str(custom_javascript);
+    }
+
+    merged
+}
+
 fn assemble_template(
     meta: &str,
     css: &str,
@@ -120,6 +183,8 @@ fn assemble_template(
     ads_consent_banner: &str,
     ads_runtime_script: &str,
 ) -> String {
+    let javascript = wrap_body_javascript(javascript);
+
     format!(
         "{meta}\n{css}\n<b:template-skin><![CDATA[]]></b:template-skin>\n</head>\n<body>\n{header}\n<div class='mor-workspace'>\n{left}\n{main}\n{right}\n</div>\n{ads_consent_banner}\n{ads_runtime_script}\n{js}\n</body>\n</html>",
         meta = meta,
@@ -203,6 +268,7 @@ pub(super) fn render_template(
     let social_card_image_url = first_non_empty(&config.assets.social_card_image_url, favicon_url);
 
     let parts = resolve_template_parts(config);
+    let body_javascript = merge_body_javascript(&parts.javascript, &config.plugins.custom_js);
 
     let base_xml = assemble_template(
         &parts.meta,
@@ -211,7 +277,7 @@ pub(super) fn render_template(
         &parts.sidebar_left,
         &parts.main,
         &parts.sidebar_right,
-        &parts.javascript,
+        &body_javascript,
         &ads_consent_banner,
         &ads_runtime_script,
     );
@@ -528,12 +594,7 @@ pub(super) fn render_template(
         .replace("{{FOOTER_LICENSE_URL}}", &escape_attr(&config.footer.footer_license_url))
         .replace("{{FOOTER_LICENSE_LABEL}}", &escape_html(&config.footer.footer_license_label))
         .replace("{{BACK_TO_TOP_LABEL}}", "Back to Top")
-        // 1. Inject the Core Client OS Framework
-        // 2. Append the user's custom JS right below it
-        .replace(
-            "{{CUSTOM_BEFORE_BODY_JS}}",
-            &format!("{}\n{}", CORE_FRAMEWORK_JS, &config.plugins.custom_js),
-        );
+        .replace(CUSTOM_BEFORE_BODY_JS_TOKEN, "");
 
     let mut final_xml = rendered;
 

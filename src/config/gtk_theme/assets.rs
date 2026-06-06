@@ -1,7 +1,8 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::presets::user_presets::UserPresetIconAssets;
+
 use super::super::styling::IconConfig;
 use super::super::ThemeConfig;
 use super::GtkImportReport;
@@ -11,25 +12,82 @@ pub(crate) fn apply_icon_assets(
     config: &mut ThemeConfig,
     report: &mut GtkImportReport,
 ) -> UserPresetIconAssets {
-    let assets_dir = theme_root.join("gnome-shell/assets");
+    let asset_dirs = candidate_asset_dirs(theme_root);
 
-    if !assets_dir.is_dir() {
-        report
-            .warnings
-            .push(format!("No GTK icon asset directory at {}", assets_dir.display()));
-        eprintln!("[gtk_theme] no icon asset directory at {}", assets_dir.display());
+    let existing_dirs: Vec<PathBuf> = asset_dirs
+        .into_iter()
+        .filter(|path| path.is_dir())
+        .collect();
+
+    if existing_dirs.is_empty() {
+        report.warnings.push(format!(
+            "No GTK SVG asset directories found under {}",
+            theme_root.display()
+        ));
+        eprintln!(
+            "[gtk_theme] no SVG asset directories found under {}",
+            theme_root.display()
+        );
         return UserPresetIconAssets::default();
     }
 
     let before = config.icons.clone();
 
-    let panel_close_svg = load_svg(&assets_dir, &["window-close-symbolic.svg", "close-symbolic.svg", "window-close.svg"], report);
-    let search_svg = load_svg(&assets_dir, &["more-results.svg", "search-symbolic.svg", "edit-find-symbolic.svg"], report);
-    let menu_svg = load_svg(&assets_dir, &["open-menu-symbolic.svg", "view-more-symbolic.svg", "menu-symbolic.svg"], report);
+    let panel_close_svg = load_svg(
+        &existing_dirs,
+        &[
+            "window-close-symbolic.svg",
+            "close-symbolic.svg",
+            "window-close.svg",
+            "action-unavailable-symbolic.svg",
+            "cross-large-symbolic.svg",
+        ],
+        report,
+    );
 
-    // NEW: Search the GNOME directory for sidebar/pane SVGs
-    let sidebar_left_svg = load_svg(&assets_dir, &["sidebar-show-symbolic.svg", "view-sidebar-symbolic.svg", "view-sidebar.svg"], report);
-    let sidebar_right_svg = load_svg(&assets_dir, &["sidebar-show-right-symbolic.svg", "view-sidebar-right-symbolic.svg", "view-right-pane-symbolic.svg"], report);
+    let search_svg = load_svg(
+        &existing_dirs,
+        &[
+            "system-search-symbolic.svg",
+            "search-symbolic.svg",
+            "edit-find-symbolic.svg",
+            "more-results.svg",
+        ],
+        report,
+    );
+
+    let menu_svg = load_svg(
+        &existing_dirs,
+        &[
+            "open-menu-symbolic.svg",
+            "view-more-symbolic.svg",
+            "menu-symbolic.svg",
+            "application-menu-symbolic.svg",
+        ],
+        report,
+    );
+
+    let sidebar_left_svg = load_svg(
+        &existing_dirs,
+        &[
+            "sidebar-show-symbolic.svg",
+            "view-sidebar-symbolic.svg",
+            "view-left-pane-symbolic.svg",
+            "view-dual-symbolic.svg",
+        ],
+        report,
+    );
+
+    let sidebar_right_svg = load_svg(
+        &existing_dirs,
+        &[
+            "sidebar-show-right-symbolic.svg",
+            "view-sidebar-right-symbolic.svg",
+            "view-right-pane-symbolic.svg",
+            "sidebar-hide-symbolic.svg",
+        ],
+        report,
+    );
 
     config.icons = IconConfig {
         panel_close: panel_close_svg
@@ -63,25 +121,50 @@ pub(crate) fn apply_icon_assets(
     }
 }
 
-fn load_svg(dir: &Path, filenames: &[&str], report: &mut GtkImportReport) -> Option<String> {
-    for filename in filenames {
-        let path = dir.join(filename);
+fn candidate_asset_dirs(theme_root: &Path) -> Vec<PathBuf> {
+    [
+        "gnome-shell/assets",
+        "gtk-4.0/assets",
+        "gtk-3.0/assets",
+        "assets",
+        "icons",
+        "scalable/actions",
+        "symbolic/actions",
+        "Adwaita/scalable/actions",
+        "Adwaita/symbolic/actions",
+    ]
+    .into_iter()
+    .map(|rel| theme_root.join(rel))
+    .collect()
+}
 
-        if !path.exists() {
-            continue;
-        }
+fn load_svg(dirs: &[PathBuf], filenames: &[&str], report: &mut GtkImportReport) -> Option<String> {
+    for dir in dirs {
+        for filename in filenames {
+            let path = dir.join(filename);
 
-        match fs::read_to_string(&path) {
-            Ok(svg) => {
-                report.icons_found += 1;
-                eprintln!("[gtk_theme] loaded icon {}", path.display());
-                return Some(svg);
+            if !path.exists() {
+                continue;
             }
-            Err(err) => {
-                report
-                    .warnings
-                    .push(format!("Could not read icon {}: {}", path.display(), err));
-                eprintln!("[gtk_theme] could not read icon {}: {}", path.display(), err);
+
+            match fs::read_to_string(&path) {
+                Ok(svg) => {
+                    report.icons_found += 1;
+                    eprintln!("[gtk_theme] loaded icon {}", path.display());
+                    return Some(svg);
+                }
+                Err(err) => {
+                    report.warnings.push(format!(
+                        "Could not read icon {}: {}",
+                        path.display(),
+                        err
+                    ));
+                    eprintln!(
+                        "[gtk_theme] could not read icon {}: {}",
+                        path.display(),
+                        err
+                    );
+                }
             }
         }
     }

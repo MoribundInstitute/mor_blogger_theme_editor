@@ -6,11 +6,12 @@ use crate::ui::panels::background_panel::BackgroundPanel;
 use crate::ui::panels::buttons_panel::ButtonsPanel;
 use crate::ui::panels::colors_panel::ColorsPanel;
 use crate::ui::panels::effects_panel::EffectsPanel;
-use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
+use crate::ui::panels::icons_panel::SvgIconsPanel;
 use crate::ui::panels::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::template_modules::TemplateModulesPanel;
 use crate::ui::panels::typography_panel::TypographyPanel;
+use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
 
 #[component]
 pub fn LeftVisualsPanel(
@@ -52,13 +53,11 @@ pub fn LeftVisualsPanel(
     rsx! {
         aside { class: "editor-left-panel",
 
-            // Render the draggable window bar when floating
             if layout() == PanelLayout::Floating {
                 div { class: "floating-editor-window-bar",
                     span { class: "floating-editor-grip", style: "display: flex; align-items: center;", IconGrip {} }
                     span { class: "floating-editor-title", "Theme Palette" }
-                    
-                    // GTK-style icon-only window controls
+
                     div { class: "floating-editor-window-actions", style: "display: flex; gap: 4px;",
                         button {
                             class: "editor-mini-button",
@@ -77,7 +76,6 @@ pub fn LeftVisualsPanel(
                     }
                 }
             } else {
-                // Normal header
                 div { class: "editor-panel-header",
                     h2 { class: "editor-panel-title", "Theme Palette" }
                     button {
@@ -90,7 +88,6 @@ pub fn LeftVisualsPanel(
                 }
             }
 
-            // Toolbar with Icon + Text combinations
             div { class: "editor-panel-toolbar-actions",
                 button {
                     class: if layout() == PanelLayout::Split { "editor-button is-active" } else { "editor-button" },
@@ -124,6 +121,7 @@ pub fn LeftVisualsPanel(
                         }
                     }
                 }
+
                 EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,
                     PresetsPanel {
                         active_preset,
@@ -135,6 +133,7 @@ pub fn LeftVisualsPanel(
                         show_undocked_presets,
                     }
                 }
+
                 EditorAccordion { id: "Colors", title: "Color Palette", active: active_tab,
                     ColorsPanel {
                         bg_base: signals.bg_base,
@@ -146,6 +145,7 @@ pub fn LeftVisualsPanel(
                         border: signals.border,
                     }
                 }
+
                 EditorAccordion { id: "Effects", title: "Borders & Effects", active: active_tab,
                     EffectsPanel {
                         panel_border_width: signals.panel_border_width,
@@ -156,9 +156,20 @@ pub fn LeftVisualsPanel(
                         panel_border_image_repeat: signals.panel_border_image_repeat,
                     }
                 }
+
+                EditorAccordion { id: "Icons", title: "SVG Icons", active: active_tab,
+                    SvgIconsPanel {
+                        current_config: current_config.clone(),
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            on_apply_theme.call(new_config);
+                        },
+                    }
+                }
+
                 EditorAccordion { id: "Background", title: "Background", active: active_tab,
                     BackgroundPanel { background: signals.background }
                 }
+
                 EditorAccordion { id: "Typography", title: "Typography", active: active_tab,
                     TypographyPanel {
                         body_font_stack: signals.body_font_stack,
@@ -170,6 +181,7 @@ pub fn LeftVisualsPanel(
                         heading_weight: signals.heading_weight,
                     }
                 }
+
                 EditorAccordion { id: "Buttons", title: "Button Styles", active: active_tab,
                     ButtonsPanel {
                         btn_radius: signals.btn_radius,
@@ -177,6 +189,7 @@ pub fn LeftVisualsPanel(
                         btn_text_transform: signals.btn_text_transform,
                     }
                 }
+
                 EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
                     StaticPagesPanel {
                         signals,

@@ -1,0 +1,37 @@
+/* =========================================================
+   18-Footer-Base.css
+   Shared footer chrome. Loaded for EVERY footer variant
+   (Basic / Compact / Mega): the outer container + the
+   bottom system-info bar.
+   ========================================================= */
+
+.mor-footer {
+  margin-top: auto;
+  border-top: 1px dashed var(--border-color);
+  padding: 30px 40px 20px;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.footer-sys-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.footer-sys-info a {
+  color: var(--fg-dim);
+  border-bottom: 1px dotted var(--fg-dim);
+}
+
+.footer-sys-info a:hover,
+.footer-sys-info a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}

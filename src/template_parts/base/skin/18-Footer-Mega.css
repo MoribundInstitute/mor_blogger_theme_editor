@@ -1,0 +1,46 @@
+/* =========================================================
+   18-Footer-Mega.css
+   Mega-footer ONLY: the multi-column link directory grid.
+   Pulled in only when footer_variant resolves to the "mor"
+   manifest (MorFooterMega.xml). Layers on top of
+   18-Footer-Base.css.
+   ========================================================= */
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.footer-col h4 {
+  color: var(--fg-base);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col li {
+  margin-bottom: 8px;
+}
+
+.footer-col a {
+  color: var(--fg-dim);
+  border-bottom: none;
+  display: inline-block;
+}
+
+.footer-col a:hover,
+.footer-col a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}

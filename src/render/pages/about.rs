@@ -1,7 +1,7 @@
 use crate::config::AboutPageConfig;
 use crate::render::pages::escape_html;
 
-/// Emits the About page as pure layout. 
+/// Emits the About page as pure layout.
 /// Upgraded to a 2-Column "Instructor / Author Profile" aesthetic.
 pub fn generate_about_html(config: &AboutPageConfig) -> String {
     let mut html = String::new();

@@ -46,5 +46,8 @@ pub fn apply_stencil_colors(
         colors.accent
     );
 
-    format!("{}<div class=\"mor-stencil-scope\">\n{}\n</div>", style_block, raw_html)
+    format!(
+        "{}<div class=\"mor-stencil-scope\">\n{}\n</div>",
+        style_block, raw_html
+    )
 }

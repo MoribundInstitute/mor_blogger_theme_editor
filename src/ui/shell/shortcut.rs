@@ -40,16 +40,18 @@ pub fn use_registered_shortcut(
     handler: Option<EventHandler<()>>,
 ) {
     let registry_opt = try_consume_context::<Signal<ShortcutRegistry>>();
-    
+
     // Connect wire on mount
     use_effect({
         let combo = combo.clone();
         let handler = handler.clone();
         let cat = category.to_string();
         let act = action.to_string();
-        
+
         move || {
-            if let (Some(mut reg), Some(c), Some(h)) = (registry_opt, combo.clone(), handler.clone()) {
+            if let (Some(mut reg), Some(c), Some(h)) =
+                (registry_opt, combo.clone(), handler.clone())
+            {
                 reg.write().binds.insert(
                     c.to_uppercase(),
                     ShortcutMeta {
@@ -92,11 +94,11 @@ pub fn MorShortcutRoot(children: Element) -> Element {
             onkeydown: move |evt| {
                 // Preallocate capacity. Stop heap fragmentation on rapid typing.
                 let mut key_combo = String::with_capacity(16);
-                
+
                 if evt.modifiers().ctrl() { key_combo.push_str("CTRL+"); }
                 if evt.modifiers().shift() { key_combo.push_str("SHIFT+"); }
                 if evt.modifiers().alt() { key_combo.push_str("ALT+"); }
-                
+
                 match evt.key() {
                     dioxus::html::Key::Character(c) => key_combo.push_str(&c.to_uppercase()),
                     other => key_combo.push_str(&other.to_string().to_uppercase()),

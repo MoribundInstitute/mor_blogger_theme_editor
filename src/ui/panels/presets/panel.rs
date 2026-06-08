@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use dioxus::html::HasFileData;
+use dioxus::prelude::*;
 
 use crate::config::gtk_theme::ImportedGtkPreset;
 use crate::config::ThemeConfig;
@@ -305,16 +305,30 @@ pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
 
     let bg_panel_css = colors.bg_panel.to_css();
     let bg_elevated_css = colors.bg_elevated.to_css();
-    let active_class = if props.is_active { "preset-card preset-card-active" } else { "preset-card" };
+    let active_class = if props.is_active {
+        "preset-card preset-card-active"
+    } else {
+        "preset-card"
+    };
 
-    let sample_label = preset.base_config.menu_links.first().map(|m| m.label.as_str()).filter(|l| !l.is_empty()).unwrap_or("Home");
+    let sample_label = preset
+        .base_config
+        .menu_links
+        .first()
+        .map(|m| m.label.as_str())
+        .filter(|l| !l.is_empty())
+        .unwrap_or("Home");
     let sample_radius = &preset.base_config.buttons.radius;
     let sample_border_width = &preset.base_config.buttons.border_width;
     let sample_text_transform = &preset.base_config.buttons.text_transform;
 
     let body_font = &preset.base_config.typography.body_font_stack;
     let heading_font_raw = &preset.base_config.typography.heading_font_stack;
-    let heading_font = if heading_font_raw.trim().is_empty() { body_font } else { heading_font_raw };
+    let heading_font = if heading_font_raw.trim().is_empty() {
+        body_font
+    } else {
+        heading_font_raw
+    };
 
     rsx! {
         button {
@@ -380,7 +394,10 @@ pub fn PresetFloatingWindow(props: PresetFloatingWindowProps) -> Element {
 }
 
 #[component]
-pub fn ThemeRestoreDropZone(on_restore: EventHandler<ThemeConfig>, on_close: EventHandler<()>) -> Element {
+pub fn ThemeRestoreDropZone(
+    on_restore: EventHandler<ThemeConfig>,
+    on_close: EventHandler<()>,
+) -> Element {
     let mut is_hovered = use_signal(|| false);
     let mut import_text = use_signal(|| "".to_string());
     let mut import_status = use_signal(|| "".to_string());
@@ -388,7 +405,11 @@ pub fn ThemeRestoreDropZone(on_restore: EventHandler<ThemeConfig>, on_close: Eve
     let restore_from_xml = move |contents: String, source_label: String| {
         import_text.set(contents.clone());
         match extract_and_decode(&contents) {
-            Ok(config) => { on_restore.call(config); import_status.set(format!("Workspace restored from {}!", source_label)); import_text.set("".to_string()); }
+            Ok(config) => {
+                on_restore.call(config);
+                import_status.set(format!("Workspace restored from {}!", source_label));
+                import_text.set("".to_string());
+            }
             Err(err) => import_status.set(format!("Error restoring {}: {}", source_label, err)),
         }
     };

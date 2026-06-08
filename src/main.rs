@@ -1,5 +1,5 @@
+use dioxus::desktop::{Config, LogicalSize, WindowBuilder};
 use dioxus::prelude::*;
-use dioxus::desktop::{Config, WindowBuilder, LogicalSize};
 
 fn main() {
     dioxus_logger::init(dioxus_logger::tracing::Level::INFO).expect("failed to init logger");
@@ -25,16 +25,18 @@ fn main() {
     let cfg = Config::new()
         // FIX: Kill the default OS menu Dioxus tries to inject
         // Note: We use explicit typing just in case the compiler's inference chokes on `None`.
-        .with_menu(None::<dioxus::desktop::muda::Menu>) 
+        .with_menu(None::<dioxus::desktop::muda::Menu>)
         .with_window(
             WindowBuilder::new()
                 .with_title("MorBlogger GUI Theme Builder")
                 .with_inner_size(LogicalSize::new(1280.0, 800.0))
                 .with_decorations(is_native)
-                .with_transparent(!is_native)
+                .with_transparent(!is_native),
         );
 
     std::env::set_var("MOR_ACTIVE_UI_MODE", mode);
 
-    LaunchBuilder::desktop().with_cfg(cfg).launch(mor_blogger_theme_editor::app::App);
+    LaunchBuilder::desktop()
+        .with_cfg(cfg)
+        .launch(mor_blogger_theme_editor::app::App);
 }

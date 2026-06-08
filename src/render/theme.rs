@@ -7,7 +7,7 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 use super::xml_generator;
-use crate::config::{ThemeConfig, StaticPagesConfig};
+use crate::config::{StaticPagesConfig, ThemeConfig};
 use crate::presets::PresetPalette;
 use crate::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
@@ -82,16 +82,25 @@ pub fn save_bundle_to_disk(
         stencils.push(("archive.html", generate_archive_html(&pages_config.archive)));
     }
     if pages_config.categories.include_in_bundle {
-        stencils.push(("directory.html", generate_categories_html(&pages_config.categories)));
+        stencils.push((
+            "directory.html",
+            generate_categories_html(&pages_config.categories),
+        ));
     }
     if pages_config.portfolio.include_in_bundle {
-        stencils.push(("portfolio.html", generate_portfolio_html(&pages_config.portfolio)));
+        stencils.push((
+            "portfolio.html",
+            generate_portfolio_html(&pages_config.portfolio),
+        ));
     }
     if pages_config.about.include_in_bundle {
         stencils.push(("about.html", generate_about_html(&pages_config.about)));
     }
     if pages_config.lms.include_catalog_in_bundle {
-        stencils.push(("course_catalog.html", generate_course_catalog_html(&pages_config.lms)));
+        stencils.push((
+            "course_catalog.html",
+            generate_course_catalog_html(&pages_config.lms),
+        ));
     }
     if pages_config.lms.include_syllabus_in_bundle {
         stencils.push(("syllabus.html", generate_syllabus_html(&pages_config.lms)));
@@ -110,7 +119,8 @@ pub fn save_bundle_to_disk(
         }
     }
 
-    zip.finish().map_err(|e| format!("Failed to finalize zip: {}", e))?;
+    zip.finish()
+        .map_err(|e| format!("Failed to finalize zip: {}", e))?;
 
     Ok(format!("System success: Bundle exported to {:?}", path))
 }

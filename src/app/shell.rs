@@ -5,18 +5,20 @@ use crate::ui::shell::menu_bar::AppMenuBar;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
 use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
-use crate::config::ThemeConfig;
-use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::panels::presets::PresetFloatingWindow;
-use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
-use crate::ui::workspace::left_dock::LeftVisualsPanel;
-use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
-use crate::ui::workspace::right_dock::RightDataPanel;
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
 use super::layout_state::AppLayoutState;
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
+use crate::app::config_bridge::{EditorPrefs, PluginState};
+use crate::config::ThemeConfig;
+use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
+use crate::ui::panels::plugin_manager_panel::{PluginDisplayInfo, PluginManagerPanel};
+use crate::ui::panels::presets::PresetFloatingWindow;
+use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
+use crate::ui::workspace::left_dock::LeftVisualsPanel;
+use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
+use crate::ui::workspace::right_dock::RightDataPanel;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
 
@@ -30,22 +32,52 @@ pub fn render_app_shell(
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
     let show_undocked_presets = theme.show_undocked_presets;
-    let show_undocked_pages = use_signal(|| false);
+    let mut show_undocked_pages = use_signal(|| false);
 
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
+    let mut show_plugins = use_signal(|| false);
 
-    let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
+    // Track the state of modular features loaded from the preferences file.
+    let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
+    let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
+    // In src/app/shell.rs
+    let available_plugins = use_signal(|| vec![
+        PluginDisplayInfo { 
+            id: "os_chameleon", 
+            display_name: "OS Chameleon (Dark Mode)", 
+            version: "1.0.0",
+            description: "Automatically toggles dark mode based on the user's OS preference and saves the state locally."
+        },
+        PluginDisplayInfo { 
+            id: "dewey_indexer", 
+            display_name: "Dewey Indexer (Auto-TOC)", 
+            version: "1.1.0",
+            description: "Scans document headers to generate a dynamic, indented table of contents."
+        },
+    ]);
+
+    use_effect(move || {
+        // Read editor_prefs.json once on boot to establish the plugin launch state
+        if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
+            if let Ok(prefs) = serde_json::from_str::<EditorPrefs>(&json) {
+                launch_plugins.set(prefs.plugins.clone());
+                current_plugins.set(prefs.plugins);
+            }
+        }
+    });
+
+    let active_ui_mode =
+        std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
 
     // Matrix of UI state based on mode
     let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
-    let config_toml_signal = use_memo(move || {
-        toml::to_string_pretty(&current_config()).unwrap_or_default()
-    });
+    let config_toml_signal =
+        use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
 
     // Writable TV monitor for preview output.
     let mut tv_monitor = use_signal(|| String::new());
@@ -70,7 +102,7 @@ pub fn render_app_shell(
 
                     center: rsx! {
                         if show_custom_title {
-                            MorWindowTitle { 
+                            MorWindowTitle {
                                 title: "Moribund Theme Architect".to_string(),
                                 subtitle: Some(format!("{} Mode", active_ui_mode))
                             }
@@ -105,6 +137,7 @@ pub fn render_app_shell(
                         onchange: move |evt| {
                             let new_mode = evt.value();
                             ui_mode_pref.set(new_mode.clone());
+                            // Note: A more robust JSON overwrite is typically used here in production
                             let json = format!(r#"{{"ui_mode": "{}"}}"#, new_mode);
                             let _ = std::fs::write("editor_prefs.json", json);
                         },
@@ -112,7 +145,7 @@ pub fn render_app_shell(
                         option { value: "native", "Native OS Window" }
                         option { value: "tiling", "Tiling WM (No Buttons)" }
                     }
-                    
+
                     if ui_mode_pref() != active_ui_mode {
                         div { class: "editor-note", style: "margin-top: 12px; border-color: var(--editor-warning); background: rgba(210, 153, 34, 0.05);",
                             p { class: "editor-note-title", style: "color: var(--editor-warning);", "Restart Required" }
@@ -154,12 +187,13 @@ pub fn render_app_shell(
             }
 
             div { class: "editor-shell", style: "height: 100%;",
-                
+
                 // 4. WIRED MENU BAR
                 AppMenuBar {
                     show_prefs,
                     show_about,
                     show_shortcuts,
+                    show_plugins,
                     on_load_theme: move |_| {
                         if let Some(content) = crate::utils::io::load_toml() {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {
@@ -177,7 +211,7 @@ pub fn render_app_shell(
                         crate::utils::io::export_bundle(&(render.generated_xml)(), &config_toml_signal());
                     },
                 }
-                
+
                 div {
                     class: "editor-main",
                     "data-left-layout": panel_layout_class((layout.left_layout)()),
@@ -272,6 +306,13 @@ pub fn render_app_shell(
                         preview_html: tv_monitor,
                         base_preview_html: render.preview_html,
                     }
+                }
+
+                PluginManagerPanel {
+                    show_panel: show_plugins,
+                    launch_state: launch_plugins,
+                    current_state: current_plugins,
+                    available_plugins,
                 }
 
                 if !(render.diag)().errors.is_empty() || !(render.diag)().warnings.is_empty() {

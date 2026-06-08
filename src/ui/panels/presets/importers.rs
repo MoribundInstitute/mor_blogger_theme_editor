@@ -15,7 +15,7 @@ pub(crate) fn choose_gtk_theme(
     else {
         return Ok(None);
     };
-    
+
     import_gtk4_preset(&dir, current_config).map(Some)
 }
 
@@ -130,10 +130,10 @@ pub(crate) fn normalize_preset_url(input: &str) -> String {
             .trim_start_matches("http://");
 
         let parts: Vec<&str> = without_scheme.splitn(4, '/').collect();
-        
+
         if parts.len() >= 4 && parts[0] == "cdn.jsdelivr.net" && parts[1] == "gh" {
             let owner = parts[2];
-            let rest = parts[3]; 
+            let rest = parts[3];
 
             if let Some((repo_branch, path)) = rest.split_once('/') {
                 let (repo, branch) = if let Some((r, b)) = repo_branch.split_once('@') {

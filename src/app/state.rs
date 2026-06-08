@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
-use crate::config::{MenuLink, TemplatePackConfig, ThemeConfig};
 use crate::config::defaults::default_theme_config;
+use crate::config::{MenuLink, TemplatePackConfig, ThemeConfig};
 use crate::ui::panels::presets::ThemeSignals;
 
 use super::config_bridge::{menu_label, menu_url};
@@ -35,7 +35,8 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let hover_scale = use_signal(|| defaults.colors.hover_scale.clone());
     let panel_border_image_url = use_signal(|| defaults.colors.panel_border_image_url.clone());
     let panel_border_image_slice = use_signal(|| defaults.colors.panel_border_image_slice.clone());
-    let panel_border_image_repeat = use_signal(|| defaults.colors.panel_border_image_repeat.clone());
+    let panel_border_image_repeat =
+        use_signal(|| defaults.colors.panel_border_image_repeat.clone());
 
     let btn_radius = use_signal(|| defaults.buttons.radius.clone());
     let btn_border_width = use_signal(|| defaults.buttons.border_width.clone());

@@ -62,8 +62,14 @@ mod tests {
 
     #[test]
     fn sanitizes_preset_ids() {
-        assert_eq!(sanitize_preset_id("WhiteSur Dark Solid Nord"), "whitesur-dark-solid-nord");
-        assert_eq!(sanitize_preset_id("  Catppuccin--Mocha!! "), "catppuccin-mocha");
+        assert_eq!(
+            sanitize_preset_id("WhiteSur Dark Solid Nord"),
+            "whitesur-dark-solid-nord"
+        );
+        assert_eq!(
+            sanitize_preset_id("  Catppuccin--Mocha!! "),
+            "catppuccin-mocha"
+        );
         assert_eq!(sanitize_preset_id("!!!"), "imported-preset");
     }
 }

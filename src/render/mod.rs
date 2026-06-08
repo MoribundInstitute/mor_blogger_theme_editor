@@ -4,11 +4,11 @@ mod theme;
 mod util;
 mod xml_generator;
 
-pub mod pages;
-pub mod xml_parts;
-pub mod template_resolver;
 pub mod css_builder;
+pub mod pages;
 pub mod plugins;
+pub mod template_resolver;
+pub mod xml_parts;
 
 pub use preview::render_preview_html;
 // Added save_bundle_to_disk to the public exports

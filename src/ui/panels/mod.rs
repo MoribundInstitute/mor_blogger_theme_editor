@@ -7,6 +7,7 @@ pub mod diagnostics_panel;
 pub mod effects_panel;
 pub mod icons_panel;
 pub mod menu_panel;
+pub mod plugin_manager_panel;
 pub mod plugins_panel;
 pub mod presets;
 pub mod seo_panel;

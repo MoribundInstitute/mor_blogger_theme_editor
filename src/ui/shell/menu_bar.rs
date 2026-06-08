@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
-use crate::ui::shell::shortcut::use_shortcut; // <-- Adjust this path if needed
+use crate::ui::shell::shortcut::use_shortcut;
+use dioxus::prelude::*; // <-- Adjust this path if needed
 
 // =========================================================================
 // 1. GENERIC BUILDING BLOCKS (Formerly menu.rs)
@@ -40,7 +40,7 @@ pub fn MenuItem(
 ) -> Element {
     let bind_shortcut = if disabled { None } else { shortcut.clone() };
     use_shortcut(bind_shortcut, on_action.clone());
-    
+
     rsx! {
         button {
             class: if disabled { "mor-menu-item disabled" } else { "mor-menu-item" },
@@ -72,6 +72,7 @@ pub fn AppMenuBar(
     mut show_prefs: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
+    mut show_plugins: Signal<bool>, // <-- New signal to control the Plugin Manager visibility
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
     on_export_xml: EventHandler<()>,
@@ -83,11 +84,11 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "File".to_string(),
                 MenuItem { label: "New Workspace".to_string() }
                 MenuSeparator {}
-                MenuItem { 
+                MenuItem {
                     label: "Load Theme (.toml)".to_string(),
                     on_action: move |_| on_load_theme.call(())
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Save Theme (.toml)".to_string(),
                     on_action: move |_| on_save_theme.call(())
                 }
@@ -95,22 +96,22 @@ pub fn AppMenuBar(
                 MenuItem { label: "Import Data (.json)".to_string() }
                 MenuItem { label: "Export Data (.json)".to_string() }
                 MenuSeparator {}
-                MenuItem { 
+                MenuItem {
                     label: "Export Blogger XML".to_string(),
                     on_action: move |_| on_export_xml.call(())
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Export Theme Bundle (.zip)".to_string(),
                     on_action: move |_| on_export_zip.call(())
                 }
                 MenuSeparator {}
                 // ✅ 4. Fix the Exit Button Type
-                MenuItem { 
+                MenuItem {
                     label: "Exit".to_string(),
                     on_action: move |_| -> () { std::process::exit(0); }
                 }
             }
-            
+
             // 2. EDIT
             MorMenuDropdown { label: "Edit".to_string(),
                 MenuItem { label: "Undo".to_string(), shortcut: "Ctrl+Z".to_string() }
@@ -137,7 +138,7 @@ pub fn AppMenuBar(
 
             // 5. PROFILE
             MorMenuDropdown { label: "Profile".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "User Preferences".to_string(),
                     on_action: move |_| show_prefs.set(true)
                 }
@@ -148,6 +149,11 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Tools".to_string(),
                 MenuItem { label: "Theme Diagnostics".to_string() }
                 MenuItem { label: "CSS Token Builder".to_string() }
+                MenuSeparator {}
+                MenuItem {
+                    label: "Plugin Manager".to_string(),
+                    on_action: move |_| show_plugins.set(true)
+                }
             }
 
             // 7. HELP
@@ -158,7 +164,7 @@ pub fn AppMenuBar(
                     on_action: move |_| show_shortcuts.set(true)
                 }
                 MenuSeparator {}
-                MenuItem { 
+                MenuItem {
                     label: "About MorBlogger".to_string(),
                     on_action: move |_| show_about.set(true)
                 }

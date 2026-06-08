@@ -4,11 +4,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn MorCheckbox(
-    label: String,
-    checked: bool,
-    onchange: EventHandler<bool>,
-) -> Element {
+pub fn MorCheckbox(label: String, checked: bool, onchange: EventHandler<bool>) -> Element {
     rsx! {
         label {
             class: "mor-checkbox-wrapper",
@@ -54,7 +50,7 @@ pub fn MorTextInput(
     onchange: EventHandler<String>,
 ) -> Element {
     let input_type = if is_password { "password" } else { "text" };
-    
+
     rsx! {
         div { class: "mor-input-wrapper",
             div { class: "mor-input-label", "{label}" }
@@ -69,11 +65,7 @@ pub fn MorTextInput(
 }
 
 #[component]
-pub fn MorTabs(
-    tabs: Vec<String>,
-    active: String,
-    onchange: EventHandler<String>,
-) -> Element {
+pub fn MorTabs(tabs: Vec<String>, active: String, onchange: EventHandler<String>) -> Element {
     rsx! {
         div { class: "mor-tabs",
             // Iterate over reference. Kills heap allocation bloat.

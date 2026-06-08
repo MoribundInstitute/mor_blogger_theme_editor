@@ -1,5 +1,5 @@
-pub mod scanner;
 pub mod analyzer;
+pub mod scanner;
 
 use crate::config::TemplatePackConfig;
 
@@ -58,10 +58,7 @@ impl DiagnosticResult {
 }
 
 /// Run all integrity checks against a Blogger template source string.
-pub fn check_integrity(
-    source: &str,
-    active_variants: &TemplatePackConfig,
-) -> DiagnosticResult {
+pub fn check_integrity(source: &str, active_variants: &TemplatePackConfig) -> DiagnosticResult {
     let mut warnings = Vec::new();
 
     // 1. Fast Text-Level Scanning (Catches tokens and fatal HTML entities)

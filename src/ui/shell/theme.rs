@@ -115,7 +115,9 @@ impl Default for MorTheme {
             accent_hover: "#4a90d9".to_string(),
             btn: "#3a3a3a".to_string(),
             btn_hover: "#4a4a4a".to_string(),
-            font_family: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif".to_string(),
+            font_family:
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                    .to_string(),
             font_size_base: "13px".to_string(),
             font_size_h1: "20px".to_string(),
             padding_base: "8px".to_string(),

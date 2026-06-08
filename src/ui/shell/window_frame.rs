@@ -1,9 +1,9 @@
 // src/shell.rs
 // Modular CSD HeaderBar and Shell container. Zero layout lock-in.
-use dioxus::prelude::*;
-use dioxus::desktop::window;
-use dioxus::desktop::tao::window::ResizeDirection;
 use crate::ui::shell::shortcut::MorShortcutRoot;
+use dioxus::desktop::tao::window::ResizeDirection;
+use dioxus::desktop::window;
+use dioxus::prelude::*;
 
 #[component]
 pub fn MorWindowTitle(title: String, #[props(default = None)] subtitle: Option<String>) -> Element {
@@ -11,16 +11,16 @@ pub fn MorWindowTitle(title: String, #[props(default = None)] subtitle: Option<S
         div {
             class: "mor-window-title-block",
             style: "display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;",
-            span { 
-                class: "mor-window-title", 
-                style: "font-weight: 600; font-size: 13px; color: var(--mor-text);", 
-                "{title}" 
+            span {
+                class: "mor-window-title",
+                style: "font-weight: 600; font-size: 13px; color: var(--mor-text);",
+                "{title}"
             }
             if let Some(sub) = subtitle {
-                span { 
-                    class: "mor-window-subtitle", 
-                    style: "font-size: 11px; color: var(--mor-text-muted); margin-top: -2px;", 
-                    "{sub}" 
+                span {
+                    class: "mor-window-subtitle",
+                    style: "font-size: 11px; color: var(--mor-text-muted); margin-top: -2px;",
+                    "{sub}"
                 }
             }
         }
@@ -41,15 +41,16 @@ pub struct MorHeaderBarProps {
 
 #[component]
 pub fn MorHeaderBar(props: MorHeaderBarProps) -> Element {
-    let mut last_click = use_signal(|| std::time::Instant::now() - std::time::Duration::from_secs(10));
-    
+    let mut last_click =
+        use_signal(|| std::time::Instant::now() - std::time::Duration::from_secs(10));
+
     let handle_drag = move |_| {
         let now = std::time::Instant::now();
-        if now.duration_since(last_click())  < std::time::Duration::from_millis(400) {
+        if now.duration_since(last_click()) < std::time::Duration::from_millis(400) {
             window().toggle_maximized();
             last_click.set(now - std::time::Duration::from_secs(10));
         } else {
-            last_click.set (now);
+            last_click.set(now);
             window().drag();
         }
     };
@@ -58,22 +59,22 @@ pub fn MorHeaderBar(props: MorHeaderBarProps) -> Element {
         div {
             class:  "mor-headerbar ",
             style:  "display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 46px; background: var(--mor-header); border-bottom: 1px solid var(--mor-border); ",
-            
+
             onmousedown: handle_drag,
-            
-            div { 
+
+            div {
                 class:  "mor-headerbar-start ",
                 style:  "display: flex; align-items: center; justify-content: flex-start; height: 100%; padding-left: 8px; gap: 6px; ",
                 if let Some(s) = props.start { {s} }
             }
-            
-            div { 
+
+            div {
                 class:  "mor-headerbar-center ",
                 style:  "display: flex; align-items: center; justify-content: center; height: 100%; ",
                 if let Some(c) = props.center { {c} }
             }
 
-            div { 
+            div {
                 class:  "mor-headerbar-end ",
                 style:  "display: flex; align-items: center; justify-content: flex-end; height: 100%; padding-right: 6px; gap: 6px; ",
                 if let Some(e) = props.end { {e} }
@@ -95,7 +96,7 @@ pub fn MorHeaderBar(props: MorHeaderBarProps) -> Element {
 pub fn MorShell(children: Element) -> Element {
     let mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
     let is_frameless = mode == "frameless";
-    
+
     rsx! {
         style {
              ".window-btn {{ width: 32px; height: 32px; border: none; border-radius: 6px; background: transparent; color: var(--mor-text-muted); cursor: default; font-family: sans-serif; font-s ize: 14px; transition: background 0.1s; }} "
@@ -114,10 +115,10 @@ pub fn MorShell(children: Element) -> Element {
              ".mor-resize-edge.bottom-right {{ bottom: 0; right: 0; width: 10px; height: 10px; cursor: se-resize; }} "
         }
         MorShortcutRoot {
-            div { 
+            div {
                 class:  "mor-root ",
                 style:  "height: 100vh; width: 100vw; display: flex; flex-direction: column; background-color: var(--mor-bg); overflow: hidden; position: relative; ",
-                
+
                 if is_frameless {
                     div { class:  "mor-resize-edge top ", onmousedown: move |_| { let _ = window().drag_resize_window(ResizeDirection::North); } }
                     div { class:  "mor-resize-edge bottom ", onmousedown: move |_| { let _ = window().drag_resize_window(ResizeDirection::South); } }

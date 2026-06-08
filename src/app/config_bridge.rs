@@ -1,5 +1,24 @@
 use crate::config::ThemeConfig;
 use crate::ui::workspace::layout::PanelLayout;
+use serde::{Deserialize, Serialize};
+
+/// A straightforward record to remember if a specific plugin is turned on or off.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct PluginState {
+    pub id: String,
+    pub enabled: bool,
+}
+
+/// Application preferences state, including active plugins.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EditorPrefs {
+    /// A list of plugins and their current on/off status.
+    /// The #[serde(default)] tag ensures that if a user loads an older save file 
+    /// from before the Plugin Manager existed, the app will safely load an empty list 
+    /// instead of crashing.
+    #[serde(default)]
+    pub plugins: Vec<PluginState>,
+}
 
 pub fn menu_label(config: &ThemeConfig, index: usize) -> String {
     config

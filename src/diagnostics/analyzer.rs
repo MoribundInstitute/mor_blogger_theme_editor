@@ -1,6 +1,6 @@
-use roxmltree::{Document, Node, ParsingOptions};
-use crate::config::TemplatePackConfig;
 use super::{Severity, Warning};
+use crate::config::TemplatePackConfig;
+use roxmltree::{Document, Node, ParsingOptions};
 
 /// Visual shell detected from the template body.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,11 +21,21 @@ struct StructuralFacts {
 }
 
 const REQUIRED_BLOG_INCLUDABLES: &[&str] = &[
-    "main", "post", "postBody", "postTitle", "postCommentsAndAd", "postPagination",
+    "main",
+    "post",
+    "postBody",
+    "postTitle",
+    "postCommentsAndAd",
+    "postPagination",
 ];
 
 const RECOMMENDED_BLOG_INCLUDABLES: &[&str] = &[
-    "comments", "commentPicker", "threadedComments", "postFooter", "postLabels", "postTimestamp",
+    "comments",
+    "commentPicker",
+    "threadedComments",
+    "postFooter",
+    "postLabels",
+    "postTimestamp",
 ];
 
 pub fn run_xml_checks(source: &str, active_variants: &TemplatePackConfig, out: &mut Vec<Warning>) {
@@ -33,7 +43,7 @@ pub fn run_xml_checks(source: &str, active_variants: &TemplatePackConfig, out: &
         allow_dtd: true,
         ..ParsingOptions::default()
     };
-    
+
     match Document::parse_with_options(source, opts) {
         Ok(doc) => {
             let facts = collect_facts(&doc);
@@ -42,13 +52,15 @@ pub fn run_xml_checks(source: &str, active_variants: &TemplatePackConfig, out: &
             check_blogger_engine_layer(&facts, out);
             check_profile_structure(profile, &facts, out);
             check_panel_toggles(&doc, out);
-            
+
             check_registry_dependencies(&doc, active_variants, source, out);
         }
         Err(e) => {
             out.push(Warning::error(
                 "XML_PARSE",
-                format!("Template is not well-formed XML; structural checks skipped. Parser said: {e}"),
+                format!(
+                    "Template is not well-formed XML; structural checks skipped. Parser said: {e}"
+                ),
             ));
         }
     }
@@ -112,16 +124,20 @@ fn check_blogger_engine_layer(facts: &StructuralFacts, out: &mut Vec<Warning>) {
     if !has_main_blog_section(facts) {
         out.push(Warning::error("BSECTION_MISSING", "Required main Blog section not found. Expected either <b:section id='main'> or <b:section id='main-content'>."));
     }
-    
+
     let has_single_sidebar = has_section(facts, "sidebar");
-    let has_split_sidebars = has_section(facts, "sidebar-left") && has_section(facts, "sidebar-right");
+    let has_split_sidebars =
+        has_section(facts, "sidebar-left") && has_section(facts, "sidebar-right");
 
     if !has_single_sidebar && !has_split_sidebars {
         out.push(Warning::error("BSECTION_MISSING", "No valid sidebar section set found. Expected either id='sidebar' or both id='sidebar-left' and id='sidebar-right'."));
     }
 
     if !has_widget(facts, "Blog1") {
-        out.push(Warning::error("WIDGET_MISSING", "Required Blog widget id='Blog1' not found."));
+        out.push(Warning::error(
+            "WIDGET_MISSING",
+            "Required Blog widget id='Blog1' not found.",
+        ));
         return;
     }
 
@@ -140,20 +156,33 @@ fn check_blogger_engine_layer(facts: &StructuralFacts, out: &mut Vec<Warning>) {
 
     for includable in RECOMMENDED_BLOG_INCLUDABLES {
         if !has_includable(facts, includable) {
-            out.push(Warning::warn("BLOG_INCLUDABLE_RECOMMENDED_MISSING", format!("Recommended Blogger includable id='{includable}' not found.")));
+            out.push(Warning::warn(
+                "BLOG_INCLUDABLE_RECOMMENDED_MISSING",
+                format!("Recommended Blogger includable id='{includable}' not found."),
+            ));
         }
     }
 
     if !has_widget(facts, "Label1") {
-        out.push(Warning::warn("WIDGET_OPTIONAL_MISSING", "Label1 not found. Label browsing will not render."));
+        out.push(Warning::warn(
+            "WIDGET_OPTIONAL_MISSING",
+            "Label1 not found. Label browsing will not render.",
+        ));
     }
 
     if !has_widget(facts, "BlogArchive1") {
-        out.push(Warning::warn("WIDGET_OPTIONAL_MISSING", "BlogArchive1 not found. Archive browsing will not render."));
+        out.push(Warning::warn(
+            "WIDGET_OPTIONAL_MISSING",
+            "BlogArchive1 not found. Archive browsing will not render.",
+        ));
     }
 }
 
-fn check_profile_structure(profile: TemplateProfile, facts: &StructuralFacts, out: &mut Vec<Warning>) {
+fn check_profile_structure(
+    profile: TemplateProfile,
+    facts: &StructuralFacts,
+    out: &mut Vec<Warning>,
+) {
     match profile {
         TemplateProfile::TerminalWorkspace => {
             require_id(facts, out, "panel-left", Severity::Error);
@@ -179,7 +208,7 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
         let Some(class_attr) = node.attribute("class") else {
             continue;
         };
-        
+
         if !class_attr
             .split_ascii_whitespace()
             .any(|class_name| class_name == "panel-toggle")
@@ -191,12 +220,12 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
             .attribute("data-target")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
-            
+
         let has_onclick = node
             .attribute("onclick")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
-            
+
         let has_href = node
             .attribute("href")
             .map(|value| {
@@ -279,29 +308,62 @@ fn style_block_contains(source: &str, doc: &Document, needle: &str) -> bool {
     false
 }
 
-fn require_id(facts: &StructuralFacts, out: &mut Vec<Warning>, id: &'static str, severity: Severity) {
+fn require_id(
+    facts: &StructuralFacts,
+    out: &mut Vec<Warning>,
+    id: &'static str,
+    severity: Severity,
+) {
     if !has_id(facts, id) {
         let warning = match severity {
-            Severity::Error => Warning::error("ID_MISSING", format!("Required id='{id}' not found.")),
-            Severity::Warning => Warning::warn("ID_OPTIONAL_MISSING", format!("Optional id='{id}' not found.")),
+            Severity::Error => {
+                Warning::error("ID_MISSING", format!("Required id='{id}' not found."))
+            }
+            Severity::Warning => Warning::warn(
+                "ID_OPTIONAL_MISSING",
+                format!("Optional id='{id}' not found."),
+            ),
         };
         out.push(warning);
     }
 }
 
-fn require_class(facts: &StructuralFacts, out: &mut Vec<Warning>, class_name: &'static str, severity: Severity) {
+fn require_class(
+    facts: &StructuralFacts,
+    out: &mut Vec<Warning>,
+    class_name: &'static str,
+    severity: Severity,
+) {
     if !has_class(facts, class_name) {
         let warning = match severity {
-            Severity::Error => Warning::error("CLASS_MISSING", format!("Required class='{class_name}' not found.")),
-            Severity::Warning => Warning::warn("CLASS_OPTIONAL_MISSING", format!("Optional class='{class_name}' not found.")),
+            Severity::Error => Warning::error(
+                "CLASS_MISSING",
+                format!("Required class='{class_name}' not found."),
+            ),
+            Severity::Warning => Warning::warn(
+                "CLASS_OPTIONAL_MISSING",
+                format!("Optional class='{class_name}' not found."),
+            ),
         };
         out.push(warning);
     }
 }
 
-fn has_id(facts: &StructuralFacts, id: &str) -> bool { facts.ids.iter().any(|f| f == id) }
-fn has_class(facts: &StructuralFacts, class_name: &str) -> bool { facts.classes.iter().any(|f| f == class_name) }
-fn has_main_blog_section(facts: &StructuralFacts) -> bool { has_section(facts, "main") || has_section(facts, "main-content") }
-fn has_section(facts: &StructuralFacts, id: &str) -> bool { facts.b_section_ids.iter().any(|f| f == id) }
-fn has_widget(facts: &StructuralFacts, id: &str) -> bool { facts.widget_ids.iter().any(|f| f == id) }
-fn has_includable(facts: &StructuralFacts, id: &str) -> bool { facts.includable_ids.iter().any(|f| f == id) }
+fn has_id(facts: &StructuralFacts, id: &str) -> bool {
+    facts.ids.iter().any(|f| f == id)
+}
+fn has_class(facts: &StructuralFacts, class_name: &str) -> bool {
+    facts.classes.iter().any(|f| f == class_name)
+}
+fn has_main_blog_section(facts: &StructuralFacts) -> bool {
+    has_section(facts, "main") || has_section(facts, "main-content")
+}
+fn has_section(facts: &StructuralFacts, id: &str) -> bool {
+    facts.b_section_ids.iter().any(|f| f == id)
+}
+fn has_widget(facts: &StructuralFacts, id: &str) -> bool {
+    facts.widget_ids.iter().any(|f| f == id)
+}
+fn has_includable(facts: &StructuralFacts, id: &str) -> bool {
+    facts.includable_ids.iter().any(|f| f == id)
+}

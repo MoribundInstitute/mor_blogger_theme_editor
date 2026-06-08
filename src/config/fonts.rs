@@ -110,14 +110,14 @@ pub fn resolve_font_stack(input: &str) -> String {
 /// Resolves any arbitrary string into a functional CSS stack string with a specific fallback.
 pub fn resolve_font_stack_with_fallback(input: &str, fallback: &str) -> String {
     let trimmed = input.trim();
-    
+
     // Check both registries for a match
     for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
         if font.name.eq_ignore_ascii_case(trimmed) {
             return font.css_stack.to_string();
         }
     }
-    
+
     // Fallback for custom entries typed manually by user
     if trimmed.contains(',') {
         trimmed.to_string()
@@ -131,13 +131,13 @@ pub fn resolve_font_stack_with_fallback(input: &str, fallback: &str) -> String {
 /// Builds a Google Fonts `<link>` tag for the provided font stacks.
 pub fn build_google_font_imports(font_stacks: &[&str]) -> String {
     let mut families = Vec::new();
-    
+
     for stack in font_stacks {
         let trimmed = stack.trim();
         if trimmed.is_empty() {
             continue;
         }
-        
+
         // Check if it's in our registry
         let mut found = false;
         for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
@@ -149,22 +149,28 @@ pub fn build_google_font_imports(font_stacks: &[&str]) -> String {
                 break;
             }
         }
-        
+
         // If not in registry, but looks like a custom font name (no commas, not a generic family)
-        if !found && !trimmed.contains(',') && !matches!(trimmed.to_lowercase().as_str(), "serif" | "sans-serif" | "monospace" | "cursive" | "fantasy" | "system-ui") {
+        if !found
+            && !trimmed.contains(',')
+            && !matches!(
+                trimmed.to_lowercase().as_str(),
+                "serif" | "sans-serif" | "monospace" | "cursive" | "fantasy" | "system-ui"
+            )
+        {
             let encoded = trimmed.replace(' ', "+");
             families.push(format!("{}:wght@400;700", encoded));
         }
     }
-    
+
     if families.is_empty() {
         return String::new();
     }
-    
+
     // Remove duplicates and sort for consistent output
     families.sort();
     families.dedup();
-    
+
     let query = families.join("&family=");
     format!("<link href=\"https://fonts.googleapis.com/css2?family={}&display=swap\" rel=\"stylesheet\">", query)
 }

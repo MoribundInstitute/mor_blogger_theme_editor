@@ -19,8 +19,7 @@ const LEGACY_MARKER_END: &str = ":MOR_BLOGGER_THEME_STATE -->";
 /// Injects the compressed, base64-encoded state directly into the Blogger XML skeleton.
 pub fn inject_state(xml: &str, config: &ThemeConfig) -> Result<String, String> {
     // 1. Serialize to a highly compact binary format (Postcard).
-    let binary_data = to_allocvec(config)
-        .map_err(|e| format!("Serialization failed: {}", e))?;
+    let binary_data = to_allocvec(config).map_err(|e| format!("Serialization failed: {}", e))?;
 
     // 2. Compress the binary payload to eliminate redundant CSS/text space.
     // Level 3 is a standard, efficient default for zstd.

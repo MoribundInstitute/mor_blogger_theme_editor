@@ -85,7 +85,9 @@ pub fn save_user_preset_bundle_to_dir(
 ///
 /// This reads `preset.toml`, then attaches `preset.css` if present. Missing CSS
 /// is non-fatal because some presets may be config-only.
-pub fn load_user_preset_bundle(bundle_dir: &Path) -> Result<(UserPresetBundle, UserPresetDiskReport), String> {
+pub fn load_user_preset_bundle(
+    bundle_dir: &Path,
+) -> Result<(UserPresetBundle, UserPresetDiskReport), String> {
     let mut report = UserPresetDiskReport {
         bundle_dir: bundle_dir.to_path_buf(),
         ..UserPresetDiskReport::default()
@@ -106,9 +108,10 @@ pub fn load_user_preset_bundle(bundle_dir: &Path) -> Result<(UserPresetBundle, U
             report.files_read.push(css_path);
         }
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            report
-                .warnings
-                .push(format!("{} missing; using config-only preset", css_path.display()));
+            report.warnings.push(format!(
+                "{} missing; using config-only preset",
+                css_path.display()
+            ));
         }
         Err(err) => return Err(format!("could not read {}: {}", css_path.display(), err)),
     }
@@ -118,9 +121,11 @@ pub fn load_user_preset_bundle(bundle_dir: &Path) -> Result<(UserPresetBundle, U
         Ok(source_toml) => {
             match toml::from_str::<PresetSourceInfo>(&source_toml) {
                 Ok(source) => bundle.source = source,
-                Err(err) => report
-                    .warnings
-                    .push(format!("could not parse {}: {}", source_path.display(), err)),
+                Err(err) => report.warnings.push(format!(
+                    "could not parse {}: {}",
+                    source_path.display(),
+                    err
+                )),
             }
             report.files_read.push(source_path);
         }

@@ -4,5 +4,5 @@
 //! Blogger static pages, such as course catalogs and syllabi.
 
 pub mod course_catalog;
-pub mod syllabus;
 pub mod my_courses;
+pub mod syllabus;

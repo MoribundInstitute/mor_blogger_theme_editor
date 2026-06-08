@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 
 const MAX_IMPORT_DEPTH: usize = 8;
 
-pub(crate) fn load_theme_color_vars(theme_root: &Path) -> Result<(HashMap<String, String>, Vec<PathBuf>), String> {
+pub(crate) fn load_theme_color_vars(
+    theme_root: &Path,
+) -> Result<(HashMap<String, String>, Vec<PathBuf>), String> {
     let mut vars = HashMap::new();
     let mut read_files = Vec::new();
     let mut seen = HashSet::new();
@@ -58,18 +60,15 @@ fn read_css_with_imports(
         return Ok(String::new());
     }
 
-    let css = fs::read_to_string(path)
-        .map_err(|e| format!("Cannot read {}: {}", path.display(), e))?;
+    let css =
+        fs::read_to_string(path).map_err(|e| format!("Cannot read {}: {}", path.display(), e))?;
 
     read_files.push(path.to_path_buf());
 
     let mut bundled = String::new();
 
     for import in find_local_imports(&css) {
-        let import_path = path
-            .parent()
-            .unwrap_or_else(|| Path::new("."))
-            .join(import);
+        let import_path = path.parent().unwrap_or_else(|| Path::new(".")).join(import);
 
         if import_path.exists() {
             bundled.push_str(&read_css_with_imports(
@@ -161,7 +160,7 @@ fn parse_gtk2_color_scheme(content: &str, map: &mut HashMap<String, String>) {
 fn parse_literal_css_palette(css: &str, map: &mut HashMap<String, String>) {
     let mut color_counts: HashMap<String, usize> = HashMap::new();
     let mut chars = css.chars().peekable();
-    
+
     while let Some(c) = chars.next() {
         if c == '#' {
             let mut hex = String::new();
@@ -181,15 +180,18 @@ fn parse_literal_css_palette(css: &str, map: &mut HashMap<String, String>) {
 
     let mut sorted: Vec<_> = color_counts.into_iter().collect();
     sorted.sort_by(|a, b| b.1.cmp(&a.1));
-    
+
     if let Some((color, _)) = sorted.get(0) {
-        map.entry("literal_fallback_1".to_string()).or_insert(color.clone());
+        map.entry("literal_fallback_1".to_string())
+            .or_insert(color.clone());
     }
     if let Some((color, _)) = sorted.get(1) {
-        map.entry("literal_fallback_2".to_string()).or_insert(color.clone());
+        map.entry("literal_fallback_2".to_string())
+            .or_insert(color.clone());
     }
     if let Some((color, _)) = sorted.get(2) {
-        map.entry("literal_fallback_3".to_string()).or_insert(color.clone());
+        map.entry("literal_fallback_3".to_string())
+            .or_insert(color.clone());
     }
 }
 
@@ -208,9 +210,13 @@ fn parse_gtk_color_vars_into(css: &str, map: &mut HashMap<String, String>) {
     }
 
     for part in css.split(';') {
-        let Some(start) = part.find("--") else { continue; };
+        let Some(start) = part.find("--") else {
+            continue;
+        };
         let candidate = &part[start..];
-        let Some((name, value)) = candidate.split_once(':') else { continue; };
+        let Some((name, value)) = candidate.split_once(':') else {
+            continue;
+        };
         insert_var(map, name, value);
     }
 }

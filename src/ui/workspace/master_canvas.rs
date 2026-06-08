@@ -1,13 +1,13 @@
-use dioxus::prelude::*;
-use crate::utils::clipboard::copy_to_clipboard;
 use crate::config::ThemeConfig;
 use crate::diagnostics::DiagnosticResult;
+use crate::ui::panels::presets::ThemeRestoreDropZone;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewTemplateMode,
     PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
-use crate::ui::panels::presets::ThemeRestoreDropZone;
+use crate::utils::clipboard::copy_to_clipboard;
+use dioxus::prelude::*;
 
 #[component]
 pub fn CenterWorkspacePanel(
@@ -35,8 +35,8 @@ pub fn CenterWorkspacePanel(
 
     // Derived signal. Computes only when xml or toml signals change.
     // Zero manual clone bloat.
-    let export_xml = use_memo(move || {
-        match toml::from_str::<ThemeConfig>(&config_toml()) {
+    let export_xml = use_memo(
+        move || match toml::from_str::<ThemeConfig>(&config_toml()) {
             Ok(config) => crate::utils::rehydration::inject_state(&generated_xml(), &config)
                 .unwrap_or_else(|err| {
                     log::error!("Failed to inject state: {}", err);
@@ -46,8 +46,8 @@ pub fn CenterWorkspacePanel(
                 log::error!("Failed to parse config for state injection: {}", err);
                 generated_xml()
             }
-        }
-    });
+        },
+    );
 
     rsx! {
         div {
@@ -184,7 +184,7 @@ pub fn CenterWorkspacePanel(
                                     dioxus.send("done");
                                 "#);
                                 let _ = eval.send(export_xml());
-                                let _ = eval.recv::<serde_json::Value>().await; 
+                                let _ = eval.recv::<serde_json::Value>().await;
                             }
                         },
                         "Download Theme"

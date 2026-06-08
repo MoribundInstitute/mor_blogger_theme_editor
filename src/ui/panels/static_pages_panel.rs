@@ -1,12 +1,12 @@
 use dioxus::prelude::*;
 
-use crate::utils::clipboard::copy_to_clipboard;
 use crate::config::pages::StaticPagesConfig;
 use crate::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
     generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
 };
 use crate::ui::panels::presets::ThemeSignals;
+use crate::utils::clipboard::copy_to_clipboard;
 
 // (tab id, button label)
 const TABS: &[(&str, &str)] = &[
@@ -40,20 +40,20 @@ pub fn StaticPagesFloatingWindow(
         div {
             class: "preset-floating-window",
             style: "position: fixed; top: 120px; left: 380px; width: 400px; max-height: 80vh; background: var(--editor-bg-base); border: 1px solid var(--editor-border-soft); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden;",
-            
+
             div {
                 class: "preset-floating-drag-handle",
                 style: "padding: 10px 16px; background: var(--editor-bg-panel); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center; cursor: move;",
-                
+
                 h3 { style: "margin: 0; font-size: 14px;", "Static Pages" }
-                
+
                 button {
                     class: "editor-mini-button",
                     onclick: move |_| show_undocked_pages.set(false),
                     "Dock"
                 }
             }
-            
+
             div {
                 style: "padding: 16px; overflow-y: auto;",
                 StaticPagesPanel {
@@ -77,7 +77,7 @@ pub fn StaticPagesPanel(
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
     let mut active_tab = use_signal(|| "Archive");
-    
+
     // State specifically for the Community Pasteboard
     let mut custom_html = use_signal(|| String::new());
 
@@ -85,7 +85,9 @@ pub fn StaticPagesPanel(
     // This keeps the iframe CSS/fonts/colors intact and mocks Blogger feed calls offline.
     use_effect(move || {
         // Prevent auto-reloading on every keystroke if user is typing in the pasteboard
-        if active_tab() == "Community" { return; } 
+        if active_tab() == "Community" {
+            return;
+        }
 
         let base = base_preview_html();
         let pages_snapshot = pages();
@@ -95,7 +97,7 @@ pub fn StaticPagesPanel(
 
     rsx! {
         div { class: "editor-panel",
-            
+
             div { class: "editor-row", style: "margin-bottom: 12px;",
                 button {
                     class: if show_undocked_pages() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
@@ -273,12 +275,7 @@ fn TextField(
 
 /// A button that copies `html` and reports `copied_msg` to the shared status line.
 #[component]
-fn CopyButton(
-    html: String,
-    status: Signal<String>,
-    copied_msg: String,
-    label: String,
-) -> Element {
+fn CopyButton(html: String, status: Signal<String>, copied_msg: String, label: String) -> Element {
     let mut status = status;
     rsx! {
         button {
@@ -312,7 +309,7 @@ fn SinglePageBuilder(
     rsx! {
         div { class: "editor-field-group",
             h4 { "{heading}" }
-            
+
             label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px;",
                 input {
                     r#type: "checkbox",
@@ -333,17 +330,14 @@ fn SinglePageBuilder(
 }
 
 #[component]
-fn AboutBuilder(
-    config: Signal<StaticPagesConfig>,
-    status: Signal<String>,
-) -> Element {
+fn AboutBuilder(config: Signal<StaticPagesConfig>, status: Signal<String>) -> Element {
     let mut config = config;
     let html = generate_about_html(&config().about);
 
     rsx! {
         div { class: "editor-field-group",
             h4 { "Profile & About Settings" }
-            
+
             label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 13px;",
                 input {
                     r#type: "checkbox",
@@ -374,10 +368,7 @@ fn AboutBuilder(
 }
 
 #[component]
-fn LmsBuilder(
-    config: Signal<StaticPagesConfig>,
-    status: Signal<String>,
-) -> Element {
+fn LmsBuilder(config: Signal<StaticPagesConfig>, status: Signal<String>) -> Element {
     let mut config = config;
     let catalog_html = generate_course_catalog_html(&config().lms);
     let syllabus_html = generate_syllabus_html(&config().lms);
@@ -385,7 +376,7 @@ fn LmsBuilder(
     rsx! {
         div { class: "editor-field-group",
             h4 { "Learning Management System" }
-            
+
             label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px;",
                 input {
                     r#type: "checkbox",
@@ -462,8 +453,10 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
     </script>"##;
 
     // Visually hide default blog content before the static page is mounted.
-    let hide_css = "<style>main, .mor-main, #main, .main-section { display: none !important; }</style>";
-    let head_injected = base_html.replace("<head>", &format!("<head>\n{}\n{}", mock_fetch, hide_css));
+    let hide_css =
+        "<style>main, .mor-main, #main, .main-section { display: none !important; }</style>";
+    let head_injected =
+        base_html.replace("<head>", &format!("<head>\n{}\n{}", mock_fetch, hide_css));
 
     let template_html = format!(
         r#"

@@ -6,7 +6,7 @@
 
 use dioxus::prelude::*;
 
-mod config_bridge;
+pub mod config_bridge;
 mod hotswap;
 mod keyboard;
 mod layout_state;

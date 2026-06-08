@@ -1,12 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::utils::rehydration::extract_and_decode;
 use crate::ui::panels::presets::ThemeSignals;
+use crate::utils::rehydration::extract_and_decode;
 
-pub fn use_restore_drop_bridge(
-    signals: ThemeSignals,
-    active_preset: Signal<Option<&'static str>>,
-) {
+pub fn use_restore_drop_bridge(signals: ThemeSignals, active_preset: Signal<Option<&'static str>>) {
     use_effect(move || {
         let mut eval = dioxus::document::eval(
             r#"
@@ -125,7 +122,9 @@ pub fn use_restore_drop_bridge(
                             .unwrap_or("dropped XML");
 
                         let Some(xml_text) = value.get("text").and_then(|v| v.as_str()) else {
-                            log::error!("Dropped XML event from desktop bridge did not include text.");
+                            log::error!(
+                                "Dropped XML event from desktop bridge did not include text."
+                            );
                             continue;
                         };
 

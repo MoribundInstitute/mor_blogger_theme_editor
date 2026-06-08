@@ -11,7 +11,7 @@ pub fn clean_raw_css(input: &str) -> String {
     cleaned = cleaned.replace("</b:skin>", "");
     cleaned = cleaned.replace("<![CDATA[", "");
     cleaned = cleaned.replace("]]>", "");
-    
+
     cleaned.trim().to_string()
 }
 

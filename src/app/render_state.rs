@@ -26,8 +26,9 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
     let current_config_for_preview = theme.current_config;
     let preview_template_mode = layout.preview_template_mode;
 
-    let preview_html =
-        use_memo(move || render_preview_html(&current_config_for_preview(), preview_template_mode()));
+    let preview_html = use_memo(move || {
+        render_preview_html(&current_config_for_preview(), preview_template_mode())
+    });
 
     let current_config_for_diag_init = theme.current_config;
     let current_config_for_diag_effect = theme.current_config;
@@ -37,10 +38,7 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
 
     let mut diag = use_signal(move || {
         let config = current_config_for_diag_init();
-        check_integrity(
-            &generated_xml_for_diag_init(),
-            &config.template_pack,
-        )
+        check_integrity(&generated_xml_for_diag_init(), &config.template_pack)
     });
 
     use_effect(move || {

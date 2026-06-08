@@ -83,12 +83,12 @@ pub fn mor_web_1_0_frames() -> Preset {
         },
         light: PresetPalette {
             colors: ColorConfig {
-                bg_base: "#008080".to_string(), 
+                bg_base: "#008080".to_string(),
                 bg_panel: SurfaceFill::solid("#c0c0c0"),
                 bg_elevated: SurfaceFill::solid("#dfdfdf"),
                 fg_base: "#000000".to_string(),
                 fg_muted: "#404040".to_string(),
-                accent: "#0000ee".to_string(), 
+                accent: "#0000ee".to_string(),
                 border: "#808080".to_string(),
                 ..Default::default()
             },

@@ -4,12 +4,12 @@ use crate::config::ThemeConfig;
 use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::ads_panel::AdsPanel;
 use crate::ui::panels::assets_panel::AssetsPanel;
-use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
 use crate::ui::panels::menu_panel::MenuPanel;
 use crate::ui::panels::plugins_panel::PluginsPanel;
 use crate::ui::panels::presets::ThemeSignals;
 use crate::ui::panels::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::panels::site_panel::SitePanel;
+use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
 
 #[component]
 pub fn RightDataPanel(

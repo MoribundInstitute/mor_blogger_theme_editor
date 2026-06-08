@@ -1,6 +1,6 @@
 use crate::config::pages::LmsConfig;
 
-/// Emits the "My Courses" dashboard. 
+/// Emits the "My Courses" dashboard.
 /// Designed for Local-First hydration (LocalStorage or Browser Extension).
 pub fn generate_my_courses_html(_config: &LmsConfig) -> String {
     let mut html = String::new();
@@ -211,7 +211,7 @@ pub fn generate_my_courses_html(_config: &LmsConfig) -> String {
     );
 
     // 3. Hydration Script (The "Brain")
-    // This script checks LocalStorage and updates the UI. 
+    // This script checks LocalStorage and updates the UI.
     // If you build an extension later, the extension simply writes to LocalStorage.
     html.push_str(
         r##"<script>

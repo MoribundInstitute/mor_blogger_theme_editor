@@ -1,6 +1,6 @@
-use dioxus::prelude::*;
 use crate::config::ThemeConfig;
 use crate::ui::components::inputs::{EditorCard, EditorInput};
+use dioxus::prelude::*;
 
 #[component]
 pub fn AssetsPanel(

@@ -1,5 +1,6 @@
- use dioxus::prelude::*;
+
 use crate::config::ThemeConfig;
+use dioxus::prelude::*;
 
 #[component]
 pub fn TemplateModulesPanel(
@@ -10,8 +11,8 @@ pub fn TemplateModulesPanel(
 
     rsx! {
         div { class: "editor-panel-content", style: "display: flex; flex-direction: column; gap: 12px;",
-            
-            p { 
+
+            p {
                 style: "font-size: 13px; color: var(--editor-fg-muted); margin-bottom: 8px;",
                 "Swap out the underlying HTML/XML layout blocks of the theme."
             }

@@ -1,10 +1,19 @@
-use crate::config::{
-    AssetConfig, ButtonConfig, ColorConfig, FooterConfig, PluginConfig, SeoConfig, SiteConfig,
-    TemplatePackConfig, ThemeConfig, TypographyConfig,
-    SurfaceFill, BackgroundConfig, // TODO: remove any that don't live in crate::config
-};
-use crate::config::pages::StaticPagesConfig;
 use crate::config::ads::AdsConfig;
+use crate::config::pages::StaticPagesConfig;
+use crate::config::{
+    AssetConfig,
+    BackgroundConfig, // TODO: remove any that don't live in crate::config
+    ButtonConfig,
+    ColorConfig,
+    FooterConfig,
+    PluginConfig,
+    SeoConfig,
+    SiteConfig,
+    SurfaceFill,
+    TemplatePackConfig,
+    ThemeConfig,
+    TypographyConfig,
+};
 
 pub fn default_theme_config() -> ThemeConfig {
     ThemeConfig {

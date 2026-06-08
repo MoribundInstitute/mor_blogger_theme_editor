@@ -136,28 +136,30 @@ h3.post-title.entry-title, h1.post-title.entry-title { display: none !important;
     }
 
     // 5. Subject Index (Dewey System) tied to User Config
-html.push_str(r#"
+    html.push_str(
+        r#"
 <h3 class="mor-dir-section-title">By Subject</h3>
 <div class="mor-dir-nav-buttons">
 <span>Jump to:</span>
-"#);
+"#,
+    );
 
-for section in &config.enabled_sections {
-    let anchor_id = section.split_whitespace().next().unwrap_or(section);
-    
-    // FIX: Upgraded to r##"..."## to protect href="# from terminating string
-    html.push_str(&format!(
-        r##" <a href="#subject-{id}">{name}</a> "##,
-        id = escape_html(anchor_id),
-        name = escape_html(section)
-    ));
-}
-html.push_str("   </div>\n");
+    for section in &config.enabled_sections {
+        let anchor_id = section.split_whitespace().next().unwrap_or(section);
 
-for section in &config.enabled_sections {
-    let anchor_id = section.split_whitespace().next().unwrap_or(section);
-    html.push_str(&format!(
-        r#"
+        // FIX: Upgraded to r##"..."## to protect href="# from terminating string
+        html.push_str(&format!(
+            r##" <a href="#subject-{id}">{name}</a> "##,
+            id = escape_html(anchor_id),
+            name = escape_html(section)
+        ));
+    }
+    html.push_str("   </div>\n");
+
+    for section in &config.enabled_sections {
+        let anchor_id = section.split_whitespace().next().unwrap_or(section);
+        html.push_str(&format!(
+            r#"
 <h3 id="subject-{id}" class="mor-dir-section-title">
  <a href="/search/label/{id}" style="color: inherit; text-decoration: none;">{name}</a>
  </h3>
@@ -165,11 +167,11 @@ for section in &config.enabled_sections {
  <a href="/search/label/{id}">Browse All {id}</a>
  </div>
  "#,
-        id = escape_html(anchor_id),
-        name = escape_html(section)
-    ));
-}
-html.push_str("</div>\n");
+            id = escape_html(anchor_id),
+            name = escape_html(section)
+        ));
+    }
+    html.push_str("</div>\n");
 
     // 6. Inject the user's Javascript logic to populate A-Z dynamically
     let js_template = include_str!("../../html_page_stencils/categories_script.js");

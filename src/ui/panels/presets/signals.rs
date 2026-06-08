@@ -81,33 +81,65 @@ impl ThemeSignals {
         self.apply_preset_css(preset);
 
         self.btn_radius.clone().set(base.buttons.radius.clone());
-        self.btn_border_width.clone().set(base.buttons.border_width.clone());
-        self.btn_text_transform.clone().set(base.buttons.text_transform.clone());
+        self.btn_border_width
+            .clone()
+            .set(base.buttons.border_width.clone());
+        self.btn_text_transform
+            .clone()
+            .set(base.buttons.text_transform.clone());
 
-        self.body_font_stack.clone().set(base.typography.body_font_stack.clone());
-        self.heading_font_stack.clone().set(base.typography.heading_font_stack.clone());
-        self.mono_font_stack.clone().set(base.typography.mono_font_stack.clone());
-        self.base_size.clone().set(base.typography.base_size.clone());
-        self.scale_ratio.clone().set(base.typography.scale_ratio.clone());
-        self.line_height.clone().set(base.typography.line_height.clone());
-        self.heading_weight.clone().set(base.typography.heading_weight.clone());
+        self.body_font_stack
+            .clone()
+            .set(base.typography.body_font_stack.clone());
+        self.heading_font_stack
+            .clone()
+            .set(base.typography.heading_font_stack.clone());
+        self.mono_font_stack
+            .clone()
+            .set(base.typography.mono_font_stack.clone());
+        self.base_size
+            .clone()
+            .set(base.typography.base_size.clone());
+        self.scale_ratio
+            .clone()
+            .set(base.typography.scale_ratio.clone());
+        self.line_height
+            .clone()
+            .set(base.typography.line_height.clone());
+        self.heading_weight
+            .clone()
+            .set(base.typography.heading_weight.clone());
     }
 
     pub fn apply_config(&self, config: &ThemeConfig) {
         self.bg_base.clone().set(config.colors.bg_base.clone());
         self.bg_panel.clone().set(config.colors.bg_panel.clone());
-        self.bg_elevated.clone().set(config.colors.bg_elevated.clone());
+        self.bg_elevated
+            .clone()
+            .set(config.colors.bg_elevated.clone());
         self.fg_base.clone().set(config.colors.fg_base.clone());
         self.fg_muted.clone().set(config.colors.fg_muted.clone());
         self.accent.clone().set(config.colors.accent.clone());
         self.border.clone().set(config.colors.border.clone());
-        
-        self.panel_border_width.clone().set(config.colors.panel_border_width.clone());
-        self.glow_spread.clone().set(config.colors.glow_spread.clone());
-        self.hover_scale.clone().set(config.colors.hover_scale.clone());
-        self.panel_border_image_url.clone().set(config.colors.panel_border_image_url.clone());
-        self.panel_border_image_slice.clone().set(config.colors.panel_border_image_slice.clone());
-        self.panel_border_image_repeat.clone().set(config.colors.panel_border_image_repeat.clone());
+
+        self.panel_border_width
+            .clone()
+            .set(config.colors.panel_border_width.clone());
+        self.glow_spread
+            .clone()
+            .set(config.colors.glow_spread.clone());
+        self.hover_scale
+            .clone()
+            .set(config.colors.hover_scale.clone());
+        self.panel_border_image_url
+            .clone()
+            .set(config.colors.panel_border_image_url.clone());
+        self.panel_border_image_slice
+            .clone()
+            .set(config.colors.panel_border_image_slice.clone());
+        self.panel_border_image_repeat
+            .clone()
+            .set(config.colors.panel_border_image_repeat.clone());
 
         self.background.clone().set(config.background.clone());
         self.icons.clone().set(config.icons.clone());
@@ -122,28 +154,60 @@ impl ThemeSignals {
 
     fn apply_config_except_palette(&self, config: &ThemeConfig) {
         self.site_title.clone().set(config.site.site_title.clone());
-        self.site_subtitle.clone().set(config.site.site_subtitle.clone());
-        self.header_logo_url.clone().set(config.site.header_logo_url.clone());
+        self.site_subtitle
+            .clone()
+            .set(config.site.site_subtitle.clone());
+        self.header_logo_url
+            .clone()
+            .set(config.site.header_logo_url.clone());
         self.home_url.clone().set(config.site.home_url.clone());
 
         self.btn_radius.clone().set(config.buttons.radius.clone());
-        self.btn_border_width.clone().set(config.buttons.border_width.clone());
-        self.btn_text_transform.clone().set(config.buttons.text_transform.clone());
+        self.btn_border_width
+            .clone()
+            .set(config.buttons.border_width.clone());
+        self.btn_text_transform
+            .clone()
+            .set(config.buttons.text_transform.clone());
 
-        self.body_font_stack.clone().set(config.typography.body_font_stack.clone());
-        self.heading_font_stack.clone().set(config.typography.heading_font_stack.clone());
-        self.mono_font_stack.clone().set(config.typography.mono_font_stack.clone());
-        self.base_size.clone().set(config.typography.base_size.clone());
-        self.scale_ratio.clone().set(config.typography.scale_ratio.clone());
-        self.line_height.clone().set(config.typography.line_height.clone());
-        self.heading_weight.clone().set(config.typography.heading_weight.clone());
+        self.body_font_stack
+            .clone()
+            .set(config.typography.body_font_stack.clone());
+        self.heading_font_stack
+            .clone()
+            .set(config.typography.heading_font_stack.clone());
+        self.mono_font_stack
+            .clone()
+            .set(config.typography.mono_font_stack.clone());
+        self.base_size
+            .clone()
+            .set(config.typography.base_size.clone());
+        self.scale_ratio
+            .clone()
+            .set(config.typography.scale_ratio.clone());
+        self.line_height
+            .clone()
+            .set(config.typography.line_height.clone());
+        self.heading_weight
+            .clone()
+            .set(config.typography.heading_weight.clone());
 
-        self.favicon_url.clone().set(config.assets.favicon_url.clone());
-        self.social_card_image_url.clone().set(config.assets.social_card_image_url.clone());
+        self.favicon_url
+            .clone()
+            .set(config.assets.favicon_url.clone());
+        self.social_card_image_url
+            .clone()
+            .set(config.assets.social_card_image_url.clone());
 
-        self.meta_description.clone().set(config.seo.meta_description.clone());
-        self.meta_keywords.clone().set(config.seo.meta_keywords.clone());
-        self.custom_robots.clone().set(config.seo.custom_robots.clone());
+        self.meta_description
+            .clone()
+            .set(config.seo.meta_description.clone());
+        self.meta_keywords
+            .clone()
+            .set(config.seo.meta_keywords.clone());
+        self.custom_robots
+            .clone()
+            .set(config.seo.custom_robots.clone());
         self.license_url.clone().set(config.seo.license_url.clone());
         self.author_name.clone().set(config.seo.author_name.clone());
 
@@ -165,9 +229,15 @@ impl ThemeSignals {
             url_sig.set(url);
         }
 
-        self.footer_text.clone().set(config.footer.footer_text.clone());
-        self.footer_license_label.clone().set(config.footer.footer_license_label.clone());
-        self.footer_license_url.clone().set(config.footer.footer_license_url.clone());
+        self.footer_text
+            .clone()
+            .set(config.footer.footer_text.clone());
+        self.footer_license_label
+            .clone()
+            .set(config.footer.footer_license_label.clone());
+        self.footer_license_url
+            .clone()
+            .set(config.footer.footer_license_url.clone());
 
         self.custom_js.clone().set(config.plugins.custom_js.clone());
         self.static_pages.clone().set(config.static_pages.clone());
@@ -177,18 +247,32 @@ impl ThemeSignals {
     pub fn swap_palette(&self, palette: &PresetPalette) {
         self.bg_base.clone().set(palette.colors.bg_base.clone());
         self.bg_panel.clone().set(palette.colors.bg_panel.clone());
-        self.bg_elevated.clone().set(palette.colors.bg_elevated.clone());
+        self.bg_elevated
+            .clone()
+            .set(palette.colors.bg_elevated.clone());
         self.fg_base.clone().set(palette.colors.fg_base.clone());
         self.fg_muted.clone().set(palette.colors.fg_muted.clone());
         self.accent.clone().set(palette.colors.accent.clone());
         self.border.clone().set(palette.colors.border.clone());
-        
-        self.panel_border_width.clone().set(palette.colors.panel_border_width.clone());
-        self.glow_spread.clone().set(palette.colors.glow_spread.clone());
-        self.hover_scale.clone().set(palette.colors.hover_scale.clone());
-        self.panel_border_image_url.clone().set(palette.colors.panel_border_image_url.clone());
-        self.panel_border_image_slice.clone().set(palette.colors.panel_border_image_slice.clone());
-        self.panel_border_image_repeat.clone().set(palette.colors.panel_border_image_repeat.clone());
+
+        self.panel_border_width
+            .clone()
+            .set(palette.colors.panel_border_width.clone());
+        self.glow_spread
+            .clone()
+            .set(palette.colors.glow_spread.clone());
+        self.hover_scale
+            .clone()
+            .set(palette.colors.hover_scale.clone());
+        self.panel_border_image_url
+            .clone()
+            .set(palette.colors.panel_border_image_url.clone());
+        self.panel_border_image_slice
+            .clone()
+            .set(palette.colors.panel_border_image_slice.clone());
+        self.panel_border_image_repeat
+            .clone()
+            .set(palette.colors.panel_border_image_repeat.clone());
 
         self.background.clone().set(palette.background.clone());
     }

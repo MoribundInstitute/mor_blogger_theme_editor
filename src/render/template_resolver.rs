@@ -23,6 +23,34 @@ pub struct ComponentManifest {
     pub js_deps: &'static [&'static str],
 }
 
+impl ComponentManifest {
+    /// Resolve this component's JS dependencies into a single payload.
+    /// Returns `None` when the component carries no scripts, so callers
+    /// can skip it without leaving empty blocks in the output.
+    pub fn inject_js(&self) -> Option<String> {
+        if self.js_deps.is_empty() {
+            return None;
+        }
+        let fragments: Vec<String> = self
+            .js_deps
+            .iter()
+            .filter_map(|dep| {
+                let src = fetch_js(dep);
+                if src.is_empty() {
+                    None
+                } else {
+                    Some(format!("/* --- [{}] {} --- */\n{}", self.id, dep, src))
+                }
+            })
+            .collect();
+        if fragments.is_empty() {
+            None
+        } else {
+            Some(fragments.join("\n\n"))
+        }
+    }
+}
+
 // =====================================================================
 // THE REGISTRIES (Now mapped to your actual files!)
 // =====================================================================
@@ -244,6 +272,7 @@ fn fetch_js(filename: &str) -> &'static str {
     }
 }
 
+
 // =====================================================================
 // DEPENDENCY RESOLVER
 // =====================================================================
@@ -326,19 +355,45 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     let mut sorted_css: Vec<_> = unique_css.into_iter().collect();
     sorted_css.sort();
 
+    // -----------------------------------------------------------------
+    // JAVASCRIPT FOOTER ASSEMBLY
+    // Build the final <script> block that sits right before </body>.
+    //
+    // Order:
+    //   1. Config-driven global scripts (sorted for deterministic output)
+    //   2. Per-component inject_js() payloads (only for components that
+    //      actually carry scripts, zero footprint for the rest)
+    // -----------------------------------------------------------------
+
+    let mut js_sections: Vec<String> = Vec::new();
+
+
+    // 1️⃣  Config-driven global scripts (deduplicated via the HashSet)
     let mut sorted_js: Vec<_> = unique_js.into_iter().collect();
     sorted_js.sort();
 
+    for filename in &sorted_js {
+        let src = fetch_js(filename);
+        if !src.is_empty() {
+            js_sections.push(format!("/* --- {} --- */\n{}", filename, src));
+        }
+    }
+
+    // 2️⃣  Per-component plugin scripts via inject_js()
+    for comp in &active_components {
+        if let Some(plugin_js) = comp.inject_js() {
+            js_sections.push(plugin_js);
+        }
+    }
+
+    let aggregated_js = js_sections.join("\n\n");
+
     let css_contents: Vec<&str> = sorted_css.iter().map(|f| fetch_css(f)).collect();
-    let js_contents: Vec<String> = sorted_js
-        .iter()
-        .map(|f| format!("/* --- {} --- */\n{}", f, fetch_js(f)))
-        .collect();
 
     TemplateParts {
         meta: include_str!("../template_parts/base/meta.xml"),
         css: build_master_css(&css_contents, config),
-        javascript: js_contents.join("\n\n"),
+        javascript: aggregated_js,
 
         header: get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content,
         main: get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content,

@@ -1,10 +1,10 @@
 /* ============================================================
    Web 1.0 Frames preset
-   The mid-1990s personal homepage: ridged grey panels, sharp
-   corners, and "best viewed in Netscape" energy.
+   The mid-1990s personal homepage: tiled backgrounds, marquees, 
+   and "best viewed in Netscape" energy.
    ============================================================ */
 
-/* Force chunky ridged borders on every major surface */
+/* Force chunky ridged/outset borders on every major surface */
 .canvas-core,
 .mor-post,
 .runelite-panel,
@@ -15,24 +15,80 @@
 .panel-header {
   border-style: ridge;
   border-width: 3px;
-  border-color: var(--border-color);
   border-radius: 0;
   box-shadow: none;
 }
 
+/* ============================================================
+   EXPLICIT LIGHT/DARK MODE FORCING
+   Bypasses engine CSS variables to prevent color leaking
+   ============================================================ */
+
+/* --- LIGHT MODE (DEFAULT) --- */
+body {
+  background-color: #c0c0c0 !important;
+  color: #000000 !important;
+}
+
+.canvas-core, .mor-post, .runelite-panel, .mor-footer {
+  background-color: #c0c0c0 !important;
+  color: #000000 !important;
+  border-color: #808080 !important;
+}
+
+.mor-post .post-title, .mor-post .post-title a, .mor-post h1, .mor-post h2, .mor-post h3 {
+  color: #000000 !important;
+}
+
+.mor-post .post-body a, .panel-content a {
+  color: #0000ee !important; /* Classic Browser Blue */
+}
+
+/* --- DARK MODE (HACKER) --- */
+html[data-theme="dark"] body, body.dark-mode {
+  background-color: #000000 !important;
+  color: #00ff00 !important;
+}
+
+html[data-theme="dark"] .canvas-core, body.dark-mode .canvas-core,
+html[data-theme="dark"] .mor-post, body.dark-mode .mor-post,
+html[data-theme="dark"] .runelite-panel, body.dark-mode .runelite-panel,
+html[data-theme="dark"] .mor-footer, body.dark-mode .mor-footer {
+  background-color: #000000 !important;
+  color: #00ff00 !important;
+  border-color: #00ff00 !important;
+}
+
+html[data-theme="dark"] .mor-post .post-title, body.dark-mode .mor-post .post-title,
+html[data-theme="dark"] .mor-post .post-title a, body.dark-mode .mor-post .post-title a,
+html[data-theme="dark"] .mor-post h1, body.dark-mode .mor-post h1,
+html[data-theme="dark"] .mor-post h2, body.dark-mode .mor-post h2,
+html[data-theme="dark"] .mor-post h3, body.dark-mode .mor-post h3 {
+  color: #00ff00 !important;
+}
+
+html[data-theme="dark"] .mor-post .post-body a, body.dark-mode .mor-post .post-body a,
+html[data-theme="dark"] .panel-content a, body.dark-mode .panel-content a {
+  color: #ff00ff !important; /* Clashing Magenta */
+}
+
+/* ============================================================
+   HEADER STYLING
+   ============================================================ */
+
+/* Windows 95 Blue Title Bars (Light Mode Default) */
 .main-header {
   background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
   color: #ffffff !important;
   padding: 0 !important;
   font-weight: 700;
-  border-bottom: 2px solid #000040;
+  border-bottom: 2px solid #000040 !important;
 }
 
 .main-header .header-top-row,
 .main-header .header-bottom-row {
   background: transparent !important;
-  color: #ffffff !important;
-  border-color: #000040 !important;
+  color: inherit !important;
 }
 
 .main-header .header-top-row {
@@ -46,11 +102,11 @@
 
 .panel-header,
 .mor-panel-heading {
-  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
-  color: #ffffff;
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+  color: #ffffff !important;
   padding: 4px 8px;
   font-weight: 700;
-  border-bottom: 2px solid #000040;
+  border-bottom: 2px solid #000040 !important;
   font-family: "MS Sans Serif", Tahoma, sans-serif;
 }
 
@@ -63,6 +119,62 @@
   font-family: "MS Sans Serif", Tahoma, sans-serif;
 }
 
+/* Hacker Neon Header Override (Dark Mode) */
+html[data-theme="dark"] .main-header,
+body.dark-mode .main-header,
+html[data-theme="dark"] .panel-header,
+body.dark-mode .panel-header,
+html[data-theme="dark"] .mor-panel-heading,
+body.dark-mode .mor-panel-heading {
+  background: #000000 !important;
+  color: #00ff00 !important;
+  border-bottom: 3px ridge #00ff00 !important;
+}
+
+html[data-theme="dark"] .main-header .institute-title,
+body.dark-mode .main-header .institute-title,
+html[data-theme="dark"] .main-header .branding-link,
+body.dark-mode .main-header .branding-link,
+html[data-theme="dark"] .main-header .mor-nav a,
+body.dark-mode .main-header .mor-nav a,
+html[data-theme="dark"] .main-header .mor-nav button,
+body.dark-mode .main-header .mor-nav button {
+  color: #00ff00 !important;
+}
+
+html[data-theme="dark"] .main-header .header-top-row,
+body.dark-mode .main-header .header-top-row {
+  border-bottom: 3px ridge #00ff00 !important;
+}
+
+/* ============================================================
+   CLASSIC 90s EFFECTS
+   ============================================================ */
+.preview-site-subtitle, 
+.site-subtitle {
+  display: inline-block;
+  white-space: nowrap;
+  animation: web1-marquee 12s linear infinite;
+  color: #ffff00 !important;
+  font-weight: bold;
+}
+
+@keyframes web1-marquee {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
+}
+
+.preview-kicker, 
+.post-kicker {
+  animation: web1-blink 1s step-end infinite;
+  color: #ff0000 !important;
+  font-weight: 900;
+}
+
+@keyframes web1-blink {
+  50% { opacity: 0; }
+}
+
 /* The classic "outset" button */
 .pager-btn,
 .panel-toggle,
@@ -72,7 +184,7 @@
   background: var(--bg-panel);
   color: var(--fg-base);
   border-style: outset;
-  border-width: 2px;
+  border-width: 3px;
   border-color: #ffffff #808080 #808080 #ffffff;
   border-radius: 0;
   padding: 3px 12px;
@@ -92,64 +204,48 @@
   padding: 4px 11px 2px 13px;  
 }
 
-/* Post bodies: clinical white "document" surface. Connects to Dioxus UI signals. */
 .mor-post {
-  background: var(--bg-panel);
-  color: var(--fg-base);
   margin: 8px;
   padding: 12px;
 }
 
 .mor-post .post-title,
 .mor-post .post-title a {
-  color: var(--fg-base);
   font-family: var(--font-heading);
   font-size: 1.6rem;
   font-weight: 700;
-  border-bottom: 1px solid var(--fg-base);
+  border-bottom: 2px groove var(--border-color);
   padding-bottom: 4px;
   text-shadow: none;
 }
 
 .mor-post .post-body {
-  color: var(--fg-base);
   font-family: var(--font-body);
 }
 
 .mor-post .post-body a,
 .panel-content a {
-  color: var(--accent);
   text-decoration: underline;
+  font-weight: bold;
 }
 
 .mor-post h1,
 .mor-post h2,
 .mor-post h3 {
   font-family: var(--font-heading);
-  color: var(--fg-base);
   font-weight: 700;
 }
 
 /* Footer status-bar feel */
 .mor-footer {
-  background: var(--bg-panel);
-  color: var(--fg-base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-top: 2px solid #ffffff;
   border-bottom: 2px solid #808080;
   font-family: "MS Sans Serif", Tahoma, sans-serif;
   font-size: 0.85rem;
-  padding: 4px 8px;
-}
-
-*,
-*::before,
-*::after {
-  text-shadow: none;
-}
-.mor-post,
-.runelite-panel,
-.canvas-core {
-  box-shadow: none;
+  padding: 8px 12px;
 }
 
 .mor-footer .footer-sys-info::after {
@@ -160,8 +256,10 @@
   font-weight: 700;
 }
 
-@keyframes web1-blink {
-  50% { opacity: 0; }
+*,
+*::before,
+*::after {
+  text-shadow: none;
 }
 
 .mor-search .prompt {
@@ -193,4 +291,15 @@
 
 .header-bottom-row {
   align-items: center;
+}
+
+.mor-footer .footer-logo {
+  border-style: outset;
+  border-width: 3px;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  background: #000000;
+}
+
+.mor-footer .footer-brand-center {
+  border-top: 2px groove var(--border-color);
 }

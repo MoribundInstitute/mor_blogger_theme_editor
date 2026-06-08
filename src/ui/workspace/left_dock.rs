@@ -24,6 +24,7 @@ pub fn LeftVisualsPanel(
     on_apply_theme: EventHandler<ThemeConfig>,
     show_undocked_presets: Signal<bool>,
     show_undocked_pages: Signal<bool>,
+    mut show_undocked_modules: Signal<bool>,
     mut preview_html: Signal<String>,
     base_preview_html: ReadSignal<String>,
 ) -> Element {
@@ -116,6 +117,7 @@ pub fn LeftVisualsPanel(
                 EditorAccordion { id: "Modules", title: "Template Modules", active: active_tab,
                     TemplateModulesPanel {
                         current_config: current_config.clone(),
+                        show_undocked_modules,
                         on_apply_theme: move |new_config: ThemeConfig| {
                             on_apply_theme.call(new_config);
                         }

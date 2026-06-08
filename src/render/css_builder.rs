@@ -55,9 +55,9 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         border = config.colors.border,
         panel_border_width = config.colors.panel_border_width,
         glow_spread = config.colors.glow_spread,
-        btn_radius = config.buttons.radius,             // FIXED
-        btn_border_width = config.buttons.border_width, // FIXED
-        btn_text_transform = config.buttons.text_transform, // FIXED
+        btn_radius = config.buttons.radius,
+        btn_border_width = config.buttons.border_width,
+        btn_text_transform = config.buttons.text_transform,
         font_mono = config.typography.mono_font_stack,
     );
 

@@ -10,12 +10,13 @@ use super::hotswap::apply_hotswap_json;
 use super::layout_state::AppLayoutState;
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
-use crate::app::config_bridge::{EditorPrefs, PluginState};
+use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
 use crate::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::panels::plugin_manager_panel::{PluginDisplayInfo, PluginManagerPanel};
+use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
 use crate::ui::panels::presets::PresetFloatingWindow;
 use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
+use crate::ui::panels::template_modules::TemplateModulesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
@@ -32,34 +33,21 @@ pub fn render_app_shell(
     let mut active_preset = theme.active_preset;
     let show_preview = theme.show_preview;
     let show_undocked_presets = theme.show_undocked_presets;
-    let mut show_undocked_pages = use_signal(|| false);
-
+    let show_undocked_pages = use_signal(|| false);
+    let mut show_undocked_modules = use_signal(|| false);
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
-    let mut show_plugins = use_signal(|| false);
+    let show_plugins = use_signal(|| false);
 
-    // Track the state of modular features loaded from the preferences file.
+    // Tr ack the state of modular features loaded from the preferences file.
     let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
-    // In src/app/shell.rs
-    let available_plugins = use_signal(|| vec![
-        PluginDisplayInfo { 
-            id: "os_chameleon", 
-            display_name: "OS Chameleon (Dark Mode)", 
-            version: "1.0.0",
-            description: "Automatically toggles dark mode based on the user's OS preference and saves the state locally."
-        },
-        PluginDisplayInfo { 
-            id: "dewey_indexer", 
-            display_name: "Dewey Indexer (Auto-TOC)", 
-            version: "1.1.0",
-            description: "Scans document headers to generate a dynamic, indented table of contents."
-        },
-    ]);
+
+    // The live compendium payload fetched from the decentralized registry
+    let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
 
     use_effect(move || {
-        // Read editor_prefs.json once on boot to establish the plugin launch state
         if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
             if let Ok(prefs) = serde_json::from_str::<EditorPrefs>(&json) {
                 launch_plugins.set(prefs.plugins.clone());
@@ -68,18 +56,55 @@ pub fn render_app_shell(
         }
     });
 
-    let active_ui_mode =
-        std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
+    use_effect(move || {
+        spawn(async move {
+            // Your LIVE GitHub Compendium URL
+            let target_url = "https://raw.githubusercontent.com/MoribundInstitute/mor-blogger-theme-editor-plugin-compendium/main/registry.json";
 
-    // Matrix of UI state based on mode
+            match reqwest::get(target_url).await {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        if let Ok(remote_registry) = response.json::<Vec<CompendiumManifest>>().await {
+                            compendium_registry.set(remote_registry);
+                        }
+                    } else {
+                        log::warn!("GitHub returned a {} status. Triggering fallback.", response.status());
+                        // Fallback if the file goes missing (e.g., 404)
+                        compendium_registry.set(vec![
+                            CompendiumManifest { 
+                                id: "os_chameleon".to_string(), 
+                                display_name: "OS Chameleon (Dark Mode)".to_string(), 
+                                version: "1.0.0".to_string(),
+                                description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
+                                payload_url: "".to_string(),
+                            }
+                        ]);
+                    }
+                }
+                Err(_) => {
+                    log::warn!("Network request completely failed. Triggering fallback.");
+                    compendium_registry.set(vec![
+                        CompendiumManifest { 
+                            id: "os_chameleon".to_string(), 
+                            display_name: "OS Chameleon (Dark Mode)".to_string(), 
+                            version: "1.0.0".to_string(),
+                            description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
+                            payload_url: "".to_string(),
+                        }
+                    ]);
+                }
+            }
+        });
+    });
+
+    let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
+
     let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
-    let config_toml_signal =
-        use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
+    let config_toml_signal = use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
 
-    // Writable TV monitor for preview output.
     let mut tv_monitor = use_signal(|| String::new());
 
     use_effect(move || {
@@ -87,7 +112,6 @@ pub fn render_app_shell(
     });
 
     rsx! {
-        // 3. AUTO OS CHAMELEON
         MorStyleProvider { theme_toml: get_native_os_theme().to_string() }
         style { "{EDITOR_UI_CSS}" }
 
@@ -95,11 +119,7 @@ pub fn render_app_shell(
             if active_ui_mode != "native" {
                 MorHeaderBar {
                     show_controls: show_window_buttons,
-
-                    start: rsx! {
-                        div { style: "width: 16px;" }
-                    },
-
+                    start: rsx! { div { style: "width: 16px;" } },
                     center: rsx! {
                         if show_custom_title {
                             MorWindowTitle {
@@ -108,10 +128,7 @@ pub fn render_app_shell(
                             }
                         }
                     },
-
-                    end: rsx! {
-                        div { style: "width: 16px;" }
-                    }
+                    end: rsx! { div { style: "width: 16px;" } }
                 }
             }
 
@@ -137,8 +154,7 @@ pub fn render_app_shell(
                         onchange: move |evt| {
                             let new_mode = evt.value();
                             ui_mode_pref.set(new_mode.clone());
-                            // Note: A more robust JSON overwrite is typically used here in production
-                            let json = format!(r#"{{"ui_mode": "{}"}}"#, new_mode);
+                            let json = format!(r#"{{ "ui_mode": "{}" }}"#, new_mode);
                             let _ = std::fs::write("editor_prefs.json", json);
                         },
                         option { value: "frameless", "Frameless (Custom OS Buttons)" }
@@ -188,7 +204,6 @@ pub fn render_app_shell(
 
             div { class: "editor-shell", style: "height: 100%;",
 
-                // 4. WIRED MENU BAR
                 AppMenuBar {
                     show_prefs,
                     show_about,
@@ -230,6 +245,7 @@ pub fn render_app_shell(
                         },
                         show_undocked_presets,
                         show_undocked_pages,
+                        show_undocked_modules,
                         preview_html: tv_monitor,
                         base_preview_html: render.preview_html,
                     }
@@ -308,11 +324,21 @@ pub fn render_app_shell(
                     }
                 }
 
+                if show_undocked_modules() {
+                    TemplateModulesFloatingWindow {
+                        current_config: current_config(),
+                        show_undocked_modules,
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            signals.apply_config(&new_config);
+                        },
+                    }
+                }
+
                 PluginManagerPanel {
                     show_panel: show_plugins,
                     launch_state: launch_plugins,
                     current_state: current_plugins,
-                    available_plugins,
+                    compendium_registry,
                 }
 
                 if !(render.diag)().errors.is_empty() || !(render.diag)().warnings.is_empty() {

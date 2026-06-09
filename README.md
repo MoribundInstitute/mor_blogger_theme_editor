@@ -75,6 +75,21 @@ Moribund Architect can steal colors, borders, and UI icons directly from native 
 
 ---
 
+## Architecture: Bring Your Own Frontend (BYOF)
+
+This project adheres to a strict "Bring Your Own Frontend" (BYOF) modular architecture. We believe the logic that generates a theme should not be permanently bolted to the interface used to design it.
+
+The workspace is divided into distinct crates with hard compile-time boundaries:
+
+* **`mor_blogger_core` (The Headless Engine):** The pure logic heart of the compiler. It handles TOML parsing, XML template resolution, CSS generation, and strict structural validation. It has zero GUI, OS, or filesystem-dialog dependencies.
+* **`mor_blogger_dioxus_ui` (The Visual Workspace):** A Dioxus-powered graphical interface. It provides a rich, hot-reloading layout environment and connects the core engine to native OS file dialogs and clipboard APIs.
+* **`mor_blogger_cli` (`mbt`):** A lightweight, native terminal interface. Built for power users, it wraps the core engine in a fast, standard Unix command surface. Use it to scaffold projects, validate XML syntax, or integrate theme builds into automated CI/CD pipelines without ever opening a window.
+
+Because the core engine is completely agnostic, you can easily wrap it in a new frontend—whether that is a custom web service, a different desktop framework, or a specialized automation script.
+
+
+---
+
 ## 📚 Documentation & Deep Dives
 The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
 
@@ -82,27 +97,6 @@ The Architect is designed to be extensible. Whether you want to understand the r
 - [The CSS Assembly Pipeline](docs/CSS_PIPELINE.md) — Understanding the `mor_` namespace and how modular CSS is stitched together.
 - [Creating a Theme Preset](docs/THEME_CREATION.md) — A guide to defining tokens, palettes, and custom layouts for the Compendium.
 - [GTK Theme Parsing](docs/GTK_PARSER.md) — How the engine translates Linux desktop themes into Blogger variables.
-
-
----
-
-## 🌐 Ecosystem & Live Demos
-The Architect is part of a larger ecosystem of tools and live examples:
-
-### Core Libraries
-- [MOR UI Kit](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
-- [Theme Compendium](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
-
-### Live Production Sites
-See the exported themes running live on Blogger's infrastructure:
-- [Theme Gallery](https://mor-theme-compendium.blogspot.com/) — To keep the app lean, theme presets that didn't meet my arbitary cut to be hosted locally within the app are hosted externally on a companion Blogger site. Users can browse the collection there, copy a preset, and import it directly into the GUI Blogger theme maker.
-- [XML Architecture](https://morxml.blogspot.com/) — It's a place to share XML bits like Blog post sections, custom sidebars, custom footers, etc.
-- [Custom Post Types](https://morcustomposttypes.blogspot.com/) — Demonstrating advanced Blogger data tags and post routing.
-- [Static Pages](https://morpages.blogspot.com/) — Demonstrating standalone page layouts.
-
-## ⚠️ Real-Time Diagnostics
-- **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
-- **Export Safety:** Prevents broken XML from ever reaching your clipboard.
 
 
 ---
@@ -127,6 +121,27 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
 
 ---
 
+## 🌐 Ecosystem & Live Demos
+The Architect is part of a larger ecosystem of tools and live examples:
+
+### Core Libraries
+- [MOR UI Kit](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
+- [Theme Compendium](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
+
+### Live Production Sites
+See the exported themes running live on Blogger's infrastructure:
+- [Theme Gallery](https://mor-theme-compendium.blogspot.com/) — To keep the app lean, theme presets that didn't meet my arbitary cut to be hosted locally within the app are hosted externally on a companion Blogger site. Users can browse the collection there, copy a preset, and import it directly into the GUI Blogger theme maker.
+- [XML Architecture](https://morxml.blogspot.com/) — It's a place to share XML bits like Blog post sections, custom sidebars, custom footers, etc.
+- [Custom Post Types](https://morcustomposttypes.blogspot.com/) — Demonstrating advanced Blogger data tags and post routing.
+- [Static Pages](https://morpages.blogspot.com/) — Demonstrating standalone page layouts.
+
+## ⚠️ Real-Time Diagnostics
+- **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
+- **Export Safety:** Prevents broken XML from ever reaching your clipboard.
+
+
+---
+
 ## 🛠️ Getting Started
 
 ### Prerequisites
@@ -135,5 +150,31 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
   ```bash
   # Install the Dioxus CLI
   cargo install dioxus-cli
+🖥️ Option A: The Visual Workspace
+To launch the graphical GUI theme builder, use the Dioxus CLI from inside the UI crate. This provides hot-reloading for UI development:
 
+Bash
+cd mor_blogger_dioxus_ui
+dx serve
+💻 Option B: The Headless CLI (mbt)
+For terminal users, you can compile and validate themes directly without the GUI.
+
+First, build the optimized executable:
+
+Bash
+cargo build --release -p mor_blogger_cli
+Then, you can use the command-line tool to manage your workspace:
+
+Bash
+# Scaffold a new project template
+./target/release/mbt init
+
+# Validate your XML syntax (catches Blogger import errors early)
+./target/release/mbt check
+
+# Build the final Blogger XML theme
+./target/release/mbt build
+
+# Build the theme AND package it into a zip with static HTML pages
+./target/release/mbt bundle
 

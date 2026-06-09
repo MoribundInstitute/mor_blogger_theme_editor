@@ -47,6 +47,8 @@ pub fn PreviewCanvas(
     preview_width: Signal<u32>,
     preview_html: String,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
+    #[props(default)] on_select: Option<EventHandler<String>>,
+    #[props(default)] on_context_menu: Option<EventHandler<String>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -121,22 +123,64 @@ pub fn PreviewCanvas(
                                             doc.write(html);
                                             doc.close();
 
+                                            // Inject edit hover styles
+                                            if (!doc.getElementById('mor-edit-styles')) {
+                                                const style = doc.createElement('style');
+                                                style.id = 'mor-edit-styles';
+                                                style.textContent = `
+                                                    [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
+                                                    [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
+                                                `;
+                                                doc.head.appendChild(style);
+                                            }
+
                                             doc.addEventListener('click', function(e) {
                                                 const target = e.target && e.target.closest
                                                     ? e.target
                                                     : (e.target && e.target.parentElement);
-                                                const anchor = target && target.closest
-                                                    ? target.closest('a')
-                                                    : null;
 
-                                                if (!anchor) return;
+                                                if (!target) return;
 
-                                                const href = anchor.getAttribute('href');
-                                                if (!href) return;
-
-                                                if (href.startsWith('/') || href.startsWith('#')) {
+                                                const editTarget = target.closest('[data-edit-target]');
+                                                if (editTarget) {
                                                     e.preventDefault();
-                                                    dioxus.send(href);
+                                                    e.stopPropagation();
+                                                    dioxus.send({
+                                                        action: "SELECT",
+                                                        target: editTarget.getAttribute('data-edit-target')
+                                                    });
+                                                    return;
+                                                }
+
+                                                const anchor = target.closest('a');
+                                                if (anchor) {
+                                                    const href = anchor.getAttribute('href');
+                                                    if (href && (href.startsWith('/') || href.startsWith('#'))) {
+                                                        e.preventDefault();
+                                                        dioxus.send({
+                                                            action: "NAVIGATE",
+                                                            target: href
+                                                        });
+                                                    }
+                                                }
+                                            });
+
+                                            // NEW: Catch right-clicks for the icon visual picker
+                                            doc.addEventListener('contextmenu', function(e) {
+                                                const target = e.target && e.target.closest
+                                                    ? e.target
+                                                    : (e.target && e.target.parentElement);
+
+                                                if (!target) return;
+
+                                                const editTarget = target.closest('[data-edit-target]');
+                                                if (editTarget && editTarget.getAttribute('data-edit-target').startsWith('icons.')) {
+                                                    e.preventDefault(); // Stop normal browser menu
+                                                    e.stopPropagation();
+                                                    dioxus.send({
+                                                        action: "CONTEXT_MENU",
+                                                        target: editTarget.getAttribute('data-edit-target')
+                                                    });
                                                 }
                                             });
                                         }
@@ -176,9 +220,26 @@ pub fn PreviewCanvas(
                                 );
 
                                 while let Ok(json) = eval.recv::<serde_json::Value>().await {
-                                    if let Some(href) = json.as_str() {
-                                        if let Some(handler) = on_navigate.as_ref() {
-                                            handler.call(href.to_string());
+                                    if let Some(action) = json.get("action").and_then(|a| a.as_str()) {
+                                        if let Some(target) = json.get("target").and_then(|t| t.as_str()) {
+                                            match action {
+                                                "SELECT" => {
+                                                    if let Some(handler) = on_select.as_ref() {
+                                                        handler.call(target.to_string());
+                                                    }
+                                                }
+                                                "NAVIGATE" => {
+                                                    if let Some(handler) = on_navigate.as_ref() {
+                                                        handler.call(target.to_string());
+                                                    }
+                                                }
+                                                "CONTEXT_MENU" => {
+                                                    if let Some(handler) = on_context_menu.as_ref() {
+                                                        handler.call(target.to_string());
+                                                    }
+                                                }
+                                                _ => {}
+                                            }
                                         }
                                     }
                                 }

@@ -17,96 +17,45 @@
   border-width: 3px;
   border-radius: 0;
   box-shadow: none;
-}
-
-/* ============================================================
-   EXPLICIT LIGHT/DARK MODE FORCING
-   Bypasses engine CSS variables to prevent color leaking
-   ============================================================ */
-
-/* --- LIGHT MODE (DEFAULT) --- */
-body {
-  background-color: #c0c0c0 !important;
-  color: #000000 !important;
-}
-
-.canvas-core, .mor-post, .runelite-panel, .mor-footer {
-  background-color: #c0c0c0 !important;
-  color: #000000 !important;
-  border-color: #808080 !important;
-}
-
-.mor-post .post-title, .mor-post .post-title a, .mor-post h1, .mor-post h2, .mor-post h3 {
-  color: #000000 !important;
-}
-
-.mor-post .post-body a, .panel-content a {
-  color: #0000ee !important; /* Classic Browser Blue */
-}
-
-/* --- DARK MODE (HACKER) --- */
-html[data-theme="dark"] body, body.dark-mode {
-  background-color: #000000 !important;
-  color: #00ff00 !important;
-}
-
-html[data-theme="dark"] .canvas-core, body.dark-mode .canvas-core,
-html[data-theme="dark"] .mor-post, body.dark-mode .mor-post,
-html[data-theme="dark"] .runelite-panel, body.dark-mode .runelite-panel,
-html[data-theme="dark"] .mor-footer, body.dark-mode .mor-footer {
-  background-color: #000000 !important;
-  color: #00ff00 !important;
-  border-color: #00ff00 !important;
-}
-
-html[data-theme="dark"] .mor-post .post-title, body.dark-mode .mor-post .post-title,
-html[data-theme="dark"] .mor-post .post-title a, body.dark-mode .mor-post .post-title a,
-html[data-theme="dark"] .mor-post h1, body.dark-mode .mor-post h1,
-html[data-theme="dark"] .mor-post h2, body.dark-mode .mor-post h2,
-html[data-theme="dark"] .mor-post h3, body.dark-mode .mor-post h3 {
-  color: #00ff00 !important;
-}
-
-html[data-theme="dark"] .mor-post .post-body a, body.dark-mode .mor-post .post-body a,
-html[data-theme="dark"] .panel-content a, body.dark-mode .panel-content a {
-  color: #ff00ff !important; /* Clashing Magenta */
+  border-color: var(--border);
 }
 
 /* ============================================================
    HEADER STYLING
    ============================================================ */
 
-/* Windows 95 Blue Title Bars (Light Mode Default) */
+/* Windows 95 Blue Title Bars using generic gradients and theme vars */
 .main-header {
-  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
-  color: #ffffff !important;
-  padding: 0 !important;
+  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
+  color: var(--fg-base);
+  padding: 0;
   font-weight: 700;
-  border-bottom: 2px solid #000040 !important;
+  border-bottom: 2px solid var(--border);
 }
 
 .main-header .header-top-row,
 .main-header .header-bottom-row {
-  background: transparent !important;
-  color: inherit !important;
+  background: transparent;
+  color: inherit;
 }
 
 .main-header .header-top-row {
-  padding: 10px 20px 9px !important;
-  border-bottom: 2px solid #000040 !important;
+  padding: 10px 20px 9px;
+  border-bottom: 2px solid var(--border);
 }
 
 .main-header .header-bottom-row {
-  padding: 12px 20px 14px !important;
+  padding: 12px 20px 14px;
+  align-items: center;
 }
 
 .panel-header,
 .mor-panel-heading {
-  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
+  color: var(--fg-base);
   padding: 4px 8px;
   font-weight: 700;
-  border-bottom: 2px solid #000040 !important;
+  border-bottom: 2px solid var(--border);
   font-family: "MS Sans Serif", Tahoma, sans-serif;
 }
 
@@ -114,37 +63,9 @@ html[data-theme="dark"] .panel-content a, body.dark-mode .panel-content a {
 .main-header .branding-link,
 .main-header .mor-nav a,
 .main-header .mor-nav button {
-  color: #ffffff !important;
+  color: var(--fg-base);
   text-shadow: none;
   font-family: "MS Sans Serif", Tahoma, sans-serif;
-}
-
-/* Hacker Neon Header Override (Dark Mode) */
-html[data-theme="dark"] .main-header,
-body.dark-mode .main-header,
-html[data-theme="dark"] .panel-header,
-body.dark-mode .panel-header,
-html[data-theme="dark"] .mor-panel-heading,
-body.dark-mode .mor-panel-heading {
-  background: #000000 !important;
-  color: #00ff00 !important;
-  border-bottom: 3px ridge #00ff00 !important;
-}
-
-html[data-theme="dark"] .main-header .institute-title,
-body.dark-mode .main-header .institute-title,
-html[data-theme="dark"] .main-header .branding-link,
-body.dark-mode .main-header .branding-link,
-html[data-theme="dark"] .main-header .mor-nav a,
-body.dark-mode .main-header .mor-nav a,
-html[data-theme="dark"] .main-header .mor-nav button,
-body.dark-mode .main-header .mor-nav button {
-  color: #00ff00 !important;
-}
-
-html[data-theme="dark"] .main-header .header-top-row,
-body.dark-mode .main-header .header-top-row {
-  border-bottom: 3px ridge #00ff00 !important;
 }
 
 /* ============================================================
@@ -155,7 +76,7 @@ body.dark-mode .main-header .header-top-row {
   display: inline-block;
   white-space: nowrap;
   animation: web1-marquee 12s linear infinite;
-  color: #ffff00 !important;
+  color: var(--fg-muted);
   font-weight: bold;
 }
 
@@ -167,7 +88,7 @@ body.dark-mode .main-header .header-top-row {
 .preview-kicker, 
 .post-kicker {
   animation: web1-blink 1s step-end infinite;
-  color: #ff0000 !important;
+  color: var(--accent);
   font-weight: 900;
 }
 
@@ -214,7 +135,8 @@ body.dark-mode .main-header .header-top-row {
   font-family: var(--font-heading);
   font-size: 1.6rem;
   font-weight: 700;
-  border-bottom: 2px groove var(--border-color);
+  color: var(--fg-base);
+  border-bottom: 2px groove var(--border);
   padding-bottom: 4px;
   text-shadow: none;
 }
@@ -227,6 +149,7 @@ body.dark-mode .main-header .header-top-row {
 .panel-content a {
   text-decoration: underline;
   font-weight: bold;
+  color: var(--accent);
 }
 
 .mor-post h1,
@@ -234,6 +157,7 @@ body.dark-mode .main-header .header-top-row {
 .mor-post h3 {
   font-family: var(--font-heading);
   font-weight: 700;
+  color: var(--fg-base);
 }
 
 /* Footer status-bar feel */
@@ -241,8 +165,8 @@ body.dark-mode .main-header .header-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 2px solid #ffffff;
-  border-bottom: 2px solid #808080;
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
   font-family: "MS Sans Serif", Tahoma, sans-serif;
   font-size: 0.85rem;
   padding: 8px 12px;
@@ -252,7 +176,7 @@ body.dark-mode .main-header .header-top-row {
   content: " UNDER CONSTRUCTION";
   margin-left: 8px;
   animation: web1-blink 1.2s steps(2, end) infinite;
-  color: #ff0000;
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -263,43 +187,39 @@ body.dark-mode .main-header .header-top-row {
 }
 
 .mor-search .prompt {
-  display: none !important;
+  display: none;
 }
 
 .mor-search button::before,
 .mor-search button::after {
-  content: none !important;
-  display: none !important;
+  content: none;
+  display: none;
 }
 
 .mor-search input {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border-style: inset !important;
-  border-width: 2px !important;
-  border-color: #808080 #ffffff #ffffff #808080 !important;
-  border-radius: 0 !important;
-  padding: 3px 6px !important;
-  font-family: "MS Sans Serif", Tahoma, sans-serif !important;
+  background: var(--bg-elevated);
+  color: var(--fg-base);
+  border-style: inset;
+  border-width: 2px;
+  border-color: #808080 #ffffff #ffffff #808080;
+  border-radius: 0;
+  padding: 3px 6px;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
 }
 
 .mor-search input:focus {
   width: 220px;
   outline: none;
-  box-shadow: none !important;
-}
-
-.header-bottom-row {
-  align-items: center;
+  box-shadow: none;
 }
 
 .mor-footer .footer-logo {
   border-style: outset;
   border-width: 3px;
   border-color: #ffffff #808080 #808080 #ffffff;
-  background: #000000;
+  background: var(--bg-panel);
 }
 
 .mor-footer .footer-brand-center {
-  border-top: 2px groove var(--border-color);
+  border-top: 2px groove var(--border);
 }

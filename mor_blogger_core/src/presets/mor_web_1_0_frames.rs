@@ -70,36 +70,34 @@ pub fn mor_web_1_0_frames() -> Preset {
         preset_css: PRESET_CSS,
         dark: PresetPalette {
             colors: ColorConfig {
-                bg_base: "#000000".to_string(), // Pure black
-                bg_panel: SurfaceFill::solid("#000000"), // Pure black
-                bg_elevated: SurfaceFill::solid("#111111"), // Slightly off-black
-                fg_base: "#00ff00".to_string(), // Neon green text
-                fg_muted: "#00cc00".to_string(), // Darker green
-                accent: "#ff00ff".to_string(), // Clashing Magenta links
-                border: "#00ff00".to_string(), // Green borders
+                bg_base: "#000000".to_string(), 
+                bg_panel: SurfaceFill::solid("#000000"), 
+                bg_elevated: SurfaceFill::solid("#111111"), 
+                fg_base: "#00ff00".to_string(), 
+                fg_muted: "#00cc00".to_string(), 
+                accent: "#ff00ff".to_string(), 
+                border: "#00ff00".to_string(), 
                 ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Tile {
-                    // A tiny base64 GIF of a classic 90s starfield
                     url: "data:image/gif;base64,R0lGODlhEAAQALMAAAAAAP///wAAAAAAACH5BAEAAAIALAAAAAAQABAAAAQzUMhJq7046yq0/2DAzkUWDGNmhmRnXGWqrigLwzB8x1Hk370P7Pw+Hw+I4w2PxyNyuWw2EwEAOw==".to_string(),
                 },
             },
         },
         light: PresetPalette {
             colors: ColorConfig {
-                bg_base: "#c0c0c0".to_string(), // Classic Silver
+                bg_base: "#c0c0c0".to_string(), 
                 bg_panel: SurfaceFill::solid("#c0c0c0"),
                 bg_elevated: SurfaceFill::solid("#dfdfdf"),
-                fg_base: "#000000".to_string(), // Pure black text
+                fg_base: "#000000".to_string(), 
                 fg_muted: "#404040".to_string(),
-                accent: "#0000ee".to_string(), // Pure browser default blue
+                accent: "#0000ee".to_string(), 
                 border: "#808080".to_string(),
                 ..Default::default()
             },
             background: BackgroundConfig {
                 mode: BackgroundMode::Tile {
-                    // A tiny base64 GIF of classic 90s light marble texture
                     url: "data:image/gif;base64,R0lGODlhEAAQAKIAAMzMzP///8DAwAAAACH5BAEAAAAALAAAAAAQABAAAAIjhI+py+0PopxQzocA1rCz3nneF1okWZaomqrqygnFCgA7".to_string(),
                 },
             },

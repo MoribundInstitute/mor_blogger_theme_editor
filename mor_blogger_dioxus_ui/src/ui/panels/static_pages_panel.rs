@@ -452,11 +452,7 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
     };
     </script>"##;
 
-    // Visually hide default blog content before the static page is mounted.
-    let hide_css =
-        "<style>main, .mor-main, #main, .main-section { display: none !important; }</style>";
-    let head_injected =
-        base_html.replace("<head>", &format!("<head>\n{}\n{}", mock_fetch, hide_css));
+    let head_injected = base_html.replace("<head>", &format!("<head>\n{}", mock_fetch));
 
     let template_html = format!(
         r#"
@@ -465,13 +461,12 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
     </template>
     <script>
     document.addEventListener('DOMContentLoaded', () => {{
-        const target = document.querySelector('main, .mor-main, #main, .main-section, .mor-workspace');
+        const target = document.getElementById('mor-content-target');
         const template = document.getElementById('mor-static-injector');
 
         if (target && template) {{
             target.innerHTML = '';
             target.appendChild(template.content.cloneNode(true));
-            target.style.display = 'block';
 
             // cloneNode does not execute script tags. Recreate them manually.
             target.querySelectorAll('script').forEach(oldScript => {{
@@ -480,6 +475,12 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
                 newScript.appendChild(document.createTextNode(oldScript.innerHTML));
                 oldScript.parentNode.replaceChild(newScript, oldScript);
             }});
+
+            // Adjust the surrounding card headers so they make sense for a static page
+            const titleTarget = document.getElementById('mor-title-target');
+            const kickerTarget = document.getElementById('mor-kicker-target');
+            if (titleTarget) titleTarget.innerText = "Static Page Preview";
+            if (kickerTarget) kickerTarget.innerText = "Layout Preview";
         }}
     }});
     </script>

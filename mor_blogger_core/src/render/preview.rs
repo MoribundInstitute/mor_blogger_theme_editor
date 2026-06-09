@@ -7,16 +7,6 @@ use crate::config::{BackgroundMode, ThemeConfig};
 
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 
-/// Which in-editor preview layout to render.
-///
-/// This lives in the core crate so the headless renderer owns it; the Dioxus
-/// UI imports this type (`use mor_blogger_core::render::PreviewTemplateMode;`)
-/// rather than defining its own copy.
-///
-/// NOTE: the variants here must stay in sync with the `match preview_mode`
-/// arms in `render_preview_html` below. The original UI-side enum only had
-/// `Modern` and `Sidebars`, but this renderer already branches on the two
-/// static variants as well, so all four are required for the crate to compile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PreviewTemplateMode {
     #[default]
@@ -27,10 +17,6 @@ pub enum PreviewTemplateMode {
 }
 
 impl PreviewTemplateMode {
-    /// Human-readable label for the preview-mode switcher in the editor UI.
-    ///
-    /// Lives here rather than in the UI crate because the type is owned by
-    /// core, and an inherent impl must sit in the crate that defines the type.
     pub fn label(self) -> &'static str {
         match self {
             Self::Modern => "Modern",
@@ -93,30 +79,25 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         "Optional JavaScript plugin will be included in the exported Blogger XML."
     };
 
-    // NOTE: Each preview-* element carries a second class corresponding to
-    // the production-template class name (e.g. preview-hero-card -> mor-post).
-    // The preview's own CSS in this file matches the `preview-*` selectors;
-    // preset CSS files (src/presets/css/*.css) target the production names.
-    // This lets one preset CSS work for both the live preview AND the
-    // exported Blogger theme without duplicating selectors.
+    // ADDED ID TARGETS: mor-kicker-target, mor-title-target, mor-content-target
     let modern_body = format!(
         r##"<div class="preview-shell preview-shell-modern">
     <header class="preview-site-header mor-main-header">
       <div class="preview-brand branding">
-        <p class="preview-kicker">Blogger Theme Preview</p>
-        <h1 class="preview-site-title institute-title">{site_title}</h1>
-        <p class="preview-site-subtitle">{site_subtitle}</p>
+        <p class="preview-kicker" data-edit-target="colors.accent">Blogger Theme Preview</p>
+        <h1 class="preview-site-title institute-title" data-edit-target="site.site_title">{site_title}</h1>
+        <p class="preview-site-subtitle" data-edit-target="site.site_subtitle">{site_subtitle}</p>
       </div>
       <nav class="preview-nav mor-nav">{menu_links}</nav>
     </header>
 
     <main>
       <section class="preview-hero">
-        <article class="preview-hero-card mor-post">
-          <p class="preview-kicker post-kicker">Featured Post</p>
-          <h2 class="post-title">Designing a better weblog shell</h2>
-          <div class="post-body">
-            <p>This modern preview uses your current Blogger theme settings while keeping the exported Blogger XML separate.</p>
+        <article class="preview-hero-card mor-post" data-edit-target="colors.bg_elevated">
+          <p class="preview-kicker post-kicker" id="mor-kicker-target" data-edit-target="colors.accent">Featured Post</p>
+          <h2 class="post-title" id="mor-title-target" data-edit-target="typography.heading_font_stack">Designing a better weblog shell</h2>
+          <div class="post-body" id="mor-content-target">
+            <p data-edit-target="typography.body_font_stack">This modern preview uses your current Blogger theme settings while keeping the exported Blogger XML separate.</p>
             <div class="preview-hero-actions">
               <a class="preview-button pager-btn" href="#">Read Latest</a>
               <a class="preview-button pager-btn" href="#">Archive</a>
@@ -124,10 +105,10 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
           </div>
         </article>
 
-        <aside class="preview-side-card runelite-panel sidebar-section">
-          <p class="preview-kicker">Site Notes</p>
-          <h3>Preview status</h3>
-          <p>{plugin_note}</p>
+        <aside class="preview-side-card runelite-panel sidebar-section" data-edit-target="colors.bg_panel">
+          <p class="preview-kicker" data-edit-target="colors.accent">Site Notes</p>
+          <h3 data-edit-target="typography.heading_font_stack">Preview status</h3>
+          <p data-edit-target="typography.body_font_stack">{plugin_note}</p>
           <dl class="preview-meta-list">
             <div class="preview-meta-row"><dt>Template</dt><dd>Modern Editorial</dd></div>
             <div class="preview-meta-row"><dt>Menu</dt><dd>{menu_count} links</dd></div>
@@ -137,33 +118,33 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </section>
 
       <section class="preview-card-grid">
-        <article class="preview-card mor-post">
-          <p class="preview-kicker">Recent Notes</p>
-          <h3 class="post-title">Readable post cards</h3>
+        <article class="preview-card mor-post" data-edit-target="colors.bg_panel">
+          <p class="preview-kicker" data-edit-target="colors.accent">Recent Notes</p>
+          <h3 class="post-title" data-edit-target="typography.heading_font_stack">Readable post cards</h3>
           <div class="post-body">
-            <p>Use this space to judge contrast, line-height, borders, and card surfaces.</p>
+            <p data-edit-target="typography.body_font_stack">Use this space to judge contrast, line-height, borders, and card surfaces.</p>
           </div>
         </article>
-        <article class="preview-card mor-post">
-          <p class="preview-kicker">Typography</p>
-          <h3 class="post-title">Font stack test</h3>
+        <article class="preview-card mor-post" data-edit-target="colors.bg_panel">
+          <p class="preview-kicker" data-edit-target="colors.accent">Typography</p>
+          <h3 class="post-title" data-edit-target="typography.heading_font_stack">Font stack test</h3>
           <div class="post-body">
-            <p>Body, heading, and <code>mono</code> font choices render directly in this preview.</p>
+            <p data-edit-target="typography.body_font_stack">Body, heading, and <code data-edit-target="typography.mono_font_stack">mono</code> font choices render directly in this preview.</p>
           </div>
         </article>
-        <article class="preview-card mor-post">
-          <p class="preview-kicker">About</p>
-          <h3 class="post-title">Browser-safe shell</h3>
+        <article class="preview-card mor-post" data-edit-target="colors.bg_panel">
+          <p class="preview-kicker" data-edit-target="colors.accent">About</p>
+          <h3 class="post-title" data-edit-target="typography.heading_font_stack">Browser-safe shell</h3>
           <div class="post-body">
-            <p>The exported Blogger XML remains separate; this is a friendlier visual preview.</p>
+            <p data-edit-target="typography.body_font_stack">The exported Blogger XML remains separate; this is a friendlier visual preview.</p>
           </div>
         </article>
       </section>
     </main>
 
-    <footer class="preview-footer mor-footer">
-      <span>{footer_text}</span>
-      <span>{site_title}</span>
+    <footer class="preview-footer mor-footer" data-edit-target="colors.bg_panel">
+      <span data-edit-target="footer.footer_text">{footer_text}</span>
+      <span data-edit-target="site.site_title">{site_title}</span>
     </footer>
   </div>"##,
         site_title = escape_html(&config.site.site_title),
@@ -178,38 +159,35 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         footer_text = escape_html(&config.footer.footer_text),
     );
 
+    // ADDED ID TARGETS: mor-kicker-target, mor-title-target, mor-content-target
     let sidebars_body = format!(
         r##"<div class="preview-shell preview-shell-sidebars">
     <header class="preview-site-header preview-site-header-with-toggles mor-main-header">
       <button type="button" class="preview-panel-toggle panel-toggle" data-target="left" aria-label="Browse" title="Browse">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="9" y1="3" x2="9" y2="21"></line>
-        </svg>
+        <span class="preview-icon-mask preview-icon-left" data-edit-target="icons.sidebar_left"></span>
       </button>
 
       <div class="preview-brand preview-brand-centered branding">
-        <p class="preview-kicker">Blogger Theme Preview</p>
-        <h1 class="preview-site-title institute-title">{site_title}</h1>
-        <p class="preview-site-subtitle">{site_subtitle}</p>
+        <p class="preview-kicker" data-edit-target="colors.accent">Blogger Theme Preview</p>
+        <h1 class="preview-site-title institute-title" data-edit-target="site.site_title">{site_title}</h1>
+        <p class="preview-site-subtitle" data-edit-target="site.site_subtitle">{site_subtitle}</p>
         <nav class="preview-nav preview-nav-centered mor-nav">{menu_links}</nav>
       </div>
 
       <button type="button" class="preview-panel-toggle panel-toggle" data-target="right" aria-label="Contents" title="Contents">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="15" y1="3" x2="15" y2="21"></line>
-        </svg>
+        <span class="preview-icon-mask preview-icon-right" data-edit-target="icons.sidebar_right"></span>
       </button>
     </header>
 
     <main class="preview-sidebar-layout mor-workspace" id="preview-layout">
-      <aside class="preview-sidebar runelite-panel panel-left sidebar-section" data-side="left">
+      <aside class="preview-sidebar runelite-panel panel-left sidebar-section" data-side="left" data-edit-target="colors.bg_panel">
         <div class="preview-sidebar-header panel-header">
-          <strong>Browse</strong>
-          <button type="button" class="preview-sidebar-close panel-toggle" data-target="left">×</button>
+          <strong data-edit-target="colors.accent">Browse</strong>
+          <button type="button" class="preview-sidebar-close panel-toggle" data-target="left">
+            <span class="preview-icon-mask preview-icon-close" data-edit-target="icons.panel_close"></span>
+          </button>
         </div>
-        <div class="panel-content">
+        <div class="panel-content" data-edit-target="typography.body_font_stack">
           <p>Use this panel for labels, archive links, profile widgets, blogrolls, or navigation blocks.</p>
           <ul>
             <li>Latest posts</li>
@@ -220,12 +198,12 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         </div>
       </aside>
 
-      <article class="preview-hero-card preview-sidebar-main-card mor-post">
-        <p class="preview-kicker post-kicker">Featured Post</p>
-        <h2 class="post-title">Modern layout with closeable sidebars</h2>
-        <div class="post-body">
-          <p>This preview keeps the clean modern look but restores the useful Blogger-style side panels on either end.</p>
-          <p>Click <strong>Browse</strong>, <strong>Contents</strong>, or either × button to test collapsed sidebars.</p>
+      <article class="preview-hero-card preview-sidebar-main-card mor-post" data-edit-target="colors.bg_elevated">
+        <p class="preview-kicker post-kicker" id="mor-kicker-target" data-edit-target="colors.accent">Featured Post</p>
+        <h2 class="post-title" id="mor-title-target" data-edit-target="typography.heading_font_stack">Modern layout with closeable sidebars</h2>
+        <div class="post-body" id="mor-content-target">
+          <p data-edit-target="typography.body_font_stack">This preview keeps the clean modern look but restores the useful Blogger-style side panels on either end.</p>
+          <p data-edit-target="typography.body_font_stack">Click <strong>Browse</strong>, <strong>Contents</strong>, or either × button to test collapsed sidebars.</p>
           <div class="preview-hero-actions">
             <a class="preview-button pager-btn" href="#">Read Latest</a>
             <a class="preview-button pager-btn" href="#">Archive</a>
@@ -233,12 +211,14 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
         </div>
       </article>
 
-      <aside class="preview-sidebar runelite-panel panel-right sidebar-section" data-side="right">
+      <aside class="preview-sidebar runelite-panel panel-right sidebar-section" data-side="right" data-edit-target="colors.bg_panel">
         <div class="preview-sidebar-header panel-header">
-          <strong>Contents</strong>
-          <button type="button" class="preview-sidebar-close panel-toggle" data-target="right">×</button>
+          <strong data-edit-target="colors.accent">Contents</strong>
+          <button type="button" class="preview-sidebar-close panel-toggle" data-target="right">
+            <span class="preview-icon-mask preview-icon-close" data-edit-target="icons.panel_close"></span>
+          </button>
         </div>
-        <div class="panel-content">
+        <div class="panel-content" data-edit-target="typography.body_font_stack">
           <p>{plugin_note}</p>
           <ol>
             <li>Featured post</li>
@@ -250,9 +230,9 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
       </aside>
     </main>
 
-    <footer class="preview-footer mor-footer">
-      <span>{footer_text}</span>
-      <span>{site_title}</span>
+    <footer class="preview-footer mor-footer" data-edit-target="colors.bg_panel">
+      <span data-edit-target="footer.footer_text">{footer_text}</span>
+      <span data-edit-target="site.site_title">{site_title}</span>
     </footer>
   </div>"##,
         site_title = escape_html(&config.site.site_title),
@@ -303,6 +283,10 @@ pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMo
   --scale: {scale_ratio};
   --line-height: {line_height};
   --heading-weight: {heading_weight};
+
+  --icon-sidebar-left: {icon_sidebar_left};
+  --icon-sidebar-right: {icon_sidebar_right};
+  --icon-panel-close: {icon_panel_close};
 }}
 
 * {{ box-sizing: border-box; }}
@@ -339,6 +323,19 @@ h1 {{ font-size: clamp(2.4rem, 7vw, calc(1rem * var(--scale) * var(--scale) * va
 h2 {{ font-size: clamp(1.6rem, 3vw, calc(1rem * var(--scale) * var(--scale) * var(--scale))); }}
 h3 {{ font-size: calc(1rem * var(--scale)); }}
 code, pre, kbd, samp {{ font-family: var(--font-mono); }}
+
+.preview-icon-mask {{
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}}
+.preview-icon-left {{ -webkit-mask-image: var(--icon-sidebar-left); mask-image: var(--icon-sidebar-left); }}
+.preview-icon-right {{ -webkit-mask-image: var(--icon-sidebar-right); mask-image: var(--icon-sidebar-right); }}
+.preview-icon-close {{ -webkit-mask-image: var(--icon-panel-close); mask-image: var(--icon-panel-close); width: 16px; height: 16px; }}
 
 .preview-shell {{
   position: relative;
@@ -400,7 +397,6 @@ code, pre, kbd, samp {{ font-family: var(--font-mono); }}
 .preview-nav a,
 .preview-button {{ padding: 0.58rem 0.8rem; }}
 .preview-panel-toggle {{ padding: 8px; width: 44px; height: 44px; }}
-.preview-panel-toggle svg {{ width: 100%; height: 100%; display: block; }}
 .preview-sidebar-close {{ padding: 0.2rem 0.45rem; font-family: var(--font-mono); }}
 
 .preview-nav a:hover,
@@ -533,6 +529,9 @@ code, pre, kbd, samp {{ font-family: var(--font-mono); }}
         scale_ratio = config.typography.scale_ratio,
         line_height = config.typography.line_height,
         heading_weight = config.typography.heading_weight,
+        icon_sidebar_left = config.icons.sidebar_left,
+        icon_sidebar_right = config.icons.sidebar_right,
+        icon_panel_close = config.icons.panel_close,
         background_tile_css = background_tile_css,
         body_markup = body_markup,
         google_fonts_link = google_fonts_link,

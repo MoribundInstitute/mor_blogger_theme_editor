@@ -34,13 +34,13 @@ pub fn render_app_shell(
     let show_preview = theme.show_preview;
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
-    let mut show_undocked_modules = use_signal(|| false);
+    let show_undocked_modules = use_signal(|| false);
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
     let show_plugins = use_signal(|| false);
 
-    // Tr ack the state of modular features loaded from the preferences file.
+    // Track the state of modular features loaded from the preferences file.
     let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
 
@@ -254,7 +254,7 @@ pub fn render_app_shell(
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
                         preview_template_mode: layout.preview_template_mode,
-                        generated_xml: render.generated_xml,
+                        // Prop generated_xml has been dropped.
                         preview_html: tv_monitor,
                         show_preview,
                         diag: render.diag,

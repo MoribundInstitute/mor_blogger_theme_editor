@@ -1,0 +1,19 @@
+[package]
+name = "mor_blogger_core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+
+[dependencies]
+log = "0.4"
+roxmltree = "0.20"
+base64 = "0.22"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+reqwest = { version = "0.11", features = ["json"] }
+
+# Binary/Compressed Rehydration
+postcard = { version = "1.0", features = ["alloc"] }
+zstd = "0.13"
+zip = "0.6.3"

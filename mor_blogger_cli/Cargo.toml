@@ -1,0 +1,16 @@
+[package]
+name = "mor_blogger_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mor_blogger_core = { path = "../mor_blogger_core" }
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+colored = "2.1"
+toml = "0.8"
+roxmltree = "0.21.1"
+
+[[bin]]
+name = "mbt"
+path = "src/main.rs"

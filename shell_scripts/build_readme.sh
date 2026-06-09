@@ -14,10 +14,11 @@ FILES=(
     "02_problem_solution.md"
     "03_How_to_Import_Native_GTK4_Linux_Themes.md"
     "04_core_capabilities.md"
-    "05_documentation.md"
-    "06_ecosystem_demos.md"
+    "05_archictecture.md"
+    "06_documentation.md"
     "07_contributing.md"
-    "08_getting_started.md"
+    "08_ecosystem_demos.md"
+    "09_getting_started.md"
 )
 
 # Clear or create the output file

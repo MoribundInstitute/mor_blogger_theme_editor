@@ -70,7 +70,7 @@ Moribund Architect can steal colors, borders, and UI icons directly from native 
 ### 🖥️ Fluid Workspace UI
 - **Modular UI Kit:** Powered by our custom `mor_rust_dioxus_ui_kit` running on Dioxus 0.7.
 - **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
-- **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
+- **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
 ---
@@ -82,11 +82,10 @@ This project adheres to a strict "Bring Your Own Frontend" (BYOF) modular archit
 The workspace is divided into distinct crates with hard compile-time boundaries:
 
 * **`mor_blogger_core` (The Headless Engine):** The pure logic heart of the compiler. It handles TOML parsing, XML template resolution, CSS generation, and strict structural validation. It has zero GUI, OS, or filesystem-dialog dependencies.
-* **`mor_blogger_dioxus_ui` (The Visual Workspace):** A Dioxus-powered graphical interface. It provides a rich, hot-reloading layout environment and connects the core engine to native OS file dialogs and clipboard APIs.
+* **`mor_blogger_dioxus_ui` (The Visual Workspace):** A Dioxus-powered graphical interface. It features a true "Socket and Plug" design:
+  * **The Socket (`MainDock`):** A generic, framework-agnostic window container that draws borders, tabs, and layout boundaries.
+  * **The Plug (`BloggerWorkspace`):** The Blogger-specific logic module that slots into the dock. If a developer forks this project for Neocities, they simply rip out the Blogger plug and insert their own. Zero structural friction.
 * **`mor_blogger_cli` (`mbt`):** A lightweight, native terminal interface. Built for power users, it wraps the core engine in a fast, standard Unix command surface. Use it to scaffold projects, validate XML syntax, or integrate theme builds into automated CI/CD pipelines without ever opening a window.
-
-Because the core engine is completely agnostic, you can easily wrap it in a new frontend—whether that is a custom web service, a different desktop framework, or a specialized automation script.
-
 
 ---
 

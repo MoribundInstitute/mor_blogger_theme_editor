@@ -12,5 +12,5 @@
 ### 🖥️ Fluid Workspace UI
 - **Modular UI Kit:** Powered by our custom `mor_rust_dioxus_ui_kit` running on Dioxus 0.7.
 - **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
-- **Glassmorphic Environment:** Deep-space grid preview canvas with collapsible, frosted-glass control panels.
+- **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.

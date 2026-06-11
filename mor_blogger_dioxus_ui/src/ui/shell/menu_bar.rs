@@ -1,8 +1,8 @@
 use crate::ui::shell::shortcut::use_shortcut;
-use dioxus::prelude::*; // <-- Adjust this path if needed
+use dioxus::prelude::*; 
 
 // =========================================================================
-// 1. GENERIC BUILDING BLOCKS (Formerly menu.rs)
+// 1. GENERIC BUILDING BLOCKS
 // =========================================================================
 #[derive(Props, Clone, PartialEq)]
 pub struct MorMenuDropdownProps {
@@ -44,7 +44,7 @@ pub fn MenuItem(
     rsx! {
         button {
             class: if disabled { "mor-menu-item disabled" } else { "mor-menu-item" },
-            onmousedown: move |evt| evt.stop_propagation(), // Protects action
+            onmousedown: move |evt| evt.stop_propagation(), 
             onclick: move |e| {
                 e.stop_propagation();
                 if !disabled {
@@ -65,16 +65,18 @@ pub fn MenuSeparator() -> Element {
 }
 
 // =========================================================================
-// 2. THE APP MENU INSTANCE (Formerly menu_bar.rs)
+// 2. THE APP MENU INSTANCE
 // =========================================================================
 #[component]
 pub fn AppMenuBar(
     mut show_prefs: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
-    mut show_plugins: Signal<bool>, // <-- New signal to control the Plugin Manager visibility
+    mut show_plugins: Signal<bool>, 
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
+    on_load_data: EventHandler<()>,
+    on_save_data: EventHandler<()>,
     on_export_xml: EventHandler<()>,
     on_export_zip: EventHandler<()>,
 ) -> Element {
@@ -93,8 +95,14 @@ pub fn AppMenuBar(
                     on_action: move |_| on_save_theme.call(())
                 }
                 MenuSeparator {}
-                MenuItem { label: "Import Data (.json)".to_string() }
-                MenuItem { label: "Export Data (.json)".to_string() }
+                MenuItem { 
+                    label: "Import Sample Data (.json)".to_string(),
+                    on_action: move |_| on_load_data.call(())
+                }
+                MenuItem { 
+                    label: "Export Sample Data (.json)".to_string(),
+                    on_action: move |_| on_save_data.call(())
+                }
                 MenuSeparator {}
                 MenuItem {
                     label: "Export Blogger XML".to_string(),
@@ -105,7 +113,6 @@ pub fn AppMenuBar(
                     on_action: move |_| on_export_zip.call(())
                 }
                 MenuSeparator {}
-                // ✅ 4. Fix the Exit Button Type
                 MenuItem {
                     label: "Exit".to_string(),
                     on_action: move |_| -> () { std::process::exit(0); }
@@ -122,7 +129,6 @@ pub fn AppMenuBar(
 
             // 3. VIEW
             MorMenuDropdown { label: "View".to_string(),
-                // ✅ Fixed trailing spaces in labels
                 MenuItem { label: "Toggle Preview Monitor".to_string() }
                 MenuItem { label: "Toggle Code Split".to_string() }
                 MenuItem { label: "Reset Viewport Scale".to_string() }

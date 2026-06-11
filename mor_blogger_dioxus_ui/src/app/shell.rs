@@ -18,7 +18,7 @@ use crate::ui::panels::presets::PresetFloatingWindow;
 use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::panels::template_modules::TemplateModulesFloatingWindow;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
-use crate::ui::workspace::master_canvas::CenterWorkspacePanel;
+use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::right_dock::RightDataPanel;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
@@ -31,7 +31,9 @@ pub fn render_app_shell(
     let signals = theme.signals;
     let current_config = theme.current_config;
     let mut active_preset = theme.active_preset;
-    let show_preview = theme.show_preview;
+    let center_view = theme.center_view;
+    let show_preview = use_signal(|| true);
+    
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
     let show_undocked_modules = use_signal(|| false);
@@ -40,11 +42,8 @@ pub fn render_app_shell(
     let mut show_shortcuts = use_signal(|| false);
     let show_plugins = use_signal(|| false);
 
-    // Track the state of modular features loaded from the preferences file.
     let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
-
-    // The live compendium payload fetched from the decentralized registry
     let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
 
     use_effect(move || {
@@ -58,9 +57,7 @@ pub fn render_app_shell(
 
     use_effect(move || {
         spawn(async move {
-            // Your LIVE GitHub Compendium URL
             let target_url = "https://raw.githubusercontent.com/MoribundInstitute/mor-blogger-theme-editor-plugin-compendium/main/registry.json";
-
             match reqwest::get(target_url).await {
                 Ok(response) => {
                     if response.status().is_success() {
@@ -69,7 +66,6 @@ pub fn render_app_shell(
                         }
                     } else {
                         log::warn!("GitHub returned a {} status. Triggering fallback.", response.status());
-                        // Fallback if the file goes missing (e.g., 404)
                         compendium_registry.set(vec![
                             CompendiumManifest { 
                                 id: "os_chameleon".to_string(), 
@@ -98,13 +94,11 @@ pub fn render_app_shell(
     });
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-
     let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
     let config_toml_signal = use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
-
     let mut tv_monitor = use_signal(|| String::new());
 
     use_effect(move || {
@@ -123,7 +117,7 @@ pub fn render_app_shell(
                     center: rsx! {
                         if show_custom_title {
                             MorWindowTitle {
-                                title: "Moribund Theme Architect".to_string(),
+                                title: "MorBlogger Theme Editor".to_string(),
                                 subtitle: Some(format!("{} Mode", active_ui_mode))
                             }
                         }
@@ -133,7 +127,7 @@ pub fn render_app_shell(
             }
 
             Modal {
-                title: "About Moribund Architect".to_string(),
+                title: "About MorBlogger".to_string(),
                 open: show_about,
                 on_close: move |_| show_about.set(false),
                 div { class: "editor-note",
@@ -161,7 +155,6 @@ pub fn render_app_shell(
                         option { value: "native", "Native OS Window" }
                         option { value: "tiling", "Tiling WM (No Buttons)" }
                     }
-
                     if ui_mode_pref() != active_ui_mode {
                         div { class: "editor-note", style: "margin-top: 12px; border-color: var(--editor-warning); background: rgba(210, 153, 34, 0.05);",
                             p { class: "editor-note-title", style: "color: var(--editor-warning);", "Restart Required" }
@@ -180,20 +173,17 @@ pub fn render_app_shell(
                         p { class: "editor-note-title", "Keyboard Shortcuts" }
                         p { class: "editor-note-body", "Fast commands for moving around the MorBlogger editor." }
                     }
-
                     div { class: "editor-note", style: "margin-top: 12px;",
                         p { class: "editor-note-title", "File" }
                         p { class: "editor-note-body", "Ctrl+S — Save theme" }
                         p { class: "editor-note-body", "Ctrl+O — Load theme" }
                         p { class: "editor-note-body", "Ctrl+E — Export Blogger XML" }
                     }
-
                     div { class: "editor-note", style: "margin-top: 12px;",
                         p { class: "editor-note-title", "Edit" }
                         p { class: "editor-note-body", "Ctrl+Z — Undo" }
                         p { class: "editor-note-body", "Ctrl+Y — Redo" }
                     }
-
                     div { class: "editor-note", style: "margin-top: 12px;",
                         p { class: "editor-note-title", "View" }
                         p { class: "editor-note-body", "Ctrl+P — Toggle preview monitor" }
@@ -218,6 +208,37 @@ pub fn render_app_shell(
                     },
                     on_save_theme: move |_| {
                         crate::utils::io::save_toml(&config_toml_signal());
+                    },
+                    on_load_data: {
+                        let current = current_config();
+                        let sigs = signals.clone();
+                        move |_| {
+                            let mut current_cfg = current.clone();
+                            let sigs = sigs.clone();
+                            spawn(async move {
+                                if let Some(file) = rfd::AsyncFileDialog::new().set_title("Load Site Data").add_filter("JSON", &["json"]).pick_file().await {
+                                    if let Ok(json) = std::fs::read_to_string(file.path()) {
+                                        if let Ok(loaded_data) = serde_json::from_str::<ThemeConfig>(&json) {
+                                            current_cfg.apply_site_data(&loaded_data);
+                                            sigs.apply_config(&current_cfg);
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    on_save_data: {
+                        let current = current_config();
+                        move |_| {
+                            let current_cfg = current.clone();
+                            spawn(async move {
+                                if let Some(file) = rfd::AsyncFileDialog::new().set_file_name("my_site_data.json").add_filter("JSON", &["json"]).save_file().await {
+                                    if let Ok(json) = serde_json::to_string_pretty(&current_cfg) {
+                                        let _ = std::fs::write(file.path(), json);
+                                    }
+                                }
+                            });
+                        }
                     },
                     on_export_xml: move |_| {
                         crate::utils::io::save_xml(&(render.generated_xml)());
@@ -250,13 +271,13 @@ pub fn render_app_shell(
                         base_preview_html: render.preview_html,
                     }
 
-                    CenterWorkspacePanel {
+                    BloggerWorkspace {
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
                         preview_template_mode: layout.preview_template_mode,
-                        // Prop generated_xml has been dropped.
                         preview_html: tv_monitor,
                         show_preview,
+                        center_view,
                         diag: render.diag,
                         config_toml: config_toml_signal,
                         active_preset,
@@ -308,30 +329,15 @@ pub fn render_app_shell(
                 }
 
                 if show_undocked_presets() {
-                    PresetFloatingWindow {
-                        signals,
-                        active_preset,
-                        show_undocked_presets,
-                    }
+                    PresetFloatingWindow { signals, active_preset, show_undocked_presets }
                 }
 
                 if show_undocked_pages() {
-                    StaticPagesFloatingWindow {
-                        signals,
-                        show_undocked_pages,
-                        preview_html: tv_monitor,
-                        base_preview_html: render.preview_html,
-                    }
+                    StaticPagesFloatingWindow { signals, show_undocked_pages, preview_html: tv_monitor, base_preview_html: render.preview_html }
                 }
 
                 if show_undocked_modules() {
-                    TemplateModulesFloatingWindow {
-                        current_config: current_config(),
-                        show_undocked_modules,
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            signals.apply_config(&new_config);
-                        },
-                    }
+                    TemplateModulesFloatingWindow { current_config: current_config(), show_undocked_modules, on_apply_theme: move |new_config: ThemeConfig| { signals.apply_config(&new_config); } }
                 }
 
                 PluginManagerPanel {

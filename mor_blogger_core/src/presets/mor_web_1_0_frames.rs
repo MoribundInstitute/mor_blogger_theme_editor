@@ -16,9 +16,9 @@ pub fn mor_web_1_0_frames() -> Preset {
             home_url: "/".to_string(),
         },
         TypographyConfig {
-            body_font_stack: "'Times New Roman', Times, serif".to_string(),
-            heading_font_stack: "'Times New Roman', Times, serif".to_string(),
-            mono_font_stack: "'Courier New', Courier, monospace".to_string(),
+            body_font_stack: "\"Times New Roman\", Times, serif".to_string(),
+            heading_font_stack: "\"Times New Roman\", Times, serif".to_string(),
+            mono_font_stack: "\"Courier New\", Courier, monospace".to_string(),
             base_size: "16px".to_string(),
             scale_ratio: "1.15".to_string(),
             line_height: "1.45".to_string(),
@@ -65,7 +65,7 @@ pub fn mor_web_1_0_frames() -> Preset {
     Preset {
         id: "mor_web_1_0_frames",
         name: "Mor Web 1.0 Frames",
-        description: "Tiled backgrounds, marquees, hit counters, and clashing colors. Like it's 1998.",
+        description: "Tiled backgrounds, marquees, hit counters, and clashing colors. Like it is 1998.",
         base_config: base,
         preset_css: PRESET_CSS,
         dark: PresetPalette {

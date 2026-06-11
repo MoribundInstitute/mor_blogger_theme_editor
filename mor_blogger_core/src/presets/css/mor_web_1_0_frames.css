@@ -7,7 +7,7 @@
 /* Force chunky ridged/outset borders on every major surface */
 .canvas-core,
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .main-header,
 .mor-footer,
 .mor-pager,
@@ -17,20 +17,18 @@
   border-width: 3px;
   border-radius: 0;
   box-shadow: none;
-  border-color: var(--border);
+  border-color: var(--border-color);
 }
 
 /* ============================================================
    HEADER STYLING
    ============================================================ */
-
-/* Windows 95 Blue Title Bars using generic gradients and theme vars */
 .main-header {
   background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
   color: var(--fg-base);
   padding: 0;
   font-weight: 700;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .main-header .header-top-row,
@@ -41,7 +39,7 @@
 
 .main-header .header-top-row {
   padding: 10px 20px 9px;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .main-header .header-bottom-row {
@@ -49,13 +47,12 @@
   align-items: center;
 }
 
-.panel-header,
-.mor-panel-heading {
+.panel-header {
   background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
   color: var(--fg-base);
   padding: 4px 8px;
   font-weight: 700;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px solid var(--border-color);
   font-family: "MS Sans Serif", Tahoma, sans-serif;
 }
 
@@ -96,17 +93,16 @@
   50% { opacity: 0; }
 }
 
-/* The classic "outset" button */
+/* Native outset button. Browser calculates highlights automatically. */
 .pager-btn,
 .panel-toggle,
 .toc-jump-link,
 .back-to-top-btn,
-.mor-catalog-trigger {
+.mor-catalog-trigger,
+.mor-search button {
   background: var(--bg-panel);
   color: var(--fg-base);
-  border-style: outset;
-  border-width: 3px;
-  border-color: #ffffff #808080 #808080 #ffffff;
+  border: 3px outset var(--bg-panel);
   border-radius: 0;
   padding: 3px 12px;
   font-family: "MS Sans Serif", Tahoma, sans-serif;
@@ -119,15 +115,17 @@
 .panel-toggle:active,
 .toc-jump-link:active,
 .back-to-top-btn:active,
-.mor-catalog-trigger:active {
+.mor-catalog-trigger:active,
+.mor-search button:active {
   border-style: inset;
-  border-color: #808080 #ffffff #ffffff #808080;
   padding: 4px 11px 2px 13px;  
 }
 
 .mor-post {
   margin: 8px;
   padding: 12px;
+  background: var(--bg-base);
+  border: 3px ridge var(--border-color);
 }
 
 .mor-post .post-title,
@@ -136,7 +134,7 @@
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--fg-base);
-  border-bottom: 2px groove var(--border);
+  border-bottom: 2px groove var(--border-color);
   padding-bottom: 4px;
   text-shadow: none;
 }
@@ -160,13 +158,56 @@
   color: var(--fg-base);
 }
 
+/* ============================================================
+   WEB 1.0 BRUTALISM NUKE: KILL MODERN WIDGET BLOAT
+   ============================================================ */
+.mor-post * {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Nuke hardcoded backgrounds on embedded cards/panels */
+.mor-post div,
+.mor-post header,
+.mor-post footer,
+.mor-post section,
+.mor-post details,
+.mor-post summary {
+  background-color: transparent !important;
+  color: var(--fg-base) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Force inputs and buttons inside post to obey caveman styling */
+.mor-post input,
+.mor-post select,
+.mor-post textarea {
+  background: var(--bg-elevated) !important;
+  color: var(--fg-base) !important;
+  border: 2px inset var(--border-color) !important;
+  border-radius: 0 !important;
+}
+
+.mor-post button {
+  background: var(--bg-panel) !important;
+  color: var(--fg-base) !important;
+  border: 3px outset var(--bg-panel) !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+}
+
+.mor-post button:active {
+  border-style: inset !important;
+}
+/* ============================================================ */
+
 /* Footer status-bar feel */
 .mor-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
+  border-top: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
   font-family: "MS Sans Serif", Tahoma, sans-serif;
   font-size: 0.85rem;
   padding: 8px 12px;
@@ -199,9 +240,7 @@
 .mor-search input {
   background: var(--bg-elevated);
   color: var(--fg-base);
-  border-style: inset;
-  border-width: 2px;
-  border-color: #808080 #ffffff #ffffff #808080;
+  border: 2px inset var(--border-color);
   border-radius: 0;
   padding: 3px 6px;
   font-family: "MS Sans Serif", Tahoma, sans-serif;
@@ -214,12 +253,10 @@
 }
 
 .mor-footer .footer-logo {
-  border-style: outset;
-  border-width: 3px;
-  border-color: #ffffff #808080 #808080 #ffffff;
+  border: 3px outset var(--bg-panel);
   background: var(--bg-panel);
 }
 
 .mor-footer .footer-brand-center {
-  border-top: 2px groove var(--border);
+  border-top: 2px groove var(--border-color);
 }

@@ -1,5 +1,7 @@
 pub mod layout;
 pub mod left_dock;
-pub mod master_canvas;
+pub mod main_dock;
 pub mod preview_canvas;
 pub mod right_dock;
+pub mod blogger_workspace;
+pub mod smart_code_dock;

@@ -9,29 +9,49 @@ const SCALER_JS: &str = r#"
         const frame = document.getElementById('mor-preview-device-frame');
         if (!wrapper || !frame) return;
 
+        let lastScale = null;
+        function applyScale(scale) {
+            // Only touch the DOM when the value actually changes. Writing the
+            // same value back re-triggers the ResizeObserver and feeds a loop.
+            if (scale === lastScale) return;
+            lastScale = scale;
+            wrapper.style.setProperty('--preview-scale', scale);
+        }
+
         function scaleFrame() {
             if (frame.classList.contains('preview-device-frame-fit')) {
-                wrapper.style.setProperty('--preview-scale', 1);
+                applyScale(1);
                 return;
             }
 
             const targetWidth = parseFloat(frame.style.width);
             if (!targetWidth) return;
 
-            const availableWidth = wrapper.clientWidth - 48; 
-            
+            const availableWidth = wrapper.clientWidth - 48;
+
             if (targetWidth > availableWidth && availableWidth > 0) {
-                const scale = availableWidth / targetWidth;
-                wrapper.style.setProperty('--preview-scale', scale);
+                applyScale(availableWidth / targetWidth);
             } else {
-                wrapper.style.setProperty('--preview-scale', 1);
+                applyScale(1);
             }
+        }
+
+        let rafPending = false;
+        function scheduleScale() {
+            // Defer the measure/write to the next frame so the ResizeObserver
+            // callback returns immediately (no "undelivered notifications").
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(function () {
+                rafPending = false;
+                scaleFrame();
+            });
         }
 
         if (window.__morScalerObs) {
             window.__morScalerObs.disconnect();
         }
-        window.__morScalerObs = new ResizeObserver(scaleFrame);
+        window.__morScalerObs = new ResizeObserver(scheduleScale);
         window.__morScalerObs.observe(wrapper);
         scaleFrame();
     }
@@ -48,7 +68,7 @@ pub fn PreviewCanvas(
     preview_html: String,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_select: Option<EventHandler<String>>,
-    #[props(default)] on_context_menu: Option<EventHandler<String>>,
+    #[props(default)] on_icon_edit: Option<EventHandler<String>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -123,6 +143,11 @@ pub fn PreviewCanvas(
                                             doc.write(html);
                                             doc.close();
 
+                                            // Add native tooltip to icons
+                                            doc.querySelectorAll('[data-edit-target^="icons."]').forEach(function(el) {
+                                                el.title = "Alt+Click to edit icon";
+                                            });
+
                                             // Inject edit hover styles
                                             if (!doc.getElementById('mor-edit-styles')) {
                                                 const style = doc.createElement('style');
@@ -145,9 +170,20 @@ pub fn PreviewCanvas(
                                                 if (editTarget) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
+                                                    
+                                                    const targetId = editTarget.getAttribute('data-edit-target');
+
+                                                    if (e.altKey && targetId.startsWith('icons.')) {
+                                                        dioxus.send({
+                                                            action: "ICON_EDIT",
+                                                            target: targetId
+                                                        });
+                                                        return;
+                                                    }
+
                                                     dioxus.send({
                                                         action: "SELECT",
-                                                        target: editTarget.getAttribute('data-edit-target')
+                                                        target: targetId
                                                     });
                                                     return;
                                                 }
@@ -162,25 +198,6 @@ pub fn PreviewCanvas(
                                                             target: href
                                                         });
                                                     }
-                                                }
-                                            });
-
-                                            // NEW: Catch right-clicks for the icon visual picker
-                                            doc.addEventListener('contextmenu', function(e) {
-                                                const target = e.target && e.target.closest
-                                                    ? e.target
-                                                    : (e.target && e.target.parentElement);
-
-                                                if (!target) return;
-
-                                                const editTarget = target.closest('[data-edit-target]');
-                                                if (editTarget && editTarget.getAttribute('data-edit-target').startsWith('icons.')) {
-                                                    e.preventDefault(); // Stop normal browser menu
-                                                    e.stopPropagation();
-                                                    dioxus.send({
-                                                        action: "CONTEXT_MENU",
-                                                        target: editTarget.getAttribute('data-edit-target')
-                                                    });
                                                 }
                                             });
                                         }
@@ -200,8 +217,17 @@ pub fn PreviewCanvas(
                                                 source.__morPreviewObserver.disconnect();
                                             }
 
+                                            let writeTimer = null;
                                             const observer = new MutationObserver(function () {
-                                                writePreview(source, frame);
+                                                // Coalesce rapid edits (typing) into a single rewrite
+                                                // so the main thread isn't saturated by back-to-back
+                                                // full-document writes — that backlog is what delays
+                                                // the alt+click IPC message reaching Rust.
+                                                if (writeTimer) clearTimeout(writeTimer);
+                                                writeTimer = setTimeout(function () {
+                                                    writeTimer = null;
+                                                    writePreview(source, frame);
+                                                }, 80);
                                             });
 
                                             observer.observe(source, {
@@ -211,6 +237,7 @@ pub fn PreviewCanvas(
                                             });
 
                                             source.__morPreviewObserver = observer;
+                                            // Initial paint stays immediate.
                                             writePreview(source, frame);
                                         }
 
@@ -233,8 +260,8 @@ pub fn PreviewCanvas(
                                                         handler.call(target.to_string());
                                                     }
                                                 }
-                                                "CONTEXT_MENU" => {
-                                                    if let Some(handler) = on_context_menu.as_ref() {
+                                                "ICON_EDIT" => {
+                                                    if let Some(handler) = on_icon_edit.as_ref() {
                                                         handler.call(target.to_string());
                                                     }
                                                 }

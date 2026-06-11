@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 use mor_blogger_core::config::defaults::default_theme_config;
 use mor_blogger_core::config::{MenuLink, TemplatePackConfig, ThemeConfig};
 use crate::ui::panels::presets::ThemeSignals;
+use crate::app::layout_state::CenterView;
 
 use super::config_bridge::{menu_label, menu_url};
 
@@ -11,7 +12,7 @@ pub struct ThemeAppState {
     pub signals: ThemeSignals,
     pub current_config: Memo<ThemeConfig>,
     pub active_preset: Signal<Option<&'static str>>,
-    pub show_preview: Signal<bool>,
+    pub center_view: Signal<CenterView>,
     pub show_undocked_presets: Signal<bool>,
 }
 
@@ -79,7 +80,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let icons = use_signal(|| defaults.icons.clone());
     let preset_css = use_signal(String::new);
 
-    let show_preview = use_signal(|| true);
+    let center_view = use_signal(|| CenterView::Preview);
     let active_preset = use_signal(|| None::<&'static str>);
     let is_dark_mode = use_signal(|| true);
     let show_undocked_presets = use_signal(|| false);
@@ -226,7 +227,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         signals,
         current_config,
         active_preset,
-        show_preview,
+        center_view,
         show_undocked_presets,
     }
 }

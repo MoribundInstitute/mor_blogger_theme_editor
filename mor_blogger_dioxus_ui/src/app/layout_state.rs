@@ -2,6 +2,13 @@ use dioxus::prelude::*;
 
 use crate::ui::workspace::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum CenterView {
+    Preview,
+    CodeEditor,
+    Export,
+}
+
 #[derive(Clone, Copy)]
 pub struct AppLayoutState {
     pub left_layout: Signal<PanelLayout>,

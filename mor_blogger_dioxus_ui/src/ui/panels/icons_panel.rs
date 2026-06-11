@@ -37,31 +37,36 @@ pub fn SvgIconsPanel(
 ) -> Element {
     let mut selected_slot = use_signal(|| "panel_close".to_string());
     let mut custom_svg = use_signal(String::new);
+    let mut icon_url = use_signal(String::new);
     let mut status = use_signal(String::new);
 
     let selected_slot_id = selected_slot();
     let selected_slot_label = slot_label(&selected_slot_id);
     let current_slot_value = icon_value_for_slot(&current_config, &selected_slot_id).to_string();
-    let current_slot_raw =
-        mask_uri_to_raw_svg(&current_slot_value).unwrap_or_else(|| current_slot_value.clone());
 
     rsx! {
         div { class: "editor-card",
             h3 { class: "editor-card-title", "SVG Icons" }
 
             p { class: "editor-help",
-                "Blogger export uses encoded CSS mask URLs. This panel lets you edit raw SVG, then converts it into a safe "
-                code { "url(data:image/svg+xml,...)" }
-                " value for the XML."
+                "Each icon can be "
+                strong { "embedded" }
+                " (the SVG is encoded into the theme as a "
+                code { "data:image/svg+xml" }
+                " value, so the export stays a single self-contained file) or "
+                strong { "linked" }
+                " to an external "
+                code { "https" }
+                " URL. Embedded icons are tinted to match the theme; linked icons keep their own colors, so pick ones that already suit your palette."
             }
 
             div {
                 style: "display: grid; grid-template-columns: 1fr; gap: 8px; margin: 12px 0;",
-                IconPreview { label: "Panel Close", mask_uri: current_config.icons.panel_close.clone() }
-                IconPreview { label: "Search", mask_uri: current_config.icons.search.clone() }
-                IconPreview { label: "Menu", mask_uri: current_config.icons.menu.clone() }
-                IconPreview { label: "Left Sidebar", mask_uri: current_config.icons.sidebar_left.clone() }
-                IconPreview { label: "Right Sidebar", mask_uri: current_config.icons.sidebar_right.clone() }
+                IconPreview { label: "Panel Close", value: current_config.icons.panel_close.clone() }
+                IconPreview { label: "Search", value: current_config.icons.search.clone() }
+                IconPreview { label: "Menu", value: current_config.icons.menu.clone() }
+                IconPreview { label: "Left Sidebar", value: current_config.icons.sidebar_left.clone() }
+                IconPreview { label: "Right Sidebar", value: current_config.icons.sidebar_right.clone() }
             }
 
             div { class: "editor-button-row", style: "display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;",
@@ -69,8 +74,6 @@ pub fn SvgIconsPanel(
                     class: "editor-button",
                     onclick: {
                         let current_config = current_config.clone();
-                        let on_apply_theme = on_apply_theme.clone();
-
                         move |_| {
                             let mut next = current_config.clone();
                             next.icons.panel_close = svg_to_mask_uri(&sanitize_svg(CLOSE_X));
@@ -89,8 +92,6 @@ pub fn SvgIconsPanel(
                     class: "editor-button",
                     onclick: {
                         let current_config = current_config.clone();
-                        let on_apply_theme = on_apply_theme.clone();
-
                         move |_| {
                             let mut next = current_config.clone();
                             next.icons.sidebar_left = svg_to_mask_uri(&sanitize_svg(CHEVRON_LEFT));
@@ -130,14 +131,12 @@ pub fn SvgIconsPanel(
                             class: "editor-button editor-button-small",
                             onclick: {
                                 let current_config = current_config.clone();
-                                let on_apply_theme = on_apply_theme.clone();
-
                                 move |_| {
                                     let slot = selected_slot();
                                     let icon_value = svg_to_mask_uri(&sanitize_svg(preset_svg));
                                     let next = set_icon_by_slot(current_config.clone(), &slot, icon_value);
                                     on_apply_theme.call(next);
-                                    status.set(format!("Applied {} to {}.", preset_name, slot_label(&slot)));
+                                    status.set(format!("Embedded {} into {}.", preset_name, slot_label(&slot)));
                                 }
                             },
                             "{preset_name}"
@@ -164,10 +163,18 @@ pub fn SvgIconsPanel(
                     button {
                         class: "editor-button editor-button-small",
                         onclick: {
-                            let raw = current_slot_raw.clone();
+                            let value = current_slot_value.clone();
+                            let label = selected_slot_label;
                             move |_| {
-                                custom_svg.set(raw.clone());
-                                status.set(format!("Loaded current {} icon as raw SVG.", selected_slot_label));
+                                if is_external_link(&value) {
+                                    icon_url.set(css_url_inner(&value));
+                                    custom_svg.set(String::new());
+                                    status.set(format!("Loaded current {} icon as an external URL.", label));
+                                } else {
+                                    let raw = mask_uri_to_raw_svg(&value).unwrap_or_else(|| value.clone());
+                                    custom_svg.set(raw);
+                                    status.set(format!("Loaded current {} icon as raw SVG.", label));
+                                }
                             }
                         },
                         "Load Current Slot"
@@ -177,23 +184,60 @@ pub fn SvgIconsPanel(
                         class: "editor-button primary",
                         onclick: {
                             let current_config = current_config.clone();
-                            let on_apply_theme = on_apply_theme.clone();
-
                             move |_| {
-                                let raw = custom_svg();
-
-                                match normalize_icon_input(&raw) {
+                                match normalize_icon_input(&custom_svg()) {
                                     Ok(icon_value) => {
                                         let slot = selected_slot();
                                         let next = set_icon_by_slot(current_config.clone(), &slot, icon_value);
                                         on_apply_theme.call(next);
-                                        status.set(format!("Converted raw SVG and applied it to {}.", slot_label(&slot)));
+                                        status.set(format!("Embedded SVG into {}.", slot_label(&slot)));
                                     }
                                     Err(err) => status.set(err),
                                 }
                             }
                         },
                         "Convert & Apply"
+                    }
+                }
+            }
+
+            div { class: "editor-field-group", style: "margin-top: 12px;",
+                label { class: "editor-field-label", "External SVG URL" }
+                input {
+                    class: "editor-input",
+                    r#type: "url",
+                    style: "width: 100%;",
+                    value: "{icon_url}",
+                    placeholder: "https://example.com/icons/menu.svg",
+                    oninput: move |evt| {
+                        icon_url.set(evt.value().clone());
+                        status.set(String::new());
+                    }
+                }
+                p { class: "editor-help", style: "margin-top: 6px;",
+                    "Links the icon instead of embedding it. Must be "
+                    code { "https" }
+                    " (Blogger blocks mixed http content). The icon keeps its own colors and is loaded from this host by every visitor's browser \u{2014} so use somewhere reliable, since a dead link is a missing icon."
+                }
+
+                div { class: "editor-button-row", style: "display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;",
+                    button {
+                        class: "editor-button primary",
+                        onclick: {
+                            let current_config = current_config.clone();
+                            move |_| {
+                                match normalize_icon_url(&icon_url()) {
+                                    Ok(icon_value) => {
+                                        let slot = selected_slot();
+                                        let next = set_icon_by_slot(current_config.clone(), &slot, icon_value);
+                                        on_apply_theme.call(next);
+                                        status.set(format!("Linked external SVG to {}.", slot_label(&slot)));
+                                    }
+                                    Err(err) => status.set(err),
+                                }
+                            }
+                        },
+                        "Link URL to Slot"
                     }
                 }
             }
@@ -210,7 +254,7 @@ pub fn SvgIconsPanel(
                     rel: "noopener noreferrer",
                     "Lucide Icons"
                 }
-                " · "
+                " \u{00b7} "
                 a {
                     href: ALT_ICON_REPO_URL,
                     target: "_blank",
@@ -225,18 +269,26 @@ pub fn SvgIconsPanel(
 #[derive(Props, Clone, PartialEq)]
 struct IconPreviewProps {
     label: &'static str,
-    mask_uri: String,
+    value: String,
 }
 
 #[component]
 fn IconPreview(props: IconPreviewProps) -> Element {
-    let style = mask_style(&props.mask_uri);
+    let style = icon_preview_style(&props.value);
+    let kind = if props.value.trim().is_empty() {
+        "unset"
+    } else if is_external_link(&props.value) {
+        "linked"
+    } else {
+        "embedded"
+    };
 
     rsx! {
         div {
             style: "display: flex; align-items: center; gap: 10px; min-height: 24px;",
             span { style: "{style}" }
             span { style: "font-size: 0.85rem;", "{props.label}" }
+            span { style: "margin-left: auto; font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.04em;", "{kind}" }
         }
     }
 }
@@ -273,42 +325,136 @@ fn slot_label(slot: &str) -> &'static str {
     }
 }
 
-fn mask_style(mask_uri: &str) -> String {
-    format!(
-        "display:inline-block;width:18px;height:18px;flex:0 0 18px;background-color:var(--editor-accent, #6eb6ff);-webkit-mask-image:{};mask-image:{};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;",
-        mask_uri,
-        mask_uri
-    )
+/// Choose a preview rendering that matches how the icon is meant to be shown:
+/// embedded SVGs are tinted as a mask (the way the export tints them today),
+/// while external links are drawn as-is on a neutral tile so their real colors
+/// are visible. An empty slot shows a dashed placeholder.
+fn icon_preview_style(value: &str) -> String {
+    let value = value.trim();
+
+    if value.is_empty() {
+        return "display:inline-block;width:18px;height:18px;flex:0 0 18px;\
+                border:1px dashed rgba(255,255,255,0.25);border-radius:4px;"
+            .to_string();
+    }
+
+    if is_external_link(value) {
+        format!(
+            "display:inline-block;width:18px;height:18px;flex:0 0 18px;\
+             background-color:#f5f5f5;border:1px solid rgba(0,0,0,0.15);border-radius:4px;\
+             background-image:{v};background-size:contain;background-repeat:no-repeat;background-position:center;",
+            v = value
+        )
+    } else {
+        format!(
+            "display:inline-block;width:18px;height:18px;flex:0 0 18px;\
+             background-color:var(--editor-accent, #6eb6ff);\
+             -webkit-mask-image:{v};mask-image:{v};\
+             -webkit-mask-size:contain;mask-size:contain;\
+             -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;\
+             -webkit-mask-position:center;mask-position:center;",
+            v = value
+        )
+    }
 }
 
+/// True when the stored CSS value points at a remote URL rather than an
+/// embedded `data:` payload.
+fn is_external_link(value: &str) -> bool {
+    let inner = css_url_inner(value);
+    inner.starts_with("https://") || inner.starts_with("http://")
+}
+
+/// Strip a `url('...')` wrapper (and surrounding quotes) down to the inner value.
+fn css_url_inner(value: &str) -> String {
+    let mut v = value.trim();
+
+    if v.starts_with("url(") && v.ends_with(')') {
+        v = v[4..v.len() - 1].trim();
+    }
+
+    v.trim_matches('"').trim_matches('\'').trim().to_string()
+}
+
+/// Validate an external icon URL and wrap it as a CSS `url(...)` value.
+fn normalize_icon_url(input: &str) -> Result<String, String> {
+    let url = input.trim();
+
+    if url.is_empty() {
+        return Err("Enter an https:// SVG URL first.".to_string());
+    }
+
+    if url.starts_with("http://") {
+        return Err(
+            "Use an https:// URL \u{2014} Blogger serves over https and blocks mixed (http) content."
+                .to_string(),
+        );
+    }
+
+    if !url.starts_with("https://") {
+        return Err("URL must start with https://".to_string());
+    }
+
+    if url.contains(['\'', '"', ' ', '\n', '\r', '\t', '(', ')']) {
+        return Err("URL contains characters that aren't safe inside a CSS url() value.".to_string());
+    }
+
+    Ok(format!("url('{}')", url))
+}
+
+/// Turn whatever the user pasted into a storable CSS value. Accepts an
+/// https URL, an already-encoded `url(data:image/svg+xml,...)` value, or raw
+/// `<svg>` markup (which gets sanitized and encoded as a data URI).
 fn normalize_icon_input(input: &str) -> Result<String, String> {
     let input = input.trim();
 
     if input.is_empty() {
-        return Err("Paste raw SVG first.".to_string());
+        return Err("Paste raw SVG, a url(data:...) value, or an https:// link first.".to_string());
     }
 
+    // External link pasted into the raw box -> route through URL validation.
+    if input.starts_with("http://") || input.starts_with("https://") {
+        return normalize_icon_url(input);
+    }
+
+    // Already an embedded mask value -> accept verbatim.
     if input.starts_with("url(") && input.contains("data:image/svg+xml") {
         return Ok(input.to_string());
     }
 
+    // Otherwise treat it as raw SVG (decoding a data URI back to markup if needed).
     let raw_svg = mask_uri_to_raw_svg(input).unwrap_or_else(|| input.to_string());
 
     if !raw_svg.contains("<svg") {
         return Err(
-            "Paste raw <svg> code or a CSS url(data:image/svg+xml,...) mask value.".to_string(),
+            "Paste raw <svg> code, a url(data:image/svg+xml,...) value, or an https:// SVG link."
+                .to_string(),
         );
     }
 
-    let lower = raw_svg.to_lowercase();
-
-    if lower.contains("<script") || lower.contains("onload=") || lower.contains("onclick=") {
+    if svg_has_active_content(&raw_svg) {
         return Err(
-            "Rejected SVG because it contains script or inline event handlers.".to_string(),
+            "Rejected SVG because it contains scripts, event handlers, or javascript: links."
+                .to_string(),
         );
     }
 
     Ok(svg_to_mask_uri(&sanitize_svg(&raw_svg)))
+}
+
+/// Reject SVGs that can execute code once embedded.
+fn svg_has_active_content(raw_svg: &str) -> bool {
+    let lower = raw_svg.to_lowercase();
+    const BLOCKED: [&str; 7] = [
+        "<script",
+        "javascript:",
+        "onload=",
+        "onclick=",
+        "onerror=",
+        "onmouseover=",
+        "<foreignobject",
+    ];
+    BLOCKED.iter().any(|needle| lower.contains(needle))
 }
 
 fn sanitize_svg(input: &str) -> String {
@@ -337,18 +483,8 @@ fn sanitize_svg(input: &str) -> String {
 }
 
 fn mask_uri_to_raw_svg(input: &str) -> Option<String> {
-    let mut value = input.trim();
-
-    if value.starts_with("url(") && value.ends_with(')') {
-        value = value
-            .trim_start_matches("url(")
-            .trim_end_matches(')')
-            .trim();
-    }
-
-    value = value.trim_matches('"').trim_matches('\'');
-
-    let payload = svg_payload_from_data_uri(value)?;
+    let value = css_url_inner(input);
+    let payload = svg_payload_from_data_uri(&value)?;
     Some(percent_decode(payload))
 }
 

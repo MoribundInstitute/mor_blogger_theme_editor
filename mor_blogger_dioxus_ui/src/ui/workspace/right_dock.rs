@@ -9,7 +9,77 @@ use crate::ui::panels::plugins_panel::PluginsPanel;
 use crate::ui::panels::presets::ThemeSignals;
 use crate::ui::panels::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::panels::site_panel::SitePanel;
-use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
+use crate::ui::workspace::layout::PanelLayout;
+use super::left_dock::{IconGrip, IconClose};
+
+const RIGHT_DOCK_CSS: &str = r#"
+.editor-right-panel.is-floating {
+    position: fixed !important;
+    left: var(--right-dock-x, calc(100vw - 340px)) !important;
+    top: var(--right-dock-y, 80px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+    width: 320px !important;
+    max-height: 85vh !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+}
+"#;
+
+const DOCK_DRAG_JS: &str = r#"
+(function () {
+    if (window.__morCoreDockDragInstalled) return;
+    window.__morCoreDockDragInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
+        const bar = e.target.closest('.floating-editor-window-bar');
+        if (!bar) return;
+        if (e.target.closest('button, input, a, select, textarea')) return;
+
+        const panel = bar.closest('.editor-left-panel, .editor-right-panel');
+        if (!panel) return;
+        
+        if (window.getComputedStyle(panel).position !== 'fixed' && window.getComputedStyle(panel).position !== 'absolute') return;
+
+        e.preventDefault();
+        
+        const isLeft = panel.classList.contains('editor-left-panel');
+        const varX = isLeft ? '--left-dock-x' : '--right-dock-x';
+        const varY = isLeft ? '--left-dock-y' : '--right-dock-y';
+
+        const rect = panel.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = rect.left;
+        const startTop = rect.top;
+
+        document.documentElement.style.setProperty(varX, startLeft + 'px');
+        document.documentElement.style.setProperty(varY, startTop + 'px');
+        document.body.classList.add('editor-floating-dragging');
+
+        const onMove = function (moveEvt) {
+            const dx = moveEvt.clientX - startX;
+            const dy = moveEvt.clientY - startY;
+
+            const nextLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - 100));
+            const nextTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - 40));
+
+            document.documentElement.style.setProperty(varX, nextLeft + 'px');
+            document.documentElement.style.setProperty(varY, nextTop + 'px');
+        };
+
+        const onUp = function () {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.body.classList.remove('editor-floating-dragging');
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    });
+})();
+"#;
 
 #[component]
 pub fn RightDataPanel(
@@ -32,22 +102,31 @@ pub fn RightDataPanel(
     }
 
     rsx! {
-        aside { class: "editor-right-panel",
+        script { dangerous_inner_html: "{DOCK_DRAG_JS}" }
+
+        style { "{RIGHT_DOCK_CSS}" }
+
+        aside { 
+            class: if layout() == PanelLayout::Floating { "editor-right-panel is-floating" } else { "editor-right-panel" },
 
             if layout() == PanelLayout::Floating {
                 div { class: "floating-editor-window-bar",
-                    span { class: "floating-editor-grip", "⠿" }
+                    span { class: "floating-editor-grip", style: "display: flex; align-items: center;", IconGrip {} }
                     span { class: "floating-editor-title", "Site Data" }
                     div { class: "floating-editor-window-actions",
                         button {
                             class: "editor-mini-button",
-                            onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Split),
+                            style: "display: flex; align-items: center; padding: 4px;",
+                            title: "Dock to window",
+                            onclick: move |_| layout.set(PanelLayout::Split),
                             "Dock"
                         }
                         button {
                             class: "editor-mini-button",
-                            onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Hidden),
-                            "Hide"
+                            style: "display: flex; align-items: center; padding: 4px;",
+                            title: "Close",
+                            onclick: move |_| layout.set(PanelLayout::Hidden),
+                            IconClose {}
                         }
                     }
                 }
@@ -65,17 +144,17 @@ pub fn RightDataPanel(
             div { class: "editor-panel-toolbar-actions",
                 button {
                     class: if layout() == PanelLayout::Split { "editor-button is-active" } else { "editor-button" },
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Split),
+                    onclick: move |_| layout.set(PanelLayout::Split),
                     "Split"
                 }
                 button {
                     class: if layout() == PanelLayout::Wide { "editor-button is-active" } else { "editor-button" },
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Wide),
+                    onclick: move |_| layout.set(PanelLayout::Wide),
                     "Wide"
                 }
                 button {
                     class: if layout() == PanelLayout::Floating { "editor-button is-active" } else { "editor-button" },
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Floating),
+                    onclick: move |_| layout.set(PanelLayout::Floating),
                     "Float"
                 }
             }

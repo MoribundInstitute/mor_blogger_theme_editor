@@ -1,14 +1,34 @@
 use dioxus::prelude::*;
 
+// 1. Data-Driven Definitions. Zero repetitive DOM slop.
+const TEMPLATE_LAYOUTS: &[(&str, &str)] = &[
+    ("Header Variant", "header_variant"),
+    ("Main Canvas Variant", "main_variant"),
+    ("Content Feed", "content_variant"),
+    ("Left Sidebar", "left_sidebar_variant"),
+    ("Right Sidebar", "right_sidebar_variant"),
+    ("Footer Grid", "footer_variant"),
+];
+
+const CORE_IDENTITY: &[(&str, &str)] = &[
+    ("Site Information", "[site]"),
+    ("Color Palette", "[colors]"),
+    ("Typography", "[typography]"),
+];
+
 #[component]
 pub fn SmartCodeDock(
     config_toml: ReadSignal<String>,
     on_load_theme: EventHandler<String>,
 ) -> Element {
-    let jump_to = move |target: &str| {
+    // 2. Memory cell tracks current selection
+    let mut active_target = use_signal(|| None::<String>);
+
+    let mut jump_to = move |target: &str| {
         let target_str = target.to_string();
+        active_target.set(Some(target_str.clone())); // Store active state
+        
         spawn(async move {
-            // FIX: Removed 'mut' promise.
             let eval = dioxus::document::eval(r#"
                 let target = await dioxus.recv();
                 let el = document.getElementById("toml-editor-textarea");
@@ -38,28 +58,39 @@ pub fn SmartCodeDock(
             
             div {
                 style: "width: 220px; border-right: 1px solid var(--editor-border); display: flex; flex-direction: column;",
+                
                 div {
                     style: "padding: 12px; border-bottom: 1px solid var(--editor-border-soft); background: var(--bg-elevated);",
                     span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;", "Template Layouts" }
                 }
                 div {
                     style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;",
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("header_variant"), "Header Variant" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("main_variant"), "Main Canvas Variant" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("content_variant"), "Content Feed" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("left_sidebar_variant"), "Left Sidebar" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("right_sidebar_variant"), "Right Sidebar" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("footer_variant"), "Footer Grid" }
+                    for (label, search_key) in TEMPLATE_LAYOUTS {
+                        button {
+                            // Paint active class if memory cell matches this button
+                            class: if active_target() == Some(search_key.to_string()) { "editor-button editor-button-active" } else { "editor-button" },
+                            style: "text-align: left; font-size: 0.85rem;",
+                            onclick: move |_| jump_to(search_key),
+                            "{label}"
+                        }
+                    }
                 }
+                
                 div {
                     style: "padding: 12px; border-top: 1px solid var(--editor-border-soft); border-bottom: 1px solid var(--editor-border-soft); background: var(--bg-elevated);",
                     span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;", "Core Identity" }
                 }
                 div {
                     style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;",
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("[site]"), "Site Information" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("[colors]"), "Color Palette" }
-                    button { class: "editor-button", style: "text-align: left; font-size: 0.85rem;", onclick: move |_| jump_to("[typography]"), "Typography" }
+                    for (label, search_key) in CORE_IDENTITY {
+                        button {
+                            // Paint active class if memory cell matches this button
+                            class: if active_target() == Some(search_key.to_string()) { "editor-button editor-button-active" } else { "editor-button" },
+                            style: "text-align: left; font-size: 0.85rem;",
+                            onclick: move |_| jump_to(search_key),
+                            "{label}"
+                        }
+                    }
                 }
             }
 

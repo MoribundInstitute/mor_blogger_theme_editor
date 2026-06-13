@@ -47,7 +47,7 @@ pub fn export_bundle(xml: &str, toml: &str) {
     {
         if let Ok(file) = File::create(path) {
             let mut zip = zip::ZipWriter::new(file);
-            let options: FileOptions<'_, ()> = FileOptions::default().compression_method(CompressionMethod::Stored);
+            let options = FileOptions::default().compression_method(CompressionMethod::Stored);
 
             // Add the compiled XML
             let _ = zip.start_file("theme.xml", options);

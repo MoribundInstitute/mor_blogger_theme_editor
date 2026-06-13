@@ -7,7 +7,7 @@ use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
-use super::layout_state::AppLayoutState;
+use super::layout_state::{AppLayoutState, CenterView};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
@@ -25,22 +25,27 @@ const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
 
 pub fn render_app_shell(
     theme: ThemeAppState,
-    layout: AppLayoutState,
+    mut layout: AppLayoutState,
     render: AppRenderState,
 ) -> Element {
     let signals = theme.signals;
     let current_config = theme.current_config;
     let mut active_preset = theme.active_preset;
-    let center_view = theme.center_view;
+    let mut center_view = theme.center_view;
     let show_preview = use_signal(|| true);
     
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
     let show_undocked_modules = use_signal(|| false);
+    
+    // Dialog Signals
     let mut show_about = use_signal(|| false);
     let mut show_prefs = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
-    let show_plugins = use_signal(|| false);
+    let show_plugins = use_signal(|| false); // Removed dead 'mut' warning
+    let mut show_css_builder = use_signal(|| false);
+    let mut show_diagnostics = use_signal(|| false);
+    let mut show_docs = use_signal(|| false);
 
     let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
@@ -126,10 +131,10 @@ pub fn render_app_shell(
                 }
             }
 
+            // --- ALL DIALOGS (MODALS) LIVE HERE AT THE TOP LEVEL ---
+
             Modal {
-                title: "About MorBlogger".to_string(),
-                open: show_about,
-                on_close: move |_| show_about.set(false),
+                title: "About MorBlogger".to_string(), open: show_about, on_close: move |_| show_about.set(false),
                 div { class: "editor-note",
                     p { class: "editor-note-title", "Version 0.1.0" }
                     p { class: "editor-note-body", "Frugal desktop theme engine for Blogger." }
@@ -137,9 +142,7 @@ pub fn render_app_shell(
             }
 
             Modal {
-                title: "Preferences".to_string(),
-                open: show_prefs,
-                on_close: move |_| show_prefs.set(false),
+                title: "Preferences".to_string(), open: show_prefs, on_close: move |_| show_prefs.set(false),
                 div { class: "editor-field-group",
                     label { class: "editor-field-label", "Window Mode" }
                     select {
@@ -165,9 +168,7 @@ pub fn render_app_shell(
             }
 
             Modal {
-                title: "Keyboard Shortcuts".to_string(),
-                open: show_shortcuts,
-                on_close: move |_| show_shortcuts.set(false),
+                title: "Keyboard Shortcuts".to_string(), open: show_shortcuts, on_close: move |_| show_shortcuts.set(false),
                 div { class: "editor-field-group",
                     div { class: "editor-note",
                         p { class: "editor-note-title", "Keyboard Shortcuts" }
@@ -192,13 +193,47 @@ pub fn render_app_shell(
                 }
             }
 
+            Modal {
+                title: "CSS Token Builder".to_string(), open: show_css_builder, on_close: move |_| show_css_builder.set(false),
+                div { class: "editor-note",
+                    p { class: "editor-note-title", "Under Construction" }
+                    p { class: "editor-note-body", "Visual CSS variable mapping engine is initializing." }
+                }
+            }
+
+            Modal {
+                title: "Diagnostics Log".to_string(), open: show_diagnostics, on_close: move |_| show_diagnostics.set(false),
+                div { class: "editor-field-group",
+                    if (render.diag)().errors.is_empty() && (render.diag)().warnings.is_empty() {
+                        div { class: "editor-note", p { class: "editor-note-body", "No structural issues found. Theme is clean." } }
+                    } else {
+                        DiagnosticsPanel { result: render.diag }
+                    }
+                }
+            }
+
+            Modal {
+                title: "Documentation".to_string(), open: show_docs, on_close: move |_| show_docs.set(false),
+                div { class: "editor-note",
+                    p { class: "editor-note-title", "Online Resources" }
+                    p { class: "editor-note-body", "Read the architecture and integration guides in the MOR_PLAN.md at the repository root." }
+                }
+            }
+
+            // --- END DIALOGS ---
+
             div { class: "editor-shell", style: "height: 100%;",
 
                 AppMenuBar {
-                    show_prefs,
-                    show_about,
-                    show_shortcuts,
-                    show_plugins,
+                    show_prefs, show_about, show_shortcuts, show_plugins, 
+                    show_css_builder, show_diagnostics, show_docs,
+                    left_layout: layout.left_layout,
+                    right_layout: layout.right_layout,
+
+                    on_new_workspace: move |_| {
+                        signals.apply_config(&mor_blogger_core::config::defaults::default_theme_config());
+                        active_preset.set(None);
+                    },
                     on_load_theme: move |_| {
                         if let Some(content) = crate::utils::io::load_toml() {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {
@@ -206,9 +241,7 @@ pub fn render_app_shell(
                             }
                         }
                     },
-                    on_save_theme: move |_| {
-                        crate::utils::io::save_toml(&config_toml_signal());
-                    },
+                    on_save_theme: move |_| { crate::utils::io::save_toml(&config_toml_signal()); },
                     on_load_data: {
                         let current = current_config();
                         let sigs = signals.clone();
@@ -240,12 +273,20 @@ pub fn render_app_shell(
                             });
                         }
                     },
-                    on_export_xml: move |_| {
-                        crate::utils::io::save_xml(&(render.generated_xml)());
+                    on_export_xml: move |_| { crate::utils::io::save_xml(&(render.generated_xml)()); },
+                    on_export_zip: move |_| { crate::utils::io::export_bundle(&(render.generated_xml)(), &config_toml_signal()); },
+                    on_copy_xml: move |_| { 
+                        log::info!("Copy XML triggered (requires arboard binding)");
                     },
-                    on_export_zip: move |_| {
-                        crate::utils::io::export_bundle(&(render.generated_xml)(), &config_toml_signal());
+                    on_toggle_preview: move |_| {
+                        if center_view() == CenterView::Preview {
+                            center_view.set(CenterView::CodeEditor);
+                        } else {
+                            center_view.set(CenterView::Preview);
+                        }
                     },
+                    on_toggle_split: move |_| { center_view.set(CenterView::Split); },
+                    on_reset_viewport: move |_| { layout.preview_width.set(1200u32); },
                 }
 
                 div {

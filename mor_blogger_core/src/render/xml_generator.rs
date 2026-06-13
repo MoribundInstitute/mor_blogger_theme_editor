@@ -206,7 +206,7 @@ fn assemble_template(
     let javascript = wrap_body_javascript(javascript);
 
     format!(
-        "{meta}\n{css}\n<b:template-skin><![CDATA[]]></b:template-skin>\n</head>\n<body>\n{header}\n<div class='mor-workspace'>\n{left}\n{main}\n{right}\n</div>\n{ads_consent_banner}\n{ads_runtime_script}\n{js}\n</body>\n</html>",
+        "{meta}\n<b:skin><![CDATA[\n{css}\n]]></b:skin>\n<b:template-skin><![CDATA[]]></b:template-skin>\n{{{{PLUGIN_HEAD_XML}}}}\n</head>\n<body>\n{{{{PLUGIN_BODY_TOP}}}}\n{header}\n<div class='mor-workspace'>\n{left}\n{main}\n{right}\n</div>\n{ads_consent_banner}\n{ads_runtime_script}\n{js}\n</body>\n</html>",
         meta = meta,
         css = css,
         header = header,
@@ -224,7 +224,6 @@ pub(super) fn render_template(
     light_palette: &PresetPalette,
     dark_palette: &PresetPalette,
 ) -> String {
-    // 1. Read the live plugin state directly from disk to bypass UI signal-plumbing slop.
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
     if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
         if let Ok(prefs) = serde_json::from_str::<RenderPrefs>(&json) {
@@ -241,7 +240,6 @@ pub(super) fn render_template(
         }
     }
 
-    // 2. Extract Javascript, CSS, and Widgets
     let mut plugin_javascript = String::new();
     let mut plugin_custom_css = String::new();
     let mut plugin_widgets: std::collections::HashMap<&str, String> = std::collections::HashMap::new();
@@ -272,16 +270,15 @@ pub(super) fn render_template(
         _ => String::new(),
     };
 
-    let body_stack = resolve_font_stack_with_fallback(&config.typography.body_font_stack, "serif");
+    let body_stack = resolve_font_stack_with_fallback(&config.typography.body_font_stack, false);
 
     let heading_stack = if config.typography.heading_font_stack.trim().is_empty() {
         body_stack.clone()
     } else {
-        resolve_font_stack_with_fallback(&config.typography.heading_font_stack, "serif")
+        resolve_font_stack_with_fallback(&config.typography.heading_font_stack, false)
     };
 
-    let mono_stack =
-        resolve_font_stack_with_fallback(&config.typography.mono_font_stack, "monospace");
+    let mono_stack = resolve_font_stack_with_fallback(&config.typography.mono_font_stack, true);
 
     let google_fonts_link = build_google_font_imports(&[
         &config.typography.body_font_stack,
@@ -327,15 +324,12 @@ pub(super) fn render_template(
 
     let mut parts = resolve_template_parts(config);
     
-    // Inject plugin CSS safely
+    // Inject plugin CSS safely by appending, avoiding fragile comment searches
     if !plugin_custom_css.is_empty() {
-        parts.css = parts.css.replace(
-            "/* ===== Dynamic User CSS Variables ===== */", 
-            &format!("/* ===== Plugin CSS ===== */\n{}\n/* ===== Dynamic User CSS Variables ===== */", plugin_custom_css)
-        );
+        parts.css.push_str("\n/* ===== Dynamic Plugin CSS ===== */\n");
+        parts.css.push_str(&plugin_custom_css);
     }
     
-    // Merge Plugin JS with existing framework JS
     let combined_js = format!("{}\n{}", parts.javascript, plugin_javascript);
     let body_javascript = merge_body_javascript(&combined_js, &config.plugins.custom_js);
 
@@ -596,7 +590,6 @@ pub(super) fn render_template(
         .replace("{{ICON_PANEL_CLOSE}}", &config.icons.panel_close)
         .replace("{{ICON_SEARCH}}", &config.icons.search)
         .replace("{{ICON_MENU}}", &config.icons.menu)
-        .replace("{{PRESET_CSS}}", &config.preset_css)
         // Left sidebar.
         .replace("{{LEFT_PANEL_TITLE}}", "Browse")
         .replace("{{LEFT_PANEL_CLOSE_LABEL}}", "Close")
@@ -650,26 +643,28 @@ pub(super) fn render_template(
 
     let mut final_xml = rendered;
 
-    // 3. Apply the dynamic plugin XML sockets directly into the final render
     for (socket, content) in plugin_widgets {
         final_xml = final_xml.replace(socket, &content);
     }
 
-    // Clean up any unused generic plugin sockets so they don't leak into the final output
     final_xml = final_xml.replace("{{PLUGIN_WIDGET_SIDEBAR_RIGHT}}", "");
     final_xml = final_xml.replace("{{PLUGIN_WIDGET_SIDEBAR_LEFT}}", "");
     final_xml = final_xml.replace("{{PLUGIN_WIDGET_HEADER}}", "");
     final_xml = final_xml.replace("{{PLUGIN_WIDGET_FOOTER}}", "");
+    
+    // Explicit sockets for advanced plugin layout manipulation
+    final_xml = final_xml.replace("{{PLUGIN_HEAD_XML}}", "");
+    final_xml = final_xml.replace("{{PLUGIN_BODY_TOP}}", "");
 
     for (col_idx, col) in config.footer.columns.iter().enumerate() {
-        let c = col_idx + 1; // 1-indexed for XML
+        let c = col_idx + 1;
         final_xml = final_xml.replace(
             &format!("{{{{FOOTER_COL_{}_HEADING}}}}", c),
             &escape_html(&col.heading),
         );
 
         for (link_idx, link) in col.links.iter().enumerate() {
-            let l = link_idx + 1; // 1-indexed for XML
+            let l = link_idx + 1;
             final_xml = final_xml.replace(
                 &format!("{{{{FOOTER_{}_LINK_{}_LABEL}}}}", c, l),
                 &escape_html(&link.label),

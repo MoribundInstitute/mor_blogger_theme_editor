@@ -110,6 +110,7 @@ pub(crate) fn apply_icon_assets(
             .as_deref()
             .map(svg_to_mask_uri)
             .unwrap_or(before.sidebar_right),
+        custom_icons: std::collections::HashMap::new(),
     };
 
     UserPresetIconAssets {

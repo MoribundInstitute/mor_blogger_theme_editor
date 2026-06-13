@@ -4,6 +4,8 @@
 //! and no per-render option vector cloning. Custom entries are stored as raw
 //! names/stacks and resolved by the XML generator during export.
 
+use std::path::Path;
+use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 
 use mor_blogger_core::config::fonts::{FontPreset, FONT_REGISTRY, MONO_FONT_REGISTRY};
@@ -17,6 +19,41 @@ const WEIGHT_OPTIONS: &[(&str, &str)] = &[
 ];
 
 const CUSTOM_SENTINEL: &str = "__custom__";
+
+/// Caveman metadata extraction. Avoids pulling in heavy ttf-parser crates.
+/// Maps "FiraCode-Regular.ttf" -> "Fira Code"
+fn parse_font_filename(filename: &str) -> String {
+    let name = Path::new(filename).file_stem().unwrap_or_default().to_string_lossy().to_string();
+    
+    // Split camelCase boundaries if no spaces exist (e.g. FiraCode -> Fira Code)
+    let mut spaced_name = String::new();
+    let mut prev_is_lower = false;
+    for c in name.chars() {
+        if prev_is_lower && c.is_uppercase() {
+            spaced_name.push(' ');
+        }
+        spaced_name.push(c);
+        prev_is_lower = c.is_lowercase();
+    }
+
+    // Clean structural characters
+    let cleaned = spaced_name.replace(['_', '-'], " ");
+    
+    // Strip common font weights from the end
+    let mut final_name = cleaned.as_str();
+    let dump_words = [
+        " Regular", " Bold", " Italic", " Medium", " Light", " SemiBold", 
+        " Black", " Thin", " VariableFont"
+    ];
+    
+    for w in dump_words {
+        if final_name.ends_with(w) {
+            final_name = final_name.trim_end_matches(w);
+        }
+    }
+    
+    final_name.trim().to_string()
+}
 
 #[component]
 pub fn TypographyPanel(
@@ -97,6 +134,8 @@ fn FontStackPicker(
     include_match_body: bool,
 ) -> Element {
     let mut value = value;
+    let mut is_hovered = use_signal(|| false);
+    
     let current = value.read().clone();
     let current_trimmed = current.trim();
 
@@ -166,16 +205,36 @@ fn FontStackPicker(
             }
 
             if is_custom {
-                input {
-                    r#type: "text",
-                    value: "{current}",
-                    placeholder: "e.g. Fira Code, Noto Serif KR, or Georgia, serif",
-                    class: "editor-field",
-                    oninput: move |e| value.set(e.value()),
-                }
-                p {
-                    class: "editor-mini-label",
-                    "Type a Google Font family name, or paste a full CSS stack."
+                div {
+                    style: if is_hovered() { 
+                        "margin-top: 8px; border: 1px dashed var(--accent); padding: 8px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 10%, transparent); transition: all 0.2s;" 
+                    } else { 
+                        "margin-top: 8px; border: 1px dashed transparent; padding: 0 0 8px 0; transition: all 0.2s;" 
+                    },
+                    ondragover: move |evt| { evt.prevent_default(); is_hovered.set(true); },
+                    ondragenter: move |evt| { evt.prevent_default(); is_hovered.set(true); },
+                    ondragleave: move |_| is_hovered.set(false),
+                    ondrop: move |evt| {
+                        evt.prevent_default();
+                        is_hovered.set(false);
+                        if let Some(file) = evt.files().first() {
+                            let parsed = parse_font_filename(&file.name());
+                            value.set(parsed);
+                        }
+                    },
+                    input {
+                        r#type: "text",
+                        value: "{current}",
+                        placeholder: "e.g. Fira Code, Noto Serif KR, or Georgia, serif",
+                        class: "editor-field",
+                        style: "width: 100%;",
+                        oninput: move |e| value.set(e.value()),
+                    }
+                    p {
+                        class: "editor-mini-label",
+                        style: "margin-top: 6px;",
+                        "Type Google Font family, or drag a .ttf/.woff file here."
+                    }
                 }
             }
         }

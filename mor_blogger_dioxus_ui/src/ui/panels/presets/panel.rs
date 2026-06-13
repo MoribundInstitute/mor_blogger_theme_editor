@@ -86,7 +86,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let active_label = active()
         .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
         .map(|preset| preset.name)
-        .unwrap_or("Custom / Imported");
+        .unwrap_or("Default Base Theme");
 
     let preset_css_bytes = props.signals.preset_css.read().len();
     let current_config_for_gtk = props.current_config.clone();

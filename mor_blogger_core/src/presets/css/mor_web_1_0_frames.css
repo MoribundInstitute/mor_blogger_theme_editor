@@ -1,10 +1,11 @@
 /* ============================================================
    Web 1.0 Frames preset
    The mid-1990s personal homepage: tiled backgrounds, marquees, 
-   and "best viewed in Netscape" energy.
+   and "best viewed in Netscape" energy. Adapts safely to both
+   Light (Win95) and Dark (Terminal) modes.
    ============================================================ */
 
-/* Force chunky ridged/outset borders on every major surface */
+/* Force chunky outset/ridge borders on every major surface */
 .canvas-core,
 .mor-post,
 .mor-panel,
@@ -13,204 +14,90 @@
 .mor-pager,
 .mor-catalog-dropdown,
 .panel-header {
-  border-style: ridge;
+  border-style: outset;
   border-width: 3px;
   border-radius: 0;
   box-shadow: none;
   border-color: var(--border-color);
+  background-color: var(--bg-panel);
 }
 
 /* ============================================================
    HEADER STYLING
    ============================================================ */
 .main-header {
-  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
+  background: var(--bg-elevated);
   color: var(--fg-base);
   padding: 0;
   font-weight: 700;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 3px outset var(--border-color);
 }
 
 .main-header .header-top-row,
 .main-header .header-bottom-row {
   background: transparent;
   color: inherit;
+  border-bottom: none;
 }
 
 .main-header .header-top-row {
   padding: 10px 20px 9px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px groove var(--border-color);
 }
 
 .main-header .header-bottom-row {
-  padding: 12px 20px 14px;
-  align-items: center;
+  padding: 12px 20px;
 }
 
-.panel-header {
-  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-panel) 100%);
-  color: var(--fg-base);
-  padding: 4px 8px;
-  font-weight: 700;
-  border-bottom: 2px solid var(--border-color);
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
-}
-
-.main-header .institute-title,
-.main-header .branding-link,
-.main-header .mor-nav a,
-.main-header .mor-nav button {
-  color: var(--fg-base);
-  text-shadow: none;
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
-}
-
-/* ============================================================
-   CLASSIC 90s EFFECTS
-   ============================================================ */
-.preview-site-subtitle, 
-.site-subtitle {
-  display: inline-block;
-  white-space: nowrap;
-  animation: web1-marquee 12s linear infinite;
-  color: var(--fg-muted);
-  font-weight: bold;
-}
-
-@keyframes web1-marquee {
-  0% { transform: translateX(100vw); }
-  100% { transform: translateX(-100%); }
-}
-
-.preview-kicker, 
-.post-kicker {
-  animation: web1-blink 1s step-end infinite;
+/* Hyperlinks: Classic Underlined */
+a {
   color: var(--accent);
-  font-weight: 900;
-}
-
-@keyframes web1-blink {
-  50% { opacity: 0; }
-}
-
-/* Native outset button. Browser calculates highlights automatically. */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger,
-.mor-search button {
-  background: var(--bg-panel);
-  color: var(--fg-base);
-  border: 3px outset var(--bg-panel);
-  border-radius: 0;
-  padding: 3px 12px;
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
-  text-transform: none;
-  box-shadow: none;
-  cursor: pointer;
-}
-
-.pager-btn:active,
-.panel-toggle:active,
-.toc-jump-link:active,
-.back-to-top-btn:active,
-.mor-catalog-trigger:active,
-.mor-search button:active {
-  border-style: inset;
-  padding: 4px 11px 2px 13px;  
-}
-
-.mor-post {
-  margin: 8px;
-  padding: 12px;
-  background: var(--bg-base);
-  border: 3px ridge var(--border-color);
-}
-
-.mor-post .post-title,
-.mor-post .post-title a {
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--fg-base);
-  border-bottom: 2px groove var(--border-color);
-  padding-bottom: 4px;
-  text-shadow: none;
-}
-
-.mor-post .post-body {
-  font-family: var(--font-body);
-}
-
-.mor-post .post-body a,
-.panel-content a {
   text-decoration: underline;
-  font-weight: bold;
-  color: var(--accent);
+  border-bottom: none;
 }
 
-.mor-post h1,
-.mor-post h2,
-.mor-post h3 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--fg-base);
+a:hover, a:focus-visible {
+  background: transparent;
+  color: var(--accent);
+  text-shadow: none;
 }
 
 /* ============================================================
-   WEB 1.0 BRUTALISM NUKE: KILL MODERN WIDGET BLOAT
+   BUTTONS & INPUTS
    ============================================================ */
-.mor-post * {
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-/* Nuke hardcoded backgrounds on embedded cards/panels */
-.mor-post div,
-.mor-post header,
-.mor-post footer,
-.mor-post section,
-.mor-post details,
-.mor-post summary {
-  background-color: transparent !important;
-  color: var(--fg-base) !important;
-  border-color: var(--border-color) !important;
-}
-
-/* Force inputs and buttons inside post to obey caveman styling */
-.mor-post input,
-.mor-post select,
-.mor-post textarea {
+button, 
+.panel-toggle,
+.pager-btn,
+.mor-post button {
   background: var(--bg-elevated) !important;
   color: var(--fg-base) !important;
-  border: 2px inset var(--border-color) !important;
-  border-radius: 0 !important;
-}
-
-.mor-post button {
-  background: var(--bg-panel) !important;
-  color: var(--fg-base) !important;
-  border: 3px outset var(--bg-panel) !important;
+  border: 3px outset var(--border-color) !important;
   border-radius: 0 !important;
   cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
 }
 
+button:active,
+.panel-toggle:active,
+.pager-btn:active,
 .mor-post button:active {
   border-style: inset !important;
+  background: var(--bg-panel) !important;
 }
-/* ============================================================ */
 
-/* Footer status-bar feel */
+/* ============================================================
+   FOOTER
+   ============================================================ */
 .mor-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 2px solid var(--border-color);
-  border-bottom: 2px solid var(--border-color);
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  border-top: 3px outset var(--border-color);
+  border-bottom: 3px outset var(--border-color);
   font-size: 0.85rem;
   padding: 8px 12px;
+  background: var(--bg-panel);
 }
 
 .mor-footer .footer-sys-info::after {
@@ -221,10 +108,12 @@
   font-weight: 700;
 }
 
-*,
-*::before,
-*::after {
-  text-shadow: none;
+@keyframes web1-blink {
+  50% { opacity: 0; }
+}
+
+* {
+  text-shadow: none !important;
 }
 
 .mor-search .prompt {
@@ -238,25 +127,15 @@
 }
 
 .mor-search input {
-  background: var(--bg-elevated);
+  background: var(--bg-base);
   color: var(--fg-base);
   border: 2px inset var(--border-color);
   border-radius: 0;
-  padding: 3px 6px;
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
 }
 
 .mor-search input:focus {
-  width: 220px;
   outline: none;
-  box-shadow: none;
-}
-
-.mor-footer .footer-logo {
-  border: 3px outset var(--bg-panel);
-  background: var(--bg-panel);
-}
-
-.mor-footer .footer-brand-center {
-  border-top: 2px groove var(--border-color);
+  border: 2px inset var(--accent);
 }

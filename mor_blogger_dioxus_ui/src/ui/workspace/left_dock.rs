@@ -11,7 +11,76 @@ use crate::ui::panels::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::template_modules::TemplateModulesPanel;
 use crate::ui::panels::typography_panel::TypographyPanel;
-use crate::ui::workspace::layout::{set_panel_layout, PanelLayout};
+use crate::ui::workspace::layout::PanelLayout;
+
+const LEFT_DOCK_CSS: &str = r#"
+.editor-left-panel.is-floating {
+    position: fixed !important;
+    left: var(--left-dock-x, 20px) !important;
+    top: var(--left-dock-y, 80px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+    width: 320px !important;
+    max-height: 85vh !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+}
+"#;
+
+const DOCK_DRAG_JS: &str = r#"
+(function () {
+    if (window.__morCoreDockDragInstalled) return;
+    window.__morCoreDockDragInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
+        const bar = e.target.closest('.floating-editor-window-bar');
+        if (!bar) return;
+        if (e.target.closest('button, input, a, select, textarea')) return;
+
+        const panel = bar.closest('.editor-left-panel, .editor-right-panel');
+        if (!panel) return;
+        
+        if (window.getComputedStyle(panel).position !== 'fixed' && window.getComputedStyle(panel).position !== 'absolute') return;
+
+        e.preventDefault();
+        
+        const isLeft = panel.classList.contains('editor-left-panel');
+        const varX = isLeft ? '--left-dock-x' : '--right-dock-x';
+        const varY = isLeft ? '--left-dock-y' : '--right-dock-y';
+
+        const rect = panel.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = rect.left;
+        const startTop = rect.top;
+
+        document.documentElement.style.setProperty(varX, startLeft + 'px');
+        document.documentElement.style.setProperty(varY, startTop + 'px');
+        document.body.classList.add('editor-floating-dragging');
+
+        const onMove = function (moveEvt) {
+            const dx = moveEvt.clientX - startX;
+            const dy = moveEvt.clientY - startY;
+
+            const nextLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - 100));
+            const nextTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - 40));
+
+            document.documentElement.style.setProperty(varX, nextLeft + 'px');
+            document.documentElement.style.setProperty(varY, nextTop + 'px');
+        };
+
+        const onUp = function () {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.body.classList.remove('editor-floating-dragging');
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    });
+})();
+"#;
 
 #[component]
 pub fn LeftVisualsPanel(
@@ -30,7 +99,6 @@ pub fn LeftVisualsPanel(
 ) -> Element {
     let _ = show_preview;
 
-    // Restore the normal generated theme preview when leaving Static Pages.
     use_effect(move || {
         if active_tab() != "Pages" && !show_undocked_pages() {
             preview_html.set(base_preview_html());
@@ -52,7 +120,12 @@ pub fn LeftVisualsPanel(
     }
 
     rsx! {
-        aside { class: "editor-left-panel",
+        script { dangerous_inner_html: "{DOCK_DRAG_JS}" }
+        
+        style { "{LEFT_DOCK_CSS}" }
+
+        aside { 
+            class: if layout() == PanelLayout::Floating { "editor-left-panel is-floating" } else { "editor-left-panel" },
 
             if layout() == PanelLayout::Floating {
                 div { class: "floating-editor-window-bar",
@@ -64,14 +137,14 @@ pub fn LeftVisualsPanel(
                             class: "editor-mini-button",
                             style: "display: flex; align-items: center; padding: 4px;",
                             title: "Dock to window",
-                            onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Split),
+                            onclick: move |_| layout.set(PanelLayout::Split),
                             IconDock {}
                         }
                         button {
                             class: "editor-mini-button",
                             style: "display: flex; align-items: center; padding: 4px;",
                             title: "Close",
-                            onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Hidden),
+                            onclick: move |_| layout.set(PanelLayout::Hidden),
                             IconClose {}
                         }
                     }
@@ -93,21 +166,21 @@ pub fn LeftVisualsPanel(
                 button {
                     class: if layout() == PanelLayout::Split { "editor-button is-active" } else { "editor-button" },
                     style: "display: flex; align-items: center; justify-content: center; gap: 6px;",
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Split),
+                    onclick: move |_| layout.set(PanelLayout::Split),
                     IconSplit {}
                     "Split"
                 }
                 button {
                     class: if layout() == PanelLayout::Wide { "editor-button is-active" } else { "editor-button" },
                     style: "display: flex; align-items: center; justify-content: center; gap: 6px;",
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Wide),
+                    onclick: move |_| layout.set(PanelLayout::Wide),
                     IconWide {}
                     "Wide"
                 }
                 button {
                     class: if layout() == PanelLayout::Floating { "editor-button is-active" } else { "editor-button" },
                     style: "display: flex; align-items: center; justify-content: center; gap: 6px;",
-                    onclick: move |_| set_panel_layout(&mut layout.clone(), PanelLayout::Floating),
+                    onclick: move |_| layout.set(PanelLayout::Floating),
                     IconFloat {}
                     "Float"
                 }
@@ -164,7 +237,7 @@ pub fn LeftVisualsPanel(
                         current_config: current_config.clone(),
                         on_apply_theme: move |new_config: ThemeConfig| {
                             on_apply_theme.call(new_config);
-                        },
+                        }
                     }
                 }
 
@@ -220,7 +293,7 @@ fn IconSidebarLeft() -> Element {
 }
 
 #[component]
-fn IconClose() -> Element {
+pub fn IconClose() -> Element {
     rsx! {
         svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
             path { d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }
@@ -229,7 +302,7 @@ fn IconClose() -> Element {
 }
 
 #[component]
-fn IconGrip() -> Element {
+pub fn IconGrip() -> Element {
     rsx! {
         svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "currentColor",
             circle { cx: "6", cy: "4", r: "1" }

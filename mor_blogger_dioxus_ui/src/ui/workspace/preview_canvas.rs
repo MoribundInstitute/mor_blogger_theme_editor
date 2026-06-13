@@ -11,8 +11,6 @@ const SCALER_JS: &str = r#"
 
         let lastScale = null;
         function applyScale(scale) {
-            // Only touch the DOM when the value actually changes. Writing the
-            // same value back re-triggers the ResizeObserver and feeds a loop.
             if (scale === lastScale) return;
             lastScale = scale;
             wrapper.style.setProperty('--preview-scale', scale);
@@ -38,8 +36,6 @@ const SCALER_JS: &str = r#"
 
         let rafPending = false;
         function scheduleScale() {
-            // Defer the measure/write to the next frame so the ResizeObserver
-            // callback returns immediately (no "undelivered notifications").
             if (rafPending) return;
             rafPending = true;
             requestAnimationFrame(function () {
@@ -139,67 +135,115 @@ pub fn PreviewCanvas(
                                                 (frame.contentWindow && frame.contentWindow.document);
                                             if (!doc) return;
 
-                                            doc.open();
-                                            doc.write(html);
-                                            doc.close();
+                                            // TIER 1 FALLBACK (First load or forced structural refresh)
+                                            if (!doc.body || !doc.body.innerHTML.trim() || source.__morNeedsFullReload) {
+                                                doc.open();
+                                                doc.write(html);
+                                                doc.close();
+                                                source.__morNeedsFullReload = false;
 
-                                            // Add native tooltip to icons
-                                            doc.querySelectorAll('[data-edit-target^="icons."]').forEach(function(el) {
-                                                el.title = "Alt+Click to edit icon";
-                                            });
+                                                setTimeout(function() {
+                                                    // Add native tooltip to ALL edit targets
+                                                    doc.querySelectorAll('[data-edit-target]').forEach(function(el) {
+                                                        el.title = "Shift+Click to quick edit";
+                                                    });
 
-                                            // Inject edit hover styles
-                                            if (!doc.getElementById('mor-edit-styles')) {
-                                                const style = doc.createElement('style');
-                                                style.id = 'mor-edit-styles';
-                                                style.textContent = `
-                                                    [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
-                                                    [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
-                                                `;
-                                                doc.head.appendChild(style);
+                                                    // Inject edit hover styles
+                                                    if (!doc.getElementById('mor-edit-styles')) {
+                                                        const style = doc.createElement('style');
+                                                        style.id = 'mor-edit-styles';
+                                                        style.textContent = `
+                                                            [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
+                                                            [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
+                                                        `;
+                                                        doc.head.appendChild(style);
+                                                    }
+
+                                                    // Native Click Events
+                                                    doc.addEventListener('click', function(e) {
+                                                        const target = e.target && e.target.closest
+                                                            ? e.target
+                                                            : (e.target && e.target.parentElement);
+
+                                                        if (!target) return;
+
+                                                        const editTarget = target.closest('[data-edit-target]');
+                                                        if (editTarget && e.shiftKey) {
+                                                            e.preventDefault(); e.stopPropagation();
+                                                            const targetId = editTarget.getAttribute('data-edit-target');
+                                                            if (targetId.startsWith('icons.')) {
+                                                                dioxus.send({ action: "ICON_EDIT", target: targetId });
+                                                            } else {
+                                                                dioxus.send({ action: "SELECT", target: targetId });
+                                                            }
+                                                            return;
+                                                        }
+
+                                                        const anchor = target.closest('a');
+                                                        if (anchor) {
+                                                            const href = anchor.getAttribute('href');
+                                                            if (href && (href.startsWith('/') || href.startsWith('#'))) {
+                                                                e.preventDefault();
+                                                                dioxus.send({ action: "NAVIGATE", target: href });
+                                                            }
+                                                        }
+
+                                                        const btn = target.closest('.panel-toggle');
+                                                        if (btn) {
+                                                            const tId = btn.getAttribute('data-target');
+                                                            if (tId) {
+                                                                const panel = doc.getElementById(tId);
+                                                                if (panel) panel.classList.toggle('is-collapsed');
+                                                            }
+                                                        }
+                                                    });
+                                                }, 50);
+                                                return;
                                             }
 
-                                            doc.addEventListener('click', function(e) {
-                                                const target = e.target && e.target.closest
-                                                    ? e.target
-                                                    : (e.target && e.target.parentElement);
+                                            // TIER 3 DOM MORPHING (Instant Hot-Swap)
+                                            const parser = new DOMParser();
+                                            const newDoc = parser.parseFromString(html, 'text/html');
 
-                                                if (!target) return;
+                                            // 1. Hot Swap True CSS Variables & Rules
+                                            const oldCss = doc.getElementById('mor-true-css');
+                                            const newCss = newDoc.getElementById('mor-true-css');
+                                            if (oldCss && newCss && oldCss.textContent !== newCss.textContent) {
+                                                oldCss.textContent = newCss.textContent;
+                                            }
 
-                                                const editTarget = target.closest('[data-edit-target]');
-                                                if (editTarget) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    
-                                                    const targetId = editTarget.getAttribute('data-edit-target');
+                                            // 2. Hot Swap Body Background
+                                            if (doc.body.getAttribute('style') !== newDoc.body.getAttribute('style')) {
+                                                doc.body.setAttribute('style', newDoc.body.getAttribute('style') || "");
+                                            }
 
-                                                    if (e.altKey && targetId.startsWith('icons.')) {
-                                                        dioxus.send({
-                                                            action: "ICON_EDIT",
-                                                            target: targetId
-                                                        });
-                                                        return;
-                                                    }
-
-                                                    dioxus.send({
-                                                        action: "SELECT",
-                                                        target: targetId
-                                                    });
-                                                    return;
+                                            // 3. Hot Swap Google Fonts
+                                            const oldFont = doc.querySelector('link[href*="fonts.googleapis.com"]');
+                                            const newFont = newDoc.querySelector('link[href*="fonts.googleapis.com"]');
+                                            if (newFont) {
+                                                if (!oldFont) {
+                                                    doc.head.appendChild(newFont.cloneNode());
+                                                } else if (oldFont.href !== newFont.href) {
+                                                    oldFont.href = newFont.href;
                                                 }
+                                            }
 
-                                                const anchor = target.closest('a');
-                                                if (anchor) {
-                                                    const href = anchor.getAttribute('href');
-                                                    if (href && (href.startsWith('/') || href.startsWith('#'))) {
-                                                        e.preventDefault();
-                                                        dioxus.send({
-                                                            action: "NAVIGATE",
-                                                            target: href
-                                                        });
-                                                    }
+                                            // 4. Hot Swap Text Targets
+                                            const oldTargets = doc.querySelectorAll('[data-edit-target]');
+                                            const newTargets = newDoc.querySelectorAll('[data-edit-target]');
+
+                                            // Safety: If structure completely changed (e.g. from template swap)
+                                            if (oldTargets.length !== newTargets.length) {
+                                                source.__morNeedsFullReload = true;
+                                                writePreview(source, frame);
+                                                return;
+                                            }
+
+                                            for (let i = 0; i < oldTargets.length; i++) {
+                                                if (oldTargets[i].innerHTML !== newTargets[i].innerHTML) {
+                                                    oldTargets[i].innerHTML = newTargets[i].innerHTML;
                                                 }
-                                            });
+                                            }
                                         }
 
                                         function install(attempt) {
@@ -219,15 +263,11 @@ pub fn PreviewCanvas(
 
                                             let writeTimer = null;
                                             const observer = new MutationObserver(function () {
-                                                // Coalesce rapid edits (typing) into a single rewrite
-                                                // so the main thread isn't saturated by back-to-back
-                                                // full-document writes — that backlog is what delays
-                                                // the alt+click IPC message reaching Rust.
                                                 if (writeTimer) clearTimeout(writeTimer);
                                                 writeTimer = setTimeout(function () {
                                                     writeTimer = null;
                                                     writePreview(source, frame);
-                                                }, 80);
+                                                }, 15); // Fast flush
                                             });
 
                                             observer.observe(source, {
@@ -237,7 +277,6 @@ pub fn PreviewCanvas(
                                             });
 
                                             source.__morPreviewObserver = observer;
-                                            // Initial paint stays immediate.
                                             writePreview(source, frame);
                                         }
 

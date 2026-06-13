@@ -1,4 +1,5 @@
 use crate::ui::shell::shortcut::use_shortcut;
+use crate::ui::workspace::layout::PanelLayout;
 use dioxus::prelude::*; 
 
 // =========================================================================
@@ -73,18 +74,31 @@ pub fn AppMenuBar(
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
     mut show_plugins: Signal<bool>, 
+    mut show_css_builder: Signal<bool>,
+    mut show_diagnostics: Signal<bool>,
+    mut show_docs: Signal<bool>,
+    mut left_layout: Signal<PanelLayout>,
+    mut right_layout: Signal<PanelLayout>,
+    on_new_workspace: EventHandler<()>,
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
     on_load_data: EventHandler<()>,
     on_save_data: EventHandler<()>,
     on_export_xml: EventHandler<()>,
     on_export_zip: EventHandler<()>,
+    on_copy_xml: EventHandler<()>,
+    on_toggle_preview: EventHandler<()>,
+    on_toggle_split: EventHandler<()>,
+    on_reset_viewport: EventHandler<()>,
 ) -> Element {
     rsx! {
         MorMenuBar {
             // 1. FILE
             MorMenuDropdown { label: "File".to_string(),
-                MenuItem { label: "New Workspace".to_string() }
+                MenuItem { 
+                    label: "New Workspace".to_string(),
+                    on_action: move |_| on_new_workspace.call(())
+                }
                 MenuSeparator {}
                 MenuItem {
                     label: "Load Theme (.toml)".to_string(),
@@ -121,25 +135,53 @@ pub fn AppMenuBar(
 
             // 2. EDIT
             MorMenuDropdown { label: "Edit".to_string(),
-                MenuItem { label: "Undo".to_string(), shortcut: "Ctrl+Z".to_string() }
-                MenuItem { label: "Redo".to_string(), shortcut: "Ctrl+Y".to_string() }
+                MenuItem { label: "Undo".to_string(), shortcut: "Ctrl+Z".to_string(), disabled: true }
+                MenuItem { label: "Redo".to_string(), shortcut: "Ctrl+Y".to_string(), disabled: true }
                 MenuSeparator {}
-                MenuItem { label: "Copy Raw XML".to_string() }
+                MenuItem { 
+                    label: "Copy Raw XML".to_string(),
+                    on_action: move |_| on_copy_xml.call(())
+                }
             }
 
             // 3. VIEW
             MorMenuDropdown { label: "View".to_string(),
-                MenuItem { label: "Toggle Preview Monitor".to_string() }
-                MenuItem { label: "Toggle Code Split".to_string() }
-                MenuItem { label: "Reset Viewport Scale".to_string() }
+                MenuItem { 
+                    label: "Toggle Preview Monitor".to_string(),
+                    on_action: move |_| on_toggle_preview.call(())
+                }
+                MenuItem { 
+                    label: "Toggle Code Split".to_string(),
+                    on_action: move |_| on_toggle_split.call(())
+                }
+                MenuItem { 
+                    label: "Reset Viewport Scale".to_string(),
+                    on_action: move |_| on_reset_viewport.call(())
+                }
             }
 
             // 4. DOCKS
             MorMenuDropdown { label: "Docks".to_string(),
-                MenuItem { label: "Theme Palette (Left)".to_string() }
-                MenuItem { label: "Site Data (Right)".to_string() }
-                MenuSeparator {}
-                MenuItem { label: "Lock Docks".to_string() }
+                MenuItem { 
+                    label: "Toggle Theme Palette (Left)".to_string(),
+                    on_action: move |_| {
+                        if left_layout() == PanelLayout::Hidden {
+                            left_layout.set(PanelLayout::Split);
+                        } else {
+                            left_layout.set(PanelLayout::Hidden);
+                        }
+                    }
+                }
+                MenuItem { 
+                    label: "Toggle Site Data (Right)".to_string(),
+                    on_action: move |_| {
+                        if right_layout() == PanelLayout::Hidden {
+                            right_layout.set(PanelLayout::Split);
+                        } else {
+                            right_layout.set(PanelLayout::Hidden);
+                        }
+                    }
+                }
             }
 
             // 5. PROFILE
@@ -148,13 +190,19 @@ pub fn AppMenuBar(
                     label: "User Preferences".to_string(),
                     on_action: move |_| show_prefs.set(true)
                 }
-                MenuItem { label: "Editor Settings".to_string() }
+                MenuItem { label: "Editor Settings".to_string(), disabled: true }
             }
 
             // 6. TOOLS
             MorMenuDropdown { label: "Tools".to_string(),
-                MenuItem { label: "Theme Diagnostics".to_string() }
-                MenuItem { label: "CSS Token Builder".to_string() }
+                MenuItem { 
+                    label: "Theme Diagnostics".to_string(),
+                    on_action: move |_| show_diagnostics.set(true)
+                }
+                MenuItem { 
+                    label: "CSS Token Builder".to_string(),
+                    on_action: move |_| show_css_builder.set(true)
+                }
                 MenuSeparator {}
                 MenuItem {
                     label: "Plugin Manager".to_string(),
@@ -164,7 +212,10 @@ pub fn AppMenuBar(
 
             // 7. HELP
             MorMenuDropdown { label: "Help".to_string(),
-                MenuItem { label: "Documentation".to_string() }
+                MenuItem { 
+                    label: "Documentation".to_string(),
+                    on_action: move |_| show_docs.set(true)
+                }
                 MenuItem {
                     label: "Keyboard Shortcuts".to_string(),
                     on_action: move |_| show_shortcuts.set(true)

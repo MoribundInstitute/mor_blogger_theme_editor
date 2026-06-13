@@ -31,10 +31,15 @@ fn encode_path_to_mask(path_d: &str) -> String {
 }
 
 fn encode_full_svg_to_mask(raw_svg: &str) -> String {
-    let body = match raw_svg.find("<svg") {
-        Some(start) => &raw_svg[start..],
-        None => raw_svg,
+    let mut body = match raw_svg.find("<svg") {
+        Some(start) => raw_svg[start..].to_string(),
+        None => raw_svg.to_string(),
     };
+
+    if body.starts_with("<svg") && !body.contains("xmlns=") && !body.contains("xmlns:") {
+        body = body.replacen("<svg", "<svg xmlns='http://www.w3.org/2000/svg'", 1);
+    }
+
     let encoded = body
         .replace('%', "%25")
         .replace('"', "%22")
@@ -86,6 +91,8 @@ pub fn BloggerWorkspace(
     let error_count = diag.read().errors.len();
     let mut active_selection = use_signal(|| None::<String>);
     let mut active_icon_picker = use_signal(|| None::<String>);
+    
+    let mut is_fullscreen = use_signal(|| false);
 
     let export_xml = use_memo(move || {
         match build_fresh_export_xml(&config_toml(), active_preset()) {
@@ -99,91 +106,62 @@ pub fn BloggerWorkspace(
 
     rsx! {
         MainDock {
+            hide_header: is_fullscreen(),
+            
+            // Standard Header Tabs
             tabs: rsx! {
-                button {
-                    class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                    onclick: move |_| center_view.set(CenterView::Preview),
-                    "Preview"
-                }
-                button {
-                    class: if center_view() == CenterView::CodeEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                    onclick: move |_| center_view.set(CenterView::CodeEditor),
-                    "Code Editor"
-                }
-                button {
-                    class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                    onclick: move |_| center_view.set(CenterView::Export),
-                    "Export XML"
+                if !is_fullscreen() {
+                    button {
+                        class: "editor-mini-button",
+                        title: "Collapse Workspace Header",
+                        onclick: move |_| is_fullscreen.set(true),
+                        "▲"
+                    }
+                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft); margin: 0 4px;" }
+                    WorkspaceTabs { center_view }
                 }
             },
-            toolbar: rsx! {
-                if center_view() == CenterView::Preview {
-                    div {
-                        class: "preview-toolbar-group",
-                        button {
-                            class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
-                            "Desktop"
-                        }
-                        button {
-                            class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
-                            "Laptop"
-                        }
-                        button {
-                            class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
-                            "Tablet"
-                        }
-                        button {
-                            class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
-                            "Phone"
-                        }
-                        button {
-                            class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
-                            "Fit"
-                        }
-                        button {
-                            class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                            title: "Rotate tablet, phone, or custom preview width",
-                            onclick: move |_| { if preview_viewport().is_rotatable() { preview_width.set(rotate_preview_width(preview_viewport(), preview_width())); } },
-                            "Rotate"
-                        }
-                        label {
-                            class: "preview-width-control",
-                            span { class: "preview-width-label", "Width" }
-                            input {
-                                class: "preview-width-input", r#type: "number", min: "240", max: "2400", step: "10", value: "{preview_width()}",
-                                oninput: move |evt| {
-                                    if let Ok(width_value) = evt.value().parse::<u32>() {
-                                        preview_width.set(clamp_preview_width(width_value));
-                                        preview_viewport.set(PreviewViewport::Custom);
-                                    }
-                                },
-                            }
-                        }
+            
+            // Standard Header Toolbar
+            toolbar: if center_view() == CenterView::Preview && !is_fullscreen() {
+                Some(rsx! {
+                    ViewportToolbar {
+                        preview_viewport,
+                        preview_width,
+                        preview_template_mode
                     }
-
-                    div {
-                        class: "preview-toolbar-group preview-template-mode-group",
-                        span { class: "preview-width-label", "Layout" }
-                        button {
-                            class: if preview_template_mode() == PreviewTemplateMode::Modern { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Modern); },
-                            "Modern"
-                        }
-                        button {
-                            class: if preview_template_mode() == PreviewTemplateMode::Sidebars { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                            onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Sidebars); },
-                            "Sidebars"
-                        }
-                    }
-                }
+                })
+            } else {
+                None
             },
 
             // --- THE BLOGGER PAYLOAD ---
+
+            if is_fullscreen() {
+                div {
+                    class: "editor-panel",
+                    style: "position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);",
+                    
+                    if center_view() == CenterView::Preview {
+                        ViewportToolbar {
+                            preview_viewport,
+                            preview_width,
+                            preview_template_mode
+                        }
+                        div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                    }
+
+                    WorkspaceTabs { center_view }
+
+                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+
+                    button {
+                        class: "editor-mini-button",
+                        onclick: move |_| is_fullscreen.set(false),
+                        "Exit Fullscreen ×"
+                    }
+                }
+            }
 
             if let Some(icon_target) = active_icon_picker() {
                 IconPickerModal {
@@ -227,6 +205,26 @@ pub fn BloggerWorkspace(
                         on_load_theme: on_load_theme.clone(),
                     }
                 },
+                CenterView::Split => rsx! {
+                    div { style: "display:flex; flex-direction: row; height: 100%; width: 100%;",
+                        div { style: "flex: 1; border-right: 1px solid var(--editor-border-soft);",
+                            PreviewCanvas {
+                                preview_viewport,
+                                preview_width,
+                                preview_html: preview_html(),
+                                on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
+                                on_select: move |target: String| { active_selection.set(Some(target)); },
+                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); }
+                            }
+                        }
+                        div { style: "flex: 1;",
+                            SmartCodeDock {
+                                config_toml,
+                                on_load_theme: on_load_theme.clone(),
+                            }
+                        }
+                    }
+                },
                 CenterView::Export => rsx! {
                     ExportResultView {
                         export_xml, 
@@ -243,6 +241,101 @@ pub fn BloggerWorkspace(
 // -----------------------------------------------------------------------------
 // FLATTENED LOCAL COMPONENTS
 // -----------------------------------------------------------------------------
+
+#[component]
+fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
+    rsx! {
+        button {
+            class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| center_view.set(CenterView::Preview),
+            "Preview"
+        }
+        button {
+            class: if center_view() == CenterView::CodeEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| center_view.set(CenterView::CodeEditor),
+            "Code Editor"
+        }
+        button {
+            class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| center_view.set(CenterView::Export),
+            "Export XML"
+        }
+    }
+}
+
+#[component]
+fn ViewportToolbar(
+    mut preview_viewport: Signal<PreviewViewport>,
+    mut preview_width: Signal<u32>,
+    mut preview_template_mode: Signal<PreviewTemplateMode>
+) -> Element {
+    rsx! {
+        div {
+            class: "preview-toolbar-group",
+            style: "margin: 0;",
+            button {
+                class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
+                "Desktop"
+            }
+            button {
+                class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
+                "Laptop"
+            }
+            button {
+                class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
+                "Tablet"
+            }
+            button {
+                class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
+                "Phone"
+            }
+            button {
+                class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
+                "Fit"
+            }
+            button {
+                class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                title: "Rotate tablet, phone, or custom preview width",
+                onclick: move |_| { if preview_viewport().is_rotatable() { preview_width.set(rotate_preview_width(preview_viewport(), preview_width())); } },
+                "Rotate"
+            }
+            label {
+                class: "preview-width-control",
+                span { class: "preview-width-label", "Width" }
+                input {
+                    class: "preview-width-input", r#type: "number", min: "240", max: "2400", step: "10", value: "{preview_width()}",
+                    oninput: move |evt| {
+                        if let Ok(width_value) = evt.value().parse::<u32>() {
+                            preview_width.set(clamp_preview_width(width_value));
+                            preview_viewport.set(PreviewViewport::Custom);
+                        }
+                    },
+                }
+            }
+        }
+
+        div {
+            class: "preview-toolbar-group preview-template-mode-group",
+            style: "margin: 0;",
+            span { class: "preview-width-label", "Layout" }
+            button {
+                class: if preview_template_mode() == PreviewTemplateMode::Modern { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Modern); },
+                "Modern"
+            }
+            button {
+                class: if preview_template_mode() == PreviewTemplateMode::Sidebars { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Sidebars); },
+                "Sidebars"
+            }
+        }
+    }
+}
 
 #[component]
 fn IconPickerModal(
@@ -475,7 +568,7 @@ fn PreviewEditorPalette(
                         }
                     },
                     _ if target.starts_with("icons.") => rsx! {
-                        div { style: "color: var(--fg-muted); font-size: 0.85em; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;", "Alt+Click this icon in the preview canvas to open the visual SVG picker." }
+                        div { style: "color: var(--fg-muted); font-size: 0.85em; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;", "Shift+Click this icon in the preview canvas to open the visual SVG picker." }
                     },
                     _ => rsx! {
                         div { style: "color: var(--editor-accent-warm); font-size: 0.9em;", "Unmapped target field." }

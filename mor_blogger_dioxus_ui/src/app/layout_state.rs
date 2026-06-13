@@ -6,6 +6,7 @@ use crate::ui::workspace::layout::{PanelLayout, PreviewTemplateMode, PreviewView
 pub enum CenterView {
     Preview,
     CodeEditor,
+    Split,
     Export,
 }
 

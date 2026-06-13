@@ -14,22 +14,23 @@ use crate::config::{
     ThemeConfig,
     TypographyConfig,
 };
+use std::collections::HashMap;
 
 pub fn default_theme_config() -> ThemeConfig {
     ThemeConfig {
         site: SiteConfig {
-            site_title: "The Moribund Institute".to_string(),
-            site_subtitle: "Archival notes and old-world machinery.".to_string(),
+            site_title: "My Custom Theme".to_string(),
+            site_subtitle: "A minimal workspace for ideas.".to_string(),
             header_logo_url: "".to_string(),
             home_url: "/".to_string(),
         },
         colors: ColorConfig {
-            bg_base:     "#1a1a17".to_string(), // Warm charcoal
+            bg_base:     "#1a1a17".to_string(), 
             bg_panel:    SurfaceFill::solid("#242421"),
             bg_elevated: SurfaceFill::solid("#2e2e2a"),
-            fg_base:     "#e6e4d5".to_string(), // Parchment white
+            fg_base:     "#e6e4d5".to_string(), 
             fg_muted:    "#a3a08d".to_string(),
-            accent:      "#c25e5e".to_string(), // Faded wax red
+            accent:      "#c25e5e".to_string(), 
             border:      "#3d3d38".to_string(),
             panel_border_width: "1px".to_string(),
             glow_spread: "0px".to_string(),
@@ -39,13 +40,13 @@ pub fn default_theme_config() -> ThemeConfig {
             panel_border_image_repeat: "stretch".to_string(),
         },
         typography: TypographyConfig {
-            body_font_stack:    "Montserrat".to_string(), // Crisp modern readable body
-            heading_font_stack: "IM Fell English".to_string(), // Old world headers
+            body_font_stack:    "Montserrat".to_string(), 
+            heading_font_stack: "IM Fell English".to_string(), 
             mono_font_stack:    "Fira Code".to_string(),
             base_size:          "15px".to_string(),
             scale_ratio:        "1.25".to_string(),
             line_height:        "1.65".to_string(),
-            heading_weight:     "400".to_string(), // IM Fell looks better at normal weight
+            heading_weight:     "400".to_string(), 
         },
         buttons: ButtonConfig {
             radius:         "2px".to_string(),
@@ -70,15 +71,19 @@ pub fn default_theme_config() -> ThemeConfig {
             footer_variant:        "MorFooterMega".to_string(),
             script_variant:        "mor_panels".to_string(),
             icon_pack:             "default".to_string(),
+            widget_map: HashMap::from([
+                ("sidebar-left".to_string(), vec!["Label1".to_string(), "BlogArchive1".to_string()]),
+                ("sidebar-right".to_string(), vec!["HTML1".to_string()]),
+            ]),
         },
 
         preset_css: "".to_string(),
         icons: crate::config::styling::IconConfig {
-            sidebar_left: "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20stroke='currentColor'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='1.5'%20y='2.5'%20width='13'%20height='11'%20rx='2'%20/%3E%3Cpath%20d='M5.5%202.5v11'%20/%3E%3C/svg%3E\")".to_string(),
-            sidebar_right: "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20stroke='currentColor'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='1.5'%20y='2.5'%20width='13'%20height='11'%20rx='2'%20/%3E%3Cpath%20d='M10.5%202.5v11'%20/%3E%3C/svg%3E\")".to_string(),
-            panel_close: "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20stroke='currentColor'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M4.5%204.5l7%207M11.5%204.5l-7%207'%20/%3E%3C/svg%3E\")".to_string(),
-            search: "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20stroke='currentColor'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='7.5'%20cy='7.5'%20r='5'%20/%3E%3Cpath%20d='M11%2011l3.5%203.5'%20/%3E%3C/svg%3E\")".to_string(),
-            menu: "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20stroke='currentColor'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M2.5%208h11M2.5%204h11M2.5%2012h11'%20/%3E%3C/svg%3E\")".to_string(),
+            sidebar_left: "url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2716%27%20height=%2716%27%20viewBox=%270%200%2016%2016%27%20fill=%27none%27%20stroke=%27currentColor%27%20stroke-width=%271.5%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Crect%20x=%271.5%27%20y=%272.5%27%20width=%2713%27%20height=%2711%27%20rx=%272%27%20/%3E%3Cpath%20d=%27M5.5%202.5v11%27%20/%3E%3C/svg%3E')".to_string(),
+            sidebar_right: "url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2716%27%20height=%2716%27%20viewBox=%270%200%2016%2016%27%20fill=%27none%27%20stroke=%27currentColor%27%20stroke-width=%271.5%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Crect%20x=%271.5%27%20y=%272.5%27%20width=%2713%27%20height=%2711%27%20rx=%272%27%20/%3E%3Cpath%20d=%27M10.5%202.5v11%27%20/%3E%3C/svg%3E')".to_string(),
+            panel_close: "url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2716%27%20height=%2716%27%20viewBox=%270%200%2016%2016%27%20fill=%27none%27%20stroke=%27currentColor%27%20stroke-width=%271.5%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27M4.5%204.5l7%207M11.5%204.5l-7%207%27%20/%3E%3C/svg%3E')".to_string(),
+            search: "url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2716%27%20height=%2716%27%20viewBox=%270%200%2016%2016%27%20fill=%27none%27%20stroke=%27currentColor%27%20stroke-width=%271.5%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Ccircle%20cx=%277.5%27%20cy=%277.5%27%20r=%275%27%20/%3E%3Cpath%20d=%27M11%2011l3.5%203.5%27%20/%3E%3C/svg%3E')".to_string(),
+            menu: "url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2716%27%20height=%2716%27%20viewBox=%270%200%2016%2016%27%20fill=%27none%27%20stroke=%27currentColor%27%20stroke-width=%271.5%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27M2.5%208h11M2.5%204h11M2.5%2012h11%27%20/%3E%3C/svg%3E')".to_string(),
             custom_icons: std::collections::HashMap::new(),
         },
     }

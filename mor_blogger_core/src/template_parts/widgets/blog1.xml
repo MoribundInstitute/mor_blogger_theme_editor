@@ -99,7 +99,7 @@
     <b:if cond='data:post.labels'>
       <span class='sys-tags'>
         <b:loop values='data:post.labels' var='label'>
-          <a expr:href='data:label.url' rel='tag'><data:label.name/></a>
+          <a expr:href='data:label.url' rel='tag'><data:label.name/></a><b:if cond='data:label.name != data:post.labels.last.name'>, </b:if>
         </b:loop>
       </span>
     </b:if>

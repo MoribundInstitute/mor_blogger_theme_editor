@@ -24,9 +24,6 @@ pub struct ComponentManifest {
 }
 
 impl ComponentManifest {
-    /// Resolve this component's JS dependencies into a single payload.
-    /// Returns `None` when the component carries no scripts, so callers
-    /// can skip it without leaving empty blocks in the output.
     pub fn inject_js(&self) -> Option<String> {
         if self.js_deps.is_empty() {
             return None;
@@ -52,7 +49,7 @@ impl ComponentManifest {
 }
 
 // =====================================================================
-// THE REGISTRIES (Now mapped to your actual files!)
+// THE REGISTRIES
 // =====================================================================
 
 pub const HEADER_REGISTRY: &[ComponentManifest] = &[
@@ -72,12 +69,12 @@ pub const HEADER_REGISTRY: &[ComponentManifest] = &[
     ComponentManifest {
         id: "gtk_headerbar",
         category: ComponentCategory::Header,
-        xml_content: include_str!("../template_parts/headers/gtk_headerbar.xml"), // Mapped to real file!
+        xml_content: include_str!("../template_parts/headers/gtk_headerbar.xml"),
         css_deps: &[
             "04-Main-Header.css",
             "05-Branding.css",
             "06-Main-Navigation.css",
-        ], // Dropped mega-dropdown for GTK
+        ],
         js_deps: &[],
     },
 ];
@@ -97,8 +94,7 @@ pub const LAYOUT_REGISTRY: &[ComponentManifest] = &[
     ComponentManifest {
         id: "single_column",
         category: ComponentCategory::Layout,
-        xml_content: include_str!("../template_parts/layouts/single_column.xml"), // Mapped to real file!
-        // Notice: Single column deliberately drops "10-Side-Panels.css"!
+        xml_content: include_str!("../template_parts/layouts/single_column.xml"),
         css_deps: &["09-Workspace-Layout.css", "11-Main-Canvas.css"],
         js_deps: &[],
     },
@@ -109,7 +105,7 @@ pub const CONTENT_REGISTRY: &[ComponentManifest] = &[
         id: "blog_standard",
         category: ComponentCategory::Content,
         xml_content: include_str!("../template_parts/content/blog_standard.xml"),
-        css_deps: &[], // Relies on baseline CSS
+        css_deps: &[],
         js_deps: &[],
     },
     ComponentManifest {
@@ -146,7 +142,7 @@ pub const SIDEBAR_LEFT_REGISTRY: &[ComponentManifest] = &[
     ComponentManifest {
         id: "gtk_dock_left",
         category: ComponentCategory::SidebarLeft,
-        xml_content: include_str!("../template_parts/sidebars/gtk_dock_left.xml"), // Mapped to real file!
+        xml_content: include_str!("../template_parts/sidebars/gtk_dock_left.xml"),
         css_deps: &["14-Widgets-Sidebars.css"],
         js_deps: &[],
     },
@@ -183,7 +179,7 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
         js_deps: &[],
     },
     ComponentManifest {
-        id: "mor", // Fallback
+        id: "mor",
         category: ComponentCategory::Footer,
         xml_content: include_str!("../template_parts/footers/MorFooterMega.xml"),
         css_deps: &["18-Footer-Base.css", "18-Footer-Mega.css"],
@@ -192,71 +188,40 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
 ];
 
 // =====================================================================
-// ASSET FETCHERS (Compile-time embedded)
+// ASSET FETCHERS
 // =====================================================================
 
 fn fetch_css(filename: &str) -> &'static str {
     match filename {
         "00-Root-Section.css" => include_str!("../template_parts/base/skin/00-Root-Section.css"),
         "01-Reset-Base.css" => include_str!("../template_parts/base/skin/01-Reset-Base.css"),
-        "02-Typography-Links.css" => {
-            include_str!("../template_parts/base/skin/02-Typography-Links.css")
-        }
+        "02-Typography-Links.css" => include_str!("../template_parts/base/skin/02-Typography-Links.css"),
         "03-Buttons.css" => include_str!("../template_parts/base/skin/03-Buttons.css"),
         "04-Main-Header.css" => include_str!("../template_parts/base/skin/04-Main-Header.css"),
         "05-Branding.css" => include_str!("../template_parts/base/skin/05-Branding.css"),
-        "06-Main-Navigation.css" => {
-            include_str!("../template_parts/base/skin/06-Main-Navigation.css")
-        }
-        "07-Catalog-Mega-Dropdown.css" => {
-            include_str!("../template_parts/base/skin/07-Catalog-Mega-Dropdown.css")
-        }
-        "08-Command-Line-Search.css" => {
-            include_str!("../template_parts/base/skin/08-Command-Line-Search.css")
-        }
-        "09-Workspace-Layout.css" => {
-            include_str!("../template_parts/base/skin/09-Workspace-Layout.css")
-        }
+        "06-Main-Navigation.css" => include_str!("../template_parts/base/skin/06-Main-Navigation.css"),
+        "07-Catalog-Mega-Dropdown.css" => include_str!("../template_parts/base/skin/07-Catalog-Mega-Dropdown.css"),
+        "08-Command-Line-Search.css" => include_str!("../template_parts/base/skin/08-Command-Line-Search.css"),
+        "09-Workspace-Layout.css" => include_str!("../template_parts/base/skin/09-Workspace-Layout.css"),
         "10-Side-Panels.css" => include_str!("../template_parts/base/skin/10-Side-Panels.css"),
         "11-Main-Canvas.css" => include_str!("../template_parts/base/skin/11-Main-Canvas.css"),
-        "12-Terminal-Post-Styling.css" => {
-            include_str!("../template_parts/base/skin/12-Terminal-Post-Styling.css")
-        }
+        "12-Terminal-Post-Styling.css" => include_str!("../template_parts/base/skin/12-Terminal-Post-Styling.css"),
         "13-Pagination.css" => include_str!("../template_parts/base/skin/13-Pagination.css"),
-        "14-Widgets-Sidebars.css" => {
-            include_str!("../template_parts/base/skin/14-Widgets-Sidebars.css")
-        }
-        "15-Archive-Widget.css" => {
-            include_str!("../template_parts/base/skin/15-Archive-Widget.css")
-        }
-        "16-Table-of-Contents.css" => {
-            include_str!("../template_parts/base/skin/16-Table-of-Contents.css")
-        }
+        "14-Widgets-Sidebars.css" => include_str!("../template_parts/base/skin/14-Widgets-Sidebars.css"),
+        "15-Archive-Widget.css" => include_str!("../template_parts/base/skin/15-Archive-Widget.css"),
+        "16-Table-of-Contents.css" => include_str!("../template_parts/base/skin/16-Table-of-Contents.css"),
         "17-Scrollbars.css" => include_str!("../template_parts/base/skin/17-Scrollbars.css"),
         "18-Footer-Base.css" => include_str!("../template_parts/base/skin/18-Footer-Base.css"),
         "18-Footer-Mega.css" => include_str!("../template_parts/base/skin/18-Footer-Mega.css"),
-        "19-Responsive-Mobile-Tablet.css" => {
-            include_str!("../template_parts/base/skin/19-Responsive-Mobile-Tablet.css")
-        }
-        "20-Responsive-Very-Small-Screens.css" => {
-            include_str!("../template_parts/base/skin/20-Responsive-Very-Small-Screens.css")
-        }
-        "21-Responsive-Desktop.css" => {
-            include_str!("../template_parts/base/skin/21-Responsive-Desktop.css")
-        }
+        "19-Responsive-Mobile-Tablet.css" => include_str!("../template_parts/base/skin/19-Responsive-Mobile-Tablet.css"),
+        "20-Responsive-Very-Small-Screens.css" => include_str!("../template_parts/base/skin/20-Responsive-Very-Small-Screens.css"),
+        "21-Responsive-Desktop.css" => include_str!("../template_parts/base/skin/21-Responsive-Desktop.css"),
         "22-Export-Safety.css" => include_str!("../template_parts/base/skin/22-Export-Safety.css"),
         "23-Comments.css" => include_str!("../template_parts/base/skin/23-Comments.css"),
-        "24-Author-Profile.css" => {
-            include_str!("../template_parts/base/skin/24-Author-Profile.css")
-        }
+        "24-Author-Profile.css" => include_str!("../template_parts/base/skin/24-Author-Profile.css"),
         "25-Share-Menu.css" => include_str!("../template_parts/base/skin/25-Share-Menu.css"),
-        "26-Analytics-Dashboard.css" => {
-            include_str!("../template_parts/base/skin/26-Analytics-Dashboard.css")
-        }
-        "30-Content-Magazine.css" => {
-            include_str!("../template_parts/base/skin/30-Content-Magazine.css")
-        }
-        // Hardcoded fallbacks until Claude and Qwen build them:
+        "26-Analytics-Dashboard.css" => include_str!("../template_parts/base/skin/26-Analytics-Dashboard.css"),
+        "30-Content-Magazine.css" => include_str!("../template_parts/base/skin/30-Content-Magazine.css"),
         "31-Content-Masonry.css" => "/* Masonry Placeholder */",
         "32-Content-Minimal.css" => "/* Minimal Placeholder */",
         _ => "",
@@ -272,6 +237,59 @@ fn fetch_js(filename: &str) -> &'static str {
     }
 }
 
+// =====================================================================
+// DYNAMIC WIDGET INJECTION
+// =====================================================================
+
+pub const WIDGET_REGISTRY: &[(&str, &str)] = &[
+    ("Blog", include_str!("../template_parts/widgets/blog1.xml")),
+    ("BlogArchive", include_str!("../template_parts/widgets/blogarchive1.xml")),
+    ("HTML", include_str!("../template_parts/widgets/html1.xml")),
+    ("Label", include_str!("../template_parts/widgets/label1.xml")),
+];
+
+fn generate_widget_xml(widget_id: &str) -> String {
+    let w_type = widget_id.trim_end_matches(char::is_numeric);
+    let w_type = if w_type.is_empty() { "HTML" } else { w_type };
+
+    let template = WIDGET_REGISTRY
+        .iter()
+        .find(|(id, _)| *id == w_type)
+        .map(|(_, xml)| *xml)
+        .unwrap_or(&"");
+
+    if template.is_empty() {
+        format!(
+            "<b:widget id='{}' locked='false' title='{}' type='{}' visible='true'>\n  <b:includable id='main'>\n  </b:includable>\n</b:widget>",
+            widget_id,
+            widget_id,
+            w_type
+        )
+    } else {
+        // Strip numbers from file string (e.g. Label1) and replace with dynamic ID (e.g. Label2)
+        let base_id = format!("{}1", w_type);
+        template.replace(&base_id, widget_id)
+    }
+}
+
+fn inject_widgets(template: &str, socket_id: &str, pack: &crate::config::TemplatePackConfig) -> String {
+    let mut template = template.to_string();
+    let placeholder = format!("{{{{SOCKET_{}}}}}", socket_id.to_uppercase().replace("-", "_"));
+
+    if template.contains(&placeholder) {
+        if let Some(widget_ids) = pack.widget_map.get(socket_id) {
+            let mut widgets_xml = String::new();
+            for wid in widget_ids {
+                widgets_xml.push_str(&generate_widget_xml(wid));
+                widgets_xml.push('\n');
+            }
+            template = template.replace(&placeholder, &widgets_xml);
+        } else {
+            template = template.replace(&placeholder, ""); 
+        }
+    }
+    template
+}
 
 // =====================================================================
 // DEPENDENCY RESOLVER
@@ -280,12 +298,12 @@ fn fetch_js(filename: &str) -> &'static str {
 pub struct TemplateParts {
     pub meta: &'static str,
     pub css: String,
-    pub header: &'static str,
-    pub main: &'static str,
-    pub content: &'static str,
-    pub sidebar_left: &'static str,
-    pub sidebar_right: &'static str,
-    pub footer: &'static str,
+    pub header: String,       
+    pub main: String,         
+    pub content: String,      
+    pub sidebar_left: String, 
+    pub sidebar_right: String,
+    pub footer: String,       
     pub javascript: String,
 }
 
@@ -303,7 +321,7 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     let active_components = vec![
         get_comp(HEADER_REGISTRY, &pack.header_variant),
         get_comp(LAYOUT_REGISTRY, &pack.main_variant),
-        get_comp(CONTENT_REGISTRY, &pack.content_variant), // <-- NEW
+        get_comp(CONTENT_REGISTRY, &pack.content_variant),
         get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant),
         get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant),
         get_comp(FOOTER_REGISTRY, &pack.footer_variant),
@@ -312,95 +330,63 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     let mut unique_css = HashSet::new();
     let mut unique_js = HashSet::new();
 
-    // 🌟 GLOBAL BASELINE CSS
     let global_css = [
-        "00-Root-Section.css",
-        "01-Reset-Base.css",
-        "02-Typography-Links.css",
-        "03-Buttons.css",
-        "12-Terminal-Post-Styling.css",
-        "13-Pagination.css",
-        "17-Scrollbars.css",
-        "19-Responsive-Mobile-Tablet.css",
-        "20-Responsive-Very-Small-Screens.css",
-        "21-Responsive-Desktop.css",
-        "22-Export-Safety.css",
-        "23-Comments.css",
-        "24-Author-Profile.css",
-        "25-Share-Menu.css",
-        "26-Analytics-Dashboard.css",
+        "00-Root-Section.css", "01-Reset-Base.css", "02-Typography-Links.css",
+        "03-Buttons.css", "12-Terminal-Post-Styling.css", "13-Pagination.css",
+        "17-Scrollbars.css", "19-Responsive-Mobile-Tablet.css", "20-Responsive-Very-Small-Screens.css",
+        "21-Responsive-Desktop.css", "22-Export-Safety.css", "23-Comments.css",
+        "24-Author-Profile.css", "25-Share-Menu.css", "26-Analytics-Dashboard.css",
     ];
 
-    for css in global_css {
-        unique_css.insert(css);
-    }
+    for css in global_css { unique_css.insert(css); }
 
-    // 🌟 DYNAMIC JS BASED ON CONFIG
     if pack.script_variant == "mor_panels" {
         unique_js.insert("01-Core-Helpers.js");
         unique_js.insert("07-Theme-Toggler.js");
         unique_js.insert("08-Share-Actions.js");
     }
 
-    // Add component dependencies
     for comp in &active_components {
-        for &css in comp.css_deps {
-            unique_css.insert(css);
-        }
-        for &js in comp.js_deps {
-            unique_js.insert(js);
-        }
+        for &css in comp.css_deps { unique_css.insert(css); }
+        for &js in comp.js_deps { unique_js.insert(js); }
     }
 
     let mut sorted_css: Vec<_> = unique_css.into_iter().collect();
     sorted_css.sort();
 
-    // -----------------------------------------------------------------
-    // JAVASCRIPT FOOTER ASSEMBLY
-    // Build the final <script> block that sits right before </body>.
-    //
-    // Order:
-    //   1. Config-driven global scripts (sorted for deterministic output)
-    //   2. Per-component inject_js() payloads (only for components that
-    //      actually carry scripts, zero footprint for the rest)
-    // -----------------------------------------------------------------
-
     let mut js_sections: Vec<String> = Vec::new();
-
-
-    // 1️⃣  Config-driven global scripts (deduplicated via the HashSet)
     let mut sorted_js: Vec<_> = unique_js.into_iter().collect();
     sorted_js.sort();
 
     for filename in &sorted_js {
         let src = fetch_js(filename);
-        if !src.is_empty() {
-            js_sections.push(format!("/* --- {} --- */\n{}", filename, src));
-        }
+        if !src.is_empty() { js_sections.push(format!("/* --- {} --- */\n{}", filename, src)); }
     }
 
-    // 2️⃣  Per-component plugin scripts via inject_js()
     for comp in &active_components {
-        if let Some(plugin_js) = comp.inject_js() {
-            js_sections.push(plugin_js);
-        }
+        if let Some(plugin_js) = comp.inject_js() { js_sections.push(plugin_js); }
     }
 
     let aggregated_js = js_sections.join("\n\n");
-
     let css_contents: Vec<&str> = sorted_css.iter().map(|f| fetch_css(f)).collect();
+
+    let header_raw = get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content;
+    let main_raw = get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content;
+    let content_raw = get_comp(CONTENT_REGISTRY, &pack.content_variant).xml_content;
+    let sidebar_left_raw = get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).xml_content;
+    let sidebar_right_raw = get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).xml_content;
+    let footer_raw = get_comp(FOOTER_REGISTRY, &pack.footer_variant).xml_content;
 
     TemplateParts {
         meta: include_str!("../template_parts/base/meta.xml"),
         css: build_master_css(&css_contents, config),
         javascript: aggregated_js,
 
-        header: get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content,
-        main: get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content,
-        sidebar_left: get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).xml_content,
-        sidebar_right: get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).xml_content,
-        footer: get_comp(FOOTER_REGISTRY, &pack.footer_variant).xml_content,
-
-        content: get_comp(CONTENT_REGISTRY, &pack.content_variant).xml_content,
+        header: inject_widgets(header_raw, "header", pack),
+        main: inject_widgets(main_raw, "main", pack),
+        content: inject_widgets(content_raw, "content", pack),
+        sidebar_left: inject_widgets(sidebar_left_raw, "sidebar-left", pack),
+        sidebar_right: inject_widgets(sidebar_right_raw, "sidebar-right", pack),
+        footer: inject_widgets(footer_raw, "footer", pack),
     }
 }

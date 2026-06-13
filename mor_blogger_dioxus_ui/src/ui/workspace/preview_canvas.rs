@@ -65,6 +65,8 @@ pub fn PreviewCanvas(
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_select: Option<EventHandler<String>>,
     #[props(default)] on_icon_edit: Option<EventHandler<String>>,
+    #[props(default)] on_update_value: Option<EventHandler<(String, String)>>,
+    #[props(default)] on_move_widget: Option<EventHandler<(String, String)>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -135,7 +137,7 @@ pub fn PreviewCanvas(
                                                 (frame.contentWindow && frame.contentWindow.document);
                                             if (!doc) return;
 
-                                            // TIER 1 FALLBACK (First load or forced structural refresh)
+                                            // TIER 1 FALLBACK
                                             if (!doc.body || !doc.body.innerHTML.trim() || source.__morNeedsFullReload) {
                                                 doc.open();
                                                 doc.write(html);
@@ -143,12 +145,10 @@ pub fn PreviewCanvas(
                                                 source.__morNeedsFullReload = false;
 
                                                 setTimeout(function() {
-                                                    // Add native tooltip to ALL edit targets
                                                     doc.querySelectorAll('[data-edit-target]').forEach(function(el) {
                                                         el.title = "Shift+Click to quick edit";
                                                     });
 
-                                                    // Inject edit hover styles
                                                     if (!doc.getElementById('mor-edit-styles')) {
                                                         const style = doc.createElement('style');
                                                         style.id = 'mor-edit-styles';
@@ -159,7 +159,6 @@ pub fn PreviewCanvas(
                                                         doc.head.appendChild(style);
                                                     }
 
-                                                    // Native Click Events
                                                     doc.addEventListener('click', function(e) {
                                                         const target = e.target && e.target.closest
                                                             ? e.target
@@ -201,23 +200,20 @@ pub fn PreviewCanvas(
                                                 return;
                                             }
 
-                                            // TIER 3 DOM MORPHING (Instant Hot-Swap)
+                                            // TIER 3 DOM MORPHING
                                             const parser = new DOMParser();
                                             const newDoc = parser.parseFromString(html, 'text/html');
 
-                                            // 1. Hot Swap True CSS Variables & Rules
                                             const oldCss = doc.getElementById('mor-true-css');
                                             const newCss = newDoc.getElementById('mor-true-css');
                                             if (oldCss && newCss && oldCss.textContent !== newCss.textContent) {
                                                 oldCss.textContent = newCss.textContent;
                                             }
 
-                                            // 2. Hot Swap Body Background
                                             if (doc.body.getAttribute('style') !== newDoc.body.getAttribute('style')) {
                                                 doc.body.setAttribute('style', newDoc.body.getAttribute('style') || "");
                                             }
 
-                                            // 3. Hot Swap Google Fonts
                                             const oldFont = doc.querySelector('link[href*="fonts.googleapis.com"]');
                                             const newFont = newDoc.querySelector('link[href*="fonts.googleapis.com"]');
                                             if (newFont) {
@@ -228,11 +224,9 @@ pub fn PreviewCanvas(
                                                 }
                                             }
 
-                                            // 4. Hot Swap Text Targets
                                             const oldTargets = doc.querySelectorAll('[data-edit-target]');
                                             const newTargets = newDoc.querySelectorAll('[data-edit-target]');
 
-                                            // Safety: If structure completely changed (e.g. from template swap)
                                             if (oldTargets.length !== newTargets.length) {
                                                 source.__morNeedsFullReload = true;
                                                 writePreview(source, frame);
@@ -267,7 +261,7 @@ pub fn PreviewCanvas(
                                                 writeTimer = setTimeout(function () {
                                                     writeTimer = null;
                                                     writePreview(source, frame);
-                                                }, 15); // Fast flush
+                                                }, 15);
                                             });
 
                                             observer.observe(source, {
@@ -287,25 +281,33 @@ pub fn PreviewCanvas(
 
                                 while let Ok(json) = eval.recv::<serde_json::Value>().await {
                                     if let Some(action) = json.get("action").and_then(|a| a.as_str()) {
-                                        if let Some(target) = json.get("target").and_then(|t| t.as_str()) {
-                                            match action {
-                                                "SELECT" => {
-                                                    if let Some(handler) = on_select.as_ref() {
-                                                        handler.call(target.to_string());
-                                                    }
+                                        match action {
+                                            "SELECT" => {
+                                                if let Some(target) = json.get("target").and_then(|t| t.as_str()) {
+                                                    if let Some(handler) = on_select.as_ref() { handler.call(target.to_string()); }
                                                 }
-                                                "NAVIGATE" => {
-                                                    if let Some(handler) = on_navigate.as_ref() {
-                                                        handler.call(target.to_string());
-                                                    }
-                                                }
-                                                "ICON_EDIT" => {
-                                                    if let Some(handler) = on_icon_edit.as_ref() {
-                                                        handler.call(target.to_string());
-                                                    }
-                                                }
-                                                _ => {}
                                             }
+                                            "NAVIGATE" => {
+                                                if let Some(target) = json.get("target").and_then(|t| t.as_str()) {
+                                                    if let Some(handler) = on_navigate.as_ref() { handler.call(target.to_string()); }
+                                                }
+                                            }
+                                            "ICON_EDIT" => {
+                                                if let Some(target) = json.get("target").and_then(|t| t.as_str()) {
+                                                    if let Some(handler) = on_icon_edit.as_ref() { handler.call(target.to_string()); }
+                                                }
+                                            }
+                                            "UPDATE_VALUE" => {
+                                                if let (Some(target), Some(val)) = (json.get("target").and_then(|t| t.as_str()), json.get("value").and_then(|v| v.as_str())) {
+                                                    if let Some(handler) = on_update_value.as_ref() { handler.call((target.to_string(), val.to_string())); }
+                                                }
+                                            }
+                                            "MOVE_WIDGET" => {
+                                                if let (Some(id), Some(dest)) = (json.get("id").and_then(|i| i.as_str()), json.get("dest").and_then(|d| d.as_str())) {
+                                                    if let Some(handler) = on_move_widget.as_ref() { handler.call((id.to_string(), dest.to_string())); }
+                                                }
+                                            }
+                                            _ => {}
                                         }
                                     }
                                 }

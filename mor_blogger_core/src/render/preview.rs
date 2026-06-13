@@ -25,18 +25,7 @@ impl PreviewTemplateMode {
     }
 }
 
-/// Safety hatch: If the core defaults hand us an SVG missing an xmlns tag, 
-/// the browser will refuse to render it as a CSS mask. We inject it.
-fn ensure_xmlns(url: &str) -> String {
-    let mut s = url.to_string();
-    if s.contains("data:image/svg") && !s.contains("xmlns") {
-        s = s.replace("%3Csvg", "%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27");
-        s = s.replace("<svg", "<svg xmlns='http://www.w3.org/2000/svg'");
-    }
-    s
-}
-
-pub fn render_preview_html(config: &ThemeConfig, preview_mode: PreviewTemplateMode) -> String {
+pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateMode) -> String {
     let background_tile_css = match &config.background.mode {
         BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
         BackgroundMode::Gradient { from, to, angle_deg } => format!(

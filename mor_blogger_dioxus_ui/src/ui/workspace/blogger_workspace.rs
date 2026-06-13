@@ -8,6 +8,7 @@ use mor_blogger_core::render::PreviewTemplateMode;
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use crate::utils::clipboard::copy_to_clipboard;
 use dioxus::prelude::*;
+use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 use super::main_dock::MainDock;
 use super::smart_code_dock::SmartCodeDock;
@@ -26,33 +27,8 @@ const PICKER_ICONS: [(&str, &str); 10] = [
 ];
 
 fn encode_path_to_mask(path_d: &str) -> String {
-    let raw = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"black\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"{}\"/></svg>", path_d);
-    encode_full_svg_to_mask(&raw)
-}
-
-fn encode_full_svg_to_mask(raw_svg: &str) -> String {
-    let mut body = match raw_svg.find("<svg") {
-        Some(start) => raw_svg[start..].to_string(),
-        None => raw_svg.to_string(),
-    };
-
-    if body.starts_with("<svg") && !body.contains("xmlns=") && !body.contains("xmlns:") {
-        body = body.replacen("<svg", "<svg xmlns='http://www.w3.org/2000/svg'", 1);
-    }
-
-    let encoded = body
-        .replace('%', "%25")
-        .replace('"', "%22")
-        .replace('\'', "%27")
-        .replace('#', "%23")
-        .replace('&', "%26")
-        .replace('<', "%3C")
-        .replace('>', "%3E")
-        .replace('\r', "")
-        .replace('\n', "%0A")
-        .replace('\t', "%20")
-        .replace(' ', "%20");
-    format!("url('data:image/svg+xml,{}')", encoded)
+    let raw = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"{}\"/></svg>", path_d);
+    svg_to_data_uri(&raw)
 }
 
 fn build_fresh_export_xml(
@@ -91,6 +67,7 @@ pub fn BloggerWorkspace(
     let error_count = diag.read().errors.len();
     let mut active_selection = use_signal(|| None::<String>);
     let mut active_icon_picker = use_signal(|| None::<String>);
+    let is_xray_active = use_signal(|| false);
     
     let mut is_fullscreen = use_signal(|| false);
 
@@ -104,11 +81,40 @@ pub fn BloggerWorkspace(
         }
     });
 
+    let apply_text_edit = {
+        let restore = on_restore.clone();
+        move |target: String, val: String, cfg: String| {
+            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
+                let mut mutated = false;
+                match target.as_str() {
+                    "site.site_title" => { config.site.site_title = val; mutated = true; }
+                    "site.site_subtitle" => { config.site.site_subtitle = val; mutated = true; }
+                    "footer.footer_text" => { config.footer.footer_text = val; mutated = true; }
+                    "typography.body_font_stack" => { config.typography.body_font_stack = val; mutated = true; }
+                    "typography.heading_font_stack" => { config.typography.heading_font_stack = val; mutated = true; }
+                    "typography.mono_font_stack" => { config.typography.mono_font_stack = val; mutated = true; }
+                    _ => {}
+                }
+                if mutated { restore.call(config); }
+            }
+        }
+    };
+
+    let apply_widget_move = {
+        let restore = on_restore.clone();
+        move |id: String, dest: String, cfg: String| {
+            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
+                // REQUIRED IN CORE: Implement move_widget(&mut self, id: &str, dest: &str) on TemplatePackConfig
+                config.template_pack.move_widget(&id, &dest);
+                restore.call(config);
+            }
+        }
+    };
+
     rsx! {
         MainDock {
             hide_header: is_fullscreen(),
             
-            // Standard Header Tabs
             tabs: rsx! {
                 if !is_fullscreen() {
                     button {
@@ -122,20 +128,18 @@ pub fn BloggerWorkspace(
                 }
             },
             
-            // Standard Header Toolbar
             toolbar: if center_view() == CenterView::Preview && !is_fullscreen() {
                 Some(rsx! {
                     ViewportToolbar {
                         preview_viewport,
                         preview_width,
-                        preview_template_mode
+                        preview_template_mode,
+                        is_xray_active,
                     }
                 })
             } else {
                 None
             },
-
-            // --- THE BLOGGER PAYLOAD ---
 
             if is_fullscreen() {
                 div {
@@ -146,7 +150,8 @@ pub fn BloggerWorkspace(
                         ViewportToolbar {
                             preview_viewport,
                             preview_width,
-                            preview_template_mode
+                            preview_template_mode,
+                            is_xray_active,
                         }
                         div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
                     }
@@ -166,7 +171,7 @@ pub fn BloggerWorkspace(
             if let Some(icon_target) = active_icon_picker() {
                 IconPickerModal {
                     target: icon_target.clone(),
-                    config_toml: config_toml.clone(),
+                    config_toml: config_toml(),
                     on_close: move |_| active_icon_picker.set(None),
                     on_restore: on_restore.clone(),
                 }
@@ -185,14 +190,22 @@ pub fn BloggerWorkspace(
                                 preview_html: preview_html(),
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_select: move |target: String| { active_selection.set(Some(target)); },
-                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); }
+                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                                on_update_value: {
+                                    let mutator = apply_text_edit.clone();
+                                    move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
+                                },
+                                on_move_widget: {
+                                    let mutator = apply_widget_move.clone();
+                                    move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
+                                }
                             }
                         }
 
                         if let Some(target) = active_selection() {
                             PreviewEditorPalette {
                                 target: target.clone(),
-                                config_toml: config_toml.clone(),
+                                config_toml: config_toml(),
                                 on_close: move |_| active_selection.set(None),
                                 on_restore: on_restore.clone(),
                             }
@@ -214,7 +227,15 @@ pub fn BloggerWorkspace(
                                 preview_html: preview_html(),
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_select: move |target: String| { active_selection.set(Some(target)); },
-                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); }
+                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                                on_update_value: {
+                                    let mutator = apply_text_edit.clone();
+                                    move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
+                                },
+                                on_move_widget: {
+                                    let mutator = apply_widget_move.clone();
+                                    move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
+                                }
                             }
                         }
                         div { style: "flex: 1;",
@@ -267,9 +288,25 @@ fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
 fn ViewportToolbar(
     mut preview_viewport: Signal<PreviewViewport>,
     mut preview_width: Signal<u32>,
-    mut preview_template_mode: Signal<PreviewTemplateMode>
+    mut preview_template_mode: Signal<PreviewTemplateMode>,
+    mut is_xray_active: Signal<bool>,
 ) -> Element {
     rsx! {
+        div {
+            class: "preview-toolbar-group",
+            style: "margin: 0;",
+            button {
+                class: if is_xray_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                title: "Toggle Layout X-Ray",
+                onclick: move |_| {
+                    let active = !is_xray_active();
+                    is_xray_active.set(active);
+                    let js = format!("const f = document.getElementById('mor-preview-frame'); if(f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({{action: 'TOGGLE_LAYOUT_MODE', active: {}}}), '*');", active);
+                    let _ = dioxus::document::eval(&js);
+                },
+                "X-Ray"
+            }
+        }
         div {
             class: "preview-toolbar-group",
             style: "margin: 0;",
@@ -381,8 +418,8 @@ fn IconPickerModal(
                                     if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
                                         let bytes = file.read().await;
                                         let raw_svg = String::from_utf8_lossy(&bytes).into_owned();
-                                        if raw_svg.contains("<svg") {
-                                            let mask = encode_full_svg_to_mask(&raw_svg);
+                                        if is_svg(&raw_svg) {
+                                            let mask = svg_to_data_uri(&raw_svg);
                                             if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
                                                 match slot.as_str() {
                                                     "icons.panel_close" => config.icons.panel_close = mask,

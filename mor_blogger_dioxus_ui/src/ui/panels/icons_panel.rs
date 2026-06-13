@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
+use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 #[component]
 pub fn SvgIconsPanel(
@@ -7,6 +8,7 @@ pub fn SvgIconsPanel(
     on_apply_theme: EventHandler<ThemeConfig>,
 ) -> Element {
     let mut new_key = use_signal(String::new);
+    let mut status_msg = use_signal(String::new);
 
     rsx! {
         div { class: "editor-card", style: "padding: 16px; display: flex; flex-direction: column; gap: 16px;",
@@ -39,19 +41,19 @@ pub fn SvgIconsPanel(
 
             div { style: "height: 1px; background: var(--editor-border-soft); margin: 8px 0;" }
 
-            // --- QUARANTINED FEATURE ---
-            div { class: "editor-note", style: "border-color: var(--editor-warning); background: rgba(210, 153, 34, 0.05);",
-                p { class: "editor-note-title", style: "color: var(--editor-warning);", "🚧 Feature Marked For Repair 🚧" }
-                p { class: "editor-note-body", style: "color: var(--editor-warning);", "Custom SVG Dictionary is temporarily disabled. Human Dev To-Do: Resolve strict OS namespace stripping and WYSIWYG coloring limitations before re-enabling." }
+            // --- CUSTOM DICTIONARY ---
+            div { class: "editor-note",
+                p { class: "editor-note-title", "Custom SVG Dictionary" }
+                p { class: "editor-note-body", "Upload OS files to create reusable icons for your visual picker library." }
             }
 
             if !current_config.icons.custom_icons.is_empty() {
                 div { style: "display: flex; flex-direction: column; gap: 8px;",
                     for (key, mask_uri) in current_config.icons.custom_icons.iter() {
-                        div { style: "display: flex; align-items: center; justify-content: space-between; background: var(--bg-elevated); padding: 8px 12px; border: 1px solid var(--editor-border-soft); border-radius: 4px; opacity: 0.5;",
+                        div { style: "display: flex; align-items: center; justify-content: space-between; background: var(--bg-elevated); padding: 8px 12px; border: 1px solid var(--editor-border-soft); border-radius: 4px;",
                             div { style: "display: flex; align-items: center; gap: 12px;",
-                                span { style: "display: block; width: 16px; height: 16px; background-image: {mask_uri}; background-size: contain; background-repeat: no-repeat; background-position: center;" }
-                                span { style: "font-family: var(--font-mono); font-size: 0.85em; color: var(--fg-base);", "{key} (Legacy)" }
+                                span { style: "display: block; width: 20px; height: 20px; background-color: var(--fg-base); -webkit-mask-image: {mask_uri}; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;" }
+                                span { style: "font-family: var(--font-mono); font-size: 0.85em; color: var(--fg-base);", "{key}" }
                             }
                             button {
                                 class: "editor-mini-button",
@@ -72,20 +74,51 @@ pub fn SvgIconsPanel(
                 }
             }
 
-            // Disabled form
-            div { style: "display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 6px; border: 1px dashed var(--editor-border-soft); opacity: 0.5; pointer-events: none;",
+            div { style: "display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 6px; border: 1px dashed var(--editor-border-soft);",
+                if !status_msg().is_empty() {
+                    div { style: "font-size: 0.85em; color: var(--editor-accent-warm);", "{status_msg}" }
+                }
                 input {
                     class: "editor-input",
                     style: "width: 100%; box-sizing: border-box;",
                     placeholder: "Icon label (e.g. 'plank')",
                     value: "{new_key}",
-                    disabled: true,
+                    oninput: move |evt| new_key.set(evt.value()),
                 }
                 button {
                     class: "editor-button",
                     style: "width: 100%; justify-content: center;",
-                    disabled: true,
-                    "Browse OS for .svg... (Disabled)"
+                    onclick: {
+                        let key = new_key().trim().to_string();
+                        let cfg_clone = current_config.clone();
+                        let apply = on_apply_theme.clone();
+                        move |_| {
+                            if key.is_empty() {
+                                status_msg.set("Error: Provide an icon label first.".to_string());
+                                return;
+                            }
+                            let k = key.clone();
+                            let mut c = cfg_clone.clone();
+                            let a = apply.clone();
+                            
+                            spawn(async move {
+                                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
+                                    let bytes = file.read().await;
+                                    let raw_svg = String::from_utf8_lossy(&bytes).into_owned();
+                                    
+                                    if is_svg(&raw_svg) {
+                                        let encoded_uri = svg_to_data_uri(&raw_svg);
+                                        c.icons.custom_icons.insert(k, encoded_uri);
+                                        a.call(c);
+                                        status_msg.set("SVG added to dictionary!".to_string());
+                                    } else {
+                                        status_msg.set("Error: File is not a valid SVG.".to_string());
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    "Browse OS for .svg..."
                 }
             }
         }

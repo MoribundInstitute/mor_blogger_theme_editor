@@ -1,5 +1,5 @@
 use crate::config::{
-    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, MenuLink, SeoConfig,
+    BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig, SeoConfig,
     SiteConfig, SurfaceFill, TypographyConfig,
 };
 

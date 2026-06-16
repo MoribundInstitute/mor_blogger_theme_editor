@@ -31,17 +31,11 @@ fn encode_path_to_mask(path_d: &str) -> String {
     svg_to_data_uri(&raw)
 }
 
-fn build_fresh_export_xml(
-    config_toml: &str,
-    active_preset_name: Option<&'static str>,
-) -> Result<String, String> {
+fn build_fresh_export_xml(config_toml: &str) -> Result<String, String> {
     let config = toml::from_str::<ThemeConfig>(config_toml)
         .map_err(|err| format!("could not parse TOML: {}", err))?;
 
-    let (light_palette, dark_palette) =
-        mor_blogger_core::presets::resolve_palette_pair(active_preset_name, &config);
-
-    let rendered_xml = mor_blogger_core::render::render_theme(&config, &light_palette, &dark_palette);
+    let rendered_xml = mor_blogger_core::render::render_theme(&config);
     mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config)
 }
 
@@ -62,6 +56,7 @@ pub fn BloggerWorkspace(
     on_restore: EventHandler<ThemeConfig>,
     on_load_hotswap: EventHandler<String>,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
+    #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
 ) -> Element {
     let is_valid = diag.read().is_valid;
     let error_count = diag.read().errors.len();
@@ -72,7 +67,7 @@ pub fn BloggerWorkspace(
     let mut is_fullscreen = use_signal(|| false);
 
     let export_xml = use_memo(move || {
-        match build_fresh_export_xml(&config_toml(), active_preset()) {
+        match build_fresh_export_xml(&config_toml()) {
             Ok(xml) => xml,
             Err(err) => {
                 log::error!("Render failed: {}", err);
@@ -104,7 +99,6 @@ pub fn BloggerWorkspace(
         let restore = on_restore.clone();
         move |id: String, dest: String, cfg: String| {
             if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
-                // REQUIRED IN CORE: Implement move_widget(&mut self, id: &str, dest: &str) on TemplatePackConfig
                 config.template_pack.move_widget(&id, &dest);
                 restore.call(config);
             }
@@ -191,6 +185,7 @@ pub fn BloggerWorkspace(
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_select: move |target: String| { active_selection.set(Some(target)); },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                                on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                                 on_update_value: {
                                     let mutator = apply_text_edit.clone();
                                     move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
@@ -228,6 +223,7 @@ pub fn BloggerWorkspace(
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_select: move |target: String| { active_selection.set(Some(target)); },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                                on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                                 on_update_value: {
                                     let mutator = apply_text_edit.clone();
                                     move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
@@ -258,10 +254,6 @@ pub fn BloggerWorkspace(
         }
     }
 }
-
-// -----------------------------------------------------------------------------
-// FLATTENED LOCAL COMPONENTS
-// -----------------------------------------------------------------------------
 
 #[component]
 fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {

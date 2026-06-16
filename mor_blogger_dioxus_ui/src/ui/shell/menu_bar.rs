@@ -82,6 +82,7 @@ pub fn AppMenuBar(
     on_new_workspace: EventHandler<()>,
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
+    on_import_xml: EventHandler<()>,
     on_load_data: EventHandler<()>,
     on_save_data: EventHandler<()>,
     on_export_xml: EventHandler<()>,
@@ -107,6 +108,10 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "Save Theme (.toml)".to_string(),
                     on_action: move |_| on_save_theme.call(())
+                }
+                MenuItem {
+                    label: "Import Blogger XML (.xml)".to_string(),
+                    on_action: move |_| on_import_xml.call(())
                 }
                 MenuSeparator {}
                 MenuItem { 

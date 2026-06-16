@@ -1,0 +1,57 @@
+/* ============================================================
+   Universal Accessibility Overrides
+   These rules sit at the bottom of the cascade and intercept
+   OS-level accessibility requests, overriding TOML presets.
+   ============================================================ */
+
+/* 1. Keyboard Focus Safety 
+   Never allow an outline to be removed without replacing it. */
+*:focus-visible {
+  outline: 2px solid var(--fg-base) !important;
+  outline-offset: 4px !important;
+  box-shadow: none !important;
+}
+
+/* 2. High Contrast Mode (prefers-contrast: more)
+   Strips gradients, blurs, and glows. Enforces hard lines. */
+@media (prefers-contrast: more) {
+  :root {
+    --glow-spread: 0px !important;
+  }
+  
+  /* Flatten surfaces and enforce strict foreground/background contrast */
+  .canvas-core, 
+  .mor-post, 
+  .runelite-panel, 
+  .main-header, 
+  .mor-footer, 
+  .mor-catalog-dropdown,
+  button, 
+  input {
+    background: var(--bg-base) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--fg-base) !important;
+    color: var(--fg-base) !important;
+    text-shadow: none !important;
+  }
+
+  /* Force links to be aggressively underlined so they don't rely on color alone */
+  a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 3px !important;
+  }
+}
+
+/* 3. Reduced Motion (prefers-reduced-motion: reduce)
+   Kills all background drifts, hover floats, and CSS animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,7 +1,7 @@
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 
-/// A custom ASCII set that encodes dangerous CSS/XML characters but leaves standard text alone.
-/// Much smaller memory footprint than encoding NON_ALPHANUMERIC.
+/// Strict ASCII set that encodes dangerous CSS/XML characters but leaves standard text alone.
+/// Includes Hash (#) to prevent browser from truncating image data inside url() blocks.
 const SVG_ENCODE_SET: &AsciiSet = &CONTROLS
     .add(b' ')
     .add(b'"')
@@ -18,6 +18,7 @@ const SVG_ENCODE_SET: &AsciiSet = &CONTROLS
     .add(b'[')
     .add(b']')
     .add(b'`')
+    .add(b'?')
     .add(b'\'');
 
 pub fn ensure_svg_xmlns(svg: &str) -> String {
@@ -46,6 +47,7 @@ pub fn ensure_svg_xmlns(svg: &str) -> String {
 pub fn svg_to_data_uri(svg: &str) -> String {
     let normalized = ensure_svg_xmlns(svg);
     let encoded = utf8_percent_encode(&normalized, SVG_ENCODE_SET).to_string();
+    // Single quotes mandatory. Prevents double-quote collision in standard HTML style attributes.
     format!("url('data:image/svg+xml,{}')", encoded)
 }
 

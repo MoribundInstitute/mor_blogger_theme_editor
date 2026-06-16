@@ -1,29 +1,58 @@
 use rfd::FileDialog;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-use mor_blogger_core::config::gtk_theme::{import_gtk4_preset, ImportedGtkPreset};
+use mor_blogger_core::config::gtk_theme::{import_gtk_theme, ImportedGtkPreset};
 use mor_blogger_core::config::ThemeConfig;
-use mor_blogger_core::presets::user_presets::{save_user_preset_bundle, UserPresetDiskReport};
 
 pub(crate) fn choose_gtk_theme(
-    current_config: &ThemeConfig,
+    _current_config: &ThemeConfig,
 ) -> Result<Option<ImportedGtkPreset>, String> {
     let Some(dir) = FileDialog::new()
-        // Updated to be explicit about which folder to select
         .set_title("Select extracted theme root folder (e.g. 'Mojave-Dark-alt')")
         .pick_folder()
     else {
         return Ok(None);
     };
 
-    import_gtk4_preset(&dir, current_config).map(Some)
+    import_gtk_theme(&dir).map(Some)
+}
+
+// Emulates the shape of our new single-file TOML presets
+#[derive(Serialize)]
+struct TomlExport<'a> {
+    name: &'a str,
+    description: &'a str,
+    colors: &'a mor_blogger_core::config::ColorConfig,
+    background: &'a mor_blogger_core::config::BackgroundConfig,
+    typography: &'a mor_blogger_core::config::TypographyConfig,
+    buttons: &'a mor_blogger_core::config::ButtonConfig,
+    preset_css: &'a str,
 }
 
 pub(crate) fn save_imported_gtk_preset(
     imported: &ImportedGtkPreset,
-) -> Result<UserPresetDiskReport, String> {
-    let bundle = imported.to_user_preset_bundle();
-    save_user_preset_bundle(&bundle, Some(&imported.icon_assets))
+) -> Result<String, String> {
+    let export = TomlExport {
+        name: &imported.name,
+        description: &imported.description,
+        colors: &imported.config.colors,
+        background: &imported.config.background,
+        typography: &imported.config.typography,
+        buttons: &imported.config.buttons,
+        preset_css: &imported.preset_css,
+    };
+
+    let toml_str = toml::to_string_pretty(&export).map_err(|e| e.to_string())?;
+
+    let preset_dir = std::path::PathBuf::from("theme_presets");
+    if !preset_dir.exists() {
+        std::fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
+    }
+
+    let file_path = preset_dir.join(format!("{}.toml", imported.id));
+    std::fs::write(&file_path, toml_str).map_err(|e| e.to_string())?;
+
+    Ok(format!("GTK Theme successfully compiled to {}", file_path.display()))
 }
 
 pub(crate) async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String> {
@@ -89,7 +118,7 @@ fn parse_json_wrapped_theme(text: &str) -> Result<ThemeConfig, String> {
     let mut config = wrapped
         .base_config
         .or(wrapped.config)
-        .or(wrapped.theme)
+                .or(wrapped.theme)
         .ok_or_else(|| "no base_config/config/theme object found".to_string())?;
 
     if config.preset_css.trim().is_empty() {

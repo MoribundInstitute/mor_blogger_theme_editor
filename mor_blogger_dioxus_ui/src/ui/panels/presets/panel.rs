@@ -184,7 +184,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             onclick: move |_| {
                                 let Some(imported) = last_imported_gtk() else { return };
                                 match save_imported_gtk_preset(&imported) {
-                                    Ok(report) => import_status.set(format!("Saved GTK preset '{}' to {} ({} file(s) written).", imported.name, report.bundle_dir.display(), report.files_written.len())),
+                                    // We now receive a simple string message from the importer
+                                    Ok(success_msg) => import_status.set(success_msg),
                                     Err(err) => import_status.set(format!("Could not save GTK preset: {}", err)),
                                 }
                             },

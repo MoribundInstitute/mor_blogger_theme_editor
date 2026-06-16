@@ -3,6 +3,7 @@
 //! produces uploadable Blogger XML.
 
 use crate::config::{BackgroundMode, ThemeConfig};
+use crate::config::prefs::RenderPrefs;
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -64,15 +65,46 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
     let footer_text = escape_html(&config.footer.footer_text);
 
     // Fetch the TRUE CSS that will be injected into the final Blogger XML
-    let parts = crate::render::template_resolver::resolve_template_parts(config);
-    let true_css = parts.css;
+    let mut parts = crate::render::template_resolver::resolve_template_parts(config);
+    let true_css = crate::render::xml_parts::css_generator::render_css_sockets(parts.css, config);
+
+    // Wire up the Plugin Pipeline for the Preview
+    let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
+    if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
+        if let Ok(prefs) = serde_json::from_str::<RenderPrefs>(&json) {
+            for p in prefs.plugins {
+                if p.enabled {
+                    match p.id.as_str() {
+                        "os_chameleon" => active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin)),
+                        "dewey_indexer" => active_plugins.push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
+                        "workspace_docks" => active_plugins.push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    let mut plugin_javascript = String::new();
+    for plugin in active_plugins {
+        if let Some(js) = plugin.inject_js() {
+            plugin_javascript.push_str(js);
+            plugin_javascript.push('\n');
+        }
+    }
+
+    parts.javascript.push('\n');
+    parts.javascript.push_str(&plugin_javascript);
+    
+    // Securely wrap the aggregated JS for the iframe DOM
+    let true_js = crate::render::xml_parts::javascript_generator::render_javascript_sockets(parts.javascript, config);
 
     let body_markup = format!(
         r##"
 <header class="main-header" data-edit-target="colors.bg_elevated">
     <div class="header-top-row">
         <div class="header-side-controls left-controls">
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" data-target="panel-left">Browse</button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left">Browse</button>
         </div>
         <a class="branding branding-link">
             <span class="institute-title" data-edit-target="site.site_title">{site_title}</span>
@@ -81,7 +113,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode (Use Editor UI to switch)" data-edit-target="colors.accent">
                <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
             </button>
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" data-target="panel-right">Contents</button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right">Contents</button>
         </div>
     </div>
     <div class="header-bottom-row">
@@ -168,12 +200,14 @@ html, body {{ overflow: hidden; }}
 </head>
 <body style="{background_tile_css}">
     {body_markup}
+    {true_js}
 </body>
 </html>"#,
         site_title = site_title,
         google_fonts_link = google_fonts_link,
         true_css = true_css,
         background_tile_css = background_tile_css,
-        body_markup = body_markup
+        body_markup = body_markup,
+        true_js = true_js
     )
 }

@@ -1,1 +1,8 @@
+pub mod content_generator;
+pub mod css_generator;
+pub mod footer_generator;
 pub mod header_generator;
+pub mod javascript_generator;
+pub mod meta_generator;
+pub mod sidebar_generator;
+pub mod widget_generator;

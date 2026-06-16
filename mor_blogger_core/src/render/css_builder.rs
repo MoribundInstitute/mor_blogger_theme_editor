@@ -1,6 +1,7 @@
 //! CSS Builder module for sanitizing and concatenating base CSS files.
 
 use crate::config::ThemeConfig;
+use crate::utils::svg_icons::svg_to_data_uri;
 
 /// Cleans user-uploaded or modular CSS by stripping out existing Blogger XML wrappers
 /// so we can safely concatenate and re-wrap it later without nesting errors.
@@ -13,6 +14,26 @@ pub fn clean_raw_css(input: &str) -> String {
     cleaned = cleaned.replace("]]>", "");
 
     cleaned.trim().to_string()
+}
+
+pub const DEFAULT_ICON_SIDEBAR_LEFT:  &str = "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
+pub const DEFAULT_ICON_SIDEBAR_RIGHT: &str = "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
+pub const DEFAULT_ICON_PANEL_CLOSE:   &str = "M18 6 6 18M6 6l12 12";
+pub const DEFAULT_ICON_SEARCH:        &str = "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5";
+pub const DEFAULT_ICON_MENU:          &str = "M4 7h16M4 12h16M4 17h16";
+
+/// Returns the configured icon if set, otherwise an inline-encoded fallback
+/// generated from a built-in path string.
+pub fn icon_or_default(value: &str, default_path_d: &str) -> String {
+    if value.trim().is_empty() {
+        let svg = format!(
+            r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{}"/></svg>"##,
+            default_path_d
+        );
+        svg_to_data_uri(&svg)
+    } else {
+        value.to_string()
+    }
 }
 
 /// Builds the master CSS baseline from modular chunks or user uploads,
@@ -28,7 +49,6 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         }
     }
 
-    // 1. Build standard known variables
     let mut custom_vars = format!(
         r#":root {{
   --bg-base: {bg_base};
@@ -59,47 +79,52 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         font_mono = config.typography.mono_font_stack,
     );
 
-    // 2. Loop through dynamic infinite bucket and append to :root
+    custom_vars.push_str(&format!(
+        "\n  --icon-sidebar-left: {};",
+        icon_or_default(&config.icons.sidebar_left, DEFAULT_ICON_SIDEBAR_LEFT)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-sidebar-right: {};",
+        icon_or_default(&config.icons.sidebar_right, DEFAULT_ICON_SIDEBAR_RIGHT)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-panel-close: {};",
+        icon_or_default(&config.icons.panel_close, DEFAULT_ICON_PANEL_CLOSE)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-search: {};",
+        icon_or_default(&config.icons.search, DEFAULT_ICON_SEARCH)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-menu: {};",
+        icon_or_default(&config.icons.menu, DEFAULT_ICON_MENU)
+    ));
+
     for (key, svg_data) in &config.icons.custom_icons {
+        if svg_data.trim().is_empty() {
+            continue;
+        }
         let safe_key = key.replace(' ', "-").to_lowercase();
         custom_vars.push_str(&format!("\n  --icon-{safe_key}: {svg_data};"));
     }
 
-    // Close the :root block
     custom_vars.push_str("\n}\n");
-
-    // 3. Override legacy pseudo-elements so dynamic UI icons render properly
-    custom_vars.push_str(r#"
-/* --- Force Legacy UI to use Dynamic Icons --- */
-.header-panel-toggle-left::before {
-  -webkit-mask: var(--icon-sidebar-left) center/20px no-repeat !important;
-  mask: var(--icon-sidebar-left) center/20px no-repeat !important;
-}
-.header-panel-toggle-right::before {
-  -webkit-mask: var(--icon-sidebar-right) center/20px no-repeat !important;
-  mask: var(--icon-sidebar-right) center/20px no-repeat !important;
-  transform: none !important; /* Kills the hardcoded flip bug */
-}
-.panel-header .panel-toggle::before {
-  -webkit-mask: var(--icon-panel-close) center/18px no-repeat !important;
-  mask: var(--icon-panel-close) center/18px no-repeat !important;
-}
-"#);
 
     combined_css.push_str(&custom_vars);
 
-    // 4. Generate WYSIWYG utility classes for custom dictionary icons
     if !config.icons.custom_icons.is_empty() {
         combined_css.push_str("\n/* --- Custom Icon Utilities --- */\n");
-        for key in config.icons.custom_icons.keys() {
+        for (key, value) in &config.icons.custom_icons {
+            if value.trim().is_empty() {
+                continue;
+            }
             let safe_key = key.replace(' ', "-").to_lowercase();
             combined_css.push_str(&format!(
                 ".custom-icon-{safe_key} {{\n  background-image: var(--icon-{safe_key});\n  background-size: contain;\n  background-repeat: no-repeat;\n  background-position: center;\n}}\n"
             ));
         }
     }
-    
-    // 5. Append User Preset CSS (Moved completely from XML Generator to avoid duplication)
+
     if !config.preset_css.is_empty() {
         combined_css.push_str("\n\n/* --- User Custom CSS --- */\n");
         combined_css.push_str(&config.preset_css);

@@ -10,6 +10,8 @@
 //!
 //! See the AdsConfig docs in `config.rs` for the full policy explanation.
 
+#![allow(dead_code)]
+
 use crate::config::{AdBannerPosition, AdSlotPlacement, AdsConfig, AdsMode};
 
 const WIDGET_ADSENSE_SIDEBAR: &str = include_str!("../template_parts/widgets/adsense_sidebar.xml");
@@ -18,10 +20,6 @@ const WIDGET_ADSENSE_SIDEBAR: &str = include_str!("../template_parts/widgets/ads
 // Ads rendering helpers
 // ==========================================================================
 
-/// Sidebar widget body for the Always mode. Empty string for None/OptIn/
-/// OptOut. For OptIn/OptOut the sidebar slot is rendered by the consent
-/// banner script, not by Blogger's native widget machinery, so we don't
-/// emit a `<b:widget type='AdSense'>` here.
 pub(super) fn render_ads_widget_sidebar(ads: &AdsConfig) -> String {
     match ads.mode {
         AdsMode::Always => WIDGET_ADSENSE_SIDEBAR.to_string(),
@@ -29,20 +27,10 @@ pub(super) fn render_ads_widget_sidebar(ads: &AdsConfig) -> String {
     }
 }
 
-/// `<head>` script. None/Always: empty (Blogger auto-injects the AdSense
-/// loader when a native AdSense widget exists). OptIn: empty (the script
-/// is loaded by ADS_RUNTIME_SCRIPT after consent). OptOut: empty (same;
-/// loaded by runtime script on first paint).
 pub(super) fn render_ads_head_script(_ads: &AdsConfig) -> String {
-    // Reserved for future use. Currently all script loading is centralized
-    // in render_ads_runtime_script so the consent state machine has one
-    // place to live.
     String::new()
 }
 
-/// Consent banner DOM. The blogger-chosen banner_position selects markup
-/// class; the runtime script picks behavior off the same class. The copy
-/// is fixed (no engagement-encouragement language) per editor policy.
 pub(super) fn render_ads_consent_banner(ads: &AdsConfig) -> String {
     if !matches!(ads.mode, AdsMode::OptIn | AdsMode::OptOut) {
         return String::new();
@@ -66,9 +54,6 @@ pub(super) fn render_ads_consent_banner(ads: &AdsConfig) -> String {
         _ => unreachable!(),
     };
 
-    // CDATA-wrap nothing here — it's plain HTML inside the Blogger template
-    // body, which is XHTML so quotes and entities matter. The literal we
-    // emit is well-formed XHTML.
     format!(
         r#"<div class="mor-ads-banner {position}" id="mor-ads-banner" role="dialog" aria-live="polite" hidden="hidden">
   <span class="mor-ads-banner-text">{copy}</span>
@@ -80,20 +65,6 @@ pub(super) fn render_ads_consent_banner(ads: &AdsConfig) -> String {
     )
 }
 
-/// Runtime JS. The state machine:
-///
-/// - On first paint: read `localStorage` key `mor_ads_consent_v1`.
-/// - OptIn mode:
-///     * unset    -> show banner
-///     * "allow"  -> load AdSense, reveal slots
-///     * "decline"-> do nothing
-/// - OptOut mode:
-///     * unset    -> show banner AND load ads (default is on)
-///     * "allow"  -> load ads (same as unset, no banner)
-///     * "decline"-> do not load, hide containers (sticky)
-///
-/// Persistence is forever per-browser per-origin. Once a viewer makes a
-/// choice in OptIn or OptOut mode, they don't get prompted again.
 pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
     if !matches!(ads.mode, AdsMode::OptIn | AdsMode::OptOut) {
         return String::new();
@@ -105,9 +76,6 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
         _ => unreachable!(),
     };
 
-    // Build the slot descriptors as a small JSON array. JS reads this on
-    // page load and injects `<ins class="adsbygoogle">` tags into matching
-    // containers.
     let mut slot_descriptors = String::from("[");
     for (i, slot) in ads.slots.iter().enumerate() {
         if i > 0 {
@@ -118,7 +86,6 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
             AdSlotPlacement::BetweenPosts => "between",
             AdSlotPlacement::Both => "both",
         };
-        // escape_attr handles quotes; slot_id is user-supplied so escape it
         slot_descriptors.push_str(&format!(
             r#"{{"slot":"{}","placement":"{}"}}"#,
             escape_js_string(&slot.slot_id),
@@ -129,10 +96,6 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
 
     let publisher_id = escape_js_string(&ads.publisher_id);
 
-    // The script is wrapped in CDATA because Blogger's parser is XHTML and
-    // any literal `<`, `&`, `<=`, etc. inside a bare <script> tag will be
-    // misparsed. CDATA escape pattern matches what render_custom_plugin_scripts
-    // already does for user-supplied JS.
     format!(
         r#"<script type='text/javascript'>
 //<![CDATA[
@@ -216,13 +179,11 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
       if (consent === "allow") {{
         loadAllAds();
       }} else if (consent === "decline") {{
-        // Stay quiet.
       }} else {{
         showBanner();
       }}
     }} else if (MODE === "optout") {{
       if (consent === "decline") {{
-        // Sticky off.
       }} else {{
         loadAllAds();
         if (consent !== "allow") {{
@@ -253,10 +214,6 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
     )
 }
 
-/// Minimal JS-string escape. Newlines, quotes, backslashes. The values
-/// passing through here are publisher IDs and slot IDs, which AdSense
-/// constrains to alphanumeric plus hyphens — so this is defense-in-depth
-/// rather than a hot path.
 fn escape_js_string(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for c in value.chars() {

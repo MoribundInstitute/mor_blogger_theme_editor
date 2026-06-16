@@ -1,3 +1,7 @@
+name = "Aurora Glassmorphism"
+description = "Notes, light, and motion. A glass-paneled theme that catches the light."
+
+preset_css = '''
 /* ============================================================
    Glassmorphism preset — v4
    
@@ -341,3 +345,61 @@ select:focus {
   }
   body::before, body::after { display: none; }
 }
+'''
+
+[colors]
+bg_base = "#0f1026"
+fg_base = "#f5f7ff"
+fg_muted = "#a8aedd"
+accent = "#8b5cf6"
+border = "#3d4280"
+panel_border_width = "1px"
+glow_spread = "10px"
+hover_scale = "1.02"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#1a1f4a"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#2a2f6a"
+
+[background.mode.Gradient]
+from = "#1e1a4d"
+to = "#5b2c8a"
+angle_deg = 135
+
+[typography]
+body_font_stack = "system-ui, -apple-system, sans-serif"
+heading_font_stack = "system-ui, -apple-system, sans-serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "16px"
+scale_ratio = "1.2"
+line_height = "1.6"
+heading_weight = "600"
+
+[buttons]
+radius = "14px"
+border_width = "1px"
+text_transform = "none"
+
+[light.colors]
+bg_base = "#e8efff"
+fg_base = "#1a1d3a"
+fg_muted = "#6b7099"
+accent = "#7c3aed"
+border = "#c8d2f0"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#f4f6ff"
+
+[light.background.mode.Gradient]
+from = "#fde8ff"
+to = "#a6e6ff"
+angle_deg = 135

@@ -4,8 +4,6 @@
 //! Rust config is safe to be injected into the Blogger XML engine.
 //! If data isn't escaped correctly, the Blogger parser dies silently.
 
-use crate::config::{MenuLink, ThemeConfig};
-
 /// Escapes content for use inside standard HTML elements.
 /// Crucial for Blogger: If an apostrophe or bracket slips through,
 /// the entire XML file becomes unparseable.
@@ -24,19 +22,6 @@ pub(super) fn escape_attr(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#39;")
-}
-
-/// Safely retrieves a menu link, ensuring we don't return an error
-/// if a slot in the UI is empty.
-pub(super) fn menu_link_or_empty(config: &ThemeConfig, index: usize) -> MenuLink {
-    config
-        .menu_links
-        .get(index)
-        .cloned()
-        .unwrap_or_else(|| MenuLink {
-            label: String::new(),
-            url: String::new(),
-        })
 }
 
 /// Dynamically builds the Google Fonts link based on the user's font stack.
@@ -78,4 +63,13 @@ pub(super) fn build_google_fonts_link(stacks: &[&str]) -> String {
         "<link href=\"https://fonts.googleapis.com/css2?family={}:wght@400;700&amp;display=swap\" rel=\"stylesheet\"/>",
         families_param
     )
+}
+
+/// Returns the primary string if it contains text, otherwise returns the fallback.
+pub fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
+    if primary.trim().is_empty() {
+        fallback
+    } else {
+        primary
+    }
 }

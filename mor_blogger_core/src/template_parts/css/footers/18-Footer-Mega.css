@@ -71,3 +71,33 @@
   font-size: 1.2rem;
   color: var(--fg-base);
 }
+
+/* --- NEW: Footer System Info Layout Fix --- */
+.footer-sys-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-copyright {
+  margin: 0;
+  flex: 1 1 100%;
+}
+
+.footer-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 768px) {
+  .footer-copyright {
+    flex: 0 1 auto;
+  }
+}

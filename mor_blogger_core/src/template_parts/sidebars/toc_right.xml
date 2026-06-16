@@ -1,7 +1,9 @@
 <aside class='runelite-panel panel-right' id='panel-right'>
   <div class='panel-header'>
     <span>{{RIGHT_PANEL_TITLE}}</span>
-    <button aria-label='Close Contents panel' class='panel-toggle' data-target='panel-right'>{{RIGHT_PANEL_CLOSE_LABEL}}</button>
+    <button aria-label='Close Contents panel' class='panel-toggle' data-target='panel-right'>
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
   </div>
 
   <div class='panel-content' id='control-container'>

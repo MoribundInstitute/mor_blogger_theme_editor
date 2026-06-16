@@ -115,7 +115,24 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollMainContentToTop();
     });
   }
-
+/* =========================================================
+     03. Panel Toggle Click Handler (THE MISSING WIRE)
+     ========================================================= */
+  document.addEventListener('click', (event) => {
+    const toggleBtn = safeClosest(event.target, '.panel-toggle');
+    if (toggleBtn) {
+      event.preventDefault();
+      const targetId = toggleBtn.getAttribute('data-target');
+      if (targetId) {
+        const panel = document.getElementById(targetId);
+        if (panel) {
+          panel.classList.toggle('is-collapsed');
+          const isCollapsed = panel.classList.contains('is-collapsed');
+          toggleBtn.setAttribute('aria-expanded', (!isCollapsed).toString());
+        }
+      }
+    }
+  });
   /* =========================================================
      03. Catalog Mega Dropdown
      ========================================================= */

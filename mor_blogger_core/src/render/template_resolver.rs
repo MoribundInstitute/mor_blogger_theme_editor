@@ -193,37 +193,51 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
 
 fn fetch_css(filename: &str) -> &'static str {
     match filename {
-        "00-Root-Section.css" => include_str!("../template_parts/base/skin/00-Root-Section.css"),
-        "01-Reset-Base.css" => include_str!("../template_parts/base/skin/01-Reset-Base.css"),
-        "02-Typography-Links.css" => include_str!("../template_parts/base/skin/02-Typography-Links.css"),
-        "03-Buttons.css" => include_str!("../template_parts/base/skin/03-Buttons.css"),
-        "04-Main-Header.css" => include_str!("../template_parts/base/skin/04-Main-Header.css"),
-        "05-Branding.css" => include_str!("../template_parts/base/skin/05-Branding.css"),
-        "06-Main-Navigation.css" => include_str!("../template_parts/base/skin/06-Main-Navigation.css"),
-        "07-Catalog-Mega-Dropdown.css" => include_str!("../template_parts/base/skin/07-Catalog-Mega-Dropdown.css"),
-        "08-Command-Line-Search.css" => include_str!("../template_parts/base/skin/08-Command-Line-Search.css"),
-        "09-Workspace-Layout.css" => include_str!("../template_parts/base/skin/09-Workspace-Layout.css"),
-        "10-Side-Panels.css" => include_str!("../template_parts/base/skin/10-Side-Panels.css"),
-        "11-Main-Canvas.css" => include_str!("../template_parts/base/skin/11-Main-Canvas.css"),
-        "12-Terminal-Post-Styling.css" => include_str!("../template_parts/base/skin/12-Terminal-Post-Styling.css"),
-        "13-Pagination.css" => include_str!("../template_parts/base/skin/13-Pagination.css"),
-        "14-Widgets-Sidebars.css" => include_str!("../template_parts/base/skin/14-Widgets-Sidebars.css"),
-        "15-Archive-Widget.css" => include_str!("../template_parts/base/skin/15-Archive-Widget.css"),
-        "16-Table-of-Contents.css" => include_str!("../template_parts/base/skin/16-Table-of-Contents.css"),
-        "17-Scrollbars.css" => include_str!("../template_parts/base/skin/17-Scrollbars.css"),
-        "18-Footer-Base.css" => include_str!("../template_parts/base/skin/18-Footer-Base.css"),
-        "18-Footer-Mega.css" => include_str!("../template_parts/base/skin/18-Footer-Mega.css"),
-        "19-Responsive-Mobile-Tablet.css" => include_str!("../template_parts/base/skin/19-Responsive-Mobile-Tablet.css"),
-        "20-Responsive-Very-Small-Screens.css" => include_str!("../template_parts/base/skin/20-Responsive-Very-Small-Screens.css"),
-        "21-Responsive-Desktop.css" => include_str!("../template_parts/base/skin/21-Responsive-Desktop.css"),
-        "22-Export-Safety.css" => include_str!("../template_parts/base/skin/22-Export-Safety.css"),
-        "23-Comments.css" => include_str!("../template_parts/base/skin/23-Comments.css"),
-        "24-Author-Profile.css" => include_str!("../template_parts/base/skin/24-Author-Profile.css"),
-        "25-Share-Menu.css" => include_str!("../template_parts/base/skin/25-Share-Menu.css"),
-        "26-Analytics-Dashboard.css" => include_str!("../template_parts/base/skin/26-Analytics-Dashboard.css"),
-        "30-Content-Magazine.css" => include_str!("../template_parts/base/skin/30-Content-Magazine.css"),
+        // Core
+        "00-Root-Section.css" => include_str!("../template_parts/css/core/00-Root-Section.css"),
+        "01-Reset-Base.css" => include_str!("../template_parts/css/core/01-Reset-Base.css"),
+        "02-Typography-Links.css" => include_str!("../template_parts/css/core/02-Typography-Links.css"),
+        "03-Buttons.css" => include_str!("../template_parts/css/core/03-Buttons.css"),
+        "17-Scrollbars.css" => include_str!("../template_parts/css/core/17-Scrollbars.css"),
+        "19-Responsive-Mobile-Tablet.css" => include_str!("../template_parts/css/core/19-Responsive-Mobile-Tablet.css"),
+        "20-Responsive-Very-Small-Screens.css" => include_str!("../template_parts/css/core/20-Responsive-Very-Small-Screens.css"),
+        "21-Responsive-Desktop.css" => include_str!("../template_parts/css/core/21-Responsive-Desktop.css"),
+        "22-Export-Safety.css" => include_str!("../template_parts/css/core/22-Export-Safety.css"),
+        
+        // Headers
+        "04-Main-Header.css" => include_str!("../template_parts/css/headers/04-Main-Header.css"),
+        "05-Branding.css" => include_str!("../template_parts/css/headers/05-Branding.css"),
+        "06-Main-Navigation.css" => include_str!("../template_parts/css/headers/06-Main-Navigation.css"),
+        "07-Catalog-Mega-Dropdown.css" => include_str!("../template_parts/css/headers/07-Catalog-Mega-Dropdown.css"),
+        "08-Command-Line-Search.css" => include_str!("../template_parts/css/headers/08-Command-Line-Search.css"),
+        
+        // Layouts
+        "09-Workspace-Layout.css" => include_str!("../template_parts/css/layouts/09-Workspace-Layout.css"),
+        "10-Side-Panels.css" => include_str!("../template_parts/css/layouts/10-Side-Panels.css"),
+        "11-Main-Canvas.css" => include_str!("../template_parts/css/layouts/11-Main-Canvas.css"),
+        
+        // Content
+        "12-Terminal-Post-Styling.css" => include_str!("../template_parts/css/content/12-Terminal-Post-Styling.css"),
+        "13-Pagination.css" => include_str!("../template_parts/css/content/13-Pagination.css"),
+        "23-Comments.css" => include_str!("../template_parts/css/content/23-Comments.css"),
+        "24-Author-Profile.css" => include_str!("../template_parts/css/content/24-Author-Profile.css"),
+        "25-Share-Menu.css" => include_str!("../template_parts/css/content/25-Share-Menu.css"),
+        "30-Content-Magazine.css" => include_str!("../template_parts/css/content/30-Content-Magazine.css"),
         "31-Content-Masonry.css" => "/* Masonry Placeholder */",
         "32-Content-Minimal.css" => "/* Minimal Placeholder */",
+        
+        // Sidebars
+        "14-Widgets-Sidebars.css" => include_str!("../template_parts/css/sidebars/14-Widgets-Sidebars.css"),
+        "15-Archive-Widget.css" => include_str!("../template_parts/css/sidebars/15-Archive-Widget.css"),
+        "16-Table-of-Contents.css" => include_str!("../template_parts/css/sidebars/16-Table-of-Contents.css"),
+        
+        // Footers
+        "18-Footer-Base.css" => include_str!("../template_parts/css/footers/18-Footer-Base.css"),
+        "18-Footer-Mega.css" => include_str!("../template_parts/css/footers/18-Footer-Mega.css"),
+        
+        // Features
+        "26-Analytics-Dashboard.css" => include_str!("../template_parts/css/features/26-Analytics-Dashboard.css"),
+        
         _ => "",
     }
 }
@@ -238,7 +252,7 @@ fn fetch_js(filename: &str) -> &'static str {
 }
 
 // =====================================================================
-// DYNAMIC WIDGET INJECTION
+// WIDGET INJECTION
 // =====================================================================
 
 pub const WIDGET_REGISTRY: &[(&str, &str)] = &[
@@ -266,7 +280,6 @@ fn generate_widget_xml(widget_id: &str) -> String {
             w_type
         )
     } else {
-        // Strip numbers from file string (e.g. Label1) and replace with dynamic ID (e.g. Label2)
         let base_id = format!("{}1", w_type);
         template.replace(&base_id, widget_id)
     }
@@ -292,7 +305,7 @@ fn inject_widgets(template: &str, socket_id: &str, pack: &crate::config::Templat
 }
 
 // =====================================================================
-// DEPENDENCY RESOLVER
+// RESOLVER
 // =====================================================================
 
 pub struct TemplateParts {
@@ -378,10 +391,9 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     let footer_raw = get_comp(FOOTER_REGISTRY, &pack.footer_variant).xml_content;
 
     TemplateParts {
-        meta: include_str!("../template_parts/base/meta.xml"),
+        meta: include_str!("../template_parts/meta/meta.xml"),
         css: build_master_css(&css_contents, config),
         javascript: aggregated_js,
-
         header: inject_widgets(header_raw, "header", pack),
         main: inject_widgets(main_raw, "main", pack),
         content: inject_widgets(content_raw, "content", pack),

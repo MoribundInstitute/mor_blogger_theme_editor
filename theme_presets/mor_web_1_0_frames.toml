@@ -1,0 +1,196 @@
+name = "Web 1.0 Frames"
+description = "Under Construction since 1998"
+
+preset_css = '''
+/* ============================================================
+   Web 1.0 Frames preset
+   The mid-1990s personal homepage: ridged grey panels, sharp
+   corners, and "best viewed in Netscape" energy.
+   ============================================================ */
+
+/* Force chunky ridged borders on every major surface */
+.canvas-core,
+.mor-post,
+.runelite-panel,
+.main-header,
+.mor-footer,
+.mor-pager,
+.mor-catalog-dropdown,
+.panel-header {
+  border-style: ridge;
+  border-width: 3px;
+  border-color: var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.main-header {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
+  color: #ffffff !important;
+  padding: 0 !important;
+  font-weight: 700;
+  border-bottom: 2px solid #000040;
+}
+
+.main-header .header-top-row,
+.main-header .header-bottom-row {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: #000040 !important;
+}
+
+.main-header .header-top-row {
+  padding: 10px 20px 9px !important;
+  border-bottom: 2px solid #000040 !important;
+}
+
+.main-header .header-bottom-row {
+  padding: 6px 20px 8px !important;
+  border-top: 1px solid #2094e0 !important;
+}
+
+.main-header .institute-title {
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  letter-spacing: 0;
+}
+
+.mor-post .post-title::before {
+  content: "📝 ";
+}
+
+.mor-nav a {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
+.mor-nav a:hover {
+  background: transparent !important;
+  color: #ffff00 !important;
+}
+
+/* Buttons = classic 90s system buttons */
+button,
+.panel-toggle,
+.pager-btn,
+.mor-post button {
+  background: var(--bg-elevated) !important;
+  color: var(--fg-base) !important;
+  border: 3px outset var(--border-color) !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+button:active,
+.panel-toggle:active,
+.pager-btn:active,
+.mor-post button:active {
+  border-style: inset !important;
+  background: var(--bg-panel) !important;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.mor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 3px outset var(--border-color);
+  border-bottom: 3px outset var(--border-color);
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  background: var(--bg-panel);
+}
+
+.mor-post .post-body a,
+.panel-content a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.mor-post h1,
+.mor-post h2,
+.mor-post h3 {
+  font-family: var(--font-heading);
+  color: var(--fg-base);
+  font-weight: 700;
+}
+
+/* Footer status-bar feel */
+.mor-footer {
+  background: var(--bg-panel);
+  color: var(--fg-base);
+  border-top: 2px solid #ffffff;
+  border-bottom: 2px solid #808080;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+}
+
+*,
+*::before,
+*::after {
+  text-shadow: none;
+}
+
+.mor-post,
+.runelite-panel,
+.canvas-core {
+  box-shadow: none;
+}
+
+.mor-footer .footer-sys-info::after {
+  content: " UNDER CONSTRUCTION";
+  margin-left: 8px;
+  animation: web1-blink 1.2s steps(2, end) infinite;
+  color: #ff0000;
+  font-weight: 700;
+}
+
+@keyframes web1-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.mor-search .prompt {
+  display: none !important;
+}
+'''
+
+[colors]
+bg_base = "#008080"
+fg_base = "#000000"
+fg_muted = "#404040"
+accent = "#0000ee"
+border = "#dfdfdf"
+panel_border_width = "3px"
+glow_spread = "0px"
+hover_scale = "1.0"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#c0c0c0"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#dfdfdf"
+
+[background.mode.Tile]
+url = "data:image/gif;base64,R0lGODlhEAAQALMAAAAAAP///wAAAAAAACH5BAEAAAIALAAAAAAQABAAAAQzUMhJq7046yq0/2DAzkUWDGNmhmRnXGWqrigLwzB8x1Hk370P7Pw+Hw+I4w2PxyNyuWw2EwEAOw=="
+
+[typography]
+body_font_stack = "\"Times New Roman\", Times, serif"
+heading_font_stack = "\"Times New Roman\", Times, serif"
+mono_font_stack = "\"Courier New\", Courier, monospace"
+base_size = "16px"
+scale_ratio = "1.15"
+line_height = "1.45"
+heading_weight = "700"
+
+[buttons]
+radius = "0px"
+border_width = "3px"
+text_transform = "none"

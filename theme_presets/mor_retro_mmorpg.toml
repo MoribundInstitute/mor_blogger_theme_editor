@@ -1,3 +1,7 @@
+name = "Retro MMORPG"
+description = "Quest board • guild notices • trading post"
+
+preset_css = '''
 /* ============================================================
    Retro MMORPG Preset
    Warm brown panels, ember-red controls, and gold text with
@@ -252,3 +256,41 @@ select:focus {
   content: none !important;
   display: none !important;
 }
+'''
+
+[colors]
+bg_base = "#24170f"
+fg_base = "#e7dcc0"
+fg_muted = "#b8a88d"
+accent = "#ffae42"
+border = "#22160f"
+panel_border_width = "1px"
+glow_spread = "10px"
+hover_scale = "1.02"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#4f3b2a"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#5e4732"
+
+[background.mode.Gradient]
+from = "#362317"
+to = "#1b120d"
+angle_deg = 180
+
+[typography]
+body_font_stack = "Georgia, 'Times New Roman', Times, serif"
+heading_font_stack = "Georgia, 'Times New Roman', Times, serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "16px"
+scale_ratio = "1.2"
+line_height = "1.5"
+heading_weight = "700"
+
+[buttons]
+radius = "2px"
+border_width = "2px"
+text_transform = "none"

@@ -1,0 +1,152 @@
+name = "Mor Fluid Interactive"
+description = "Readable liquid-motion UI: luminous panels, gentle hover physics, and dashboard-friendly surfaces."
+
+preset_css = '''
+/* ============================================================
+   Mor Fluid Interactive Preset
+   ============================================================ */
+
+body::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+html, body {
+  background-color: var(--bg-base) !important;
+}
+
+body {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--accent) 34%, transparent) 0, transparent 32rem),
+    radial-gradient(circle at 82% 12%, color-mix(in srgb, #a9aae2 28%, transparent) 0, transparent 30rem),
+    radial-gradient(circle at 48% 92%, color-mix(in srgb, #bc8d6b 22%, transparent) 0, transparent 34rem),
+    linear-gradient(145deg, color-mix(in srgb, var(--bg-base) 94%, var(--accent)) 0%, var(--bg-base) 45%, color-mix(in srgb, var(--bg-base) 88%, black) 100%) !important;
+  background-size: 145% 145%, 135% 135%, 160% 160%, 100% 100% !important;
+  background-position: 0% 0%, 100% 0%, 50% 100%, center !important;
+  background-attachment: fixed !important;
+  animation: mor-fluid-background-drift 28s ease-in-out infinite alternate;
+}
+
+@keyframes mor-fluid-background-drift {
+  from { background-position: 0% 0%, 100% 0%, 50% 100%, center; }
+  to { background-position: 22% 10%, 78% 18%, 38% 82%, center; }
+}
+
+.canvas-core, .mor-post, .runelite-panel, .main-header, .mor-footer, .mor-catalog-dropdown {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-panel) 94%, white) 0%, color-mix(in srgb, var(--bg-panel) 96%, black) 100%) !important;
+  border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, white 12%, transparent) inset, 0 16px 42px rgba(0, 0, 0, 0.22) !important;
+}
+
+.main-header {
+  position: relative !important;
+  overflow: hidden !important;
+  margin-bottom: 18px !important;
+}
+
+.main-header::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 76%, transparent), transparent);
+  pointer-events: none;
+}
+
+.mor-nav > a:hover, .mor-nav button:hover {
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  transform: translateY(-1px);
+}
+
+.mor-post {
+  padding: clamp(1.1rem, 2.5vw, 1.75rem) !important;
+  margin-bottom: 1rem !important;
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 220ms ease, box-shadow 220ms ease !important;
+}
+
+.mor-post:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-color)) !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, white 14%, transparent) inset, 0 22px 56px rgba(0, 0, 0, 0.26), 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important;
+}
+
+.mor-post .post-title::after {
+  content: "";
+  display: block;
+  width: min(8rem, 45%);
+  height: 2px;
+  margin-top: 0.55rem;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.pager-btn, .panel-toggle, .toc-jump-link, .back-to-top-btn, .mor-catalog-trigger {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 96%, white) 0%, color-mix(in srgb, var(--bg-elevated) 96%, black) 100%) !important;
+  color: var(--fg-base) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 0.55rem 0.9rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 650 !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, white 12%, transparent) inset, 0 8px 22px rgba(0, 0, 0, 0.14) !important;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 160ms ease, box-shadow 160ms ease !important;
+}
+
+.pager-btn:hover, .panel-toggle:hover, .toc-jump-link:hover, .back-to-top-btn:hover, .mor-catalog-trigger:hover {
+  transform: translateY(-1px) !important;
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border-color)) !important;
+}
+
+input[type='text']:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent), 0 1px 0 color-mix(in srgb, white 12%, transparent) inset !important;
+}
+'''
+
+[colors]
+bg_base = "#080d12"
+fg_base = "#edf7f3"
+fg_muted = "#9fb8b0"
+accent = "#05a581"
+border = "#27423d"
+panel_border_width = "1px"
+glow_spread = "15px"
+hover_scale = "1.015"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#101923"
+gradient_from = "#101923"
+gradient_to = "#101923"
+gradient_angle_deg = 180
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#172635"
+gradient_from = "#172635"
+gradient_to = "#172635"
+gradient_angle_deg = 180
+
+[background.mode.Solid]
+color = "#080d12"
+
+[typography]
+body_font_stack = "system-ui, -apple-system, sans-serif"
+heading_font_stack = "system-ui, -apple-system, sans-serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "16px"
+scale_ratio = "1.22"
+line_height = "1.65"
+heading_weight = "700"
+
+[buttons]
+radius = "8px"
+border_width = "1px"
+text_transform = "none"

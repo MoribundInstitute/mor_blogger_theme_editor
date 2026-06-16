@@ -1,17 +1,23 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::presets::user_presets::UserPresetIconAssets;
-
-use super::super::styling::IconConfig;
 use super::super::ThemeConfig;
 use super::GtkImportReport;
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct GtkIconAssets {
+    pub sidebar_left_svg: Option<String>,
+    pub sidebar_right_svg: Option<String>,
+    pub panel_close_svg: Option<String>,
+    pub search_svg: Option<String>,
+    pub menu_svg: Option<String>,
+}
 
 pub(crate) fn apply_icon_assets(
     theme_root: &Path,
     config: &mut ThemeConfig,
     report: &mut GtkImportReport,
-) -> UserPresetIconAssets {
+) -> GtkIconAssets {
     let asset_dirs = candidate_asset_dirs(theme_root);
 
     let existing_dirs: Vec<PathBuf> = asset_dirs
@@ -28,7 +34,7 @@ pub(crate) fn apply_icon_assets(
             "[gtk_theme] no SVG asset directories found under {}",
             theme_root.display()
         );
-        return UserPresetIconAssets::default();
+        return GtkIconAssets::default();
     }
 
     let before = config.icons.clone();
@@ -49,9 +55,8 @@ pub(crate) fn apply_icon_assets(
         &existing_dirs,
         &[
             "system-search-symbolic.svg",
-            "search-symbolic.svg",
             "edit-find-symbolic.svg",
-            "more-results.svg",
+            "search-symbolic.svg",
         ],
         report,
     );
@@ -62,7 +67,7 @@ pub(crate) fn apply_icon_assets(
             "open-menu-symbolic.svg",
             "view-more-symbolic.svg",
             "menu-symbolic.svg",
-            "application-menu-symbolic.svg",
+            "format-justify-fill-symbolic.svg",
         ],
         report,
     );
@@ -72,8 +77,7 @@ pub(crate) fn apply_icon_assets(
         &[
             "sidebar-show-symbolic.svg",
             "view-sidebar-symbolic.svg",
-            "view-left-pane-symbolic.svg",
-            "view-dual-symbolic.svg",
+            "layout-sidebar-left-symbolic.svg",
         ],
         report,
     );
@@ -82,38 +86,34 @@ pub(crate) fn apply_icon_assets(
         &existing_dirs,
         &[
             "sidebar-show-right-symbolic.svg",
-            "view-sidebar-right-symbolic.svg",
-            "view-right-pane-symbolic.svg",
-            "sidebar-hide-symbolic.svg",
+            "layout-sidebar-right-symbolic.svg",
         ],
         report,
     );
 
-    config.icons = IconConfig {
-        panel_close: panel_close_svg
-            .as_deref()
-            .map(svg_to_mask_uri)
-            .unwrap_or(before.panel_close),
-        search: search_svg
-            .as_deref()
-            .map(svg_to_mask_uri)
-            .unwrap_or(before.search),
-        menu: menu_svg
-            .as_deref()
-            .map(svg_to_mask_uri)
-            .unwrap_or(before.menu),
-        sidebar_left: sidebar_left_svg
-            .as_deref()
-            .map(svg_to_mask_uri)
-            .unwrap_or(before.sidebar_left),
-        sidebar_right: sidebar_right_svg
-            .as_deref()
-            .map(svg_to_mask_uri)
-            .unwrap_or(before.sidebar_right),
-        custom_icons: std::collections::HashMap::new(),
-    };
+    if let Some(ref svg) = panel_close_svg {
+        config.icons.panel_close = svg_to_mask_uri(svg);
+    }
+    if let Some(ref svg) = search_svg {
+        config.icons.search = svg_to_mask_uri(svg);
+    }
+    if let Some(ref svg) = menu_svg {
+        config.icons.menu = svg_to_mask_uri(svg);
+    }
+    if let Some(ref svg) = sidebar_left_svg {
+        config.icons.sidebar_left = svg_to_mask_uri(svg);
+    }
+    if let Some(ref svg) = sidebar_right_svg {
+        config.icons.sidebar_right = svg_to_mask_uri(svg);
+    }
 
-    UserPresetIconAssets {
+    if config.icons == before {
+        report
+            .warnings
+            .push("Found SVG directories, but no matching icon names were found.".to_string());
+    }
+
+    GtkIconAssets {
         sidebar_left_svg,
         sidebar_right_svg,
         panel_close_svg,
@@ -123,14 +123,14 @@ pub(crate) fn apply_icon_assets(
 }
 
 fn candidate_asset_dirs(theme_root: &Path) -> Vec<PathBuf> {
-    [
-        "gnome-shell/assets",
+    vec![
         "gtk-4.0/assets",
         "gtk-3.0/assets",
         "assets",
-        "icons",
-        "scalable/actions",
-        "symbolic/actions",
+        "cinnamon/assets",
+        "gnome-shell/assets",
+        "Adwaita/scalable/ui",
+        "Adwaita/symbolic/ui",
         "Adwaita/scalable/actions",
         "Adwaita/symbolic/actions",
     ]
@@ -183,5 +183,5 @@ pub fn svg_to_mask_uri(svg: &str) -> String {
         .replace('\r', "")
         .replace(' ', "%20");
 
-    format!("url(\"data:image/svg+xml,{}\")", encoded)
+    format!("url('data:image/svg+xml,{}')", encoded)
 }

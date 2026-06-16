@@ -1,47 +1,251 @@
-<header class='main-header'>
+use crate::config::{MenuLink, ThemeConfig};
+use crate::render::util::{escape_attr, escape_html, first_non_empty};
 
-  <div class='header-top-row'>
+/// Fallback 24x24 path data used when no sidebar icon is configured.
+const DEFAULT_LEFT_ICON_PATH: &str = "M3 3h18v18H3V3zm16 16V5H9v14h10z";
+const DEFAULT_RIGHT_ICON_PATH: &str = "M3 3h18v18H3V3zm2 16V5h10v14H5z";
 
-    <div class='header-side-controls left-controls'>
-      <button class='panel-toggle header-panel-toggle header-panel-toggle-left' data-target='panel-left' type='button'>
-        {{LEFT_PANEL_OPEN_LABEL}}
-      </button>
-    </div>
+fn menu_link_or_empty(config: &ThemeConfig, index: usize) -> MenuLink {
+    config.menu_links.get(index).cloned().unwrap_or_default()
+}
 
-    <a aria-label="{{SITE_TITLE_ATTR}} homepage" class='branding branding-link' href="{{SITE_HOME_URL_ATTR}}">
-      <img alt="{{SITE_TITLE_ATTR}} logo" class='institute-logo' src="{{HEADER_LOGO_URL_ATTR}}"/>
-      <span class='institute-title'>{{SITE_TITLE}}</span>
-    </a>
+pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
+    let site_home_url = first_non_empty(&config.site.home_url, "/");
+    let header_logo_img = if config.site.header_logo_url.trim().is_empty() {
+        String::new()
+    } else {
+        format!("<img alt=\"{} logo\" class='institute-logo' src=\"{}\"/>", escape_attr(&config.site.site_title), escape_attr(&config.site.header_logo_url))
+    };
 
-    <div class='header-side-controls right-controls'>
-      <button class='header-panel-toggle theme-toggle-btn' id='mor-theme-toggle' title='Toggle Light/Dark Mode' type='button'>
-        <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'>
-          <path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' />
-        </svg>
-        <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'>
-          <path d='M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' />
-        </svg>
-      </button>
+    let menu_1 = menu_link_or_empty(config, 0);
+    let menu_2 = menu_link_or_empty(config, 1);
+    let menu_3 = menu_link_or_empty(config, 2);
+    let menu_4 = menu_link_or_empty(config, 3);
 
-      <button class='panel-toggle header-panel-toggle header-panel-toggle-right' data-target='panel-right' type='button'>
-        {{RIGHT_PANEL_OPEN_LABEL}}
-      </button>
-    </div>
+    xml = xml.replace("{{MAIN_NAV_LINKS}}", &render_main_nav_links(config));
+    xml = xml.replace("{{HEADER_LOGO_IMG}}", &header_logo_img);
 
-  </div>
+    // The sidebar-toggle icons are drawn by the `.header-panel-toggle-*::before`
+    // CSS mask (fed by the `--icon-sidebar-*` custom properties that css_builder
+    // emits from this same config), so these sockets only need:
+    //   * `{{*_PANEL_MASK}}`       -> a valid CSS `mask-image` value, and
+    //   * `{{*_PANEL_OPEN_LABEL}}` -> a plain text label.
+    //
+    // We deliberately do NOT inject the icon as `<svg><path d="..."/></svg>`.
+    // The stored icon is a `url("data:image/svg+xml,...")` mask string, and
+    // dropping a `url("..."` into a path's `d` attribute closes that attribute on
+    // its first inner double-quote — the very next character is the `d` of
+    // `data:`, which is what tripped Blogger's strict XML parser
+    // ("expected a whitespace not 'd'") and cascaded into the dead preview iframe.
+    let left_mask = to_mask_url(first_non_empty(&config.icons.sidebar_left, DEFAULT_LEFT_ICON_PATH));
+    let right_mask = to_mask_url(first_non_empty(&config.icons.sidebar_right, DEFAULT_RIGHT_ICON_PATH));
 
-  <div class='header-bottom-row'>
-    <nav aria-label='Main navigation' class='mor-nav'>
-      {{MAIN_NAV_LINKS}}
-    </nav>
+    xml = xml.replace("{{LEFT_PANEL_MASK}}", &escape_attr(&left_mask));
+    xml = xml.replace("{{RIGHT_PANEL_MASK}}", &escape_attr(&right_mask));
+    xml = xml.replace("{{LEFT_PANEL_OPEN_LABEL}}", &escape_html("Browse"));
+    xml = xml.replace("{{RIGHT_PANEL_OPEN_LABEL}}", &escape_html("Contents"));
 
-    <div class='mor-search'>
-      <form action="{{SEARCH_ACTION_URL_ATTR}}" method='get'>
-        <span class='prompt'>{{SEARCH_PROMPT}}</span>
-        <input name='q' placeholder="{{SEARCH_PLACEHOLDER_ATTR}}" type='text'/>
-        <button type='submit'>{{SEARCH_BUTTON_LABEL}}</button>
-      </form>
-    </div>
-  </div>
+    xml = xml.replace("{{NAV_HOME_LABEL}}", &escape_html(first_non_empty(&menu_1.label, "Home")));
+    xml = xml.replace("{{NAV_HOME_URL}}", &escape_attr(first_non_empty(&menu_1.url, site_home_url)));
+    xml = xml.replace("{{NAV_ABOUT_LABEL}}", &escape_html(first_non_empty(&menu_2.label, "About")));
+    xml = xml.replace("{{NAV_ABOUT_URL}}", &escape_attr(first_non_empty(&menu_2.url, "#")));
+    xml = xml.replace("{{NAV_PROJECTS_LABEL}}", &escape_html(first_non_empty(&menu_3.label, "Projects")));
+    xml = xml.replace("{{NAV_PROJECTS_URL}}", &escape_attr(first_non_empty(&menu_3.url, "#")));
+    xml = xml.replace("{{NAV_CONTACT_LABEL}}", &escape_html(first_non_empty(&menu_4.label, "Contact")));
+    xml = xml.replace("{{NAV_CONTACT_URL}}", &escape_attr(first_non_empty(&menu_4.url, "#")));
+    xml = xml.replace("{{NAV_MERCH_LABEL}}", "Shop");
+    xml = xml.replace("{{NAV_MERCH_URL}}", "#");
+    xml = xml.replace("{{NAV_POSTS_LABEL}}", "Posts");
+    xml = xml.replace("{{NAV_POSTS_URL}}", "/search");
+    xml = xml.replace("{{NAV_CATEGORIES_LABEL}}", "Categories");
+    xml = xml.replace("{{NAV_CATEGORIES_URL}}", "#");
+    xml = xml.replace("{{NAV_ARCHIVE_LABEL}}", "Archive");
+    xml = xml.replace("{{NAV_ARCHIVE_URL}}", "#");
 
-</header>
+    xml = xml.replace("{{SEARCH_ACTION_URL}}", "/search");
+    xml = xml.replace("{{SEARCH_ACTION_URL_ATTR}}", "/search");
+    xml = xml.replace("{{SEARCH_PROMPT}}", "Search");
+    xml = xml.replace("{{SEARCH_PLACEHOLDER}}", "Search...");
+    xml = xml.replace("{{SEARCH_PLACEHOLDER_ATTR}}", "Search...");
+    xml = xml.replace("{{SEARCH_BUTTON_LABEL}}", "Search");
+
+    xml = xml.replace("{{CATALOG_TRIGGER_LABEL}}", "Catalog");
+    xml = xml.replace("{{CATALOG_ALL_LABEL}}", "See All");
+    xml = xml.replace("{{CATALOG_ALL_URL}}", "#");
+    xml = xml.replace("{{CATALOG_SUBJECTS_LABEL}}", "Categories");
+    xml = xml.replace("{{CATALOG_SUBJECTS_URL}}", "#");
+    xml = xml.replace("{{CATALOG_LEXICON_LABEL}}", "Glossary");
+    xml = xml.replace("{{CATALOG_LEXICON_URL}}", "#");
+    xml = xml.replace("{{CATALOG_MEDIA_LABEL}}", "Media");
+    xml = xml.replace("{{CATALOG_MEDIA_URL}}", "#");
+    xml = xml.replace("{{CATALOG_WIKI_LABEL}}", "Wiki");
+    xml = xml.replace("{{CATALOG_WIKI_URL}}", "#");
+    xml = xml.replace("{{CATALOG_PROJECTS_LABEL}}", "Projects");
+    xml = xml.replace("{{CATALOG_PROJECTS_URL}}", "#");
+    xml = xml.replace("{{CATALOG_PROGRESS_LABEL}}", "Status");
+    xml = xml.replace("{{CATALOG_PROGRESS_URL}}", "#");
+
+    xml = xml.replace("{{SUBJECT_000_LABEL}}", "000 General");
+    xml = xml.replace("{{SUBJECT_000_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_100_LABEL}}", "100 Philosophy");
+    xml = xml.replace("{{SUBJECT_100_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_200_LABEL}}", "200 Religion");
+    xml = xml.replace("{{SUBJECT_200_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_300_LABEL}}", "300 Social");
+    xml = xml.replace("{{SUBJECT_300_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_400_LABEL}}", "400 Language");
+    xml = xml.replace("{{SUBJECT_400_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_500_LABEL}}", "500 Science");
+    xml = xml.replace("{{SUBJECT_500_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_600_LABEL}}", "600 Technology");
+    xml = xml.replace("{{SUBJECT_600_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_700_LABEL}}", "700 Arts");
+    xml = xml.replace("{{SUBJECT_700_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_800_LABEL}}", "800 Literature");
+    xml = xml.replace("{{SUBJECT_800_URL}}", "#");
+    xml = xml.replace("{{SUBJECT_900_LABEL}}", "900 History");
+    xml = xml.replace("{{SUBJECT_900_URL}}", "#");
+
+    xml = xml.replace("{{LEXICON_MORDICTIONARY_LABEL}}", "Dictionary");
+    xml = xml.replace("{{LEXICON_MORDICTIONARY_URL}}", "#");
+    xml = xml.replace("{{LEXICON_WEAR_YOUR_DICTIONARY_LABEL}}", "Apparel");
+    xml = xml.replace("{{LEXICON_WEAR_YOUR_DICTIONARY_URL}}", "#");
+    xml = xml.replace("{{LEXICON_VOCABULARY_LABEL}}", "Vocabulary");
+    xml = xml.replace("{{LEXICON_VOCABULARY_URL}}", "#");
+    xml = xml.replace("{{LEXICON_ETYMOLOGY_LABEL}}", "Etymology");
+    xml = xml.replace("{{LEXICON_ETYMOLOGY_URL}}", "#");
+    xml = xml.replace("{{LEXICON_WORDPLAY_LABEL}}", "Wordplay");
+    xml = xml.replace("{{LEXICON_WORDPLAY_URL}}", "#");
+    xml = xml.replace("{{LEXICON_LANGUAGE_LABEL}}", "Language");
+    xml = xml.replace("{{LEXICON_LANGUAGE_URL}}", "#");
+
+    xml = xml.replace("{{MEDIA_AUDIOBOOK_GAMING_LABEL}}", "Audiobooks");
+    xml = xml.replace("{{MEDIA_AUDIOBOOK_GAMING_URL}}", "#");
+    xml = xml.replace("{{MEDIA_WATCHLISTS_LABEL}}", "Watchlists");
+    xml = xml.replace("{{MEDIA_WATCHLISTS_URL}}", "#");
+    xml = xml.replace("{{MEDIA_READING_LABEL}}", "Reading");
+    xml = xml.replace("{{MEDIA_READING_URL}}", "#");
+    xml = xml.replace("{{MEDIA_LISTENING_LABEL}}", "Listening");
+    xml = xml.replace("{{MEDIA_LISTENING_URL}}", "#");
+    xml = xml.replace("{{MEDIA_SOCIAL_SCIENCE_LABEL}}", "Social Science");
+    xml = xml.replace("{{MEDIA_SOCIAL_SCIENCE_URL}}", "#");
+    xml = xml.replace("{{MEDIA_DIET_LABEL}}", "Media Diet");
+    xml = xml.replace("{{MEDIA_DIET_URL}}", "#");
+
+    xml = xml.replace("{{WIKI_START_LABEL}}", "Start Here");
+    xml = xml.replace("{{WIKI_START_URL}}", "#");
+    xml = xml.replace("{{WIKI_ALL_POSTS_LABEL}}", "All Posts");
+    xml = xml.replace("{{WIKI_ALL_POSTS_URL}}", "#");
+    xml = xml.replace("{{WIKI_TRAILS_LABEL}}", "Trails");
+    xml = xml.replace("{{WIKI_TRAILS_URL}}", "#");
+    xml = xml.replace("{{WIKI_WALKING_LABEL}}", "Walking");
+    xml = xml.replace("{{WIKI_WALKING_URL}}", "#");
+    xml = xml.replace("{{WIKI_VIDEO_COMMENTARY_LABEL}}", "Video");
+    xml = xml.replace("{{WIKI_VIDEO_COMMENTARY_URL}}", "#");
+    xml = xml.replace("{{WIKI_LEXICOGRAPHY_LABEL}}", "Lexicography");
+    xml = xml.replace("{{WIKI_LEXICOGRAPHY_URL}}", "#");
+    xml = xml.replace("{{WIKI_BLOG_LABEL}}", "Wiki Blog");
+    xml = xml.replace("{{WIKI_BLOG_URL}}", "#");
+    xml = xml.replace("{{WIKI_OFFICIAL_LABEL}}", "Official Wiki");
+    xml = xml.replace("{{WIKI_OFFICIAL_URL}}", "#");
+    xml = xml.replace("{{WIKI_YOUTUBE_LABEL}}", "YouTube");
+    xml = xml.replace("{{WIKI_YOUTUBE_URL}}", "#");
+    xml = xml.replace("{{WIKI_REDDIT_LABEL}}", "Community");
+    xml = xml.replace("{{WIKI_REDDIT_URL}}", "#");
+
+    xml = xml.replace("{{PROJECTS_ALL_LABEL}}", "All Projects");
+    xml = xml.replace("{{PROJECTS_ALL_URL}}", "#");
+    xml = xml.replace("{{PROJECTS_INSTITUTE_LABEL}}", "Main Project");
+    xml = xml.replace("{{PROJECTS_INSTITUTE_URL}}", "#");
+    xml = xml.replace("{{PROJECTS_WEAR_YOUR_WORDS_LABEL}}", "Shop");
+    xml = xml.replace("{{PROJECTS_WEAR_YOUR_WORDS_URL}}", "#");
+    xml = xml.replace("{{PROJECTS_MORBLOCKS_LABEL}}", "Blocks");
+    xml = xml.replace("{{PROJECTS_MORBLOCKS_URL}}", "#");
+    xml = xml.replace("{{PROJECTS_MORLESSONBUILDER_LABEL}}", "Builder");
+    xml = xml.replace("{{PROJECTS_MORLESSONBUILDER_URL}}", "#");
+    xml = xml.replace("{{PROJECTS_LOG_LABEL}}", "Logs");
+    xml = xml.replace("{{PROJECTS_LOG_URL}}", "#");
+
+    xml = xml.replace("{{PROGRESS_DASHBOARD_LABEL}}", "Dashboard");
+    xml = xml.replace("{{PROGRESS_DASHBOARD_URL}}", "#");
+    xml = xml.replace("{{PROGRESS_OFFLINE_TRACKER_LABEL}}", "Tracker");
+    xml = xml.replace("{{PROGRESS_OFFLINE_TRACKER_URL}}", "#");
+    xml = xml.replace("{{PROGRESS_CATALOG_LABEL}}", "Catalog");
+    xml = xml.replace("{{PROGRESS_CATALOG_URL}}", "#");
+    xml = xml.replace("{{PROGRESS_LESSONS_LABEL}}", "Lessons");
+    xml = xml.replace("{{PROGRESS_LESSONS_URL}}", "#");
+    xml = xml.replace("{{PROGRESS_ACTIVITIES_LABEL}}", "Activities");
+    xml = xml.replace("{{PROGRESS_ACTIVITIES_URL}}", "#");
+
+    xml
+}
+
+/// Normalize any icon source — an existing CSS `url(...)`, raw `<svg>` markup, or
+/// bare SVG path data — into a CSS mask value of the form
+/// `url("data:image/svg+xml,<percent-encoded svg>")`.
+///
+/// The result is passed through `escape_attr` before it is written into the
+/// `mask-image` declaration, so the quotes inside the data URI survive strict XML
+/// parsing as `&quot;` / `&#39;` and decode back to valid CSS in the browser.
+fn to_mask_url(value: &str) -> String {
+    let v = value.trim();
+    if v.is_empty() {
+        return String::from("none");
+    }
+    // Already a CSS url(...) mask — use as-is (this is how presets store icons).
+    if v.starts_with("url(") {
+        return v.to_string();
+    }
+    let svg = if v.starts_with("<svg") {
+        v.to_string()
+    } else {
+        // Treat the value as raw path data and wrap it in a minimal filled SVG.
+        format!(
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='{}'/></svg>",
+            v
+        )
+    };
+    format!("url(\"data:image/svg+xml,{}\")", svg_percent_encode(&svg))
+}
+
+/// Percent-encode only the characters that are unsafe inside a CSS
+/// `url("data:image/svg+xml,...")` payload. Spaces and single quotes are valid
+/// inside a double-quoted `url()`, so they are left as-is.
+fn svg_percent_encode(input: &str) -> String {
+    let mut out = String::with_capacity(input.len() + input.len() / 4);
+    for byte in input.bytes() {
+        match byte {
+            b'<' => out.push_str("%3C"),
+            b'>' => out.push_str("%3E"),
+            b'#' => out.push_str("%23"),
+            b'%' => out.push_str("%25"),
+            b'"' => out.push_str("%22"),
+            _ => out.push(byte as char),
+        }
+    }
+    out
+}
+
+fn render_main_nav_links(config: &ThemeConfig) -> String {
+    config
+        .menu_links
+        .iter()
+        .filter_map(render_menu_link)
+        .collect::<Vec<_>>()
+        .join("\n      ")
+}
+
+fn render_menu_link(link: &MenuLink) -> Option<String> {
+    let label = link.label.trim();
+    let url = link.url.trim();
+
+    if label.is_empty() || url.is_empty() {
+        return None;
+    }
+
+    Some(format!(
+        "<a href=\"{url}\">{label}</a>",
+        url = escape_attr(url),
+        label = escape_html(label),
+    ))
+}

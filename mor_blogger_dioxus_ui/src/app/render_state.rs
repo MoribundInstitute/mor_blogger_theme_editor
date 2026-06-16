@@ -15,12 +15,10 @@ pub struct AppRenderState {
 
 pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> AppRenderState {
     let current_config_for_xml = theme.current_config;
-    let active_preset = theme.active_preset;
 
     let generated_xml = use_memo(move || {
         let config = current_config_for_xml();
-        let (light, dark) = mor_blogger_core::presets::resolve_palette_pair(active_preset(), &config);
-        render_theme(&config, &light, &dark)
+        render_theme(&config)
     });
 
     let current_config_for_preview = theme.current_config;

@@ -67,6 +67,7 @@ pub fn PreviewCanvas(
     #[props(default)] on_icon_edit: Option<EventHandler<String>>,
     #[props(default)] on_update_value: Option<EventHandler<(String, String)>>,
     #[props(default)] on_move_widget: Option<EventHandler<(String, String)>>,
+    #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -155,6 +156,10 @@ pub fn PreviewCanvas(
                                                         style.textContent = `
                                                             [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
                                                             [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
+                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: block !important; }
+                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: none !important; }
                                                         `;
                                                         doc.head.appendChild(style);
                                                     }
@@ -178,6 +183,13 @@ pub fn PreviewCanvas(
                                                             return;
                                                         }
 
+                                                        const themeBtn = target.closest('#mor-theme-toggle');
+                                                        if (themeBtn) {
+                                                            e.preventDefault(); e.stopPropagation();
+                                                            dioxus.send({ action: "TOGGLE_DARK_MODE" });
+                                                            return;
+                                                        }
+
                                                         const anchor = target.closest('a');
                                                         if (anchor) {
                                                             const href = anchor.getAttribute('href');
@@ -189,9 +201,13 @@ pub fn PreviewCanvas(
 
                                                         const btn = target.closest('.panel-toggle');
                                                         if (btn) {
+                                                            e.preventDefault(); e.stopPropagation();
                                                             const tId = btn.getAttribute('data-target');
                                                             if (tId) {
-                                                                const panel = doc.getElementById(tId);
+                                                                let panel = doc.getElementById(tId);
+                                                                if (!panel && tId.startsWith('panel-')) {
+                                                                    panel = doc.getElementById(tId.replace('panel-', 'sidebar-'));
+                                                                }
                                                                 if (panel) panel.classList.toggle('is-collapsed');
                                                             }
                                                         }
@@ -306,6 +322,9 @@ pub fn PreviewCanvas(
                                                 if let (Some(id), Some(dest)) = (json.get("id").and_then(|i| i.as_str()), json.get("dest").and_then(|d| d.as_str())) {
                                                     if let Some(handler) = on_move_widget.as_ref() { handler.call((id.to_string(), dest.to_string())); }
                                                 }
+                                            }
+                                            "TOGGLE_DARK_MODE" => {
+                                                if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); }
                                             }
                                             _ => {}
                                         }

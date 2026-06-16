@@ -1,3 +1,7 @@
+name = "The Daily Folio"
+description = "The blog as broadsheet. Ink on paper."
+
+preset_css = '''
 /* ============================================================
    Newspaper preset
    The blog as broadsheet. Multi-column body text at wide widths,
@@ -304,4 +308,57 @@ body::before {
 *, *::before, *::after {
   text-shadow: none !important;
 }
+'''
 
+[colors]
+bg_base = "#f4ecd8"
+fg_base = "#161310"
+fg_muted = "#5c554b"
+accent = "#a01818"
+border = "#c2b89e"
+panel_border_width = "1px"
+glow_spread = "0px"
+hover_scale = "1.0"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#fbf6e9"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#ffffff"
+
+[background.mode.Solid]
+color = "#f4ecd8"
+
+[typography]
+body_font_stack = "'Times New Roman', Times, Georgia, serif"
+heading_font_stack = "'UnifrakturMaguntia', 'Old English Text MT', 'Times New Roman', Times, serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "17px"
+scale_ratio = "1.22"
+line_height = "1.55"
+heading_weight = "700"
+
+[buttons]
+radius = "0px"
+border_width = "1px"
+text_transform = "uppercase"
+
+[dark.colors]
+bg_base = "#1a1814"
+fg_base = "#ebe4d3"
+fg_muted = "#9a917f"
+accent = "#c75148"
+border = "#3a3730"
+
+[dark.colors.bg_panel]
+mode = "Solid"
+color = "#1f1d18"
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#26241e"
+
+[dark.background.mode.Solid]
+color = "#1a1814"

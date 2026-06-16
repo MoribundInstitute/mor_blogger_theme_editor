@@ -242,6 +242,28 @@ pub fn render_app_shell(
                         }
                     },
                     on_save_theme: move |_| { crate::utils::io::save_toml(&config_toml_signal()); },
+
+                    on_import_xml: {
+                        let sigs = signals.clone();
+                        move |_| {
+                            let sigs = sigs.clone();
+                            spawn(async move {
+                                if let Some(file) = rfd::AsyncFileDialog::new()
+                                    .set_title("Import Blogger XML")
+                                    .add_filter("XML", &["xml"])
+                                    .pick_file()
+                                    .await
+                                {
+                                    if let Ok(xml_str) = std::fs::read_to_string(file.path()) {
+                                        match mor_blogger_core::utils::rehydration::extract_and_decode(&xml_str) {
+                                            Ok(restored_config) => sigs.apply_config(&restored_config),
+                                            Err(e) => log::error!("Failed to import XML: {}", e),
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    },
                     on_load_data: {
                         let current = current_config();
                         let sigs = signals.clone();

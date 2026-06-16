@@ -141,6 +141,10 @@
           if (targetPanel) {
             event.preventDefault();
             targetPanel.classList.toggle('is-collapsed');
+            
+            // Accessibility update
+            const isCollapsed = targetPanel.classList.contains('is-collapsed');
+            toggleBtn.setAttribute('aria-expanded', (!isCollapsed).toString());
           }
         }
       }

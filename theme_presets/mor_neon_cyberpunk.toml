@@ -1,3 +1,7 @@
+name = "Neon Cyberpunk"
+description = "Pure black backgrounds, hot pink and cyan glows, scanline overlay, monospace everything. Designed to look like a CRT readout from a 1995 prediction of 2025."
+
+preset_css = '''
 /* ============================================================
    Neon Cyberpunk preset
    Pure black backgrounds, hot pink and cyan glows, scanline
@@ -5,9 +9,6 @@
    readout from a 1995 prediction of 2025.
    ============================================================ */
 
-/* Scanline overlay: sits on body::after so it covers everything
-   but stays click-through. The base theme already uses ::before
-   for a vignette so we use ::after to avoid clobbering it. */
 body::after {
   content: "";
   position: fixed;
@@ -23,7 +24,6 @@ body::after {
   );
 }
 
-/* Subtle CRT chromatic-aberration glow on text via text-shadow. */
 .mor-post .post-title,
 .mor-post .post-title a,
 .main-header .institute-title,
@@ -38,7 +38,6 @@ body::after {
   letter-spacing: 0.04em;
 }
 
-/* Every major surface gets a neon outline that glows on hover. */
 .canvas-core,
 .mor-post,
 .runelite-panel,
@@ -68,7 +67,6 @@ body::after {
     inset 0 0 32px rgba(0, 255, 255, 0.12);
 }
 
-/* Buttons: razor-thin neon rectangles. Hover swaps polarity. */
 .pager-btn,
 .panel-toggle,
 .toc-jump-link,
@@ -103,7 +101,6 @@ body::after {
     0 0 24px var(--accent);
 }
 
-/* Links: solid magenta with cyan glow on hover. */
 .mor-post .post-body a,
 .panel-content a {
   color: var(--accent);
@@ -119,14 +116,12 @@ body::after {
   text-shadow: 0 0 8px var(--fg-base);
 }
 
-/* Branding wordmark: oversized, kerned out, glowing. */
 .main-header .institute-title {
   font-size: 1.6rem;
   letter-spacing: 0.18em;
   font-weight: 700;
 }
 
-/* Prompt characters get an animated blink (the ">>" before the subtitle in the header). */
 .prompt {
   color: var(--fg-base);
   text-shadow: 0 0 6px var(--fg-base);
@@ -137,7 +132,6 @@ body::after {
   50% { opacity: 0.35; }
 }
 
-/* Headings inside posts: keep the chromatic-shift effect but smaller. */
 .mor-post h1,
 .mor-post h2,
 .mor-post h3 {
@@ -149,17 +143,68 @@ body::after {
   letter-spacing: 0.03em;
 }
 
-/* Body text stays readable (no glow, just the palette colors). */
 .mor-post .post-body {
   color: var(--fg-muted);
   text-shadow: none;
 }
 
-/* Footer signal-strip: small caps, dotted underline, low-glow. */
 .mor-footer {
   font-size: 0.78rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 10px 18px;
 }
+'''
 
+[colors]
+bg_base = "#05010f"
+fg_base = "#00ffff"
+fg_muted = "#6ee7ff"
+accent = "#ff00ff"
+border = "#ff00ff"
+panel_border_width = "1px"
+glow_spread = "14px"
+hover_scale = "1.02"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#0a0418"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#120828"
+
+[background.mode.Solid]
+color = "#05010f"
+
+[typography]
+body_font_stack = "'Courier New', Courier, monospace"
+heading_font_stack = "'Courier New', Courier, monospace"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "15px"
+scale_ratio = "1.2"
+line_height = "1.55"
+heading_weight = "700"
+
+[buttons]
+radius = "0px"
+border_width = "1px"
+text_transform = "uppercase"
+
+[light.colors]
+bg_base = "#1a1525"
+fg_base = "#7ee0e0"
+fg_muted = "#a89cb8"
+accent = "#d957d9"
+border = "#d957d9"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#23172e"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#2e1f3c"
+
+[light.background.mode.Solid]
+color = "#1a1525"

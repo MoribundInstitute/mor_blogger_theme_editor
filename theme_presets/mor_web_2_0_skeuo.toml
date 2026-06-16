@@ -1,0 +1,263 @@
+name = "Web 2.0 Skeuomorphic"
+description = "Now with even more web!"
+
+preset_css = '''
+/* ============================================================
+   Web 2.0 Skeuomorphic preset
+   The 2005–2010 web: glossy gradient buttons, soft drop shadows,
+   inset bevels, that "wet floor" reflection on the masthead, and
+   a generous use of border-radius. Sky-blue palette, Helvetica-y
+   typography, no sharp corners anywhere.
+   ============================================================ */
+
+/* Kill the base theme's mor-era vignette overlay. */
+body::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* Page surface gets a soft gradient sky background that hangs
+   off the bottom edge — that "page floating over a sky" feel. */
+body {
+  background-attachment: fixed !important;
+}
+
+/* CONTAINER surfaces (outer cards) — get the full Web 2.0 treatment */
+.canvas-core,
+.mor-post,
+.runelite-panel,
+.main-header,
+.mor-footer,
+.mor-catalog-dropdown {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+}
+
+/* CONTENT surfaces inside containers — flat, transparent,
+   or softly inset. Let the outer container do the heavy lifting. */
+.runelite-panel .panel-content,
+.canvas-core .panel-content {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+/* Headings: bold, dark slate blue, soft white text-shadow for a debossed feel. */
+h1, h2, h3, h4,
+.main-header .institute-title,
+.mor-post .post-title,
+.mor-post .post-title a {
+  color: var(--fg-base) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+.mor-post .post-title {
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Nav links — standard blue, underline on hover. */
+.mor-nav a,
+.mor-nav button {
+  color: var(--fg-base) !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+.mor-nav > a:hover,
+.mor-nav > a:focus-visible {
+  background: transparent !important;
+  color: var(--accent) !important;
+  text-decoration: underline !important;
+}
+
+/* The classic Web 2.0 Button — glossy gradient, rounded, inset highlight, drop shadow. */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: linear-gradient(180deg, #f8fbfd 0%, #e2ebf4 48%, #d1dff0 52%, #eef4f9 100%) !important;
+  color: var(--fg-base) !important;
+  border: 1px solid #9fb4cc !important;
+  border-radius: 14px !important;
+  padding: 6px 16px !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 0 #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  cursor: pointer;
+  transition: all 120ms ease !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #edf3f8 48%, #e2ebf4 52%, #f8fbfd 100%) !important;
+  border-color: #8da4c0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+.pager-btn:active,
+.panel-toggle:active,
+.toc-jump-link:active,
+.back-to-top-btn:active,
+.mor-catalog-trigger:active {
+  background: linear-gradient(180deg, #d1dff0 0%, #e2ebf4 100%) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border-color: #8da4c0 !important;
+  transform: translateY(1px) !important;
+}
+
+/* Base links */
+.mor-post .post-body a,
+.panel-content a {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+}
+
+.mor-post .post-body a:hover,
+.panel-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Panel headers: soft glossy band at the top of sidebars. */
+.panel-header,
+.mor-panel-heading {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    color-mix(in srgb, var(--bg-panel) 94%, white) 100%
+  ) !important;
+  color: var(--fg-base) !important;
+  font-weight: 700 !important;
+  padding: 8px 14px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-radius: 12px 12px 0 0 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Footer: glossy strip at the bottom matching the masthead. */
+.mor-footer {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 92%, white) 0%,
+    var(--bg-panel) 100%
+  ) !important;
+  border-radius: 12px !important;
+  padding: 14px 22px !important;
+  margin-top: 18px !important;
+  color: var(--fg-muted) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Soft form field treatment — inset shadow, rounded, the kind of
+   input you'd see on a 2008 "register for our beta" form. */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea,
+select {
+  background: #ffffff !important;
+  border: 1px solid var(--border-color) !important;
+  border-top-color: #9fb4cc !important; /* Slightly darker top border for depth */
+  border-radius: 18px !important;
+  padding: 6px 12px !important;
+  color: var(--fg-base) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+  text-shadow: none !important;
+  transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    0 0 5px rgba(30, 111, 217, 0.4) !important;
+}
+
+/* Glossy reflection on the main header (The 'Wet Floor' effect) */
+.main-header {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.main-header::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 50% !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  ) !important;
+  pointer-events: none !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+'''
+
+[colors]
+bg_base = "#c8dcf0"
+fg_base = "#1a2840"
+fg_muted = "#5a6b80"
+accent = "#1e6fd9"
+border = "#a8bcd4"
+panel_border_width = "1px"
+glow_spread = "10px"
+hover_scale = "1.02"
+
+[colors.bg_panel]
+mode = "Gradient"
+color = "#ffffff"
+gradient_from = "#ffffff"
+gradient_to = "#e4ecf5"
+gradient_angle_deg = 180
+
+[colors.bg_elevated]
+mode = "Gradient"
+color = "#f8fbff"
+gradient_from = "#f8fbff"
+gradient_to = "#d8e4f0"
+gradient_angle_deg = 180
+
+[background.mode.Gradient]
+from = "#ffffff"
+to = "#8cb4db"
+angle_deg = 180
+
+[typography]
+body_font_stack = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif"
+heading_font_stack = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "15px"
+scale_ratio = "1.22"
+line_height = "1.55"
+heading_weight = "700"
+
+[buttons]
+radius = "12px"
+border_width = "1px"
+text_transform = "none"

@@ -1,35 +1,22 @@
 //! Theme presets.
 //!
-//! Each preset is one file in this module. Presets are grouped into two layers:
-//!
-//! 1. **Tokens**: palette, typography, button shape, menu, footer.
-//!    These map into the existing `{{COLOR_*}}`, `{{FONT_*}}`, etc. placeholders.
-//! 2. **Preset CSS**: optional bundle of additional CSS rules (`preset_css`)
-//!    loaded *after* the token `:root`.
-//!
-//! To add a new preset:
-//!   * create `src/presets/<name>.rs` with a public `fn <name>() -> Preset`
-//!   * optionally create `src/presets/css/<name>.css` and `include_str!` it
-//!   * register the function in `all_presets()` below
+//! Presets are now loaded dynamically at runtime from TOML files in the `theme_presets` folder.
+//! This completely detaches aesthetic definitions from the compiled Rust binary.
 
-use crate::config::{
-    AssetConfig, BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig,
-    IconConfig, MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, SurfaceMode,
-    TemplatePackConfig, ThemeConfig, TypographyConfig,
-};
+use crate::config::{BackgroundConfig, ColorConfig, ThemeConfig, TypographyConfig};
+use serde::Deserialize;
+use std::fs;
+use std::path::Path;
+use std::sync::OnceLock;
 
-pub mod mor_fluid_interactive;
-pub mod mor_glassmorphism;
-pub mod mor_neon_cyberpunk;
-pub mod mor_newspaper;
-pub mod mor_retro_mmorpg;
-pub mod mor_web_1_0_frames;
-pub mod mor_web_2_0_skeuo;
-pub mod user_presets;
+// Ensure UI compatibility by leaking strings safely only once at boot
+static LOADED_PRESETS: OnceLock<Vec<Preset>> = OnceLock::new();
 
-#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 pub struct PresetPalette {
+    #[serde(default)]
     pub colors: ColorConfig,
+    #[serde(default)]
     pub background: BackgroundConfig,
 }
 
@@ -44,111 +31,100 @@ pub struct Preset {
     pub preset_css: &'static str,
 }
 
-pub fn all_builtin_presets() -> Vec<Preset> {
-    vec![
-        mor_web_1_0_frames::mor_web_1_0_frames(),
-        mor_newspaper::mor_newspaper(),
-        mor_web_2_0_skeuo::mor_web_2_0_skeuo(),
-        mor_glassmorphism::mor_glassmorphism(),
-        mor_neon_cyberpunk::mor_neon_cyberpunk(),
-        mor_fluid_interactive::mor_fluid_interactive(),
-        mor_retro_mmorpg::mor_retro_mmorpg(),
-    ]
+#[derive(Clone, Debug, Deserialize)]
+struct TomlPreset {
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    description: String,
+    
+    #[serde(default)]
+    colors: ColorConfig,
+    #[serde(default)]
+    background: BackgroundConfig,
+    #[serde(default)]
+    typography: TypographyConfig,
+    #[serde(default)]
+    buttons: crate::config::ButtonConfig,
+
+    light: Option<PresetPalette>,
+    dark: Option<PresetPalette>,
+
+    #[serde(default)]
+    preset_css: String,
+}
+
+impl TomlPreset {
+    fn into_preset(self, id: String) -> Preset {
+        let mut base = crate::config::defaults::default_theme_config();
+        
+        base.colors = self.colors.clone();
+        base.background = self.background.clone();
+        base.typography = self.typography;
+        base.buttons = self.buttons;
+        
+        let light = self.light.unwrap_or_else(|| PresetPalette {
+            colors: self.colors.clone(),
+            background: self.background.clone(),
+        });
+
+        let dark = self.dark.unwrap_or_else(|| PresetPalette {
+            colors: self.colors.clone(),
+            background: self.background.clone(),
+        });
+
+        let name = if self.name.is_empty() { "Unnamed Preset".to_string() } else { self.name };
+
+        Preset {
+            id: Box::leak(id.into_boxed_str()),
+            name: Box::leak(name.into_boxed_str()),
+            description: Box::leak(self.description.into_boxed_str()),
+            base_config: base,
+            dark,
+            light,
+            preset_css: Box::leak(self.preset_css.into_boxed_str()),
+        }
+    }
 }
 
 pub fn all_presets() -> Vec<Preset> {
-    let mut presets = all_builtin_presets();
-    presets.extend(user_presets::load_user_presets_as_presets());
-    presets
+    LOADED_PRESETS.get_or_init(|| {
+        let mut presets = Vec::new();
+        
+        // Resilient path resolution: Check if we are running from the workspace root
+        // or from inside the mor_blogger_dioxus_ui crate.
+        let mut preset_dir = Path::new("theme_presets").to_path_buf();
+        if !preset_dir.exists() && Path::new("../theme_presets").exists() {
+            preset_dir = Path::new("../theme_presets").to_path_buf();
+        }
+
+        if !preset_dir.exists() {
+            let _ = fs::create_dir_all(&preset_dir);
+            return presets;
+        }
+
+        if let Ok(entries) = fs::read_dir(&preset_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|s| s.to_str()) == Some("toml") {
+                    if let Ok(contents) = fs::read_to_string(&path) {
+                        match toml::from_str::<TomlPreset>(&contents) {
+                            Ok(toml_preset) => {
+                                let id = path.file_stem().unwrap().to_str().unwrap().to_string();
+                                presets.push(toml_preset.into_preset(id));
+                            }
+                            Err(e) => eprintln!("Failed to parse preset {:?}: {}", path, e),
+                        }
+                    }
+                }
+            }
+        }
+
+        presets.sort_by(|a, b| a.name.cmp(&b.name));
+        presets
+    }).clone()
 }
 
-// ---------------------------------------------------------------------------
-// Shared font stacks
-// ---------------------------------------------------------------------------
-
-pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
-pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-
-#[allow(dead_code)]
-pub const STACK_SANS: &str =
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
-
-#[allow(dead_code)]
-pub const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
-
-pub const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
-pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif";
-
-// ---------------------------------------------------------------------------
-// Shared helpers
-// ---------------------------------------------------------------------------
-
-#[allow(dead_code)]
-pub fn gradient(from: &str, to: &str, angle_deg: u16) -> SurfaceFill {
-    SurfaceFill {
-        mode: SurfaceMode::Gradient,
-        color: from.to_string(),
-        gradient_from: from.to_string(),
-        gradient_to: to.to_string(),
-        gradient_angle_deg: angle_deg,
-    }
-}
-
-pub fn build_base(
-    site: SiteConfig,
-    typography: TypographyConfig,
-    buttons: ButtonConfig,
-    seo: SeoConfig,
-    menu_links: Vec<MenuLink>,
-    footer: FooterConfig,
-) -> ThemeConfig {
-    ThemeConfig {
-        site,
-        typography,
-        buttons,
-        seo,
-        menu_links,
-        footer,
-
-        // Palette fields overwritten by swap_palette at apply time.
-        colors: ColorConfig {
-            bg_base: "#000".to_string(),
-            bg_panel: SurfaceFill::solid("#000"),
-            bg_elevated: SurfaceFill::solid("#000"),
-            fg_base: "#fff".to_string(),
-            fg_muted: "#aaa".to_string(),
-            accent: "#fff".to_string(),
-            border: "#444".to_string(),
-            ..Default::default()
-        },
-        icons: IconConfig::default(),
-        background: BackgroundConfig {
-            mode: BackgroundMode::Solid {
-                color: "#000".to_string(),
-            },
-        },
-        assets: AssetConfig {
-            favicon_url: String::new(),
-            social_card_image_url: String::new(),
-        },
-        plugins: PluginConfig {
-            custom_js: String::new(),
-        },
-        static_pages: crate::config::StaticPagesConfig::default(),
-        ads: crate::config::AdsConfig::default(),
-        template_pack: TemplatePackConfig::default(),
-        preset_css: String::new(),
-    }
-}
-// ---------------------------------------------------------------------------
-// Engine resolution helpers
-// ---------------------------------------------------------------------------
-
-/// Return the `(light, dark)` palette pair for the named preset.
-///
-/// If `preset_id` is `None`, or the ID is not found in the registry, both
-/// palettes fall back to the current active colors from `fallback_config`.
-/// This means the engine always gets valid palettes regardless of state.
 pub fn resolve_palette_pair(
     preset_id: Option<&str>,
     fallback_config: &crate::config::ThemeConfig,
@@ -159,10 +135,30 @@ pub fn resolve_palette_pair(
         }
     }
 
-    // Fallback: wrap the live config colors so the engine never receives empty palettes.
     let fallback = PresetPalette {
         colors: fallback_config.colors.clone(),
         background: fallback_config.background.clone(),
     };
     (fallback.clone(), fallback)
+}
+
+// ---------------------------------------------------------------------------
+// Shared font stacks & Helpers
+// ---------------------------------------------------------------------------
+
+pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
+pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
+pub const STACK_SANS: &str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
+pub const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
+pub const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
+pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif";
+
+pub fn gradient(from: &str, to: &str, angle_deg: u16) -> crate::config::SurfaceFill {
+    crate::config::SurfaceFill {
+        mode: crate::config::SurfaceMode::Gradient,
+        color: from.to_string(),
+        gradient_from: from.to_string(),
+        gradient_to: to.to_string(),
+        gradient_angle_deg: angle_deg,
+    }
 }

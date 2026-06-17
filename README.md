@@ -313,6 +313,7 @@ Need assets or reference material for your theme? Use these external tools:
 - **Icons:** [Google Material Symbols](https://fonts.google.com/icons) (Download as SVG, upload via MorBlogger UI)
 - **Icons:** [Lucide](https://lucide.dev/) (Clean, neutral SVG icons)
 - **Blogger API:** [Official XML Documentation](https://developers.google.com/blogger)
+- **Asset Generation:** [halftone.tools](https://halftone.tools) (Free, browser-based print-effects workshop. Perfect for generating retro dithered background plates or custom vector SVGs for the theme dictionary).
 
 ---
 

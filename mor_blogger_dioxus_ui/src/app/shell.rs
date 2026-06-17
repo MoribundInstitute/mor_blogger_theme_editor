@@ -378,6 +378,13 @@ pub fn render_app_shell(
                                 crate::ui::panels::static_pages_panel::inject_static_page(&base, &new_html),
                             );
                         },
+                        on_toggle_dark_mode: {
+                            // Use centralized logic in ThemeAppState which invokes ColorConfig fallback when needed
+                            let theme_state = theme;
+                            move |_| {
+                                theme_state.perform_dark_mode_toggle();
+                            }
+                        },
                     }
 
                     RightDataPanel {

@@ -18,4 +18,3 @@ base64 = "0.22"
 # Binary/Compressed Rehydration
 postcard = { version = "1.0", features = ["alloc"] }
 zstd = "0.13"
-percent-encoding = "2.3.2"

@@ -150,3 +150,30 @@ heading_weight = "700"
 radius = "8px"
 border_width = "1px"
 text_transform = "none"
+
+[light.colors]
+bg_base = "#f0f5f9"
+fg_base = "#0b1118"
+fg_muted = "#566a78"
+accent = "#05a581"
+border = "#a8c0d0"
+panel_border_width = "1px"
+glow_spread = "15px"
+hover_scale = "1.015"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+gradient_from = "#ffffff"
+gradient_to = "#ffffff"
+gradient_angle_deg = 180
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#f4f8fc"
+gradient_from = "#f4f8fc"
+gradient_to = "#f4f8fc"
+gradient_angle_deg = 180
+
+[light.background.mode.Solid]
+color = "#f0f5f9"

@@ -2,7 +2,7 @@ use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 
 use mor_blogger_core::config::gtk_theme::ImportedGtkPreset;
-use mor_blogger_core::config::ThemeConfig;
+use mor_blogger_core::config::{ColorConfig, ThemeConfig};
 use mor_blogger_core::presets::{all_presets, Preset};
 use mor_blogger_core::utils::rehydration::extract_and_decode;
 
@@ -75,6 +75,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let presets = all_presets();
     let mut active = props.active_preset;
     let mut is_dark_mode = props.signals.is_dark_mode;
+    let mut toggle_signals = props.signals;
 
     let mut show_import = use_signal(|| false);
     let mut show_undocked_presets = props.show_undocked_presets;
@@ -122,10 +123,51 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             let new_mode = !is_dark_mode();
                             is_dark_mode.set(new_mode);
 
-                            if let Some(active_id) = active() {
-                                if let Some(preset) = presets.iter().find(|p| p.id == active_id) {
-                                    if new_mode { props.signals.swap_palette(&preset.dark); } else { props.signals.swap_palette(&preset.light); }
-                                    props.signals.apply_preset_css(preset);
+                            let active_id = active();
+                            let no_explicit = if let Some(id) = active_id {
+                                if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                                    let lc = &preset.light.colors;
+                                    let dc = &preset.dark.colors;
+                                    lc.bg_base == dc.bg_base && lc.fg_base == dc.fg_base
+                                } else {
+                                    true
+                                }
+                            } else {
+                                true
+                            };
+
+                            if no_explicit {
+                                // Use ColorConfig fallback swap (no explicit map in TOML)
+                                let cur = ColorConfig {
+                                    bg_base: toggle_signals.bg_base.read().clone(),
+                                    bg_panel: toggle_signals.bg_panel.read().clone(),
+                                    bg_elevated: toggle_signals.bg_elevated.read().clone(),
+                                    fg_base: toggle_signals.fg_base.read().clone(),
+                                    fg_muted: toggle_signals.fg_muted.read().clone(),
+                                    accent: toggle_signals.accent.read().clone(),
+                                    border: toggle_signals.border.read().clone(),
+                                    panel_border_width: toggle_signals.panel_border_width.read().clone(),
+                                    glow_spread: toggle_signals.glow_spread.read().clone(),
+                                    hover_scale: toggle_signals.hover_scale.read().clone(),
+                                    panel_border_image_url: toggle_signals.panel_border_image_url.read().clone(),
+                                    panel_border_image_slice: toggle_signals.panel_border_image_slice.read().clone(),
+                                    panel_border_image_repeat: toggle_signals.panel_border_image_repeat.read().clone(),
+                                };
+                                let inv = cur.inverted_contrast();
+                                toggle_signals.bg_base.set(inv.bg_base);
+                                toggle_signals.bg_panel.set(inv.bg_panel);
+                                toggle_signals.bg_elevated.set(inv.bg_elevated);
+                                toggle_signals.fg_base.set(inv.fg_base);
+                                toggle_signals.fg_muted.set(inv.fg_muted);
+                            } else if let Some(id) = active_id {
+                                if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                                    let pal = if new_mode { &preset.dark } else { &preset.light };
+                                    toggle_signals.bg_base.set(pal.colors.bg_base.clone());
+                                    toggle_signals.bg_panel.set(pal.colors.bg_panel.clone());
+                                    toggle_signals.bg_elevated.set(pal.colors.bg_elevated.clone());
+                                    toggle_signals.fg_base.set(pal.colors.fg_base.clone());
+                                    toggle_signals.fg_muted.set(pal.colors.fg_muted.clone());
+                                    toggle_signals.apply_preset_css(preset);
                                 }
                             }
                         },

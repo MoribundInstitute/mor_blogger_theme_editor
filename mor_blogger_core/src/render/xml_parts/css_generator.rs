@@ -81,11 +81,27 @@ fn generate_background_css(bg: &BackgroundMode) -> String {
     }
 }
 
+fn generate_background_value(bg: &BackgroundMode) -> String {
+    match bg {
+        BackgroundMode::Solid { color } => escape_attr(color),
+        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+            "linear-gradient({}deg, {}, {})",
+            angle_deg,
+            escape_attr(from),
+            escape_attr(to)
+        ),
+        BackgroundMode::Tile { url } if url.trim().is_empty() => "none".to_string(),
+        BackgroundMode::Tile { url } => format!("url('{}')", escape_attr(url)),
+    }
+}
+
 pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let (light_palette, dark_palette) = resolve_palette_pair(None, config);
 
     let light_bg_css = generate_background_css(&light_palette.background.mode);
     let dark_bg_css = generate_background_css(&dark_palette.background.mode);
+    let light_bg_workspace = generate_background_value(&light_palette.background.mode);
+    let dark_bg_workspace = generate_background_value(&dark_palette.background.mode);
     let background_tile_url = match &config.background.mode {
         BackgroundMode::Tile { url } => url.clone(),
         _ => String::new(),
@@ -138,6 +154,7 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{LIGHT_PANEL_BORDER_IMAGE_CSS}}", &light_panel_border_image_css);
     xml = xml.replace("{{LIGHT_PANEL_BORDER_IMAGE_VALUE}}", &light_panel_border_image_value);
     xml = xml.replace("{{LIGHT_BACKGROUND_TILE_CSS}}", &light_bg_css);
+    xml = xml.replace("{{LIGHT_BG_WORKSPACE}}", &light_bg_workspace);
 
     xml = xml.replace("{{DARK_BG_BASE}}", &escape_attr(&dark_palette.colors.bg_base));
     xml = xml.replace("{{DARK_BG_PANEL}}", &escape_attr(&dark_palette.colors.bg_panel.to_css()));
@@ -155,6 +172,7 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{DARK_PANEL_BORDER_IMAGE_CSS}}", &dark_panel_border_image_css);
     xml = xml.replace("{{DARK_PANEL_BORDER_IMAGE_VALUE}}", &dark_panel_border_image_value);
     xml = xml.replace("{{DARK_BACKGROUND_TILE_CSS}}", &dark_bg_css);
+    xml = xml.replace("{{DARK_BG_WORKSPACE}}", &dark_bg_workspace);
 
     xml = xml.replace("{{COLOR_ACCENT_SOFT}}", &escape_attr(&color_accent_soft));
     xml = xml.replace("{{COLOR_ACCENT_SHADOW}}", &escape_attr(&color_accent_shadow));

@@ -11,7 +11,9 @@
   padding: 30px 40px 20px;
   font-size: 0.85rem;
   width: 100%;
+  min-width: 0;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .footer-sys-info {
@@ -35,4 +37,52 @@
 .footer-sys-info a:focus-visible {
   color: var(--bg-base);
   background: var(--fg-base);
+}
+
+.back-to-top-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--fg-dim);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.back-to-top-btn:hover {
+  background: var(--fg-base);
+  color: var(--bg-base);
+}
+
+/* Footer grid for basic/compact variants (fluid to prevent overflow when sidebars reduce canvas width) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+
+.footer-col {
+  min-width: 0;
+}
+
+.footer-col h4 {
+  color: var(--fg-base);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col li {
+  margin-bottom: 8px;
 }

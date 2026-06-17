@@ -2,7 +2,7 @@
   :root { --sidebar-width: 85vw; }
   html, body { height: auto; min-height: 100vh; overflow-x: hidden; }
   body { display: block; }
-  .main-header { position: sticky; top: 0; z-index: 50; background: var(--bg-base); }
+  .main-header { position: sticky; top: 0; z-index: 50; background: transparent; }
   .header-top-row { min-height: 60px; padding: 10px 15px; gap: 12px; }
   .institute-logo { width: 40px; height: 40px; border-radius: 8px; }
   .branding .institute-title { font-size: 1.05rem; letter-spacing: 1px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; }
@@ -15,14 +15,14 @@
   .mor-search .prompt { display: none; }
   .mor-search input { width: 100%; flex: 1; padding: 10px; font-size: 1rem; }
   .mor-workspace { display: block; height: auto; min-height: 100vh; overflow: visible; }
-  .canvas-core { height: auto; min-height: 100vh; overflow: visible; }
-  .canvas-content { padding: 24px 16px; max-width: none; gap: 40px; }
+  .canvas-core { height: auto; min-height: 100vh; overflow: visible; background: transparent; }
+  .canvas-content { padding: 24px 16px; max-width: none; gap: 40px; background: transparent; }
   .post-title { font-size: 1.35rem; line-height: 1.3; }
-  .runelite-panel { position: fixed; top: 0; bottom: 0; width: var(--sidebar-width); max-width: 350px; height: 100vh; z-index: var(--overlay-z, 100); box-shadow: 0 0 30px rgba(0, 0, 0, 0.9); margin: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-panel); overflow-y: auto; }
+  .runelite-panel { position: fixed; top: 0; bottom: 0; width: var(--sidebar-width); max-width: 350px; height: 100vh; z-index: var(--overlay-z, 100); box-shadow: 0 0 30px rgba(0, 0, 0, 0.9); margin: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-workspace); overflow-y: auto; }
   .panel-left { left: 0; right: auto; border-right: 1px solid var(--border-color); transform: translateX(-100%); }
   .panel-right { right: 0; left: auto; border-left: 1px solid var(--border-color); transform: translateX(100%); }
   .panel-left:not(.is-collapsed), .panel-right:not(.is-collapsed) { transform: translateX(0); }
-  .panel-content { padding: 20px; }
+  .panel-content { padding: 20px; background: transparent; }
   .sidebar-section .widget-content { max-height: none; }
   .mor-footer { margin-top: auto; padding: 20px 15px; width: 100%; }
   .footer-grid { grid-template-columns: 1fr; gap: 24px; }

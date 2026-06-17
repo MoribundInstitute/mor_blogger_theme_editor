@@ -1,4 +1,4 @@
-.main-header { display: flex; flex-direction: column; flex-shrink: 0; border-bottom: var(--panel-border-width) solid var(--theme-border-color); background-color: var(--bg-base); width: 100%; position: relative; z-index: var(--header-z); }
+.main-header { display: flex; flex-direction: column; flex-shrink: 0; border-bottom: var(--panel-border-width) solid var(--theme-border-color); background: transparent; width: 100%; position: relative; z-index: var(--header-z); }
 
 /* The fix: Background is now transparent so the parent's glass/gradient shines through */
 .header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 10px 20px 9px; line-height: 1.2; border-bottom: var(--panel-border-width) dashed var(--theme-border-color); background: transparent; }
@@ -9,6 +9,7 @@
 .right-controls { justify-content: flex-end; }
 
 /* --- Light/Dark Toggle SVG Logic --- */
+/* Sun shown in light mode, Moon shown in dark mode (standard convention) */
 /* Use ID selector to guarantee we override 22-Export-Safety.css */
 #mor-theme-toggle { 
   color: var(--fg-base) !important; 
@@ -31,10 +32,10 @@
   fill: currentColor !important; 
 }
 
-/* Light Mode: Show Moon, Hide Sun */
-html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: none !important; }
-html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: block !important; }
+/* Light Mode: Show Sun, Hide Moon */
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: none !important; }
 
-/* Dark Mode: Show Sun, Hide Moon */
-html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: block !important; }
-html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: none !important; }
+/* Dark Mode: Show Moon, Hide Sun */
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: block !important; }

@@ -1,7 +1,20 @@
 //! CSS Builder module for sanitizing and concatenating base CSS files.
 
-use crate::config::ThemeConfig;
+use crate::config::{BackgroundMode, ThemeConfig};
+use crate::render::util::escape_attr;
 use crate::utils::svg_icons::svg_to_data_uri;
+
+fn generate_workspace_background_value(bg: &BackgroundMode) -> String {
+    match bg {
+        BackgroundMode::Solid { color } => escape_attr(color),
+        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+            "linear-gradient({}deg, {}, {})",
+            angle_deg, escape_attr(from), escape_attr(to)
+        ),
+        BackgroundMode::Tile { url } if url.trim().is_empty() => "none".to_string(),
+        BackgroundMode::Tile { url } => format!("url('{}')", escape_attr(url)),
+    }
+}
 
 /// Cleans user-uploaded or modular CSS by stripping out existing Blogger XML wrappers
 /// so we can safely concatenate and re-wrap it later without nesting errors.
@@ -52,6 +65,10 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
     let mut custom_vars = format!(
         r#":root {{
   --bg-base: {bg_base};
+  --bg-panel: {bg_panel};
+  --bg-elevated: {bg_elevated};
+  --bg-highlight: {bg_elevated};
+  --bg-workspace: {bg_workspace};
   --fg-base: {fg_base};
   --fg-dim: {fg_muted};
   --fg-muted: {fg_muted};
@@ -67,6 +84,9 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
   --btn-text-transform: {btn_text_transform};
   --font-mono: {font_mono};"#,
         bg_base = config.colors.bg_base,
+        bg_panel = config.colors.bg_panel.to_css(),
+        bg_elevated = config.colors.bg_elevated.to_css(),
+        bg_workspace = generate_workspace_background_value(&config.background.mode),
         fg_base = config.colors.fg_base,
         fg_muted = config.colors.fg_muted,
         accent = config.colors.accent,
@@ -109,6 +129,10 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
     }
 
     custom_vars.push_str("\n}\n");
+
+/* Widget header icons via CSS mask (scoped per widget ID/class for .widget h2::before) */
+custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");
+custom_vars.push_str("#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }\n");
 
     combined_css.push_str(&custom_vars);
 

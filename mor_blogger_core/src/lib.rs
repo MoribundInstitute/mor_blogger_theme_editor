@@ -25,5 +25,17 @@ mod tests {
             "Integrity check failed: {:?}",
             result.errors
         );
+
+        // Verify new background struct logic: sidebars inherit main workspace gradient via --bg-workspace
+        // (default now shares the gradient in bg_panel/elevated and CSS var)
+        assert!(
+            rendered_xml.contains("--bg-workspace") || rendered_xml.contains("linear-gradient"),
+            "New background inheritance logic not reflected in output CSS"
+        );
+        // Ensure the workspace gradient values are present (from default_theme_config)
+        assert!(
+            rendered_xml.contains("#0a0c18") && rendered_xml.contains("#151b2c"),
+            "Workspace gradient colors from background struct not propagated"
+        );
     }
 }

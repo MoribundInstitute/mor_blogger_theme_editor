@@ -23,10 +23,11 @@ pub struct ColorConfig {
 
 impl Default for ColorConfig {
     fn default() -> Self {
+        let default_bg = BackgroundMode::default().to_surface_fill();
         Self {
             bg_base: "#222129".to_string(),
-            bg_panel: SurfaceFill::solid("#2b2933"),
-            bg_elevated: SurfaceFill::solid("#343140"),
+            bg_panel: default_bg.clone(),
+            bg_elevated: default_bg,
             fg_base: "#f2eadf".to_string(),
             fg_muted: "#bc8d6b".to_string(),
             accent: "#a9aae2".to_string(),
@@ -53,7 +54,7 @@ pub struct SurfaceFill {
 
 impl Default for SurfaceFill {
     fn default() -> Self {
-        Self::solid("#2b2933")
+        Self::solid("#222129")
     }
 }
 
@@ -87,6 +88,33 @@ impl SurfaceFill {
     }
 }
 
+impl ColorConfig {
+    /// Generate the contrasting (light<->dark) variant dynamically.
+    /// Swaps bg_base / bg_panel (as solid) with fg_base / fg_muted values.
+    /// Preserves accent, border, and all scalar/asset fields exactly.
+    /// Used when an active TOML preset lacks an explicit [light.colors] / [dark.colors] block for the requested mode.
+    pub fn inverted_contrast(&self) -> Self {
+        let mut c = self.clone();
+
+        let orig_bg_base = self.bg_base.clone();
+        let orig_bg_panel_color = self.bg_panel.color.clone();
+        let orig_fg_base = self.fg_base.clone();
+        let orig_fg_muted = self.fg_muted.clone();
+
+        // Swap roles: former fg tones become the new bg tones (as solid fills)
+        // former bg tones become the new fg tones. This avoids raw RGB invert garbage.
+        c.bg_base = orig_fg_base.clone();
+        c.bg_panel = SurfaceFill::solid(orig_fg_muted.clone());
+        c.bg_elevated = SurfaceFill::solid(orig_fg_base.clone());
+
+        c.fg_base = orig_bg_base.clone();
+        c.fg_muted = orig_bg_panel_color.clone();
+
+        // accent, border, widths, glow, hover_scale, border-image etc. are left as cloned (preserved)
+        c
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct AssetConfig {
@@ -113,6 +141,25 @@ impl Default for BackgroundMode {
     fn default() -> Self {
         Self::Solid {
             color: "#222129".to_string(),
+        }
+    }
+}
+
+impl BackgroundMode {
+    /// Converts the main workspace background mode into an equivalent SurfaceFill
+    /// so that sidebars (and other panels) can inherit the exact same gradient/solid
+    /// by default for visual matching with the main workspace area.
+    pub fn to_surface_fill(&self) -> SurfaceFill {
+        match self {
+            BackgroundMode::Solid { color } => SurfaceFill::solid(color.clone()),
+            BackgroundMode::Gradient { from, to, angle_deg } => SurfaceFill {
+                mode: SurfaceMode::Gradient,
+                color: from.clone(),
+                gradient_from: from.clone(),
+                gradient_to: to.clone(),
+                gradient_angle_deg: *angle_deg,
+            },
+            BackgroundMode::Tile { .. } => SurfaceFill::solid("#0a0c18"),
         }
     }
 }

@@ -7,7 +7,49 @@ use crate::config::{
 };
 use std::collections::HashMap;
 
+pub fn light_color_config() -> ColorConfig {
+    ColorConfig {
+        bg_base: "#e8efff".to_string(),
+        bg_panel: SurfaceFill::solid("#ffffff"),
+        bg_elevated: SurfaceFill::solid("#f4f6ff"),
+        fg_base: "#1a1d3a".to_string(),
+        fg_muted: "#6b7099".to_string(),
+        accent: "#7c3aed".to_string(),
+        border: "#c8d2f0".to_string(),
+        panel_border_width: "1px".to_string(),
+        glow_spread: "10px".to_string(),
+        hover_scale: "1.02".to_string(),
+        panel_border_image_url: String::new(),
+        panel_border_image_slice: "30%".to_string(),
+        panel_border_image_repeat: "stretch".to_string(),
+    }
+}
+
+pub fn dark_color_config() -> ColorConfig {
+    ColorConfig {
+        bg_base: "#0f1026".to_string(),
+        bg_panel: SurfaceFill::solid("#1a1f4a"),
+        bg_elevated: SurfaceFill::solid("#2a2f6a"),
+        fg_base: "#f5f7ff".to_string(),
+        fg_muted: "#a8aedd".to_string(),
+        accent: "#8b5cf6".to_string(),
+        border: "#3d4280".to_string(),
+        panel_border_width: "1px".to_string(),
+        glow_spread: "10px".to_string(),
+        hover_scale: "1.02".to_string(),
+        panel_border_image_url: String::new(),
+        panel_border_image_slice: "30%".to_string(),
+        panel_border_image_repeat: "stretch".to_string(),
+    }
+}
+
 pub fn default_theme_config() -> ThemeConfig {
+    let workspace_gradient = BackgroundMode::Gradient {
+        from: "#1e1a4d".to_string(),
+        to: "#5b2c8a".to_string(),
+        angle_deg: 135,
+    };
+
     ThemeConfig {
         site: SiteConfig {
             site_title: "Moribund Workspace".to_string(),
@@ -15,41 +57,23 @@ pub fn default_theme_config() -> ThemeConfig {
             header_logo_url: "".to_string(),
             home_url: "/".to_string(),
         },
-        colors: ColorConfig {
-            bg_base:     "#0a0c18".to_string(), 
-            bg_panel:    SurfaceFill::solid("#12151f"),
-            bg_elevated: SurfaceFill::solid("#1a2030"),
-            fg_base:     "#f1f5f9".to_string(), 
-            fg_muted:    "#94a3b8".to_string(),
-            accent:      "#22d3ee".to_string(),
-            border:      "#2f3a4f".to_string(),
-            panel_border_width: "1px".to_string(),
-            glow_spread: "18px".to_string(),
-            hover_scale: "1.025".to_string(),
-            panel_border_image_url: String::new(),
-            panel_border_image_slice: "30%".to_string(),
-            panel_border_image_repeat: "stretch".to_string(),
-        },
+        colors: dark_color_config(),
         typography: TypographyConfig {
-            body_font_stack:    "Inter, system-ui, -apple-system, sans-serif".to_string(), 
-            heading_font_stack: "Inter, system-ui, -apple-system, sans-serif".to_string(), 
-            mono_font_stack:    "JetBrains Mono, Fira Code, ui-monospace, monospace".to_string(),
-            base_size:          "15px".to_string(),
-            scale_ratio:        "1.25".to_string(),
+            body_font_stack:    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif".to_string(), 
+            heading_font_stack: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif".to_string(), 
+            mono_font_stack:    "'Courier New', Courier, monospace".to_string(),
+            base_size:          "16px".to_string(),
+            scale_ratio:        "1.2".to_string(),
             line_height:        "1.6".to_string(),
-            heading_weight:     "700".to_string(), 
+            heading_weight:     "600".to_string(), 
         },
         buttons: ButtonConfig {
-            radius:         "12px".to_string(),
+            radius:         "14px".to_string(),
             border_width:   "1px".to_string(),
             text_transform: "none".to_string(),
         },
         background: BackgroundConfig {
-            mode: BackgroundMode::Gradient {
-                from: "#0a0c18".to_string(),
-                to: "#151b2c".to_string(),
-                angle_deg: 140,
-            }
+            mode: workspace_gradient,
         },
         assets:       AssetConfig::default(),
         seo:          SeoConfig::default(),
@@ -76,6 +100,11 @@ pub fn default_theme_config() -> ThemeConfig {
 
         preset_css: "".to_string(),
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults
-        icons: crate::config::styling::IconConfig::default(), 
+        icons: {
+            let mut i = crate::config::styling::IconConfig::default();
+            i.custom_icons.insert("label".to_string(), crate::config::styling::svg_mask("M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z"));
+            i.custom_icons.insert("archive".to_string(), crate::config::styling::svg_mask("M5 8v12h14V8 M10 12h4 M3 4h18v4H3z"));
+            i
+        }, 
     }
 }

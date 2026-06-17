@@ -1,26 +1,3 @@
-use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
-
-/// Strict ASCII set that encodes dangerous CSS/XML characters but leaves standard text alone.
-/// Includes Hash (#) to prevent browser from truncating image data inside url() blocks.
-const SVG_ENCODE_SET: &AsciiSet = &CONTROLS
-    .add(b' ')
-    .add(b'"')
-    .add(b'<')
-    .add(b'>')
-    .add(b'#')
-    .add(b'%')
-    .add(b'{')
-    .add(b'}')
-    .add(b'|')
-    .add(b'\\')
-    .add(b'^')
-    .add(b'~')
-    .add(b'[')
-    .add(b']')
-    .add(b'`')
-    .add(b'?')
-    .add(b'\'');
-
 pub fn ensure_svg_xmlns(svg: &str) -> String {
     let trimmed = svg.trim();
 
@@ -46,8 +23,14 @@ pub fn ensure_svg_xmlns(svg: &str) -> String {
 
 pub fn svg_to_data_uri(svg: &str) -> String {
     let normalized = ensure_svg_xmlns(svg);
-    let encoded = utf8_percent_encode(&normalized, SVG_ENCODE_SET).to_string();
-    // Single quotes mandatory. Prevents double-quote collision in standard HTML style attributes.
+    // Strictly encode only the characters that break data: URI parsing inside CSS url() / mask-image.
+    // Do NOT encode spaces (per requirements). This prevents truncation on # (colors) and " (attrs).
+    let encoded = normalized
+        .replace('<', "%3C")
+        .replace('>', "%3E")
+        .replace('#', "%23")
+        .replace('"', "%22");
+    // Single quotes mandatory around the data URI value. Prevents " collision with HTML attrs.
     format!("url('data:image/svg+xml,{}')", encoded)
 }
 

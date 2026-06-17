@@ -1,5 +1,36 @@
 .sidebar-section .BlogArchive { font-size: 0.75rem; }
-.sidebar-section .BlogArchive ul { list-style: none; padding: 0; margin: 0; }
+.sidebar-section .BlogArchive ul:not(.posts) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
 .sidebar-section .BlogArchive .hierarchy-title { color: var(--fg-dim); margin-top: 10px; border-bottom: var(--panel-border-width) dotted var(--theme-border-color); padding-bottom: 2px; }
 .sidebar-section .BlogArchive ul.posts { display: flex; flex-direction: column; gap: 6px; padding-left: 8px; border-left: var(--panel-border-width) dashed var(--theme-border-color); margin-left: 4px; margin-top: 6px; }
 .sidebar-section .BlogArchive ul.posts li { padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sidebar-section .BlogArchive ul:not(.posts) a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 1px solid var(--accent);
+  border-radius: var(--btn-radius, 4px);
+  background: transparent;
+  color: var(--fg-dim);
+  text-decoration: none;
+  text-align: center;
+}
+.sidebar-section .BlogArchive ul:not(.posts) a:hover,
+.sidebar-section .BlogArchive ul:not(.posts) a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.sidebar-section .BlogArchive .post-count {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}

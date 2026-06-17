@@ -63,14 +63,26 @@ impl TomlPreset {
         base.typography = self.typography;
         base.buttons = self.buttons;
         
-        let light = self.light.unwrap_or_else(|| PresetPalette {
+        let base_pal = PresetPalette {
             colors: self.colors.clone(),
             background: self.background.clone(),
-        });
+        };
 
-        let dark = self.dark.unwrap_or_else(|| PresetPalette {
-            colors: self.colors.clone(),
-            background: self.background.clone(),
+        let has_light = self.light.is_some();
+        let has_dark = self.dark.is_some();
+
+        let light = self.light.clone().unwrap_or_else(|| base_pal.clone());
+
+        let dark = self.dark.clone().unwrap_or_else(|| {
+            if !has_light && !has_dark {
+                // No explicit mode maps at all: generate the other contrast via swap for toggle to work
+                PresetPalette {
+                    colors: self.colors.inverted_contrast(),
+                    background: self.background.clone(),
+                }
+            } else {
+                base_pal.clone()
+            }
         });
 
         let name = if self.name.is_empty() { "Unnamed Preset".to_string() } else { self.name };

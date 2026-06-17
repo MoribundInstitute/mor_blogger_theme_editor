@@ -156,10 +156,10 @@ pub fn PreviewCanvas(
                                                         style.textContent = `
                                                             [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
                                                             [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
-                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: none !important; }
-                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: block !important; }
-                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: block !important; }
-                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: none !important; }
+                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: none !important; }
+                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: block !important; }
                                                         `;
                                                         doc.head.appendChild(style);
                                                     }

@@ -294,3 +294,24 @@ heading_weight = "700"
 radius = "2px"
 border_width = "2px"
 text_transform = "none"
+
+[light.colors]
+bg_base = "#f5e9d3"
+fg_base = "#2c2118"
+fg_muted = "#6b5c4a"
+accent = "#ffae42"
+border = "#c8b8a0"
+panel_border_width = "1px"
+glow_spread = "10px"
+hover_scale = "1.02"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#f8f1e3"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#fffaf0"
+
+[light.background.mode.Solid]
+color = "#f5e9d3"

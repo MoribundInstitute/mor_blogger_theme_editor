@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use mor_blogger_core::config::defaults::default_theme_config;
-use mor_blogger_core::config::{MenuLink, TemplatePackConfig, ThemeConfig};
+use mor_blogger_core::config::{ColorConfig, MenuLink, TemplatePackConfig, ThemeConfig};
 use crate::ui::panels::presets::ThemeSignals;
 use crate::app::layout_state::CenterView;
 
@@ -229,5 +229,67 @@ pub fn use_theme_app_state() -> ThemeAppState {
         active_preset,
         center_view,
         show_undocked_presets,
+    }
+}
+
+impl ThemeAppState {
+    /// Toggle is_dark_mode. If active preset has no explicit distinct [light.colors]/[dark.colors]
+    /// (i.e. light and dark palettes are identical), generate the opposite via ColorConfig::inverted_contrast
+    /// (bg/fg value swap, preserve accent+border). Otherwise use the preset's designed pal.
+    pub fn perform_dark_mode_toggle(&self) {
+        let mut signals = self.signals;
+        let new_dark = !*signals.is_dark_mode.read();
+        signals.is_dark_mode.set(new_dark);
+
+        let active_id = *self.active_preset.read();
+
+        let no_explicit = if let Some(id) = active_id {
+            let presets = mor_blogger_core::presets::all_presets();
+            if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                let lc = &preset.light.colors;
+                let dc = &preset.dark.colors;
+                lc.bg_base == dc.bg_base && lc.fg_base == dc.fg_base
+            } else {
+                true
+            }
+        } else {
+            true
+        };
+
+        if no_explicit {
+            // Build a ColorConfig snapshot from current signals (accent/border included so preserve works)
+            let cur = ColorConfig {
+                bg_base: signals.bg_base.read().clone(),
+                bg_panel: signals.bg_panel.read().clone(),
+                bg_elevated: signals.bg_elevated.read().clone(),
+                fg_base: signals.fg_base.read().clone(),
+                fg_muted: signals.fg_muted.read().clone(),
+                accent: signals.accent.read().clone(),
+                border: signals.border.read().clone(),
+                panel_border_width: signals.panel_border_width.read().clone(),
+                glow_spread: signals.glow_spread.read().clone(),
+                hover_scale: signals.hover_scale.read().clone(),
+                panel_border_image_url: signals.panel_border_image_url.read().clone(),
+                panel_border_image_slice: signals.panel_border_image_slice.read().clone(),
+                panel_border_image_repeat: signals.panel_border_image_repeat.read().clone(),
+            };
+            let inv = cur.inverted_contrast();
+            signals.bg_base.set(inv.bg_base);
+            signals.bg_panel.set(inv.bg_panel);
+            signals.bg_elevated.set(inv.bg_elevated);
+            signals.fg_base.set(inv.fg_base);
+            signals.fg_muted.set(inv.fg_muted);
+            // accent + border intentionally left untouched (they were preserved in inv)
+        } else if let Some(id) = active_id {
+            let presets = mor_blogger_core::presets::all_presets();
+            if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                let pal = if new_dark { &preset.dark } else { &preset.light };
+                signals.bg_base.set(pal.colors.bg_base.clone());
+                signals.bg_panel.set(pal.colors.bg_panel.clone());
+                signals.bg_elevated.set(pal.colors.bg_elevated.clone());
+                signals.fg_base.set(pal.colors.fg_base.clone());
+                signals.fg_muted.set(pal.colors.fg_muted.clone());
+            }
+        }
     }
 }

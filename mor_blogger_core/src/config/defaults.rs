@@ -105,9 +105,10 @@ pub fn default_theme_config() -> ThemeConfig {
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).
         icons: {
             let mut i = crate::config::styling::IconConfig::default();
-            // ensure label/archive still populate custom_icons for --icon-* widget vars (css_builder)
+            // ensure label/archive/toc still populate custom_icons for --icon-* widget vars (css_builder)
             i.custom_icons.insert("label".to_string(), i.label.clone());
             i.custom_icons.insert("archive".to_string(), i.archive.clone());
+            i.custom_icons.insert("toc".to_string(), i.toc.clone());
             i
         }, 
     }

@@ -1,11 +1,5 @@
 use dioxus::prelude::*;
-use crate::ui::shell::theme::{GTK4_DARK_TOML, MAC_OS_LIGHT_TOML, WIN_11_DARK_TOML};
-
-const WORKSPACE_THEMES: &[(&str, &str)] = &[
-    ("GTK4 Dark", GTK4_DARK_TOML),
-    ("macOS Light", MAC_OS_LIGHT_TOML),
-    ("Windows 11 Dark", WIN_11_DARK_TOML),
-];
+use crate::ui::shell::theme::{get_native_os_theme, GTK4_DARK_TOML, MAC_OS_LIGHT_TOML};
 
 #[component]
 pub fn UserPreferencesModal(
@@ -40,19 +34,6 @@ pub fn UserPreferencesModal(
                 div { class: "mor-modal-body",
 
                     div { class: "editor-field-group",
-                        label { class: "editor-field-label", "Workspace Theme" }
-                        div { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;",
-                            for (label, toml) in WORKSPACE_THEMES.iter().copied() {
-                                button {
-                                    class: if active_theme_toml() == toml { "mor-btn primary" } else { "mor-btn" },
-                                    onclick: move |_| active_theme_toml.set(toml.to_string()),
-                                    "{label}"
-                                }
-                            }
-                        }
-                    }
-
-                    div { class: "editor-field-group", style: "margin-top:20px;",
                         label { class: "editor-field-label", "Window Mode" }
                         select {
                             class: "editor-select",
@@ -71,6 +52,27 @@ pub fn UserPreferencesModal(
                             div { class: "editor-note", style: "margin-top:12px;border-color:var(--editor-warning);background:rgba(210,153,34,0.05);",
                                 p { class: "editor-note-title", style: "color:var(--editor-warning);", "Restart Required" }
                                 p { class: "editor-note-body", "Restart to apply the new window border setting." }
+                            }
+                        }
+                    }
+
+                    div { class: "editor-field-group", style: "margin-top:20px;",
+                        label { class: "editor-field-label", "Workspace Theme" }
+                        div { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;",
+                            button {
+                                class: if active_theme_toml() == GTK4_DARK_TOML { "editor-button editor-button-active" } else { "editor-button" },
+                                onclick: move |_| active_theme_toml.set(GTK4_DARK_TOML.to_string()),
+                                "GTK4 Dark"
+                            }
+                            button {
+                                class: if active_theme_toml() == MAC_OS_LIGHT_TOML { "editor-button editor-button-active" } else { "editor-button" },
+                                onclick: move |_| active_theme_toml.set(MAC_OS_LIGHT_TOML.to_string()),
+                                "macOS Light"
+                            }
+                            button {
+                                class: if active_theme_toml() == get_native_os_theme() { "editor-button editor-button-active" } else { "editor-button" },
+                                onclick: move |_| active_theme_toml.set(get_native_os_theme().to_string()),
+                                "System Default"
                             }
                         }
                     }

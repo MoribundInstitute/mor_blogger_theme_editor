@@ -499,7 +499,7 @@ fn IconPickerModal(
                                             status_msg.set(format!("Applied {} icon.", label));
                                         }
                                     },
-                                    span { style: "display: block; width: 24px; height: 24px; background-color: var(--fg-base); -webkit-mask-image: {mask_uri}; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;" }
+                                    span { style: "display: block; width: 24px; height: 24px; background-color: var(--editor-text); -webkit-mask-image: {mask_uri}; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;" }
                                 }
                             }
                         }

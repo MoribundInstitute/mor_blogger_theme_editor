@@ -228,6 +228,8 @@ pub struct IconConfig {
     pub archive: String,
     #[serde(default = "default_label_icon")]
     pub label: String,
+    #[serde(default = "default_toc_icon")]
+    pub toc: String,
     #[serde(default = "default_share_icon")]
     pub share: String,
     #[serde(default = "default_user_icon")]
@@ -254,6 +256,7 @@ impl Default for IconConfig {
             // defaults for new standard blog action icons
             archive: svg_mask(ICON_ARCHIVE_PATH),
             label: svg_mask(ICON_LABEL_PATH),
+            toc: default_toc_icon(),
             share: svg_mask(ICON_SHARE_PATH),
             user: svg_mask(ICON_USER_PATH),
             comment: svg_mask(ICON_COMMENT_PATH),
@@ -273,8 +276,7 @@ const ICON_SIDEBAR_RIGHT_PATH: &str =
 const ICON_CLOSE_PATH: &str =
     "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
 
-const ICON_SEARCH_PATH: &str =
-    "M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z";
+const ICON_SEARCH_PATH: &str = "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z M21 21l-5.5-5.5";
 
 const ICON_MENU_PATH: &str =
     "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
@@ -284,6 +286,7 @@ const ICON_ARCHIVE_PATH: &str =
     "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
 const ICON_LABEL_PATH: &str =
     "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z";
+const ICON_TOC_PATH: &str = "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01";
 const ICON_SHARE_PATH: &str =
     "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13";
 const ICON_USER_PATH: &str =
@@ -297,6 +300,7 @@ const ICON_EXTERNAL_LINK_PATH: &str =
 
 fn default_archive_icon() -> String { svg_mask(ICON_ARCHIVE_PATH) }
 fn default_label_icon() -> String { svg_mask(ICON_LABEL_PATH) }
+fn default_toc_icon() -> String { svg_mask(ICON_TOC_PATH) }
 fn default_share_icon() -> String { svg_mask(ICON_SHARE_PATH) }
 fn default_user_icon() -> String { svg_mask(ICON_USER_PATH) }
 fn default_comment_icon() -> String { svg_mask(ICON_COMMENT_PATH) }

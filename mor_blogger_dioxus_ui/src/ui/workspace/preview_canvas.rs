@@ -142,7 +142,9 @@ pub fn PreviewCanvas(
                                             if (oCss && nCss && oCss.textContent !== nCss.textContent) oCss.textContent = nCss.textContent;
                                             if (doc.body.style.cssText !== nDoc.body.style.cssText) doc.body.style.cssText = nDoc.body.style.cssText;
                                             
-                                            doc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"]').forEach(el => el.remove());
+                                            doc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"], style').forEach(el => {
+                                                if (el.id !== 'mor-true-css' && !el.textContent.includes('[data-field-path]')) el.remove();
+                                            });
                                             nDoc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"]').forEach(el => doc.head.appendChild(el.cloneNode()));
                                             
                                             const oT = doc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
@@ -177,12 +179,29 @@ pub fn PreviewCanvas(
                                             });
                                             doc.addEventListener('dragend', e => e.target.closest('[data-block-id]')?.classList.remove('dragging'));
                                             doc.addEventListener('dragover', e => {
+                                                if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; return; }
                                                 e.preventDefault();
                                                 const el = e.target.closest('[data-block-id]');
                                                 if (el && el.getAttribute('data-block-id') !== draggedId) { el.classList.add('drag-over'); e.dataTransfer.dropEffect = 'move'; }
                                             });
                                             doc.addEventListener('dragleave', e => e.target.closest('[data-block-id]')?.classList.remove('drag-over'));
                                             doc.addEventListener('drop', e => {
+                                                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                                    e.preventDefault();
+                                                    const file = e.dataTransfer.files[0];
+                                                    if (file.type.includes("svg") || file.name.endsWith(".svg")) {
+                                                        const targetEl = e.target.closest('[data-edit-target^="icons."]');
+                                                        if (targetEl) {
+                                                            const targetName = targetEl.getAttribute('data-edit-target');
+                                                            const reader = new FileReader();
+                                                            reader.onload = (event) => {
+                                                                dioxus.send({ action: "DROP_SVG", target: targetName, content: event.target.result });
+                                                            };
+                                                            reader.readAsText(file);
+                                                        }
+                                                    }
+                                                    return;
+                                                }
                                                 e.preventDefault();
                                                 const el = e.target.closest('[data-block-id]');
                                                 if (el) {

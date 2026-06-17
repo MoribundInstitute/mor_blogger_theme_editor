@@ -101,7 +101,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
   <div class="header-bottom-row">
     <nav class="mor-nav">{menu_links}</nav>
     <div class="mor-search">
-      <form><span class="prompt">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button">Search</button></form>
+      <form><span class="prompt">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button></form>
     </div>
   </div>
 </header>"##

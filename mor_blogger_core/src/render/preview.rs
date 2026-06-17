@@ -119,7 +119,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
     <div class="header-bottom-row">
         <nav class="mor-nav">{menu_links}</nav>
         <div class="mor-search">
-            <form><span class="prompt" data-edit-target="icons.search">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" data-edit-target="buttons.radius">Search</button></form>
+            <form><span class="prompt" data-edit-target="icons.search">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button></form>
         </div>
     </div>
 </header>
@@ -131,8 +131,8 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close">Close</button>
         </div>
         <div class="panel-content sidebar-section">
-            <div class="widget" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
-            <div class="widget" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
+            <div class="widget Label" id="Label1" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
+            <div class="widget BlogArchive" id="BlogArchive1" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
         </div>
     </aside>
 
@@ -173,7 +173,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close">Close</button>
         </div>
         <div class="panel-content sidebar-section">
-            <div class="widget" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
+            <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
         </div>
     </aside>
 </div>"##,

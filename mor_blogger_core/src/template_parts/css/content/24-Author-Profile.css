@@ -44,7 +44,7 @@
 }
 
 .author-name a {
-  font-family: var(--font-heading, inherit);
+  font-family: var(--font-heading);
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--fg-base);
@@ -54,5 +54,5 @@
 .author-desc {
   font-size: 0.9rem;
   color: var(--fg-muted);
-  line-height: 1.5;
+  line-height: var(--line-height-body);
 }

@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::ui::panels::presets::ThemeSignals;
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use mor_blogger_core::utils::rehydration::extract_and_decode;
 
 pub fn use_restore_drop_bridge(signals: ThemeSignals, active_preset: Signal<Option<&'static str>>) {

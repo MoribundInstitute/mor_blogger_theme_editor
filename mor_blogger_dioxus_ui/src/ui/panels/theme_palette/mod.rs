@@ -1,0 +1,9 @@
+pub mod background_panel;
+pub mod buttons_panel;
+pub mod colors_panel;
+pub mod effects_panel;
+pub mod icons_panel;
+pub mod presets;
+pub mod static_pages_panel;
+pub mod template_modules;
+pub mod typography_panel;

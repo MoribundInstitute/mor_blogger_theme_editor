@@ -1,5 +1,5 @@
 use mor_blogger_core::config::ThemeConfig;
-use crate::ui::panels::presets::ThemeSignals;
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
 
 pub fn apply_hotswap_json(signals: ThemeSignals, json_text: String) {
     // 1. Instantly parse the JSON straight into your master config struct

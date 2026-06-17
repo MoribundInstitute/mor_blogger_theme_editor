@@ -222,18 +222,38 @@ fn FontStackPicker(
                             value.set(parsed);
                         }
                     },
-                    input {
-                        r#type: "text",
-                        value: "{current}",
-                        placeholder: "e.g. Fira Code, Noto Serif KR, or Georgia, serif",
-                        class: "editor-field",
-                        style: "width: 100%;",
-                        oninput: move |e| value.set(e.value()),
+                    div {
+                        style: "display: flex; gap: 8px; align-items: center;",
+                        input {
+                            r#type: "text",
+                            value: "{current}",
+                            placeholder: "e.g. Fira Code, Noto Serif KR, or Georgia, serif",
+                            class: "editor-field",
+                            style: "flex: 1; min-width: 0;",
+                            oninput: move |e| value.set(e.value()),
+                        }
+                        button {
+                            class: "editor-button",
+                            style: "flex-shrink: 0; white-space: nowrap;",
+                            onclick: move |_| {
+                                spawn(async move {
+                                    if let Some(file) = rfd::AsyncFileDialog::new()
+                                        .add_filter("Fonts", &["ttf", "woff", "woff2", "otf"])
+                                        .pick_file()
+                                        .await
+                                    {
+                                        let parsed = parse_font_filename(&file.file_name());
+                                        value.set(parsed);
+                                    }
+                                });
+                            },
+                            "Browse Local Font..."
+                        }
                     }
                     p {
                         class: "editor-mini-label",
                         style: "margin-top: 6px;",
-                        "Type Google Font family, or drag a .ttf/.woff file here."
+                        "Type Google Font family, browse a local font file, or drag a .ttf/.woff file here."
                     }
                 }
             }

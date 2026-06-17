@@ -33,7 +33,7 @@ pub fn clean_raw_css(input: &str) -> String {
 pub const DEFAULT_ICON_SIDEBAR_LEFT:  &str = "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
 pub const DEFAULT_ICON_SIDEBAR_RIGHT: &str = "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
 pub const DEFAULT_ICON_PANEL_CLOSE:   &str = "M18 6 6 18M6 6l12 12";
-pub const DEFAULT_ICON_SEARCH:        &str = "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5";
+pub const DEFAULT_ICON_SEARCH:        &str = "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z M21 21l-5.5-5.5";
 pub const DEFAULT_ICON_MENU:          &str = "M4 7h16M4 12h16M4 17h16";
 
 /// Returns the configured icon if set, otherwise an inline-encoded fallback
@@ -93,7 +93,10 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
   --btn-text-transform: {btn_text_transform};
   --font-body: {font_body};
   --font-heading: {font_heading};
-  --font-mono: {font_mono};"#,
+  --font-mono: {font_mono};
+  --font-size-base: {font_size_base};
+  --line-height-body: {line_height_body};
+  --heading-weight: {heading_weight};"#,
         bg_base = config.colors.bg_base,
         bg_panel = config.colors.bg_panel.to_css(),
         bg_elevated = config.colors.bg_elevated.to_css(),
@@ -110,6 +113,9 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         font_body = font_body,
         font_heading = font_heading,
         font_mono = font_mono,
+        font_size_base = config.typography.base_size,
+        line_height_body = config.typography.line_height,
+        heading_weight = config.typography.heading_weight,
     );
 
     custom_vars.push_str(&format!(

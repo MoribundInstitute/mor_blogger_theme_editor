@@ -15,9 +15,10 @@ use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
 use mor_blogger_core::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
-use crate::ui::panels::presets::PresetFloatingWindow;
-use crate::ui::panels::static_pages_panel::StaticPagesFloatingWindow;
-use crate::ui::panels::template_modules::TemplateModulesFloatingWindow;
+use crate::ui::panels::theme_palette::presets::PresetFloatingWindow;
+use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
+use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
+use crate::ui::workspace::layout::PanelLayout;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::right_dock::RightDataPanel;
@@ -33,6 +34,26 @@ pub fn render_app_shell(
     let current_config = theme.current_config;
     let mut active_preset = theme.active_preset;
     let mut center_view = theme.center_view;
+
+    use_effect(move || {
+        let view = center_view();
+        match view {
+            CenterView::CodeEditor | CenterView::Export | CenterView::ModuleWorkbench => {
+                if (layout.left_layout)() == PanelLayout::Split || (layout.left_layout)() == PanelLayout::Wide {
+                    layout.left_layout.set(PanelLayout::Hidden);
+                }
+                if (layout.right_layout)() == PanelLayout::Split || (layout.right_layout)() == PanelLayout::Wide {
+                    layout.right_layout.set(PanelLayout::Hidden);
+                }
+            }
+            CenterView::Preview | CenterView::Split => {
+                if (layout.left_layout)() == PanelLayout::Hidden {
+                    layout.left_layout.set(PanelLayout::Split);
+                }
+            }
+        }
+    });
+
     let show_preview = use_signal(|| true);
     
     let show_undocked_presets = theme.show_undocked_presets;
@@ -41,7 +62,7 @@ pub fn render_app_shell(
     
     // Dialog Signals
     let mut show_about = use_signal(|| false);
-    let mut show_prefs = use_signal(|| false);
+    let show_prefs = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
     let show_plugins = use_signal(|| false); // Removed dead 'mut' warning
     let mut show_css_builder = use_signal(|| false);
@@ -106,8 +127,8 @@ pub fn render_app_shell(
     });
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-    let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
-    let mut active_theme_toml = use_signal(|| get_native_os_theme().to_string());
+    let ui_mode_pref = use_signal(|| active_ui_mode.clone());
+    let ui_theme_pref = use_signal(|| get_native_os_theme().to_string());
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
@@ -119,7 +140,7 @@ pub fn render_app_shell(
     });
 
     rsx! {
-        MorStyleProvider { theme_toml: active_theme_toml() }
+        MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
 
         MorShell {
@@ -151,7 +172,7 @@ pub fn render_app_shell(
 
             UserPreferencesModal {
                 show_prefs,
-                active_theme_toml,
+                active_theme_toml: ui_theme_pref,
                 ui_mode_pref,
                 active_ui_mode: active_ui_mode.clone(),
             }
@@ -364,7 +385,7 @@ pub fn render_app_shell(
                             };
 
                             tv_monitor.set(
-                                crate::ui::panels::static_pages_panel::inject_static_page(&base, &new_html),
+                                crate::ui::panels::theme_palette::static_pages_panel::inject_static_page(&base, &new_html),
                             );
                         },
                         on_toggle_dark_mode: {

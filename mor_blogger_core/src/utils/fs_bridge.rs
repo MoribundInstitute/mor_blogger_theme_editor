@@ -60,11 +60,23 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
 
 // ─── Path helpers ────────────────────────────────────────────────────────────
 
+/// Returns the app-scoped workspace root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/` on Linux.
+pub fn workspace_root() -> Option<PathBuf> {
+    ProjectDirs::from(APP_QUALIFIER, APP_ORG, APP_NAME)
+        .map(|d| d.data_dir().to_path_buf())
+}
+
 /// Returns the app-scoped templates root, e.g.
 /// `~/.local/share/morbloggerthemeeditor/templates/` on Linux.
 pub fn templates_root() -> Option<PathBuf> {
-    ProjectDirs::from(APP_QUALIFIER, APP_ORG, APP_NAME)
-        .map(|d| d.data_dir().join("templates"))
+    workspace_root().map(|r| r.join("templates"))
+}
+
+/// Returns the app-scoped icons root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/icons/` on Linux.
+pub fn icons_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("icons"))
 }
 
 /// Returns the directory for a specific category inside the templates root.
@@ -87,6 +99,15 @@ pub fn init_template_dirs() -> std::io::Result<()> {
     for category in TEMPLATE_CATEGORIES {
         std::fs::create_dir_all(root.join(category))?;
     }
+
+    let icons = icons_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&icons)?;
+    log::info!("[fs_bridge] Icons dir ready at: {}", icons.display());
 
     for (category, filename, content) in DEFAULT_MODULES {
         let dest = root.join(category).join(filename);
@@ -157,6 +178,37 @@ pub fn open_templates_folder() -> std::io::Result<()> {
         .arg(&path)
         .spawn()
         .map(|_| ())?;
+
+    Ok(())
+}
+
+/// Spawn the platform-native file manager focused on the icons root.
+/// Creates the directory first if it does not yet exist.
+pub fn open_icons_folder() -> Result<(), String> {
+    let path = icons_root().ok_or_else(|| {
+        "Cannot determine system data directory".to_string()
+    })?;
+
+    // Ensure the directory exists before asking the OS to open it.
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }

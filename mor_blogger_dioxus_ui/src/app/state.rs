@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use mor_blogger_core::config::defaults::default_theme_config;
 use mor_blogger_core::config::{ColorConfig, MenuLink, TemplatePackConfig, ThemeConfig};
-use crate::ui::panels::presets::ThemeSignals;
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use crate::app::layout_state::CenterView;
 
 use super::config_bridge::{menu_label, menu_url};

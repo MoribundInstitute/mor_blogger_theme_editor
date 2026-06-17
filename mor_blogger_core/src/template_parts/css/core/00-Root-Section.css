@@ -21,6 +21,9 @@
   --font-body: {{FONT_BODY}};
   --font-heading: {{FONT_HEADING}};
   --font-mono: {{FONT_MONO}};
+  --font-size-base: {{BASE_SIZE}};
+  --line-height-body: {{LINE_HEIGHT}};
+  --heading-weight: {{HEADING_WEIGHT}};
   --sidebar-width: 300px;
   --header-z: 1100;
   --overlay-z: 1200;

@@ -277,5 +277,8 @@ mod tests {
         assert!(css.contains("--font-body: 'Inter', sans-serif;"));
         assert!(css.contains("--font-heading: 'Playfair Display', serif;"));
         assert!(css.contains("--font-mono: 'Courier New', Courier, monospace;"));
+        assert!(css.contains("--font-size-base: 16px;"));
+        assert!(css.contains("--line-height-body: 1.6;"));
+        assert!(css.contains("--heading-weight: 700;"));
     }
 }

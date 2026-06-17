@@ -1,3 +1,31 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size-base);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-body);
+  line-height: var(--line-height-body);
+}
+
+body {
+  min-width: 0;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
 /* ============================================================
    Universal Accessibility Overrides
    These rules sit at the bottom of the cascade and intercept

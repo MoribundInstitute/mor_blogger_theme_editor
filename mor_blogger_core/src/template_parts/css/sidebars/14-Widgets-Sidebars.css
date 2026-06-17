@@ -1,18 +1,48 @@
 .widget { margin-bottom: 25px; }
 .widget h2 { margin-top: 0; font-size: 1rem; border-bottom: var(--panel-border-width) solid var(--theme-border-color); padding-bottom: 5px; }
-.widget h2::before {
+.widget.BlogArchive h2.title::before {
   content: "";
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-  vertical-align: middle;
+  width: 1.1em;
+  height: 1.1em;
   background-color: var(--accent);
-  mask-image: var(--widget-icon);
-  -webkit-mask-image: var(--widget-icon);
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-archive);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.Label h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-label);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.HTML h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-toc);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
 }
 .sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
 .sidebar-section .Label ul,

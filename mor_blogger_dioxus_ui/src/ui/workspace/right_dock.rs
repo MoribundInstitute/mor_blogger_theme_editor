@@ -2,13 +2,13 @@ use dioxus::prelude::*;
 
 use mor_blogger_core::config::ThemeConfig;
 use crate::ui::components::accordion::EditorAccordion;
-use crate::ui::panels::ads_panel::AdsPanel;
-use crate::ui::panels::assets_panel::AssetsPanel;
-use crate::ui::panels::menu_panel::MenuPanel;
-use crate::ui::panels::plugins_panel::PluginsPanel;
-use crate::ui::panels::presets::ThemeSignals;
-use crate::ui::panels::seo_panel::{FooterPanel, SeoPanel};
-use crate::ui::panels::site_panel::SitePanel;
+use crate::ui::panels::site_data::ads_panel::AdsPanel;
+use crate::ui::panels::site_data::assets_panel::AssetsPanel;
+use crate::ui::panels::site_data::menu_panel::MenuPanel;
+use crate::ui::panels::site_data::plugins_panel::PluginsPanel;
+use crate::ui::panels::site_data::seo_panel::{FooterPanel, SeoPanel};
+use crate::ui::panels::site_data::site_panel::SitePanel;
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use crate::ui::workspace::layout::PanelLayout;
 use super::left_dock::{IconGrip, IconClose};
 

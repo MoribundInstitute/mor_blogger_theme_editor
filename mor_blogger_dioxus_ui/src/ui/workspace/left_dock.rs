@@ -2,15 +2,15 @@ use dioxus::prelude::*;
 
 use mor_blogger_core::config::ThemeConfig;
 use crate::ui::components::accordion::EditorAccordion;
-use crate::ui::panels::background_panel::BackgroundPanel;
-use crate::ui::panels::buttons_panel::ButtonsPanel;
-use crate::ui::panels::colors_panel::ColorsPanel;
-use crate::ui::panels::effects_panel::EffectsPanel;
-use crate::ui::panels::icons_panel::SvgIconsPanel;
-use crate::ui::panels::presets::{PresetsPanel, ThemeSignals};
-use crate::ui::panels::static_pages_panel::StaticPagesPanel;
-use crate::ui::panels::template_modules::TemplateModulesPanel;
-use crate::ui::panels::typography_panel::TypographyPanel;
+use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
+use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
+use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
+use crate::ui::panels::theme_palette::effects_panel::EffectsPanel;
+use crate::ui::panels::theme_palette::icons_panel::SvgIconsPanel;
+use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
+use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
+use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
+use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use crate::ui::workspace::layout::PanelLayout;
 
 const LEFT_DOCK_CSS: &str = r#"

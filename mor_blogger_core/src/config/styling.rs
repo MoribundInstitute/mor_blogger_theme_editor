@@ -194,10 +194,10 @@ impl Default for IconConfig {
 }
 
 const ICON_SIDEBAR_LEFT_PATH: &str =
-    "M3 3h18v18H3V3zm16 16V5H9v14h10z";
+    "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
 
 const ICON_SIDEBAR_RIGHT_PATH: &str =
-    "M3 3h18v18H3V3zm2 16V5h10v14H5z";
+    "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
 
 const ICON_CLOSE_PATH: &str =
     "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
@@ -215,7 +215,7 @@ pub fn svg_mask(path_d: &str) -> String {
         .replace(' ', "%20");
 
     format!(
-        r#"url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='{}'/%3E%3C/svg%3E")"#,
+        r#"url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='{}'/%3E%3C/svg%3E")"#,
         encoded
     )
 }

@@ -199,18 +199,7 @@ pub fn PreviewCanvas(
                                                             }
                                                         }
 
-                                                        const btn = target.closest('.panel-toggle');
-                                                        if (btn) {
-                                                            e.preventDefault(); e.stopPropagation();
-                                                            const tId = btn.getAttribute('data-target');
-                                                            if (tId) {
-                                                                let panel = doc.getElementById(tId);
-                                                                if (!panel && tId.startsWith('panel-')) {
-                                                                    panel = doc.getElementById(tId.replace('panel-', 'sidebar-'));
-                                                                }
-                                                                if (panel) panel.classList.toggle('is-collapsed');
-                                                            }
-                                                        }
+                                                        
                                                     });
                                                 }, 50);
                                                 return;

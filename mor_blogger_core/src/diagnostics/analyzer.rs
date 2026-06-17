@@ -204,6 +204,13 @@ fn check_profile_structure(
 }
 
 fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
+    let mut all_ids = std::collections::HashSet::new();
+    for node in doc.descendants().filter(Node::is_element) {
+        if let Some(id) = node.attribute("id") {
+            all_ids.insert(id);
+        }
+    }
+
     for node in doc.descendants().filter(Node::is_element) {
         let Some(class_attr) = node.attribute("class") else {
             continue;
@@ -216,8 +223,8 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
             continue;
         }
 
-        let has_target = node
-            .attribute("data-target")
+        let target_attr = node.attribute("data-target");
+        let has_target = target_attr
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
 
@@ -234,17 +241,25 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
             })
             .unwrap_or(false);
 
-        if !has_target && !has_onclick && !has_href {
-            let tag = node.tag_name().name();
-            let id_str = node
-                .attribute("id")
-                .map(|id| format!(" id='{id}'"))
-                .unwrap_or_default();
+        let tag = node.tag_name().name();
+        let id_str = node
+            .attribute("id")
+            .map(|id| format!(" id='{id}'"))
+            .unwrap_or_default();
 
+        if !has_target && !has_onclick && !has_href {
             out.push(Warning::error(
                 "PANEL_TOGGLE_BROKEN",
                 format!("<{tag}{id_str} class='panel-toggle'> is missing a data-target, onclick, or href attribute. It will do nothing."),
             ));
+        } else if let Some(target_val) = target_attr {
+            let target_val = target_val.trim();
+            if !target_val.is_empty() && !all_ids.contains(target_val) {
+                out.push(Warning::error(
+                    "PANEL_TOGGLE_TARGET_MISSING",
+                    format!("<{tag}{id_str} class='panel-toggle' data-target='{target_val}'> references a non-existent element ID."),
+                ));
+            }
         }
     }
 }

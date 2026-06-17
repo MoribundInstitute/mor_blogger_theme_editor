@@ -11,6 +11,7 @@
   padding: 30px 40px 20px;
   font-size: 0.85rem;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .footer-sys-info {

@@ -48,6 +48,9 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{LEFT_PANEL_OPEN_LABEL}}", &left_panel_html);
     xml = xml.replace("{{RIGHT_PANEL_OPEN_LABEL}}", &right_panel_html);
 
+    let catalog_label = escape_html("Catalog");
+    xml = xml.replace("{{CATALOG_OPEN_LABEL}}", &catalog_label);
+
     xml = xml.replace("{{NAV_HOME_LABEL}}", &escape_html(first_non_empty(&menu_1.label, "Home")));
     xml = xml.replace("{{NAV_HOME_URL}}", &escape_attr(first_non_empty(&menu_1.url, site_home_url)));
     xml = xml.replace("{{NAV_ABOUT_LABEL}}", &escape_html(first_non_empty(&menu_2.label, "About")));
@@ -87,6 +90,13 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{CATALOG_PROJECTS_URL}}", "#");
     xml = xml.replace("{{CATALOG_PROGRESS_LABEL}}", "Status");
     xml = xml.replace("{{CATALOG_PROGRESS_URL}}", "#");
+
+    xml = xml.replace("{{SUBJECT_LIST}}", "");
+    xml = xml.replace("{{LEXICON_LIST}}", "");
+    xml = xml.replace("{{MEDIA_LIST}}", "");
+    xml = xml.replace("{{WIKI_LIST}}", "");
+    xml = xml.replace("{{PROJECTS_LIST}}", "");
+    xml = xml.replace("{{PROGRESS_LIST}}", "");
 
     xml = xml.replace("{{SUBJECT_000_LABEL}}", "000 General");
     xml = xml.replace("{{SUBJECT_000_URL}}", "#");

@@ -13,7 +13,7 @@ use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 use super::main_dock::MainDock;
 use super::smart_code_dock::SmartCodeDock;
 
-const PICKER_ICONS: [(&str, &str); 10] = [
+const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
     ("Search", "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5"),
     ("Menu", "M4 7h16M4 12h16M4 17h16"),
@@ -23,7 +23,12 @@ const PICKER_ICONS: [(&str, &str); 10] = [
     ("Chevron Right", "m9 18 6-6-6-6"),
     ("Home", "m3 11 9-8 9 8 M5 10v10h14V10 M9 20v-6h6v6"),
     ("Archive", "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z"),
-    ("Tag", "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z"),
+    ("Label", "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z"),
+    ("Share", "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"),
+    ("User", "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8"),
+    ("Comment", "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"),
+    ("Arrow Up", "M12 19V5 M5 12l7-7 7 7"),
+    ("External Link", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3"),
 ];
 
 fn encode_path_to_mask(path_d: &str) -> String {
@@ -101,6 +106,33 @@ pub fn BloggerWorkspace(
             if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
                 config.template_pack.move_widget(&id, &dest);
                 restore.call(config);
+            }
+        }
+    };
+
+    let apply_drop_svg = {
+        let restore = on_restore.clone();
+        move |(target, content): (String, String), cfg: String| {
+            if is_svg(&content) {
+                let mask = svg_to_data_uri(&content);
+                if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
+                    match target.as_str() {
+                        "icons.panel_close" => config.icons.panel_close = mask,
+                        "icons.search" => config.icons.search = mask,
+                        "icons.menu" => config.icons.menu = mask,
+                        "icons.sidebar_left" => config.icons.sidebar_left = mask,
+                        "icons.sidebar_right" => config.icons.sidebar_right = mask,
+                        "icons.archive" => config.icons.archive = mask,
+                        "icons.label" => config.icons.label = mask,
+                        "icons.share" => config.icons.share = mask,
+                        "icons.user" => config.icons.user = mask,
+                        "icons.comment" => config.icons.comment = mask,
+                        "icons.arrow_up" => config.icons.arrow_up = mask,
+                        "icons.external_link" => config.icons.external_link = mask,
+                        _ => {}
+                    }
+                    restore.call(config);
+                }
             }
         }
     };
@@ -193,6 +225,10 @@ pub fn BloggerWorkspace(
                                 on_move_widget: {
                                     let mutator = apply_widget_move.clone();
                                     move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
+                                },
+                                on_drop_svg: {
+                                    let mutator = apply_drop_svg.clone();
+                                    move |(target, content): (String, String)| { mutator((target, content), config_toml()); }
                                 }
                             }
                         }
@@ -231,6 +267,10 @@ pub fn BloggerWorkspace(
                                 on_move_widget: {
                                     let mutator = apply_widget_move.clone();
                                     move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
+                                },
+                                on_drop_svg: {
+                                    let mutator = apply_drop_svg.clone();
+                                    move |(target, content): (String, String)| { mutator((target, content), config_toml()); }
                                 }
                             }
                         }
@@ -419,6 +459,13 @@ fn IconPickerModal(
                                                     "icons.menu" => config.icons.menu = mask,
                                                     "icons.sidebar_left" => config.icons.sidebar_left = mask,
                                                     "icons.sidebar_right" => config.icons.sidebar_right = mask,
+                                                    "icons.archive" => config.icons.archive = mask,
+                                                    "icons.label" => config.icons.label = mask,
+                                                    "icons.share" => config.icons.share = mask,
+                                                    "icons.user" => config.icons.user = mask,
+                                                    "icons.comment" => config.icons.comment = mask,
+                                                    "icons.arrow_up" => config.icons.arrow_up = mask,
+                                                    "icons.external_link" => config.icons.external_link = mask,
                                                     _ => {}
                                                 }
                                                 restore.call(config);
@@ -464,6 +511,13 @@ fn IconPickerModal(
                                                     "icons.menu" => config.icons.menu = mask_uri.clone(),
                                                     "icons.sidebar_left" => config.icons.sidebar_left = mask_uri.clone(),
                                                     "icons.sidebar_right" => config.icons.sidebar_right = mask_uri.clone(),
+                                                    "icons.archive" => config.icons.archive = mask_uri.clone(),
+                                                    "icons.label" => config.icons.label = mask_uri.clone(),
+                                                    "icons.share" => config.icons.share = mask_uri.clone(),
+                                                    "icons.user" => config.icons.user = mask_uri.clone(),
+                                                    "icons.comment" => config.icons.comment = mask_uri.clone(),
+                                                    "icons.arrow_up" => config.icons.arrow_up = mask_uri.clone(),
+                                                    "icons.external_link" => config.icons.external_link = mask_uri.clone(),
                                                     _ => {}
                                                 }
                                                 on_restore.call(config);
@@ -496,6 +550,13 @@ fn IconPickerModal(
                                             "icons.menu" => config.icons.menu = mask.clone(),
                                             "icons.sidebar_left" => config.icons.sidebar_left = mask.clone(),
                                             "icons.sidebar_right" => config.icons.sidebar_right = mask.clone(),
+                                            "icons.archive" => config.icons.archive = mask.clone(),
+                                            "icons.label" => config.icons.label = mask.clone(),
+                                            "icons.share" => config.icons.share = mask.clone(),
+                                            "icons.user" => config.icons.user = mask.clone(),
+                                            "icons.comment" => config.icons.comment = mask.clone(),
+                                            "icons.arrow_up" => config.icons.arrow_up = mask.clone(),
+                                            "icons.external_link" => config.icons.external_link = mask.clone(),
                                             _ => {}
                                         }
                                         on_restore.call(config);

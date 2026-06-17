@@ -223,6 +223,22 @@ pub struct IconConfig {
     pub search: String,
     pub menu: String,
 
+    // Standard blog action icons (expanded library, first-class fields)
+    #[serde(default = "default_archive_icon")]
+    pub archive: String,
+    #[serde(default = "default_label_icon")]
+    pub label: String,
+    #[serde(default = "default_share_icon")]
+    pub share: String,
+    #[serde(default = "default_user_icon")]
+    pub user: String,
+    #[serde(default = "default_comment_icon")]
+    pub comment: String,
+    #[serde(default = "default_arrow_up_icon")]
+    pub arrow_up: String,
+    #[serde(default = "default_external_link_icon")]
+    pub external_link: String,
+
     /// Arbitrary SVG mask icons keyed by name.
     pub custom_icons: HashMap<String, String>,
 }
@@ -235,6 +251,14 @@ impl Default for IconConfig {
             panel_close: svg_mask(ICON_CLOSE_PATH),
             search: svg_mask(ICON_SEARCH_PATH),
             menu: svg_mask(ICON_MENU_PATH),
+            // defaults for new standard blog action icons
+            archive: svg_mask(ICON_ARCHIVE_PATH),
+            label: svg_mask(ICON_LABEL_PATH),
+            share: svg_mask(ICON_SHARE_PATH),
+            user: svg_mask(ICON_USER_PATH),
+            comment: svg_mask(ICON_COMMENT_PATH),
+            arrow_up: svg_mask(ICON_ARROW_UP_PATH),
+            external_link: svg_mask(ICON_EXTERNAL_LINK_PATH),
             custom_icons: HashMap::new(),
         }
     }
@@ -254,6 +278,30 @@ const ICON_SEARCH_PATH: &str =
 
 const ICON_MENU_PATH: &str =
     "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
+
+// New standard blog action icon paths (minimal Lucide/Feather style)
+const ICON_ARCHIVE_PATH: &str =
+    "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
+const ICON_LABEL_PATH: &str =
+    "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z";
+const ICON_SHARE_PATH: &str =
+    "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13";
+const ICON_USER_PATH: &str =
+    "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8";
+const ICON_COMMENT_PATH: &str =
+    "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z";
+const ICON_ARROW_UP_PATH: &str =
+    "M12 19V5 M5 12l7-7 7 7";
+const ICON_EXTERNAL_LINK_PATH: &str =
+    "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3";
+
+fn default_archive_icon() -> String { svg_mask(ICON_ARCHIVE_PATH) }
+fn default_label_icon() -> String { svg_mask(ICON_LABEL_PATH) }
+fn default_share_icon() -> String { svg_mask(ICON_SHARE_PATH) }
+fn default_user_icon() -> String { svg_mask(ICON_USER_PATH) }
+fn default_comment_icon() -> String { svg_mask(ICON_COMMENT_PATH) }
+fn default_arrow_up_icon() -> String { svg_mask(ICON_ARROW_UP_PATH) }
+fn default_external_link_icon() -> String { svg_mask(ICON_EXTERNAL_LINK_PATH) }
 
 pub fn svg_mask(path_d: &str) -> String {
     let encoded = path_d

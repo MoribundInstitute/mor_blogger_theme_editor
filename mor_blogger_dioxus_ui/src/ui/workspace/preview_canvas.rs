@@ -68,6 +68,7 @@ pub fn PreviewCanvas(
     #[props(default)] on_update_value: Option<EventHandler<(String, String)>>,
     #[props(default)] on_move_widget: Option<EventHandler<(String, String)>>,
     #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
+    #[props(default)] on_drop_svg: Option<EventHandler<(String, String)>>,
 ) -> Element {
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -201,6 +202,46 @@ pub fn PreviewCanvas(
 
                                                         
                                                     });
+
+                                                    // Drag-and-drop SVG replacement (Google Sites style) - attach once
+                                                    if (!doc.__morDropInstalled) {
+                                                        doc.__morDropInstalled = true;
+
+                                                        doc.addEventListener('dragover', function(e) {
+                                                            e.preventDefault();
+                                                            if (e.dataTransfer) {
+                                                                e.dataTransfer.dropEffect = 'copy';
+                                                            }
+                                                        });
+
+                                                        doc.addEventListener('drop', function(e) {
+                                                            e.preventDefault();
+                                                            const dt = e.dataTransfer;
+                                                            const file = dt && dt.files && dt.files[0];
+                                                            if (!file) return;
+
+                                                            const name = (file.name || '').toLowerCase();
+                                                            const isSvg = file.type === 'image/svg+xml' || name.endsWith('.svg');
+                                                            if (!isSvg) return;
+
+                                                            const dropTarget = (e.target && e.target.closest)
+                                                                ? e.target.closest('[data-edit-target]')
+                                                                : null;
+                                                            if (!dropTarget) return;
+
+                                                            const targetId = dropTarget.getAttribute('data-edit-target');
+                                                            if (!targetId || !targetId.startsWith('icons.')) return;
+
+                                                            const reader = new FileReader();
+                                                            reader.onload = function() {
+                                                                const content = reader.result;
+                                                                if (typeof content === 'string') {
+                                                                    dioxus.send({ action: "DROP_SVG", target: targetId, content: content });
+                                                                }
+                                                            };
+                                                            reader.readAsText(file);
+                                                        });
+                                                    }
                                                 }, 50);
                                                 return;
                                             }
@@ -314,6 +355,11 @@ pub fn PreviewCanvas(
                                             }
                                             "TOGGLE_DARK_MODE" => {
                                                 if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); }
+                                            }
+                                            "DROP_SVG" => {
+                                                if let (Some(target), Some(content)) = (json.get("target").and_then(|t| t.as_str()), json.get("content").and_then(|c| c.as_str())) {
+                                                    if let Some(handler) = on_drop_svg.as_ref() { handler.call((target.to_string(), content.to_string())); }
+                                                }
                                             }
                                             _ => {}
                                         }

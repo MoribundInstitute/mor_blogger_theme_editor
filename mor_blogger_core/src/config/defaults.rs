@@ -99,11 +99,13 @@ pub fn default_theme_config() -> ThemeConfig {
         },
 
         preset_css: "".to_string(),
-        // Drops the 15 lines of raw string repetition in favor of styling.rs defaults
+        // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
+        // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).
         icons: {
             let mut i = crate::config::styling::IconConfig::default();
-            i.custom_icons.insert("label".to_string(), crate::config::styling::svg_mask("M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z"));
-            i.custom_icons.insert("archive".to_string(), crate::config::styling::svg_mask("M5 8v12h14V8 M10 12h4 M3 4h18v4H3z"));
+            // ensure label/archive still populate custom_icons for --icon-* widget vars (css_builder)
+            i.custom_icons.insert("label".to_string(), i.label.clone());
+            i.custom_icons.insert("archive".to_string(), i.archive.clone());
             i
         }, 
     }

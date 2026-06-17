@@ -1,6 +1,8 @@
 <main class='canvas-core'>
   <div class='canvas-content'>
 
+    {{LAYOUT_BLOCKS}}
+
     <b:section class='main-section' id='main-content' showaddelement='no'>
       {{MAIN_CONTENT_MODULE}}
     </b:section>

@@ -15,7 +15,8 @@
   mask-position: center;
 }
 .sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
-.sidebar-section .Label ul {
+.sidebar-section .Label ul,
+.sidebar-section .BlogArchive ul:not(.posts) {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -24,7 +25,8 @@
   gap: 10px;
 }
 .sidebar-section .Label li { padding: 0; font-size: 0.75rem; }
-.sidebar-section .Label a {
+.sidebar-section .Label a,
+.sidebar-section .BlogArchive ul:not(.posts) a {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,11 +39,14 @@
   text-align: center;
 }
 .sidebar-section .Label a:hover,
-.sidebar-section .Label a:focus-visible {
+.sidebar-section .Label a:focus-visible,
+.sidebar-section .BlogArchive ul:not(.posts) a:hover,
+.sidebar-section .BlogArchive ul:not(.posts) a:focus-visible {
   background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
   box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-.sidebar-section .Label a .label-count {
+.sidebar-section .Label a .label-count,
+.sidebar-section .BlogArchive .post-count {
   display: block;
   font-size: 0.65rem;
   color: var(--fg-muted);

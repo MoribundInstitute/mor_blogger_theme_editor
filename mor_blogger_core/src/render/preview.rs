@@ -4,6 +4,7 @@
 
 use crate::config::{BackgroundMode, ThemeConfig};
 use crate::config::prefs::RenderPrefs;
+use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -40,29 +41,27 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
         ),
     };
 
-    let heading_stack = if config.typography.heading_font_stack.trim().is_empty() {
-        config.typography.body_font_stack.clone()
-    } else {
-        config.typography.heading_font_stack.clone()
-    };
-
     let google_fonts_link = build_google_fonts_link(&[
         &config.typography.body_font_stack,
-        &heading_stack,
+        &config.typography.heading_font_stack,
         &config.typography.mono_font_stack,
     ]);
 
     let menu_links = config
         .menu_links
         .iter()
-        .filter(|link| !link.label.trim().is_empty())
-        .map(|link| format!(r#"<a href="{}">{}</a>"#, escape_attr(&link.url), escape_html(&link.label)))
+        .enumerate()
+        .filter(|(_, link)| !link.label.trim().is_empty())
+        .map(|(index, link)| menu_link_anchor(index, &link.url, &link.label))
         .collect::<Vec<_>>()
         .join("");
 
     let site_title = escape_html(&config.site.site_title);
     let site_subtitle = escape_html(&config.site.site_subtitle);
     let footer_text = escape_html(&config.footer.footer_text);
+    let label_title = widget_title_h2("Label1", config.template_pack.widget_title("Label1", "Labels"));
+    let archive_title = widget_title_h2("BlogArchive1", config.template_pack.widget_title("BlogArchive1", "Archive"));
+    let toc_title = widget_title_h2("HTML1", config.template_pack.widget_title("HTML1", "Table of Contents"));
 
     // Fetch the TRUE CSS that will be injected into the final Blogger XML
     let mut parts = crate::render::template_resolver::resolve_template_parts(config);
@@ -107,7 +106,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left">Browse</button>
         </div>
         <a class="branding branding-link">
-            <span class="institute-title" data-edit-target="site.site_title">{site_title}</span>
+            <span class="institute-title" data-field-path="site.site_title">{site_title}</span>
         </a>
         <div class="header-side-controls right-controls">
             <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode (Use Editor UI to switch)" data-edit-target="colors.accent">
@@ -132,8 +131,8 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close">Close</button>
         </div>
         <div class="panel-content sidebar-section">
-            <div class="widget"><h2 data-edit-target="typography.heading_font_stack">Labels</h2><div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
-            <div class="widget"><h2 data-edit-target="typography.heading_font_stack">Site Status</h2><div class="widget-content" data-edit-target="site.site_subtitle">{site_subtitle}</div></div>
+            <div class="widget" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
+            <div class="widget" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
         </div>
     </aside>
 
@@ -159,7 +158,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
         </div>
         <footer class="mor-footer" data-edit-target="colors.bg_elevated">
             <div class="footer-sys-info">
-                <p class="footer-copyright" data-edit-target="footer.footer_text">{footer_text}</p>
+                <p class="footer-copyright" data-field-path="footer.footer_text">{footer_text}</p>
                 <div class="footer-legal-links">
                     <a href="#">Privacy policy</a> | <a href="#">Terms of use</a>
                 </div>
@@ -174,7 +173,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close">Close</button>
         </div>
         <div class="panel-content sidebar-section">
-            <div class="widget"><h2 data-edit-target="typography.heading_font_stack">Table of Contents</h2><div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
+            <div class="widget" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
         </div>
     </aside>
 </div>"##,
@@ -182,6 +181,9 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
         site_subtitle = site_subtitle,
         menu_links = menu_links,
         footer_text = footer_text,
+        label_title = label_title,
+        archive_title = archive_title,
+        toc_title = toc_title,
     );
 
     format!(

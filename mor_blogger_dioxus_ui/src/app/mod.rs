@@ -13,7 +13,7 @@ pub mod layout_state;
 mod render_state;
 mod restore_drop;
 mod shell;
-mod state;
+pub mod state;
 
 use keyboard::use_keyboard_shortcuts;
 use layout_state::use_app_layout_state;
@@ -25,6 +25,9 @@ use state::use_theme_app_state;
 pub fn App() -> Element {
     let theme = use_theme_app_state();
     let layout = use_app_layout_state();
+
+    provide_context(theme);
+    provide_context(layout);
 
     use_keyboard_shortcuts(layout);
     use_restore_drop_bridge(theme.signals, theme.active_preset);

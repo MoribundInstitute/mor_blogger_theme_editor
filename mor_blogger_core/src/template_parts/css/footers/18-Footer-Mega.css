@@ -14,29 +14,6 @@
   min-width: 0;
 }
 
-.footer-col {
-  min-width: 0;
-}
-
-.footer-col h4 {
-  color: var(--fg-base);
-  margin-top: 0;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
-  display: inline-block;
-  padding-bottom: 2px;
-}
-
-.footer-col ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-col li {
-  margin-bottom: 8px;
-}
-
 .footer-col a {
   color: var(--fg-dim);
   border-bottom: none;

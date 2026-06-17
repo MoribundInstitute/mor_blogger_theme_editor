@@ -220,6 +220,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         static_pages: static_pages(),
         ads: ads(),
         template_pack: TemplatePackConfig::default(),
+        blocks: Vec::new(),
         preset_css: preset_css(),
     });
 

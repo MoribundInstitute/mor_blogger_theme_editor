@@ -8,6 +8,7 @@ pub enum CenterView {
     CodeEditor,
     Split,
     Export,
+    ModuleWorkbench,
 }
 
 #[derive(Clone, Copy)]

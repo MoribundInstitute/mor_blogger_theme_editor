@@ -7,7 +7,7 @@
 
   <div class='headerbar-center'>
     <a aria-label="{{SITE_TITLE_ATTR}} homepage" class='branding-link' href="{{SITE_HOME_URL_ATTR}}">
-      <span class='gtk-window-title'>{{SITE_TITLE}}</span>
+      <span class='gtk-window-title' data-field-path='site.site_title'>{{SITE_TITLE}}</span>
     </a>
   </div>
 

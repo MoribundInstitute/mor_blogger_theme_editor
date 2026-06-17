@@ -46,14 +46,86 @@ pub const MONO_FONT_REGISTRY: &[FontPreset] = &[
     FontPreset { name: "Courier New", css_stack: "'Courier New', Courier, monospace", google_font_name: None, category: "System Safe" },
 ];
 
+/// Primary family name from a CSS font stack (text before the first comma).
+pub fn primary_font_from_stack(stack: &str) -> &str {
+    stack
+        .split(',')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"')
+}
+
+/// True when the primary font does not require a Google Fonts stylesheet.
+pub fn is_system_safe_font(name: &str) -> bool {
+    let name = name.trim();
+    if name.is_empty() {
+        return true;
+    }
+
+    if name.eq_ignore_ascii_case("serif")
+        || name.eq_ignore_ascii_case("sans-serif")
+        || name.eq_ignore_ascii_case("monospace")
+        || name.eq_ignore_ascii_case("cursive")
+        || name.eq_ignore_ascii_case("fantasy")
+        || name.eq_ignore_ascii_case("system-ui")
+        || name.eq_ignore_ascii_case("-apple-system")
+        || name.eq_ignore_ascii_case("blinkmacsystemfont")
+        || name.eq_ignore_ascii_case("segoe ui")
+        || name.eq_ignore_ascii_case("helvetica")
+        || name.eq_ignore_ascii_case("helvetica neue")
+        || name.eq_ignore_ascii_case("arial")
+        || name.eq_ignore_ascii_case("verdana")
+        || name.eq_ignore_ascii_case("tahoma")
+        || name.eq_ignore_ascii_case("trebuchet ms")
+        || name.eq_ignore_ascii_case("georgia")
+        || name.eq_ignore_ascii_case("times")
+        || name.eq_ignore_ascii_case("times new roman")
+        || name.eq_ignore_ascii_case("courier")
+        || name.eq_ignore_ascii_case("courier new")
+        || name.eq_ignore_ascii_case("lucida console")
+        || name.eq_ignore_ascii_case("lucida sans unicode")
+        || name.eq_ignore_ascii_case("comic sans ms")
+        || name.eq_ignore_ascii_case("impact")
+    {
+        return true;
+    }
+
+    for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
+        if font.name.eq_ignore_ascii_case(name) {
+            return font.google_font_name.is_none();
+        }
+    }
+
+    false
+}
+
+fn implies_serif(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    lower.contains("serif")
+        || lower.contains("roman")
+        || lower.contains("garamond")
+        || lower.contains("georgia")
+        || lower.contains("palatino")
+        || lower.contains("times")
+        || lower.contains("baskerville")
+        || lower.contains("caslon")
+        || lower.contains("bodoni")
+}
+
 pub fn resolve_font_stack_with_fallback(raw_input: &str, is_mono: bool) -> String {
     let trimmed = raw_input.trim();
     if trimmed.is_empty() {
-        return if is_mono { "monospace".to_string() } else { "sans-serif".to_string() };
+        return if is_mono {
+            "ui-monospace, 'Courier New', Courier, monospace".to_string()
+        } else {
+            "system-ui, -apple-system, sans-serif".to_string()
+        };
     }
 
     let registry = if is_mono { MONO_FONT_REGISTRY } else { FONT_REGISTRY };
-    
+
     for font in registry {
         if font.name.eq_ignore_ascii_case(trimmed) || font.css_stack.eq_ignore_ascii_case(trimmed) {
             return font.css_stack.to_string();
@@ -61,49 +133,149 @@ pub fn resolve_font_stack_with_fallback(raw_input: &str, is_mono: bool) -> Strin
     }
 
     if trimmed.contains(',') {
-        trimmed.to_string()
+        return trimmed.to_string();
+    }
+
+    let generic = if is_mono {
+        "monospace"
+    } else if implies_serif(trimmed) {
+        "serif"
     } else {
-        format!("'{}', {}", trimmed, if is_mono { "monospace" } else { "sans-serif" })
+        "sans-serif"
+    };
+
+    if trimmed.contains(' ') {
+        format!("\"{}\", {}", trimmed, generic)
+    } else {
+        format!("{}, {}", trimmed, generic)
     }
 }
 
+fn google_family_query(primary: &str) -> String {
+    for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
+        if font.name.eq_ignore_ascii_case(primary) {
+            if let Some(google_name) = font.google_font_name {
+                return format!(
+                    "{}:wght@400;500;600;700",
+                    google_name.replace(' ', "+")
+                );
+            }
+            break;
+        }
+    }
+    format!(
+        "{}:wght@400;500;600;700",
+        primary.replace(' ', "+")
+    )
+}
+
+/// Build Google Fonts `<link>` tags for non-system typography stacks.
 pub fn build_google_font_imports(font_stacks: &[&str]) -> String {
-    let mut families = Vec::new();
+    let mut families: Vec<String> = Vec::new();
 
     for stack in font_stacks {
-        // FATAL BUG FIX: Isolate the primary font name before any commas
-        let first_font = stack
-            .split(',')
-            .next()
-            .unwrap_or("")
-            .trim()
-            .trim_matches('\'')
-            .trim_matches('"');
-            
-        if first_font.is_empty() { continue; }
-
-        let mut found = false;
-        for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
-            if font.name.eq_ignore_ascii_case(first_font) {
-                if let Some(google_name) = font.google_font_name {
-                    families.push(google_name.to_string());
-                }
-                found = true;
-                break;
-            }
+        let primary = primary_font_from_stack(stack);
+        if primary.is_empty() || is_system_safe_font(primary) {
+            continue;
         }
-
-        if !found && !matches!(first_font.to_lowercase().as_str(), "serif" | "sans-serif" | "monospace" | "cursive" | "fantasy" | "system-ui") {
-            let encoded = first_font.replace(' ', "+");
-            families.push(format!("{}:wght@400;700", encoded));
+        let query = google_family_query(primary);
+        if !families.iter().any(|f| f == &query) {
+            families.push(query);
         }
     }
 
-    if families.is_empty() { return String::new(); }
+    if families.is_empty() {
+        return String::new();
+    }
 
-    families.sort();
-    families.dedup();
+    let mut out =
+        String::with_capacity(96 + families.iter().map(|f| f.len()).sum::<usize>());
+    out.push_str(
+        "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=",
+    );
+    for (i, family) in families.iter().enumerate() {
+        if i > 0 {
+            out.push_str("&amp;family=");
+        }
+        out.push_str(family);
+    }
+    out.push_str("&amp;display=swap\"/>");
+    out
+}
 
-    let query = families.join("&amp;family=");
-    format!("<link href=\"https://fonts.googleapis.com/css2?family={}&amp;display=swap\" rel=\"stylesheet\" />", query)
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::ThemeConfig;
+
+    #[test]
+    fn skips_system_safe_fonts() {
+        assert!(is_system_safe_font("Courier New"));
+        assert!(is_system_safe_font("system-ui"));
+        assert!(is_system_safe_font("serif"));
+        assert!(!is_system_safe_font("Inter"));
+    }
+
+    #[test]
+    fn builds_weighted_google_link() {
+        let link = build_google_font_imports(&["Inter", "'Playfair Display', serif"]);
+        assert!(link.contains("rel=\"stylesheet\""));
+        assert!(link.contains("Inter:wght@400;500;600;700"));
+        assert!(link.contains("Playfair+Display:wght@400;500;600;700"));
+        assert!(link.contains("&amp;display=swap"));
+    }
+
+    #[test]
+    fn system_stack_produces_no_link() {
+        let link = build_google_font_imports(&[
+            "system-ui, -apple-system, sans-serif",
+            "'Courier New', Courier, monospace",
+        ]);
+        assert!(link.is_empty());
+    }
+
+    #[test]
+    fn exported_theme_injects_font_link_in_head() {
+        let mut config = ThemeConfig::default();
+        config.typography.body_font_stack = "Inter".to_string();
+        let xml = crate::render::render_theme(&config);
+        assert!(xml.contains("fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700"));
+    }
+
+    #[test]
+    fn empty_stacks_fall_back_to_native() {
+        assert_eq!(resolve_font_stack_with_fallback("", false), "system-ui, -apple-system, sans-serif");
+        assert_eq!(resolve_font_stack_with_fallback("   ", false), "system-ui, -apple-system, sans-serif");
+        assert_eq!(resolve_font_stack_with_fallback("", true), "ui-monospace, 'Courier New', Courier, monospace");
+    }
+
+    #[test]
+    fn custom_spaced_font_uses_double_quotes() {
+        assert_eq!(resolve_font_stack_with_fallback("My Custom Font", false), "\"My Custom Font\", sans-serif");
+        assert_eq!(resolve_font_stack_with_fallback("Old Garamond Text", false), "\"Old Garamond Text\", serif");
+        assert_eq!(resolve_font_stack_with_fallback("Code Thing", true), "\"Code Thing\", monospace");
+    }
+
+    #[test]
+    fn single_word_custom_font_no_quotes() {
+        assert_eq!(resolve_font_stack_with_fallback("Raleway", false), "Raleway, sans-serif");
+    }
+
+    #[test]
+    fn serif_name_detection() {
+        assert_eq!(resolve_font_stack_with_fallback("MySerif", false), "MySerif, serif");
+        assert_eq!(resolve_font_stack_with_fallback("BookRoman", false), "BookRoman, serif");
+    }
+
+    #[test]
+    fn css_builder_maps_font_variables() {
+        let mut config = ThemeConfig::default();
+        config.typography.body_font_stack = "Inter".to_string();
+        config.typography.heading_font_stack = "Playfair Display".to_string();
+        config.typography.mono_font_stack = "Courier New".to_string();
+        let css = crate::render::css_builder::build_master_css(&[], &config);
+        assert!(css.contains("--font-body: 'Inter', sans-serif;"));
+        assert!(css.contains("--font-heading: 'Playfair Display', serif;"));
+        assert!(css.contains("--font-mono: 'Courier New', Courier, monospace;"));
+    }
 }

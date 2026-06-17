@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 // 1. IMPORT THE LOCAL UI KIT PIECES
 use crate::ui::components::modal::Modal;
 use crate::ui::shell::menu_bar::AppMenuBar;
+use crate::ui::shell::prefs_modal::UserPreferencesModal;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
 use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
@@ -50,6 +51,12 @@ pub fn render_app_shell(
     let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
     let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
+
+    use_effect(|| {
+        if let Err(e) = mor_blogger_core::utils::fs_bridge::init_template_dirs() {
+            log::warn!("[startup] Template dir init failed: {}", e);
+        }
+    });
 
     use_effect(move || {
         if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
@@ -100,6 +107,7 @@ pub fn render_app_shell(
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
     let mut ui_mode_pref = use_signal(|| active_ui_mode.clone());
+    let mut active_theme_toml = use_signal(|| get_native_os_theme().to_string());
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
@@ -111,7 +119,7 @@ pub fn render_app_shell(
     });
 
     rsx! {
-        MorStyleProvider { theme_toml: get_native_os_theme().to_string() }
+        MorStyleProvider { theme_toml: active_theme_toml() }
         style { "{EDITOR_UI_CSS}" }
 
         MorShell {
@@ -141,30 +149,11 @@ pub fn render_app_shell(
                 }
             }
 
-            Modal {
-                title: "Preferences".to_string(), open: show_prefs, on_close: move |_| show_prefs.set(false),
-                div { class: "editor-field-group",
-                    label { class: "editor-field-label", "Window Mode" }
-                    select {
-                        class: "editor-select",
-                        value: "{ui_mode_pref}",
-                        onchange: move |evt| {
-                            let new_mode = evt.value();
-                            ui_mode_pref.set(new_mode.clone());
-                            let json = format!(r#"{{ "ui_mode": "{}" }}"#, new_mode);
-                            let _ = std::fs::write("editor_prefs.json", json);
-                        },
-                        option { value: "frameless", "Frameless (Custom OS Buttons)" }
-                        option { value: "native", "Native OS Window" }
-                        option { value: "tiling", "Tiling WM (No Buttons)" }
-                    }
-                    if ui_mode_pref() != active_ui_mode {
-                        div { class: "editor-note", style: "margin-top: 12px; border-color: var(--editor-warning); background: rgba(210, 153, 34, 0.05);",
-                            p { class: "editor-note-title", style: "color: var(--editor-warning);", "Restart Required" }
-                            p { class: "editor-note-body", "You must restart the application for the new window borders to take effect." }
-                        }
-                    }
-                }
+            UserPreferencesModal {
+                show_prefs,
+                active_theme_toml,
+                ui_mode_pref,
+                active_ui_mode: active_ui_mode.clone(),
             }
 
             Modal {

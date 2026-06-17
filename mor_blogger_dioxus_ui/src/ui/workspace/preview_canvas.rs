@@ -125,202 +125,89 @@ pub fn PreviewCanvas(
                             spawn(async move {
                                 let mut eval = dioxus::document::eval(
                                     r#"
-                                    (function installMorPreviewBridge() {
-                                        const sourceId = "mor-preview-html-source";
-                                        const frameId = "mor-preview-frame";
-
-                                        function writePreview(source, frame) {
-                                            const html = source.textContent || "";
-                                            if (!html.trim()) return;
-                                            if (source.__morLastPreviewHtml === html) return;
-                                            source.__morLastPreviewHtml = html;
-
-                                            const doc = frame.contentDocument ||
-                                                (frame.contentWindow && frame.contentWindow.document);
+                                    (function() {
+                                        const SID = "mor-preview-html-source", FID = "mor-preview-frame";
+                                        function write(src, frm) {
+                                            const html = src.textContent || "";
+                                            if (!html.trim() || src._last === html) return;
+                                            src._last = html;
+                                            const doc = frm.contentDocument || frm.contentWindow.document;
                                             if (!doc) return;
-
-                                            // TIER 1 FALLBACK
-                                            if (!doc.body || !doc.body.innerHTML.trim() || source.__morNeedsFullReload) {
-                                                doc.open();
-                                                doc.write(html);
-                                                doc.close();
-                                                source.__morNeedsFullReload = false;
-
-                                                setTimeout(function() {
-                                                    doc.querySelectorAll('[data-edit-target]').forEach(function(el) {
-                                                        el.title = "Shift+Click to quick edit";
-                                                    });
-
-                                                    if (!doc.getElementById('mor-edit-styles')) {
-                                                        const style = doc.createElement('style');
-                                                        style.id = 'mor-edit-styles';
-                                                        style.textContent = `
-                                                            [data-edit-target] { transition: outline 0.1s; outline: 2px solid transparent; outline-offset: 2px; }
-                                                            [data-edit-target]:hover { outline: 2px dashed var(--accent, #3b82f6); cursor: pointer; }
-                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: block !important; }
-                                                            html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: none !important; }
-                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: none !important; }
-                                                            html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: block !important; }
-                                                        `;
-                                                        doc.head.appendChild(style);
-                                                    }
-
-                                                    doc.addEventListener('click', function(e) {
-                                                        const target = e.target && e.target.closest
-                                                            ? e.target
-                                                            : (e.target && e.target.parentElement);
-
-                                                        if (!target) return;
-
-                                                        const editTarget = target.closest('[data-edit-target]');
-                                                        if (editTarget && e.shiftKey) {
-                                                            e.preventDefault(); e.stopPropagation();
-                                                            const targetId = editTarget.getAttribute('data-edit-target');
-                                                            if (targetId.startsWith('icons.')) {
-                                                                dioxus.send({ action: "ICON_EDIT", target: targetId });
-                                                            } else {
-                                                                dioxus.send({ action: "SELECT", target: targetId });
-                                                            }
-                                                            return;
-                                                        }
-
-                                                        const themeBtn = target.closest('#mor-theme-toggle');
-                                                        if (themeBtn) {
-                                                            e.preventDefault(); e.stopPropagation();
-                                                            dioxus.send({ action: "TOGGLE_DARK_MODE" });
-                                                            return;
-                                                        }
-
-                                                        const anchor = target.closest('a');
-                                                        if (anchor) {
-                                                            const href = anchor.getAttribute('href');
-                                                            if (href && (href.startsWith('/') || href.startsWith('#'))) {
-                                                                e.preventDefault();
-                                                                dioxus.send({ action: "NAVIGATE", target: href });
-                                                            }
-                                                        }
-
-                                                        
-                                                    });
-
-                                                    // Drag-and-drop SVG replacement (Google Sites style) - attach once
-                                                    if (!doc.__morDropInstalled) {
-                                                        doc.__morDropInstalled = true;
-
-                                                        doc.addEventListener('dragover', function(e) {
-                                                            e.preventDefault();
-                                                            if (e.dataTransfer) {
-                                                                e.dataTransfer.dropEffect = 'copy';
-                                                            }
-                                                        });
-
-                                                        doc.addEventListener('drop', function(e) {
-                                                            e.preventDefault();
-                                                            const dt = e.dataTransfer;
-                                                            const file = dt && dt.files && dt.files[0];
-                                                            if (!file) return;
-
-                                                            const name = (file.name || '').toLowerCase();
-                                                            const isSvg = file.type === 'image/svg+xml' || name.endsWith('.svg');
-                                                            if (!isSvg) return;
-
-                                                            const dropTarget = (e.target && e.target.closest)
-                                                                ? e.target.closest('[data-edit-target]')
-                                                                : null;
-                                                            if (!dropTarget) return;
-
-                                                            const targetId = dropTarget.getAttribute('data-edit-target');
-                                                            if (!targetId || !targetId.startsWith('icons.')) return;
-
-                                                            const reader = new FileReader();
-                                                            reader.onload = function() {
-                                                                const content = reader.result;
-                                                                if (typeof content === 'string') {
-                                                                    dioxus.send({ action: "DROP_SVG", target: targetId, content: content });
-                                                                }
-                                                            };
-                                                            reader.readAsText(file);
-                                                        });
-                                                    }
-                                                }, 50);
-                                                return;
+                                            if (!doc.body || !doc.body.innerHTML.trim() || src._reload) {
+                                                doc.open(); doc.write(html); doc.close(); src._reload = false;
+                                                setTimeout(() => setup(doc), 50); return;
                                             }
-
-                                            // TIER 3 DOM MORPHING
-                                            const parser = new DOMParser();
-                                            const newDoc = parser.parseFromString(html, 'text/html');
-
-                                            const oldCss = doc.getElementById('mor-true-css');
-                                            const newCss = newDoc.getElementById('mor-true-css');
-                                            if (oldCss && newCss && oldCss.textContent !== newCss.textContent) {
-                                                oldCss.textContent = newCss.textContent;
-                                            }
-
-                                            if (doc.body.getAttribute('style') !== newDoc.body.getAttribute('style')) {
-                                                doc.body.setAttribute('style', newDoc.body.getAttribute('style') || "");
-                                            }
-
-                                            const oldFont = doc.querySelector('link[href*="fonts.googleapis.com"]');
-                                            const newFont = newDoc.querySelector('link[href*="fonts.googleapis.com"]');
-                                            if (newFont) {
-                                                if (!oldFont) {
-                                                    doc.head.appendChild(newFont.cloneNode());
-                                                } else if (oldFont.href !== newFont.href) {
-                                                    oldFont.href = newFont.href;
-                                                }
-                                            }
-
-                                            const oldTargets = doc.querySelectorAll('[data-edit-target]');
-                                            const newTargets = newDoc.querySelectorAll('[data-edit-target]');
-
-                                            if (oldTargets.length !== newTargets.length) {
-                                                source.__morNeedsFullReload = true;
-                                                writePreview(source, frame);
-                                                return;
-                                            }
-
-                                            for (let i = 0; i < oldTargets.length; i++) {
-                                                if (oldTargets[i].innerHTML !== newTargets[i].innerHTML) {
-                                                    oldTargets[i].innerHTML = newTargets[i].innerHTML;
-                                                }
-                                            }
-                                        }
-
-                                        function install(attempt) {
-                                            const source = document.getElementById(sourceId);
-                                            const frame = document.getElementById(frameId);
-
-                                            if (!source || !frame) {
-                                                if (attempt < 40) {
-                                                    setTimeout(function () { install(attempt + 1); }, 25);
-                                                }
-                                                return;
-                                            }
-
-                                            if (source.__morPreviewObserver) {
-                                                source.__morPreviewObserver.disconnect();
-                                            }
-
-                                            let writeTimer = null;
-                                            const observer = new MutationObserver(function () {
-                                                if (writeTimer) clearTimeout(writeTimer);
-                                                writeTimer = setTimeout(function () {
-                                                    writeTimer = null;
-                                                    writePreview(source, frame);
-                                                }, 15);
+                                            const nDoc = new DOMParser().parseFromString(html, 'text/html');
+                                            const oCss = doc.getElementById('mor-true-css'), nCss = nDoc.getElementById('mor-true-css');
+                                            if (oCss && nCss && oCss.textContent !== nCss.textContent) oCss.textContent = nCss.textContent;
+                                            if (doc.body.style.cssText !== nDoc.body.style.cssText) doc.body.style.cssText = nDoc.body.style.cssText;
+                                            
+                                            doc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"]').forEach(el => el.remove());
+                                            nDoc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"]').forEach(el => doc.head.appendChild(el.cloneNode()));
+                                            
+                                            const oT = doc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
+                                            const nT = nDoc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
+                                            if (oT.length !== nT.length) { src._reload = true; write(src, frm); return; }
+                                            oT.forEach((el, i) => { 
+                                                if (el.innerHTML !== nT[i].innerHTML) el.innerHTML = nT[i].innerHTML; 
+                                                if (el.hasAttribute('data-block-id')) el.draggable = true;
                                             });
-
-                                            observer.observe(source, {
-                                                childList: true,
-                                                characterData: true,
-                                                subtree: true
-                                            });
-
-                                            source.__morPreviewObserver = observer;
-                                            writePreview(source, frame);
                                         }
-
-                                        install(0);
+                                        function setup(doc) {
+                                            if (doc._inst) return; doc._inst = true;
+                                            const s = doc.createElement('style');
+                                            s.textContent = `[data-field-path]:hover{outline:2px dashed #3b82f6;cursor:text} [data-block-id]{cursor:grab;position:relative} .dragging{opacity:0.5} .drag-over{border-top:4px solid #3b82f6}`;
+                                            doc.head.appendChild(s);
+                                            doc.querySelectorAll('[data-block-id]').forEach(el => el.draggable = true);
+                                            doc.addEventListener('dblclick', e => {
+                                                const el = e.target.closest('[data-field-path]');
+                                                if (el) { el.contentEditable = true; el.focus(); }
+                                            });
+                                            doc.addEventListener('blur', e => {
+                                                const el = e.target.closest('[data-field-path]');
+                                                if (el && el.contentEditable === "true") {
+                                                    el.contentEditable = false;
+                                                    dioxus.send({action: "UPDATE_VALUE", target: el.getAttribute('data-field-path'), value: el.innerText});
+                                                }
+                                            }, true);
+                                            let draggedId = null;
+                                            doc.addEventListener('dragstart', e => {
+                                                const el = e.target.closest('[data-block-id]');
+                                                if (el) { draggedId = el.getAttribute('data-block-id'); e.dataTransfer.effectAllowed = 'move'; el.classList.add('dragging'); }
+                                            });
+                                            doc.addEventListener('dragend', e => e.target.closest('[data-block-id]')?.classList.remove('dragging'));
+                                            doc.addEventListener('dragover', e => {
+                                                e.preventDefault();
+                                                const el = e.target.closest('[data-block-id]');
+                                                if (el && el.getAttribute('data-block-id') !== draggedId) { el.classList.add('drag-over'); e.dataTransfer.dropEffect = 'move'; }
+                                            });
+                                            doc.addEventListener('dragleave', e => e.target.closest('[data-block-id]')?.classList.remove('drag-over'));
+                                            doc.addEventListener('drop', e => {
+                                                e.preventDefault();
+                                                const el = e.target.closest('[data-block-id]');
+                                                if (el) {
+                                                    el.classList.remove('drag-over');
+                                                    const destId = el.getAttribute('data-block-id');
+                                                    if (draggedId && draggedId !== destId)
+                                                        dioxus.send({action: "MOVE_WIDGET", id: draggedId, dest: destId});
+                                                }
+                                                draggedId = null;
+                                            });
+                                            doc.addEventListener('click', e => {
+                                                const t = e.target, btn = t.closest('#mor-theme-toggle'), a = t.closest('a');
+                                                if (btn) { e.preventDefault(); dioxus.send({action: "TOGGLE_DARK_MODE"}); }
+                                                else if (a && (a.getAttribute('href')||'').match(/^[/|#]/)) {
+                                                    e.preventDefault(); dioxus.send({action: "NAVIGATE", target: a.getAttribute('href')});
+                                                }
+                                            });
+                                        }
+                                        function install() {
+                                            const src = document.getElementById(SID), frm = document.getElementById(FID);
+                                            if (!src || !frm) return setTimeout(install, 50);
+                                            new MutationObserver(() => write(src, frm)).observe(src, {childList:true, characterData:true, subtree:true});
+                                            write(src, frm);
+                                        }
+                                        install();
                                     })();
                                     "#
                                 );

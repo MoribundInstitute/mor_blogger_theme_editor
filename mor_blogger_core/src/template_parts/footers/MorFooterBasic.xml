@@ -45,7 +45,7 @@
   </div>
 
   <div class='footer-sys-info'>
-    <span>{{FOOTER_SYS_MESSAGE}} <a href='{{FOOTER_LICENSE_URL}}' rel='noopener' target='_blank'>{{FOOTER_LICENSE_LABEL}}</a></span>
+    <span data-field-path='footer.footer_text'>{{FOOTER_SYS_MESSAGE}}</span> <a href='{{FOOTER_LICENSE_URL}}' rel='noopener' target='_blank' data-field-path='footer.footer_license_label'>{{FOOTER_LICENSE_LABEL}}</a>
     <a href='{{FOOTER_SOURCE_URL}}' rel='noopener' target='_blank'>{{FOOTER_SOURCE_LABEL}}</a>
     <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
   </div>

@@ -2,63 +2,63 @@
   <div class='footer-mega-grid'>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_1_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.0.heading'>{{FOOTER_COL_1_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_1_LINK_1_URL}}' rel='noopener'>{{FOOTER_1_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_1_LINK_2_URL}}' rel='noopener'>{{FOOTER_1_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_1_LINK_3_URL}}' rel='noopener'>{{FOOTER_1_LINK_3_LABEL}}</a></li>
-        <li><a href='{{FOOTER_1_LINK_4_URL}}' rel='noopener'>{{FOOTER_1_LINK_4_LABEL}}</a></li>
-        <li><a href='{{FOOTER_1_LINK_5_URL}}' rel='noopener'>{{FOOTER_1_LINK_5_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.0.links.0.label'>{{FOOTER_1_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.0.links.1.label'>{{FOOTER_1_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.0.links.2.label'>{{FOOTER_1_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.0.links.3.label'>{{FOOTER_1_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.0.links.4.label'>{{FOOTER_1_LINK_5_LABEL}}</a></li>
       </ul>
     </div>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_2_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.1.heading'>{{FOOTER_COL_2_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_2_LINK_1_URL}}' rel='noopener'>{{FOOTER_2_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_2_LINK_2_URL}}' rel='noopener'>{{FOOTER_2_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_2_LINK_3_URL}}' rel='noopener'>{{FOOTER_2_LINK_3_LABEL}}</a></li>
-        <li><a href='{{FOOTER_2_LINK_4_URL}}' rel='noopener'>{{FOOTER_2_LINK_4_LABEL}}</a></li>
-        <li><a href='{{FOOTER_2_LINK_5_URL}}' rel='noopener'>{{FOOTER_2_LINK_5_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.1.links.0.label'>{{FOOTER_2_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.1.links.1.label'>{{FOOTER_2_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.1.links.2.label'>{{FOOTER_2_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.1.links.3.label'>{{FOOTER_2_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.1.links.4.label'>{{FOOTER_2_LINK_5_LABEL}}</a></li>
       </ul>
     </div>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_3_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.2.heading'>{{FOOTER_COL_3_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_3_LINK_1_URL}}' rel='noopener'>{{FOOTER_3_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_3_LINK_2_URL}}' rel='noopener'>{{FOOTER_3_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_3_LINK_3_URL}}' rel='noopener'>{{FOOTER_3_LINK_3_LABEL}}</a></li>
-        <li><a href='{{FOOTER_3_LINK_4_URL}}' rel='noopener'>{{FOOTER_3_LINK_4_LABEL}}</a></li>
-        <li><a href='{{FOOTER_3_LINK_5_URL}}' rel='noopener'>{{FOOTER_3_LINK_5_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.2.links.0.label'>{{FOOTER_3_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.2.links.1.label'>{{FOOTER_3_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.2.links.2.label'>{{FOOTER_3_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.2.links.3.label'>{{FOOTER_3_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.2.links.4.label'>{{FOOTER_3_LINK_5_LABEL}}</a></li>
       </ul>
     </div>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_4_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.3.heading'>{{FOOTER_COL_4_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_4_LINK_1_URL}}' rel='noopener'>{{FOOTER_4_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_4_LINK_2_URL}}' rel='noopener'>{{FOOTER_4_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_4_LINK_3_URL}}' rel='noopener'>{{FOOTER_4_LINK_3_LABEL}}</a></li>
-        <li><a href='{{FOOTER_4_LINK_4_URL}}' rel='noopener'>{{FOOTER_4_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.3.links.0.label'>{{FOOTER_4_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.3.links.1.label'>{{FOOTER_4_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.3.links.2.label'>{{FOOTER_4_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.3.links.3.label'>{{FOOTER_4_LINK_4_LABEL}}</a></li>
       </ul>
     </div>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_5_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.4.heading'>{{FOOTER_COL_5_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_5_LINK_1_URL}}' rel='noopener'>{{FOOTER_5_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_5_LINK_2_URL}}' rel='noopener'>{{FOOTER_5_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_5_LINK_3_URL}}' rel='noopener'>{{FOOTER_5_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.4.links.0.label'>{{FOOTER_5_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.4.links.1.label'>{{FOOTER_5_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.4.links.2.label'>{{FOOTER_5_LINK_3_LABEL}}</a></li>
       </ul>
     </div>
 
     <div class='footer-col'>
-      <h4>{{FOOTER_COL_6_HEADING}}</h4>
+      <h4 data-field-path='footer.columns.5.heading'>{{FOOTER_COL_6_HEADING}}</h4>
       <ul>
-        <li><a href='{{FOOTER_6_LINK_1_URL}}' rel='noopener'>{{FOOTER_6_LINK_1_LABEL}}</a></li>
-        <li><a href='{{FOOTER_6_LINK_2_URL}}' rel='noopener'>{{FOOTER_6_LINK_2_LABEL}}</a></li>
-        <li><a href='{{FOOTER_6_LINK_3_URL}}' rel='noopener'>{{FOOTER_6_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.5.links.0.label'>{{FOOTER_6_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.5.links.1.label'>{{FOOTER_6_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.5.links.2.label'>{{FOOTER_6_LINK_3_LABEL}}</a></li>
       </ul>
     </div>
 
@@ -66,16 +66,16 @@
 
   <div class='footer-brand-center'>
     <img class='footer-logo' src='{{HEADER_LOGO_URL}}' alt='Logo' />
-    <span class='footer-brand-name'>{{SITE_TITLE}}</span>
+    <span class='footer-brand-name' data-field-path='site.site_title'>{{SITE_TITLE}}</span>
   </div>
 
   <div class='footer-sys-info'>
-    <p class='footer-copyright'>&#169; 2026 {{SITE_TITLE}} and others</p>
+    <p class='footer-copyright'>&#169; 2026 <span data-field-path='site.site_title'>{{SITE_TITLE}}</span> and others</p>
     <div class='footer-legal-links'>
-      <a href='{{FOOTER_LEGAL_1_URL}}'>{{FOOTER_LEGAL_1_LABEL}}</a> |
-      <a href='{{FOOTER_LEGAL_2_URL}}'>{{FOOTER_LEGAL_2_LABEL}}</a> |
-      <a href='{{FOOTER_LEGAL_3_URL}}'>{{FOOTER_LEGAL_3_LABEL}}</a> |
-      <a href='{{FOOTER_LEGAL_4_URL}}'>{{FOOTER_LEGAL_4_LABEL}}</a>
+      <a href='{{FOOTER_LEGAL_1_URL}}' data-field-path='footer.legal_links.0.label'>{{FOOTER_LEGAL_1_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_2_URL}}' data-field-path='footer.legal_links.1.label'>{{FOOTER_LEGAL_2_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_3_URL}}' data-field-path='footer.legal_links.2.label'>{{FOOTER_LEGAL_3_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_4_URL}}' data-field-path='footer.legal_links.3.label'>{{FOOTER_LEGAL_4_LABEL}}</a>
     </div>
     <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
   </div>

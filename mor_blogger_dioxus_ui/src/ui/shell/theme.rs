@@ -504,8 +504,7 @@ pub const MOR_CSS: &str = r#"
 pub fn MorStyleProvider(
     #[props(default = GTK4_DARK_TOML.to_string())] theme_toml: String,
 ) -> Element {
-    let theme = use_signal(|| MorTheme::from_toml(&theme_toml).unwrap_or_default());
-    let css_vars = theme().to_css_vars();
+    let css_vars = MorTheme::from_toml(&theme_toml).unwrap_or_default().to_css_vars();
 
     rsx! {
         style { "{css_vars}" }

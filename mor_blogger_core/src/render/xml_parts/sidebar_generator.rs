@@ -12,13 +12,19 @@ pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str)
 
     xml = xml.replace("{{WIDGET_ADSENSE_SIDEBAR}}", &render_ads_widget_sidebar(&config.ads));
 
-    xml = xml.replace("{{LABEL_WIDGET_TITLE}}", "Labels");
+    xml = xml.replace(
+        "{{LABEL_WIDGET_TITLE}}",
+        config.template_pack.widget_title("Label1", "Labels"),
+    );
     xml = xml.replace("{{LABEL_SORTING}}", "ALPHA");
     xml = xml.replace("{{LABEL_DISPLAY}}", "LIST");
     xml = xml.replace("{{LABEL_SHOW_TYPE}}", "ALL");
     xml = xml.replace("{{LABEL_SHOW_FREQ_NUMBERS}}", "false");
 
-    xml = xml.replace("{{ARCHIVE_WIDGET_TITLE}}", "Archive");
+    xml = xml.replace(
+        "{{ARCHIVE_WIDGET_TITLE}}",
+        config.template_pack.widget_title("BlogArchive1", "Archive"),
+    );
     xml = xml.replace("{{ARCHIVE_SHOW_STYLE}}", "HIERARCHY");
     xml = xml.replace("{{ARCHIVE_YEAR_PATTERN}}", "yyyy");
     xml = xml.replace("{{ARCHIVE_SHOW_WEEK_END}}", "true");
@@ -29,7 +35,10 @@ pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str)
     xml = xml.replace("{{ARCHIVE_SHOW_POSTS}}", "true");
     xml = xml.replace("{{ARCHIVE_FREQUENCY}}", "MONTHLY");
 
-    xml = xml.replace("{{RIGHT_WIDGET_TITLE}}", "Table of Contents");
+    xml = xml.replace(
+        "{{RIGHT_WIDGET_TITLE}}",
+        config.template_pack.widget_title("HTML1", "Table of Contents"),
+    );
     xml = xml.replace("{{TOC_LOADING_MESSAGE}}", "Building contents...");
     xml = xml.replace("{{TOC_WAITING_MESSAGE}}", "Waiting for document...");
     xml = xml.replace("{{TOC_EMPTY_MESSAGE}}", "No anchor points found in document.");

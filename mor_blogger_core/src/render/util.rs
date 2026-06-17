@@ -24,45 +24,9 @@ pub(super) fn escape_attr(s: &str) -> String {
         .replace('\'', "&#39;")
 }
 
-/// Dynamically builds the Google Fonts link based on the user's font stack.
+/// Builds Google Fonts `<link>` tags from ThemeConfig typography stacks.
 pub(super) fn build_google_fonts_link(stacks: &[&str]) -> String {
-    let mut families = Vec::new();
-    let web_safe = [
-        "Georgia",
-        "Times",
-        "Courier",
-        "monospace",
-        "serif",
-        "sans-serif",
-    ];
-
-    for stack in stacks {
-        let first_font = stack
-            .split(',')
-            .next()
-            .unwrap_or("")
-            .trim()
-            .trim_matches('\'')
-            .trim_matches('\"');
-
-        if !first_font.is_empty() && !web_safe.contains(&first_font) {
-            let family = first_font.replace(' ', "+");
-            if !families.contains(&family) {
-                families.push(family);
-            }
-        }
-    }
-
-    if families.is_empty() {
-        return String::new();
-    }
-
-    // Google Fonts URL format: family=Font+Name:wght@400;700
-    let families_param = families.join("&amp;family=");
-    format!(
-        "<link href=\"https://fonts.googleapis.com/css2?family={}:wght@400;700&amp;display=swap\" rel=\"stylesheet\"/>",
-        families_param
-    )
+    crate::config::fonts::build_google_font_imports(stacks)
 }
 
 /// Returns the primary string if it contains text, otherwise returns the fallback.

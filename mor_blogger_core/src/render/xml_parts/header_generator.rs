@@ -1,4 +1,5 @@
 use crate::config::{MenuLink, ThemeConfig};
+use crate::render::tracking::menu_link_anchor;
 use crate::render::util::{escape_attr, escape_html, first_non_empty};
 
 fn menu_link_or_empty(config: &ThemeConfig, index: usize) -> MenuLink {
@@ -197,12 +198,13 @@ fn render_main_nav_links(config: &ThemeConfig) -> String {
     config
         .menu_links
         .iter()
-        .filter_map(render_menu_link)
+        .enumerate()
+        .filter_map(|(index, link)| render_menu_link(index, link))
         .collect::<Vec<_>>()
         .join("\n      ")
 }
 
-fn render_menu_link(link: &MenuLink) -> Option<String> {
+fn render_menu_link(index: usize, link: &MenuLink) -> Option<String> {
     let label = link.label.trim();
     let url = link.url.trim();
 
@@ -210,9 +212,5 @@ fn render_menu_link(link: &MenuLink) -> Option<String> {
         return None;
     }
 
-    Some(format!(
-        "<a href=\"{url}\">{label}</a>",
-        url = escape_attr(url),
-        label = escape_html(label),
-    ))
+    Some(menu_link_anchor(index, url, label))
 }

@@ -41,5 +41,6 @@
   <link href='{{CANONICAL_HOME_URL}}' rel='home'/>
   <link href='{{LICENSE_URL}}' rel='license'/>
 
+  {{GOOGLE_FONTS_LINK}}
   {{CUSTOM_HEAD_HTML}}
   {{ADS_HEAD_SCRIPT}}

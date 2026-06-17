@@ -1,6 +1,7 @@
 //! CSS Builder module for sanitizing and concatenating base CSS files.
 
 use crate::config::{BackgroundMode, ThemeConfig};
+use crate::config::fonts::resolve_font_stack_with_fallback;
 use crate::render::util::escape_attr;
 use crate::utils::svg_icons::svg_to_data_uri;
 
@@ -62,6 +63,14 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         }
     }
 
+    let font_body = resolve_font_stack_with_fallback(&config.typography.body_font_stack, false);
+    let font_heading = if config.typography.heading_font_stack.trim().is_empty() {
+        font_body.clone()
+    } else {
+        resolve_font_stack_with_fallback(&config.typography.heading_font_stack, false)
+    };
+    let font_mono = resolve_font_stack_with_fallback(&config.typography.mono_font_stack, true);
+
     let mut custom_vars = format!(
         r#":root {{
   --bg-base: {bg_base};
@@ -82,6 +91,8 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
   --btn-radius: {btn_radius};
   --btn-border-width: {btn_border_width};
   --btn-text-transform: {btn_text_transform};
+  --font-body: {font_body};
+  --font-heading: {font_heading};
   --font-mono: {font_mono};"#,
         bg_base = config.colors.bg_base,
         bg_panel = config.colors.bg_panel.to_css(),
@@ -96,7 +107,9 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         btn_radius = config.buttons.radius,
         btn_border_width = config.buttons.border_width,
         btn_text_transform = config.buttons.text_transform,
-        font_mono = config.typography.mono_font_stack,
+        font_body = font_body,
+        font_heading = font_heading,
+        font_mono = font_mono,
     );
 
     custom_vars.push_str(&format!(

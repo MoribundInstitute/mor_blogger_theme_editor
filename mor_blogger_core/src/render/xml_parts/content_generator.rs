@@ -5,6 +5,12 @@ pub fn render_content_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let favicon_url = first_non_empty(&config.assets.favicon_url, "https://imgur.com/QZ7pbY6");
     let social_card_image_url = first_non_empty(&config.assets.social_card_image_url, favicon_url);
 
+    xml = xml.replace("{{BLOG_STYLE_TEXTCOLOR}}", &escape_attr(&config.colors.fg_base));
+    xml = xml.replace("{{BLOG_STYLE_LINKCOLOR}}", &escape_attr(&config.colors.accent));
+    xml = xml.replace("{{BLOG_STYLE_URLCOLOR}}", &escape_attr(&config.colors.accent));
+    xml = xml.replace("{{BLOG_STYLE_BGCOLOR}}", &escape_attr(&config.colors.bg_base));
+    xml = xml.replace("{{BLOG_STYLE_BORDERCOLOR}}", &escape_attr(&config.colors.border));
+
     xml = xml.replace("{{BLOG_WIDGET_TITLE}}", "Blog Posts");
     xml = xml.replace("{{BLOG_COMMENT_LABEL}}", "Comment");
     xml = xml.replace("{{BLOG_AUTHOR_LABEL}}", &format!("By {}", escape_html(&config.seo.author_name)));

@@ -262,7 +262,7 @@ pub const WIDGET_REGISTRY: &[(&str, &str)] = &[
     ("Label", include_str!("../template_parts/widgets/label1.xml")),
 ];
 
-fn generate_widget_xml(widget_id: &str) -> String {
+pub(crate) fn generate_widget_xml(widget_id: &str) -> String {
     let w_type = widget_id.trim_end_matches(char::is_numeric);
     let w_type = if w_type.is_empty() { "HTML" } else { w_type };
 
@@ -272,17 +272,18 @@ fn generate_widget_xml(widget_id: &str) -> String {
         .map(|(_, xml)| *xml)
         .unwrap_or(&"");
 
-    if template.is_empty() {
+    let xml = if template.is_empty() {
         format!(
-            "<b:widget id='{}' locked='false' title='{}' type='{}' visible='true'>\n  <b:includable id='main'>\n  </b:includable>\n</b:widget>",
-            widget_id,
-            widget_id,
-            w_type
+            "<b:widget data-block-id='{widget_id}' id='{widget_id}' locked='false' title='{widget_id}' type='{w_type}' visible='true'>\n  <b:includable id='main'>\n  </b:includable>\n</b:widget>",
+            widget_id = widget_id,
+            w_type = w_type,
         )
     } else {
         let base_id = format!("{}1", w_type);
         template.replace(&base_id, widget_id)
-    }
+    };
+
+    crate::render::tracking::stamp_widget_block_id(xml, widget_id)
 }
 
 fn inject_widgets(template: &str, socket_id: &str, pack: &crate::config::TemplatePackConfig) -> String {

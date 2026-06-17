@@ -11,6 +11,7 @@ use dioxus::prelude::*;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 use super::main_dock::MainDock;
+use super::module_workbench::ModuleWorkbench;
 use super::smart_code_dock::SmartCodeDock;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
@@ -34,6 +35,24 @@ const PICKER_ICONS: [(&str, &str); 15] = [
 fn encode_path_to_mask(path_d: &str) -> String {
     let raw = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"{}\"/></svg>", path_d);
     svg_to_data_uri(&raw)
+}
+
+fn set_icon_slot(config: &mut ThemeConfig, slot: &str, mask: String) {
+    match slot {
+        "icons.panel_close"    => config.icons.panel_close    = mask,
+        "icons.search"         => config.icons.search         = mask,
+        "icons.menu"           => config.icons.menu           = mask,
+        "icons.sidebar_left"   => config.icons.sidebar_left   = mask,
+        "icons.sidebar_right"  => config.icons.sidebar_right  = mask,
+        "icons.archive"        => config.icons.archive        = mask,
+        "icons.label"          => config.icons.label          = mask,
+        "icons.share"          => config.icons.share          = mask,
+        "icons.user"           => config.icons.user           = mask,
+        "icons.comment"        => config.icons.comment        = mask,
+        "icons.arrow_up"       => config.icons.arrow_up       = mask,
+        "icons.external_link"  => config.icons.external_link  = mask,
+        _ => {}
+    }
 }
 
 fn build_fresh_export_xml(config_toml: &str) -> Result<String, String> {
@@ -65,7 +84,6 @@ pub fn BloggerWorkspace(
 ) -> Element {
     let is_valid = diag.read().is_valid;
     let error_count = diag.read().errors.len();
-    let mut active_selection = use_signal(|| None::<String>);
     let mut active_icon_picker = use_signal(|| None::<String>);
     let is_xray_active = use_signal(|| false);
     
@@ -84,56 +102,49 @@ pub fn BloggerWorkspace(
     let apply_text_edit = {
         let restore = on_restore.clone();
         move |target: String, val: String, cfg: String| {
-            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
-                let mut mutated = false;
+            if target.is_empty() { return; }
+            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
+            if let Some(widget_id) = target
+                .strip_prefix("widget.")
+                .and_then(|s| s.strip_suffix(".title"))
+            {
+                config
+                    .template_pack
+                    .widget_titles
+                    .insert(widget_id.to_string(), val);
+            } else {
                 match target.as_str() {
-                    "site.site_title" => { config.site.site_title = val; mutated = true; }
-                    "site.site_subtitle" => { config.site.site_subtitle = val; mutated = true; }
-                    "footer.footer_text" => { config.footer.footer_text = val; mutated = true; }
-                    "typography.body_font_stack" => { config.typography.body_font_stack = val; mutated = true; }
-                    "typography.heading_font_stack" => { config.typography.heading_font_stack = val; mutated = true; }
-                    "typography.mono_font_stack" => { config.typography.mono_font_stack = val; mutated = true; }
-                    _ => {}
+                    "site.site_title"               => config.site.site_title = val,
+                    "site.site_subtitle"            => config.site.site_subtitle = val,
+                    "footer.footer_text"            => config.footer.footer_text = val,
+                    "typography.body_font_stack"    => config.typography.body_font_stack = val,
+                    "typography.heading_font_stack" => config.typography.heading_font_stack = val,
+                    "typography.mono_font_stack"    => config.typography.mono_font_stack = val,
+                    _ => return,
                 }
-                if mutated { restore.call(config); }
             }
+            restore.call(config);
         }
     };
 
     let apply_widget_move = {
         let restore = on_restore.clone();
         move |id: String, dest: String, cfg: String| {
-            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
-                config.template_pack.move_widget(&id, &dest);
-                restore.call(config);
-            }
+            if id.is_empty() || dest.is_empty() { return; }
+            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
+            config.template_pack.move_widget(&id, &dest);
+            restore.call(config);
         }
     };
 
     let apply_drop_svg = {
         let restore = on_restore.clone();
         move |(target, content): (String, String), cfg: String| {
-            if is_svg(&content) {
-                let mask = svg_to_data_uri(&content);
-                if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
-                    match target.as_str() {
-                        "icons.panel_close" => config.icons.panel_close = mask,
-                        "icons.search" => config.icons.search = mask,
-                        "icons.menu" => config.icons.menu = mask,
-                        "icons.sidebar_left" => config.icons.sidebar_left = mask,
-                        "icons.sidebar_right" => config.icons.sidebar_right = mask,
-                        "icons.archive" => config.icons.archive = mask,
-                        "icons.label" => config.icons.label = mask,
-                        "icons.share" => config.icons.share = mask,
-                        "icons.user" => config.icons.user = mask,
-                        "icons.comment" => config.icons.comment = mask,
-                        "icons.arrow_up" => config.icons.arrow_up = mask,
-                        "icons.external_link" => config.icons.external_link = mask,
-                        _ => {}
-                    }
-                    restore.call(config);
-                }
-            }
+            if target.is_empty() || !is_svg(&content) { return; }
+            let mask = svg_to_data_uri(&content);
+            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
+            set_icon_slot(&mut config, &target, mask);
+            restore.call(config);
         }
     };
 
@@ -205,41 +216,24 @@ pub fn BloggerWorkspace(
 
             match center_view() {
                 CenterView::Preview => rsx! {
-                    div {
-                        style: "display: flex; gap: 16px; flex: 1; min-height: 0;",
-                        
-                        div {
-                            style: "flex: 1; min-width: 0; display: flex; flex-direction: column;",
-                            PreviewCanvas {
-                                preview_viewport,
-                                preview_width,
-                                preview_html: preview_html(),
-                                on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
-                                on_select: move |target: String| { active_selection.set(Some(target)); },
-                                on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
-                                on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
-                                on_update_value: {
-                                    let mutator = apply_text_edit.clone();
-                                    move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
-                                },
-                                on_move_widget: {
-                                    let mutator = apply_widget_move.clone();
-                                    move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
-                                },
-                                on_drop_svg: {
-                                    let mutator = apply_drop_svg.clone();
-                                    move |(target, content): (String, String)| { mutator((target, content), config_toml()); }
-                                }
-                            }
-                        }
-
-                        if let Some(target) = active_selection() {
-                            PreviewEditorPalette {
-                                target: target.clone(),
-                                config_toml: config_toml(),
-                                on_close: move |_| active_selection.set(None),
-                                on_restore: on_restore.clone(),
-                            }
+                    PreviewCanvas {
+                        preview_viewport,
+                        preview_width,
+                        preview_html: preview_html(),
+                        on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
+                        on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                        on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
+                        on_update_value: {
+                            let mutator = apply_text_edit.clone();
+                            move |(target, val): (String, String)| { mutator(target, val, config_toml()); }
+                        },
+                        on_move_widget: {
+                            let mutator = apply_widget_move.clone();
+                            move |(id, dest): (String, String)| { mutator(id, dest, config_toml()); }
+                        },
+                        on_drop_svg: {
+                            let mutator = apply_drop_svg.clone();
+                            move |(target, content): (String, String)| { mutator((target, content), config_toml()); }
                         }
                     }
                 },
@@ -257,7 +251,6 @@ pub fn BloggerWorkspace(
                                 preview_width,
                                 preview_html: preview_html(),
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
-                                on_select: move |target: String| { active_selection.set(Some(target)); },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
                                 on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                                 on_update_value: {
@@ -284,10 +277,16 @@ pub fn BloggerWorkspace(
                 },
                 CenterView::Export => rsx! {
                     ExportResultView {
-                        export_xml, 
+                        export_xml,
                         is_valid,
                         error_count,
-                        config_toml, 
+                        config_toml,
+                    }
+                },
+                CenterView::ModuleWorkbench => rsx! {
+                    ModuleWorkbench {
+                        config_toml,
+                        on_load_theme: on_load_theme.clone(),
                     }
                 }
             }
@@ -312,6 +311,11 @@ fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
             class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
             onclick: move |_| center_view.set(CenterView::Export),
             "Export XML"
+        }
+        button {
+            class: if center_view() == CenterView::ModuleWorkbench { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| center_view.set(CenterView::ModuleWorkbench),
+            "Module Workbench"
         }
     }
 }
@@ -450,30 +454,15 @@ fn IconPickerModal(
                                     if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
                                         let bytes = file.read().await;
                                         let raw_svg = String::from_utf8_lossy(&bytes).into_owned();
-                                        if is_svg(&raw_svg) {
-                                            let mask = svg_to_data_uri(&raw_svg);
-                                            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&cfg) {
-                                                match slot.as_str() {
-                                                    "icons.panel_close" => config.icons.panel_close = mask,
-                                                    "icons.search" => config.icons.search = mask,
-                                                    "icons.menu" => config.icons.menu = mask,
-                                                    "icons.sidebar_left" => config.icons.sidebar_left = mask,
-                                                    "icons.sidebar_right" => config.icons.sidebar_right = mask,
-                                                    "icons.archive" => config.icons.archive = mask,
-                                                    "icons.label" => config.icons.label = mask,
-                                                    "icons.share" => config.icons.share = mask,
-                                                    "icons.user" => config.icons.user = mask,
-                                                    "icons.comment" => config.icons.comment = mask,
-                                                    "icons.arrow_up" => config.icons.arrow_up = mask,
-                                                    "icons.external_link" => config.icons.external_link = mask,
-                                                    _ => {}
-                                                }
-                                                restore.call(config);
-                                                status_msg.set(format!("Custom SVG applied from {}", file.file_name()));
-                                            }
-                                        } else {
+                                        if !is_svg(&raw_svg) {
                                             status_msg.set("Error: File is not a valid SVG.".to_string());
+                                            return;
                                         }
+                                        let mask = svg_to_data_uri(&raw_svg);
+                                        let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
+                                        set_icon_slot(&mut config, &slot, mask);
+                                        restore.call(config);
+                                        status_msg.set(format!("Custom SVG applied from {}", file.file_name()));
                                     }
                                 });
                             }
@@ -504,25 +493,10 @@ fn IconPickerModal(
                                         let mask_uri = mask_uri.clone();
                                         let toml_str = config_toml.clone();
                                         move |_| {
-                                            if let Ok(mut config) = toml::from_str::<ThemeConfig>(&toml_str) {
-                                                match icon_target.as_str() {
-                                                    "icons.panel_close" => config.icons.panel_close = mask_uri.clone(),
-                                                    "icons.search" => config.icons.search = mask_uri.clone(),
-                                                    "icons.menu" => config.icons.menu = mask_uri.clone(),
-                                                    "icons.sidebar_left" => config.icons.sidebar_left = mask_uri.clone(),
-                                                    "icons.sidebar_right" => config.icons.sidebar_right = mask_uri.clone(),
-                                                    "icons.archive" => config.icons.archive = mask_uri.clone(),
-                                                    "icons.label" => config.icons.label = mask_uri.clone(),
-                                                    "icons.share" => config.icons.share = mask_uri.clone(),
-                                                    "icons.user" => config.icons.user = mask_uri.clone(),
-                                                    "icons.comment" => config.icons.comment = mask_uri.clone(),
-                                                    "icons.arrow_up" => config.icons.arrow_up = mask_uri.clone(),
-                                                    "icons.external_link" => config.icons.external_link = mask_uri.clone(),
-                                                    _ => {}
-                                                }
-                                                on_restore.call(config);
-                                                status_msg.set(format!("Applied {} icon.", label));
-                                            }
+                                            let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
+                                            set_icon_slot(&mut config, &icon_target, mask_uri.clone());
+                                            on_restore.call(config);
+                                            status_msg.set(format!("Applied {} icon.", label));
                                         }
                                     },
                                     span { style: "display: block; width: 24px; height: 24px; background-color: var(--fg-base); -webkit-mask-image: {mask_uri}; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;" }
@@ -543,125 +517,14 @@ fn IconPickerModal(
                                 let mask = encode_path_to_mask(path_d);
                                 let toml_str = config_toml.clone();
                                 move |_| {
-                                    if let Ok(mut config) = toml::from_str::<ThemeConfig>(&toml_str) {
-                                        match icon_target.as_str() {
-                                            "icons.panel_close" => config.icons.panel_close = mask.clone(),
-                                            "icons.search" => config.icons.search = mask.clone(),
-                                            "icons.menu" => config.icons.menu = mask.clone(),
-                                            "icons.sidebar_left" => config.icons.sidebar_left = mask.clone(),
-                                            "icons.sidebar_right" => config.icons.sidebar_right = mask.clone(),
-                                            "icons.archive" => config.icons.archive = mask.clone(),
-                                            "icons.label" => config.icons.label = mask.clone(),
-                                            "icons.share" => config.icons.share = mask.clone(),
-                                            "icons.user" => config.icons.user = mask.clone(),
-                                            "icons.comment" => config.icons.comment = mask.clone(),
-                                            "icons.arrow_up" => config.icons.arrow_up = mask.clone(),
-                                            "icons.external_link" => config.icons.external_link = mask.clone(),
-                                            _ => {}
-                                        }
-                                        on_restore.call(config);
-                                        status_msg.set(format!("Applied {} icon.", label));
-                                    }
+                                    let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
+                                    set_icon_slot(&mut config, &icon_target, mask.clone());
+                                    on_restore.call(config);
+                                    status_msg.set(format!("Applied {} icon.", label));
                                 }
                             },
                             div { style: "width: 24px; height: 24px; color: var(--fg-base);", dangerous_inner_html: format!("<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='{}'/></svg>", path_d) }
                         }
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn PreviewEditorPalette(
-    target: String,
-    config_toml: String,
-    on_close: EventHandler<()>,
-    on_restore: EventHandler<ThemeConfig>
-) -> Element {
-    let current_val = match toml::from_str::<ThemeConfig>(&config_toml) {
-        Ok(c) => match target.as_str() {
-            "site.site_title" => c.site.site_title,
-            "site.site_subtitle" => c.site.site_subtitle,
-            "footer.footer_text" => c.footer.footer_text,
-            "colors.accent" => c.colors.accent,
-            "colors.bg_panel" => c.colors.bg_panel.to_css(),
-            "colors.bg_elevated" => c.colors.bg_elevated.to_css(),
-            "typography.body_font_stack" => c.typography.body_font_stack,
-            "typography.heading_font_stack" => c.typography.heading_font_stack,
-            "typography.mono_font_stack" => c.typography.mono_font_stack,
-            _ => String::new(),
-        },
-        Err(_) => String::new(),
-    };
-
-    rsx! {
-        div {
-            class: "editor-docked-palette editor-panel",
-            style: "width: 320px; flex-shrink: 0; display: flex; flex-direction: column; border-left: 1px solid var(--editor-border-soft); background: var(--bg-panel); overflow: hidden;",
-            
-            div {
-                class: "palette-header", style: "display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--editor-border-soft); background: color-mix(in srgb, var(--bg-panel) 90%, var(--editor-accent-muted));",
-                span { style: "font-weight: 600; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.05em;", "Edit Selection" }
-                button { class: "editor-mini-button", style: "padding: 2px 8px;", onclick: move |_| on_close.call(()), "×" }
-            }
-
-            div {
-                class: "palette-content", style: "padding: 16px; display: flex; flex-direction: column; gap: 12px;",
-                label { style: "font-size: 0.85em; color: var(--fg-muted); font-family: var(--font-mono, monospace);", "{target}" }
-
-                match target.as_str() {
-                    "site.site_title" | "site.site_subtitle" | "typography.body_font_stack" | "typography.heading_font_stack" | "typography.mono_font_stack" => rsx! {
-                        input {
-                            class: "editor-input", style: "width: 100%; box-sizing: border-box;", value: "{current_val}",
-                            oninput: move |evt| {
-                                if let Ok(mut config) = toml::from_str::<ThemeConfig>(&config_toml) {
-                                    match target.as_str() {
-                                        "site.site_title" => config.site.site_title = evt.value(),
-                                        "site.site_subtitle" => config.site.site_subtitle = evt.value(),
-                                        "typography.body_font_stack" => config.typography.body_font_stack = evt.value(),
-                                        "typography.heading_font_stack" => config.typography.heading_font_stack = evt.value(),
-                                        "typography.mono_font_stack" => config.typography.mono_font_stack = evt.value(),
-                                        _ => {}
-                                    }
-                                    on_restore.call(config);
-                                }
-                            }
-                        }
-                    },
-                    "colors.accent" | "colors.bg_panel" | "colors.bg_elevated" => rsx! {
-                        input {
-                            class: "editor-input", r#type: "text", placeholder: "#hex or rgb", style: "width: 100%; box-sizing: border-box;", value: "{current_val}",
-                            oninput: move |evt| {
-                                if let Ok(mut config) = toml::from_str::<ThemeConfig>(&config_toml) {
-                                    let raw = evt.value();
-                                    let applied = match target.as_str() {
-                                        "colors.accent" => { config.colors.accent = raw; true }
-                                        "colors.bg_panel" | "colors.bg_elevated" => false,
-                                        _ => false,
-                                    };
-                                    if applied { on_restore.call(config); }
-                                }
-                            }
-                        }
-                    },
-                    "footer.footer_text" => rsx! {
-                        textarea {
-                            class: "editor-textarea", style: "width: 100%; min-height: 100px; box-sizing: border-box; resize: vertical;", value: "{current_val}",
-                            oninput: move |evt| {
-                                if let Ok(mut config) = toml::from_str::<ThemeConfig>(&config_toml) {
-                                    config.footer.footer_text = evt.value();
-                                    on_restore.call(config);
-                                }
-                            }
-                        }
-                    },
-                    _ if target.starts_with("icons.") => rsx! {
-                        div { style: "color: var(--fg-muted); font-size: 0.85em; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;", "Shift+Click this icon in the preview canvas to open the visual SVG picker." }
-                    },
-                    _ => rsx! {
-                        div { style: "color: var(--editor-accent-warm); font-size: 0.9em;", "Unmapped target field." }
                     }
                 }
             }

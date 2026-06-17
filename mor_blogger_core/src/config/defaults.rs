@@ -96,8 +96,10 @@ pub fn default_theme_config() -> ThemeConfig {
                 ("sidebar-left".to_string(), vec!["Label1".to_string(), "BlogArchive1".to_string()]),
                 ("sidebar-right".to_string(), vec!["HTML1".to_string()]),
             ]),
+            widget_titles: TemplatePackConfig::default().widget_titles,
         },
 
+        blocks: vec![],
         preset_css: "".to_string(),
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).

@@ -17,7 +17,9 @@
         </b:widget-settings>
 
         <b:includable id='main' var='this'>
-          <b:include name='widget-title'/>
+          <b:if cond='data:title != &quot;&quot;'>
+            <h2 class='title'><span data-field-path='widget.Label1.title'><data:title/></span></h2>
+          </b:if>
           <b:include name='content'/>
         </b:includable>
 
@@ -73,7 +75,9 @@
         </b:widget-settings>
 
         <b:includable id='main' var='this'>
-          <b:include name='widget-title'/>
+          <b:if cond='data:title != &quot;&quot;'>
+            <h2 class='title'><span data-field-path='widget.BlogArchive1.title'><data:title/></span></h2>
+          </b:if>
           <b:include name='content'/>
         </b:includable>
 

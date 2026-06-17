@@ -1,5 +1,6 @@
 pub mod ads;
 pub mod css_builder;
+pub mod tracking;
 pub mod pages;
 pub mod plugins;
 pub mod preview;
@@ -11,3 +12,4 @@ pub mod xml_parts;
 
 pub use preview::{render_preview_html, PreviewTemplateMode};
 pub use theme::{render_theme, save_bundle_to_disk, save_xml_to_disk};
+pub use tracking::menu_link_anchor;

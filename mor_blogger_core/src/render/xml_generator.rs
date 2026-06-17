@@ -12,8 +12,10 @@ use super::xml_parts::{
     footer_generator::render_footer_sockets,
     header_generator::render_header_sockets,
     javascript_generator::render_javascript_sockets,
+    layout_compiler::render_layout_blocks,
     meta_generator::render_meta_sockets,
     sidebar_generator::render_sidebar_sockets,
+    widget_generator::render_widget_sockets,
 };
 
 #[derive(Debug, Clone)]
@@ -99,15 +101,25 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
     let meta = render_meta_sockets(parts.meta.to_string(), config);
     let css = render_css_sockets(parts.css, config);
     let header = render_header_sockets(parts.header, config);
-    let left_sidebar = render_sidebar_sockets(parts.sidebar_left, config, "LEFT");
-    let right_sidebar = render_sidebar_sockets(parts.sidebar_right, config, "RIGHT");
-    
-    let content = render_content_sockets(parts.content, config);
+    let left_sidebar = render_widget_sockets(
+        render_sidebar_sockets(parts.sidebar_left, config, "LEFT"),
+        config,
+    );
+    let right_sidebar = render_widget_sockets(
+        render_sidebar_sockets(parts.sidebar_right, config, "RIGHT"),
+        config,
+    );
+
+    let content = render_widget_sockets(render_content_sockets(parts.content, config), config);
     let footer = render_footer_sockets(parts.footer, config);
     
-    let main_layout = parts.main
-        .replace("{{MAIN_CONTENT_MODULE}}", &content)
-        .replace("{{FOOTER_MODULE}}", &footer);
+    let main_layout = render_layout_blocks(
+        parts
+            .main
+            .replace("{{MAIN_CONTENT_MODULE}}", &content)
+            .replace("{{FOOTER_MODULE}}", &footer),
+        config,
+    );
         
     let scripts = render_javascript_sockets(parts.javascript, config);
 
@@ -153,5 +165,5 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
     final_xml = final_xml.replace("{{PLUGIN_HEAD_XML}}", "");
     final_xml = final_xml.replace("{{PLUGIN_BODY_TOP}}", "");
 
-    final_xml
+    crate::render::tracking::stamp_all_widget_block_ids(final_xml)
 }

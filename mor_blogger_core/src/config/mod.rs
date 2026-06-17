@@ -39,6 +39,9 @@ pub struct ThemeConfig {
     pub ads: AdsConfig,
     #[serde(default)]
     pub template_pack: TemplatePackConfig,
+    /// Structural layout blocks compiled into Blogger sections/widgets.
+    #[serde(default)]
+    pub blocks: Vec<LayoutBlock>,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub preset_css: String,
 }
@@ -69,6 +72,7 @@ impl Default for ThemeConfig {
             static_pages: StaticPagesConfig::default(),
             ads: AdsConfig::default(),
             template_pack: TemplatePackConfig::default(),
+            blocks: Vec::new(),
             preset_css: String::new(),
         }
     }

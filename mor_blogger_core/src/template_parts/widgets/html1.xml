@@ -1,7 +1,7 @@
 <b:widget id='HTML1' locked='false' title='Custom Widget' type='HTML' version='1' visible='true'>
   <b:includable id='main'>
     <b:if cond='data:title != &quot;&quot;'>
-      <h2 class='title'><data:title/></h2>
+      <h2 class='title'><span data-field-path='widget.HTML1.title'><data:title/></span></h2>
     </b:if>
     <div class='widget-content'>
       <data:content/>

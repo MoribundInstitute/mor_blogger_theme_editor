@@ -1,43 +1,52 @@
-/* Global App Menu Bar */
+/* Global App Menu Bar (GTK4 / Libadwaita compliant) */
 .mor-menu-bar {
   display: flex;
-  background-color: #1a1a1c; /* Deep OBS-like dark */
-  border-bottom: 1px solid #2a2a2d;
-  height: 30px;
+  background-color: var(--editor-bg);
+  border-bottom: 1px solid var(--editor-border);
+  height: 32px;
   align-items: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 13px;
-  color: #cccccc;
+  color: var(--editor-text);
   user-select: none;
   position: relative;
   z-index: 9999; /* Must sit above all other panels */
+  padding: 0 4px;
 }
 
-.mor-menu-item {
+/* Top-level menu bar items */
+.mor-menu-bar > .mor-menu-item {
   position: relative;
-  height: 100%;
+  height: calc(100% - 6px);
+  margin: 3px 2px;
   display: flex;
   align-items: center;
   padding: 0 10px;
   cursor: default;
+  color: var(--editor-text);
+  border-radius: var(--radius-sm, 6px);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.mor-menu-item:hover {
-  background-color: #3e3e42;
-  color: #ffffff;
+.mor-menu-bar > .mor-menu-item:hover {
+  background-color: var(--editor-panel-raised);
+  color: var(--editor-text);
 }
 
 /* The Dropdown Container */
 .mor-menu-dropdown {
   display: none;
   position: absolute;
-  top: 30px;
+  top: 100%;
   left: 0;
-  background-color: #2b2b2d;
-  border: 1px solid #1a1a1c;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
-  min-width: 200px;
-  padding: 4px 0;
+  margin-top: 2px;
+  background-color: var(--editor-panel);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  min-width: 220px;
+  padding: 5px;
+  z-index: 10000;
 }
 
 .mor-menu-item:hover .mor-menu-dropdown {
@@ -45,26 +54,52 @@
 }
 
 /* Individual Dropdown Buttons */
-.mor-menu-dropdown button {
-  display: block;
-  width: 100%;
-  text-align: left;
+.mor-menu-dropdown .mor-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(100% - 4px);
+  margin: 2px;
+  padding: 7px 12px;
   background: transparent;
   border: none;
-  color: #cccccc;
-  padding: 6px 16px;
+  color: var(--editor-text);
   font-size: 13px;
+  font-family: var(--font-sans), sans-serif;
   cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  transition: background-color 0.1s ease, color 0.1s ease;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.mor-menu-dropdown button:hover {
-  background-color: #007acc; /* Subtle blue highlight */
+.mor-menu-dropdown .mor-menu-item:hover:not(.disabled) {
+  background-color: var(--editor-accent);
   color: #ffffff;
+}
+
+.mor-menu-dropdown .mor-menu-item.disabled {
+  color: var(--editor-muted-2);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Keyboard Shortcut Display */
+.mor-menu-dropdown .mor-menu-item .shortcut {
+  font-size: 11px;
+  color: var(--editor-muted);
+  margin-left: 24px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.mor-menu-dropdown .mor-menu-item:hover:not(.disabled) .shortcut {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Horizontal Divider inside dropdowns */
 .mor-menu-divider {
   height: 1px;
-  background-color: #3e3e42;
-  margin: 4px 0;
+  background-color: var(--editor-border-soft);
+  margin: 5px 4px;
 }

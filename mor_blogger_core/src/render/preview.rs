@@ -70,7 +70,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 
     // Wire up the Plugin Pipeline for the Preview
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
-    if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
+    if let Ok(json) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
         if let Ok(prefs) = serde_json::from_str::<RenderPrefs>(&json) {
             for p in prefs.plugins {
                 if p.enabled {
@@ -104,7 +104,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 <header class="main-header" data-edit-target="colors.bg_elevated">
     <div class="header-top-row">
         <div class="header-side-controls left-controls">
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left">Browse</button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
         </div>
         <a class="branding branding-link">
             <span class="institute-title" data-field-path="site.site_title">{site_title}</span>
@@ -114,7 +114,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
                <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
                <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
             </button>
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right">Contents</button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right"><span class="visually-hidden">Contents</span></button>
         </div>
     </div>
     <div class="header-bottom-row">
@@ -129,7 +129,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
     <aside class="runelite-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
         <div class="panel-header">
             <span data-edit-target="colors.accent">Browse</span>
-            <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close">Close</button>
+            <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
         </div>
         <div class="panel-content sidebar-section">
             <div class="widget Label" id="Label1" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
@@ -171,7 +171,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
     <aside class="runelite-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
         <div class="panel-header">
             <span data-edit-target="colors.accent">Contents</span>
-            <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close">Close</button>
+            <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
         </div>
         <div class="panel-content sidebar-section">
             <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>

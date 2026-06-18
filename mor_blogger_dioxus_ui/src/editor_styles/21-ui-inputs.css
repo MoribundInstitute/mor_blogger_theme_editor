@@ -3,7 +3,7 @@
 .editor-card {
   padding: 16px;
   margin: 0 0 16px 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--editor-panel-soft);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-md);
 }
@@ -40,7 +40,7 @@
 .editor-textarea {
   width: 100%;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.25);
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
   color: var(--editor-text);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-sm);
@@ -77,30 +77,30 @@
 
 .editor-button:hover {
   border-color: var(--editor-muted);
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
 }
 
 .editor-button-active {
   border-color: var(--editor-accent);
   color: var(--editor-accent);
-  background: rgba(88, 166, 255, 0.1);
+  background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
 }
 
 .editor-button-danger {
-  border-color: rgba(218, 54, 51, 0.4);
-  color: #ff7b72;
+  border-color: color-mix(in srgb, var(--editor-danger) 40%, transparent);
+  color: var(--editor-danger);
 }
 
 .editor-button-danger:hover {
-  background: rgba(218, 54, 51, 0.15);
+  background: color-mix(in srgb, var(--editor-danger) 15%, transparent);
   border-color: var(--editor-danger);
 }
 
 .editor-note {
   margin-top: 16px;
   padding: 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border: 1px dashed rgba(88, 166, 255, 0.3);
+  background: color-mix(in srgb, var(--editor-accent) 5%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--editor-accent) 30%, transparent);
   border-radius: var(--radius-sm);
 }
 

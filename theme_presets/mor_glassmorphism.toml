@@ -248,9 +248,15 @@ html::after {
 
 .header-panel-toggle.panel-toggle,
 .header-top-row > .panel-toggle {
-  min-width: 84px !important;
-  height: auto !important;
-  padding: 6px 14px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
 }
 
 .preview-panel-toggle.panel-toggle {

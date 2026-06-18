@@ -6,7 +6,15 @@
 //! Serde ignores any unknown fields, so this stays compatible even as the
 //! UI side grows new preference keys.
 
+use directories::ProjectDirs;
 use serde::Deserialize;
+
+pub fn editor_prefs_path() -> std::path::PathBuf {
+    ProjectDirs::from("io", "Moribund", "MorBloggerThemeEditor")
+        .unwrap()
+        .config_dir()
+        .join("editor_prefs.json")
+}
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct RenderPrefs {

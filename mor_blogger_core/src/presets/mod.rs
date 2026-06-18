@@ -132,7 +132,7 @@ pub fn all_presets() -> Vec<Preset> {
             }
         }
 
-        presets.sort_by(|a, b| a.name.cmp(&b.name));
+        presets.sort_by(|a, b| a.name.cmp(b.name));
         presets
     }).clone()
 }
@@ -147,15 +147,46 @@ pub fn resolve_palette_pair(
         }
     }
 
-    let light = PresetPalette {
-        colors: fallback_config.colors.clone(),
-        background: fallback_config.background.clone(),
+    // Default theme canonical pair logic
+    // Heuristic: Is the current fallback_config representing a dark or light mode?
+    let is_currently_dark = match &fallback_config.background.mode {
+        crate::config::BackgroundMode::Gradient { from, .. } => {
+            // Default dark purple workspace gradient
+            from == "#1e1a4d"
+        }
+        crate::config::BackgroundMode::Solid { color } => {
+            // Default dark background color
+            color == "#0f1026" || color == "#222129"
+        }
+        _ => {
+            // Fallback: check bg_base directly
+            fallback_config.colors.bg_base == "#0f1026" || fallback_config.colors.bg_base == "#222129"
+        }
     };
-    let dark = PresetPalette {
-        colors: fallback_config.colors.inverted_contrast(),
-        background: fallback_config.background.clone(),
-    };
-    (light, dark)
+
+    if is_currently_dark {
+        // Fallback is dark: assign current to dark slot, and invert for light slot
+        let dark = PresetPalette {
+            colors: fallback_config.colors.clone(),
+            background: fallback_config.background.clone(),
+        };
+        let light = PresetPalette {
+            colors: fallback_config.colors.inverted_contrast(),
+            background: fallback_config.background.inverted_contrast(),
+        };
+        (light, dark)
+    } else {
+        // Fallback is light: assign current to light slot, and invert for dark slot
+        let light = PresetPalette {
+            colors: fallback_config.colors.clone(),
+            background: fallback_config.background.clone(),
+        };
+        let dark = PresetPalette {
+            colors: fallback_config.colors.inverted_contrast(),
+            background: fallback_config.background.inverted_contrast(),
+        };
+        (light, dark)
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -28,19 +28,20 @@
 .editor-presets__card {
   flex: 0 0 200px;
   padding: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--editor-panel-raised);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   overflow: hidden;
   text-align: left;
   font-family: inherit;
-  color: inherit;
+  color: var(--editor-text);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .editor-presets__card:hover {
-  border-color: var(--editor-muted);
+  border-color: var(--editor-accent);
+  background: var(--editor-panel-soft);
   transform: translateY(-2px);
 }
 

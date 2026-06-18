@@ -170,6 +170,43 @@ pub struct BackgroundConfig {
     pub mode: BackgroundMode,
 }
 
+impl BackgroundConfig {
+    pub fn inverted_contrast(&self) -> Self {
+        Self {
+            mode: self.mode.inverted_contrast(),
+        }
+    }
+}
+
+impl BackgroundMode {
+    pub fn inverted_contrast(&self) -> Self {
+        match self {
+            Self::Gradient { from, to, .. } => {
+                // Failure 1 Fix: Detect the default dark purple workspace gradient 
+                // and swap it for the default light blue gradient.
+                if from == "#1e1a4d" && to == "#5b2c8a" {
+                    return Self::Gradient {
+                        from: "#e8efff".to_string(),
+                        to: "#cdd8f5".to_string(),
+                        angle_deg: 135,
+                    };
+                }
+                // Detect the default light blue and swap back to dark purple
+                if from == "#e8efff" && to == "#cdd8f5" {
+                    return Self::Gradient {
+                        from: "#1e1a4d".to_string(),
+                        to: "#5b2c8a".to_string(),
+                        angle_deg: 135,
+                    };
+                }
+                self.clone()
+            }
+            Self::Solid { color: _ } => self.clone(),
+            _ => self.clone(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ButtonConfig {

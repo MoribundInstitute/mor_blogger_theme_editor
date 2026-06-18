@@ -5,7 +5,7 @@ use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
-use crate::ui::panels::theme_palette::effects_panel::EffectsPanel;
+use crate::ui::panels::theme_palette::effects_panel_2::{BordersPanel, EffectsPanel};
 use crate::ui::panels::theme_palette::icons_panel::SvgIconsPanel;
 use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
@@ -221,14 +221,19 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
-                EditorAccordion { id: "Effects", title: "Borders & Effects", active: active_tab,
-                    EffectsPanel {
+                EditorAccordion { id: "Borders", title: "Borders & Frames", active: active_tab,
+                    BordersPanel {
                         panel_border_width: signals.panel_border_width,
-                        glow_spread: signals.glow_spread,
-                        hover_scale: signals.hover_scale,
                         panel_border_image_url: signals.panel_border_image_url,
                         panel_border_image_slice: signals.panel_border_image_slice,
                         panel_border_image_repeat: signals.panel_border_image_repeat,
+                    }
+                }
+
+                EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
+                    EffectsPanel {
+                        glow_spread: signals.glow_spread,
+                        hover_scale: signals.hover_scale,
                     }
                 }
 

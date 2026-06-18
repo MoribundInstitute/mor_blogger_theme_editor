@@ -2,7 +2,7 @@
 // MOR TOML theme engine. Native OS Chameleon.
 
 use dioxus::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub const GTK4_DARK_TOML: &str = r##"
 bg            = "#242424"
@@ -78,7 +78,7 @@ pub fn get_native_os_theme() -> &'static str {
     }
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct MorTheme {
     pub bg: String,
     pub panel: String,
@@ -132,6 +132,10 @@ impl Default for MorTheme {
 impl MorTheme {
     pub fn from_toml(src: &str) -> Result<Self, toml::de::Error> {
         toml::from_str(src)
+    }
+
+    pub fn to_toml(&self) -> String {
+        toml::to_string_pretty(self).unwrap_or_default()
     }
 
     pub fn to_css_vars(&self) -> String {
@@ -504,7 +508,10 @@ pub const MOR_CSS: &str = r#"
 pub fn MorStyleProvider(
     #[props(default = GTK4_DARK_TOML.to_string())] theme_toml: String,
 ) -> Element {
-    let css_vars = MorTheme::from_toml(&theme_toml).unwrap_or_default().to_css_vars();
+    let base = MorTheme::from_toml(&theme_toml).unwrap_or_default();
+    let prefs = crate::app::config_bridge::EditorPrefs::load();
+    let theme = crate::app::config_bridge::resolve_effective_theme(base, &prefs.custom_editor_colors);
+    let css_vars = theme.to_css_vars();
 
     rsx! {
         style { "{css_vars}" }

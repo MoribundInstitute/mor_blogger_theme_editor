@@ -35,7 +35,7 @@ body {
   box-shadow:
     0 2px 6px rgba(0, 0, 0, 0.08),
     0 8px 24px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 15%, transparent) !important;
 }
 
 /* CONTENT surfaces inside containers — flat, transparent,
@@ -57,7 +57,7 @@ h1, h2, h3, h4,
   color: var(--fg-base) !important;
   font-weight: 700 !important;
   letter-spacing: -0.5px !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
 }
 
 .mor-post .post-title {
@@ -70,7 +70,7 @@ h1, h2, h3, h4,
 .mor-nav button {
   color: var(--fg-base) !important;
   font-weight: 600 !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
 }
 
 .mor-nav > a:hover,
@@ -86,15 +86,21 @@ h1, h2, h3, h4,
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  background: linear-gradient(180deg, #f8fbfd 0%, #e2ebf4 48%, #d1dff0 52%, #eef4f9 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-elevated) 60%, white) 0%,
+    color-mix(in srgb, var(--bg-elevated) 20%, white) 48%,
+    color-mix(in srgb, var(--bg-elevated) 10%, black) 52%,
+    color-mix(in srgb, var(--bg-elevated) 40%, white) 100%
+  ) !important;
   color: var(--fg-base) !important;
-  border: 1px solid #9fb4cc !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 14px !important;
   padding: 6px 16px !important;
   font-weight: 600 !important;
-  text-shadow: 0 1px 0 #ffffff !important;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 20%, transparent),
     0 1px 3px rgba(0, 0, 0, 0.1) !important;
   cursor: pointer;
   transition: all 120ms ease !important;
@@ -105,10 +111,16 @@ h1, h2, h3, h4,
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #edf3f8 48%, #e2ebf4 52%, #f8fbfd 100%) !important;
-  border-color: #8da4c0 !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-elevated) 80%, white) 0%,
+    color-mix(in srgb, var(--bg-elevated) 40%, white) 48%,
+    color-mix(in srgb, var(--bg-elevated) 5%, black) 52%,
+    color-mix(in srgb, var(--bg-elevated) 60%, white) 100%
+  ) !important;
+  border-color: var(--accent) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 25%, transparent),
     0 2px 4px rgba(0, 0, 0, 0.15) !important;
 }
 
@@ -117,9 +129,8 @@ h1, h2, h3, h4,
 .toc-jump-link:active,
 .back-to-top-btn:active,
 .mor-catalog-trigger:active {
-  background: linear-gradient(180deg, #d1dff0 0%, #e2ebf4 100%) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 15%, black) 0%, var(--bg-elevated) 100%) !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  border-color: #8da4c0 !important;
   transform: translateY(1px) !important;
 }
 
@@ -140,30 +151,30 @@ h1, h2, h3, h4,
 .mor-panel-heading {
   background: linear-gradient(
     180deg,
-    #ffffff 0%,
-    color-mix(in srgb, var(--bg-panel) 94%, white) 100%
+    color-mix(in srgb, var(--bg-panel) 40%, white) 0%,
+    var(--bg-panel) 100%
   ) !important;
   color: var(--fg-base) !important;
   font-weight: 700 !important;
   padding: 8px 14px !important;
   border-bottom: 1px solid var(--border-color) !important;
   border-radius: 12px 12px 0 0 !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 15%, transparent) !important;
 }
 
 /* Footer: glossy strip at the bottom matching the masthead. */
 .mor-footer {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--bg-panel) 92%, white) 0%,
+    color-mix(in srgb, var(--bg-panel) 15%, black) 0%,
     var(--bg-panel) 100%
   ) !important;
   border-radius: 12px !important;
   padding: 14px 22px !important;
   margin-top: 18px !important;
   color: var(--fg-muted) !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
 }
 
 /* Soft form field treatment — inset shadow, rounded, the kind of
@@ -173,9 +184,9 @@ input[type='search'],
 input[type='email'],
 textarea,
 select {
-  background: #ffffff !important;
+  background: var(--bg-elevated) !important;
   border: 1px solid var(--border-color) !important;
-  border-top-color: #9fb4cc !important; /* Slightly darker top border for depth */
+  border-top-color: color-mix(in srgb, var(--border-color) 30%, black) !important; /* Slightly darker top border for depth */
   border-radius: 18px !important;
   padding: 6px 12px !important;
   color: var(--fg-base) !important;
@@ -193,7 +204,7 @@ select:focus {
   border-color: var(--accent) !important;
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.06),
-    0 0 5px rgba(30, 111, 217, 0.4) !important;
+    0 0 5px color-mix(in srgb, var(--accent) 40%, transparent) !important;
 }
 
 /* Glossy reflection on the main header (The 'Wet Floor' effect) */
@@ -211,8 +222,8 @@ select:focus {
   height: 50% !important;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(255, 255, 255, 0.1) 100%
+    color-mix(in srgb, var(--fg-base) 25%, transparent) 0%,
+    color-mix(in srgb, var(--fg-base) 5%, transparent) 100%
   ) !important;
   pointer-events: none !important;
   border-radius: 12px 12px 0 0 !important;

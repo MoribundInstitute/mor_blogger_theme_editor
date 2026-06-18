@@ -1,1 +1,27 @@
-{ "ui_mode": "native" }
+{
+  "plugins": [],
+  "ui_mode": "native",
+  "workspace_theme": "\nbg            = \"#242424\"\npanel         = \"#2d2d2d\"\nheader        = \"#1e1e1e\"\ntext          = \"#deddda\"\ntext_muted    = \"#77767b\"\nborder        = \"#171717\"\nborder_light  = \"#3d3d3d\"\naccent        = \"#1c71d8\"\naccent_hover  = \"#3584e4\"\nbtn           = \"#3d3d3d\"\nbtn_hover     = \"#4a4a4a\"\nfont_family   = \"Cantarell, system-ui, sans-serif\"\nfont_size_base= \"13px\"\nfont_size_h1  = \"20px\"\npadding_base  = \"8px\"\nborder_radius = \"6px\"\ndestructive   = \"#ff5555\"\nsuccess       = \"#50fa7b\"\nwarning       = \"#f1fa8c\"\n",
+  "workspace_theme_preset": null,
+  "custom_editor_colors": {
+    "bg": null,
+    "panel": null,
+    "header": null,
+    "text": null,
+    "text_muted": null,
+    "border": null,
+    "border_light": null,
+    "accent": null,
+    "accent_hover": null,
+    "btn": null,
+    "btn_hover": null,
+    "font_family": null,
+    "font_size_base": null,
+    "font_size_h1": null,
+    "padding_base": null,
+    "border_radius": null,
+    "destructive": null,
+    "success": null,
+    "warning": null
+  }
+}

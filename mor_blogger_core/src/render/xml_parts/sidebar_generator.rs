@@ -4,10 +4,10 @@ use crate::render::ads::render_ads_widget_sidebar;
 pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str) -> String {
     if side == "LEFT" {
         xml = xml.replace("{{LEFT_PANEL_TITLE}}", "Browse");
-        xml = xml.replace("{{LEFT_PANEL_CLOSE_LABEL}}", "Close");
+        xml = xml.replace("{{LEFT_PANEL_CLOSE_LABEL}}", "<span class=\"visually-hidden\">Close</span>");
     } else {
         xml = xml.replace("{{RIGHT_PANEL_TITLE}}", "Contents");
-        xml = xml.replace("{{RIGHT_PANEL_CLOSE_LABEL}}", "Close");
+        xml = xml.replace("{{RIGHT_PANEL_CLOSE_LABEL}}", "<span class=\"visually-hidden\">Close</span>");
     }
 
     xml = xml.replace("{{WIDGET_ADSENSE_SIDEBAR}}", &render_ads_widget_sidebar(&config.ads));

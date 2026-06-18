@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 // 1. IMPORT THE LOCAL UI KIT PIECES
 use crate::ui::components::modal::Modal;
+use crate::ui::shell::css_builder_modal::CssBuilderModal;
+use crate::ui::shell::editor_settings_modal::EditorSettingsModal;
 use crate::ui::shell::menu_bar::AppMenuBar;
 use crate::ui::shell::prefs_modal::UserPreferencesModal;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
@@ -11,7 +13,7 @@ use super::hotswap::apply_hotswap_json;
 use super::layout_state::{AppLayoutState, CenterView};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
-use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
+use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
 use mor_blogger_core::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
@@ -63,14 +65,16 @@ pub fn render_app_shell(
     // Dialog Signals
     let mut show_about = use_signal(|| false);
     let show_prefs = use_signal(|| false);
+    let show_editor_settings = use_signal(|| false);
     let mut show_shortcuts = use_signal(|| false);
     let show_plugins = use_signal(|| false); // Removed dead 'mut' warning
-    let mut show_css_builder = use_signal(|| false);
+    let show_css_builder = use_signal(|| false);
     let mut show_diagnostics = use_signal(|| false);
     let mut show_docs = use_signal(|| false);
 
-    let mut launch_plugins = use_signal(|| Vec::<PluginState>::new());
-    let mut current_plugins = use_signal(|| Vec::<PluginState>::new());
+    let prefs = EditorPrefs::load();
+    let launch_plugins = use_signal(|| prefs.plugins.clone());
+    let current_plugins = use_signal(|| prefs.plugins.clone());
     let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
 
     use_effect(|| {
@@ -80,11 +84,11 @@ pub fn render_app_shell(
     });
 
     use_effect(move || {
-        if let Ok(json) = std::fs::read_to_string("editor_prefs.json") {
-            if let Ok(prefs) = serde_json::from_str::<EditorPrefs>(&json) {
-                launch_plugins.set(prefs.plugins.clone());
-                current_plugins.set(prefs.plugins);
-            }
+        let plugins = current_plugins();
+        let mut p = EditorPrefs::load();
+        if p.plugins != plugins {
+            p.plugins = plugins;
+            let _ = p.save();
         }
     });
 
@@ -127,8 +131,8 @@ pub fn render_app_shell(
     });
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-    let ui_mode_pref = use_signal(|| active_ui_mode.clone());
-    let ui_theme_pref = use_signal(|| get_native_os_theme().to_string());
+    let ui_mode_pref = use_signal(|| prefs.ui_mode.clone().unwrap_or_else(|| active_ui_mode.clone()));
+    let ui_theme_pref = use_signal(|| prefs.workspace_theme.clone().unwrap_or_else(|| get_native_os_theme().to_string()));
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
@@ -172,9 +176,13 @@ pub fn render_app_shell(
 
             UserPreferencesModal {
                 show_prefs,
-                active_theme_toml: ui_theme_pref,
                 ui_mode_pref,
                 active_ui_mode: active_ui_mode.clone(),
+            }
+
+            EditorSettingsModal {
+                open: show_editor_settings,
+                active_theme_toml: ui_theme_pref,
             }
 
             Modal {
@@ -203,13 +211,7 @@ pub fn render_app_shell(
                 }
             }
 
-            Modal {
-                title: "CSS Token Builder".to_string(), open: show_css_builder, on_close: move |_| show_css_builder.set(false),
-                div { class: "editor-note",
-                    p { class: "editor-note-title", "Under Construction" }
-                    p { class: "editor-note-body", "Visual CSS variable mapping engine is initializing." }
-                }
-            }
+            CssBuilderModal { open: show_css_builder }
 
             Modal {
                 title: "Diagnostics Log".to_string(), open: show_diagnostics, on_close: move |_| show_diagnostics.set(false),
@@ -235,14 +237,21 @@ pub fn render_app_shell(
             div { class: "editor-shell", style: "height: 100%;",
 
                 AppMenuBar {
-                    show_prefs, show_about, show_shortcuts, show_plugins, 
-                    show_css_builder, show_diagnostics, show_docs,
+                    show_prefs,
+                    show_editor_settings,
+                    show_about,
+                    show_shortcuts,
+                    show_plugins,
+                    show_css_builder,
+                    show_diagnostics,
+                    show_docs,
                     left_layout: layout.left_layout,
                     right_layout: layout.right_layout,
 
                     on_new_workspace: move |_| {
                         signals.apply_config(&mor_blogger_core::config::defaults::default_theme_config());
                         active_preset.set(None);
+                        theme.commit();
                     },
                     on_load_theme: move |_| {
                         if let Some(content) = crate::utils::io::load_toml() {
@@ -336,6 +345,7 @@ pub fn render_app_shell(
                         on_apply_theme: move |new_config: ThemeConfig| {
                             signals.apply_config(&new_config);
                             active_preset.set(None);
+                            theme.commit();
                         },
                         show_undocked_presets,
                         show_undocked_pages,

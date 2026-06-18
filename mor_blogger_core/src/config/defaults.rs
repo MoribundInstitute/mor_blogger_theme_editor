@@ -26,10 +26,11 @@ pub fn light_color_config() -> ColorConfig {
 }
 
 pub fn dark_color_config() -> ColorConfig {
+    let bg_fill = dark_background_config().mode.to_surface_fill();
     ColorConfig {
         bg_base: "#0f1026".to_string(),
-        bg_panel: SurfaceFill::solid("#1a1f4a"),
-        bg_elevated: SurfaceFill::solid("#2a2f6a"),
+        bg_panel: bg_fill.clone(),
+        bg_elevated: bg_fill,
         fg_base: "#f5f7ff".to_string(),
         fg_muted: "#a8aedd".to_string(),
         accent: "#8b5cf6".to_string(),
@@ -43,13 +44,27 @@ pub fn dark_color_config() -> ColorConfig {
     }
 }
 
-pub fn default_theme_config() -> ThemeConfig {
-    let workspace_gradient = BackgroundMode::Gradient {
-        from: "#1e1a4d".to_string(),
-        to: "#5b2c8a".to_string(),
-        angle_deg: 135,
-    };
+pub fn light_background_config() -> BackgroundConfig {
+    BackgroundConfig {
+        mode: BackgroundMode::Gradient {
+            from: "#e8efff".to_string(),
+            to: "#cdd8f5".to_string(),
+            angle_deg: 135,
+        },
+    }
+}
 
+pub fn dark_background_config() -> BackgroundConfig {
+    BackgroundConfig {
+        mode: BackgroundMode::Gradient {
+            from: "#1e1a4d".to_string(),
+            to: "#5b2c8a".to_string(),
+            angle_deg: 135,
+        },
+    }
+}
+
+pub fn default_theme_config() -> ThemeConfig {
     ThemeConfig {
         site: SiteConfig {
             site_title: "Moribund Workspace".to_string(),
@@ -72,9 +87,7 @@ pub fn default_theme_config() -> ThemeConfig {
             border_width:   "1px".to_string(),
             text_transform: "none".to_string(),
         },
-        background: BackgroundConfig {
-            mode: workspace_gradient,
-        },
+        background: dark_background_config(),
         assets:       AssetConfig::default(),
         seo:          SeoConfig::default(),
         menu_links:   vec![],

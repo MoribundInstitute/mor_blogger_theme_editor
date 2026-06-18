@@ -49,16 +49,17 @@ fn generate_border_image_css(url: &str, slice: &str, repeat: &str) -> String {
     )
 }
 
-fn generate_border_image_value(url: &str, slice: &str, repeat: &str) -> String {
+fn generate_border_image_value(url: &str, slice: &str, repeat: &str, accent_color: &str) -> String {
     let url = url.trim();
     if url.is_empty() {
         return "none".to_string();
     }
+    let colored_url = url.replace("{{ACCENT}}", accent_color).replace("%7B%7BACCENT%7D%7D", accent_color);
     let slice = first_non_empty(slice, "30%");
     let repeat = sanitize_border_image_repeat(repeat);
     format!(
         "url('{}') {} {}",
-        escape_attr(url),
+        escape_attr(&colored_url),
         escape_attr(slice),
         escape_attr(repeat)
     )
@@ -125,17 +126,17 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let panel_border_image_slice = first_non_empty(&config.colors.panel_border_image_slice, "30%");
     let panel_border_image_repeat = sanitize_border_image_repeat(&config.colors.panel_border_image_repeat);
     let panel_border_image_css = generate_border_image_css(&config.colors.panel_border_image_url, panel_border_image_slice, panel_border_image_repeat);
-    let panel_border_image_value = generate_border_image_value(&config.colors.panel_border_image_url, panel_border_image_slice, panel_border_image_repeat);
+    let panel_border_image_value = generate_border_image_value(&config.colors.panel_border_image_url, panel_border_image_slice, panel_border_image_repeat, &config.colors.accent);
 
     let light_panel_border_image_slice = first_non_empty(&light_palette.colors.panel_border_image_slice, "30%");
     let light_panel_border_image_repeat = sanitize_border_image_repeat(&light_palette.colors.panel_border_image_repeat);
     let light_panel_border_image_css = generate_border_image_css(&light_palette.colors.panel_border_image_url, light_panel_border_image_slice, light_panel_border_image_repeat);
-    let light_panel_border_image_value = generate_border_image_value(&light_palette.colors.panel_border_image_url, light_panel_border_image_slice, light_panel_border_image_repeat);
+    let light_panel_border_image_value = generate_border_image_value(&light_palette.colors.panel_border_image_url, light_panel_border_image_slice, light_panel_border_image_repeat, &light_palette.colors.accent);
 
     let dark_panel_border_image_slice = first_non_empty(&dark_palette.colors.panel_border_image_slice, "30%");
     let dark_panel_border_image_repeat = sanitize_border_image_repeat(&dark_palette.colors.panel_border_image_repeat);
     let dark_panel_border_image_css = generate_border_image_css(&dark_palette.colors.panel_border_image_url, dark_panel_border_image_slice, dark_panel_border_image_repeat);
-    let dark_panel_border_image_value = generate_border_image_value(&dark_palette.colors.panel_border_image_url, dark_panel_border_image_slice, dark_panel_border_image_repeat);
+    let dark_panel_border_image_value = generate_border_image_value(&dark_palette.colors.panel_border_image_url, dark_panel_border_image_slice, dark_panel_border_image_repeat, &dark_palette.colors.accent);
 
     // Apply strict structural variable replacements directly into the string payload
     xml = xml.replace("{{LIGHT_BG_BASE}}", &escape_attr(&light_palette.colors.bg_base));

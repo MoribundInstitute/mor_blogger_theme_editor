@@ -30,7 +30,7 @@ pub fn App() -> Element {
     provide_context(layout);
 
     use_keyboard_shortcuts(layout);
-    use_restore_drop_bridge(theme.signals, theme.active_preset);
+    use_restore_drop_bridge(theme);
 
     let render = use_app_render_state(theme, layout);
 

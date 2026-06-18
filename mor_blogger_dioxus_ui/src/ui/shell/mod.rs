@@ -1,3 +1,5 @@
+pub mod css_builder_modal;
+pub mod editor_settings_modal;
 pub mod menu_bar;
 pub mod prefs_modal;
 pub mod shortcut;

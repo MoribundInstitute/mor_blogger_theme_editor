@@ -16,18 +16,18 @@
 }
 
 .editor-accordion-section-open {
-  background: rgba(255, 255, 255, 0.015);
-  border-color: rgba(88, 166, 255, 0.4);
+  background: color-mix(in srgb, var(--editor-panel) 80%, transparent);
+  border-color: color-mix(in srgb, var(--editor-accent) 40%, transparent);
 }
 
-.editor-accordion-trigger {
+.editor-accordion-header {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--editor-panel-raised);
+  background-color: var(--editor-panel-raised);
   color: var(--editor-text);
   border: 0;
   cursor: pointer;
@@ -36,11 +36,13 @@
   transition: background 0.2s;
 }
 
-.editor-accordion-trigger:hover {
-  background: rgba(255, 255, 255, 0.06);
+.editor-accordion-header:hover,
+.editor-accordion-header.active {
+  background-color: var(--editor-accent);
+  color: var(--editor-bg);
 }
 
-.editor-accordion-section-open .editor-accordion-trigger {
+.editor-accordion-section-open .editor-accordion-header {
   border-bottom: 1px solid var(--editor-border-soft);
   color: var(--editor-accent-warm);
 }

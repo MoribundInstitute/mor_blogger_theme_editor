@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::app::state::ThemeAppState;
 use mor_blogger_core::utils::rehydration::extract_and_decode;
 
-pub fn use_restore_drop_bridge(signals: ThemeSignals, active_preset: Signal<Option<&'static str>>) {
+pub fn use_restore_drop_bridge(theme: ThemeAppState) {
+    let signals = theme.signals;
+    let active_preset = theme.active_preset;
     use_effect(move || {
         let mut eval = dioxus::document::eval(
             r#"
@@ -133,6 +135,7 @@ pub fn use_restore_drop_bridge(signals: ThemeSignals, active_preset: Signal<Opti
                                 // FIXED: Using apply_config
                                 restore_signals.apply_config(&config);
                                 restored_active_preset.set(None);
+                                theme.commit();
                                 log::info!("Workspace restored from dropped XML file: {}", name);
                             }
                             Err(err) => {

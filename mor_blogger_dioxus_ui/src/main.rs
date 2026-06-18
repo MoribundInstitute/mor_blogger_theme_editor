@@ -10,12 +10,9 @@ fn main() {
     let mut mode = "frameless".to_string();
 
     // 1. Read persistent preferences from disk
-    if let Ok(prefs_str) = std::fs::read_to_string("editor_prefs.json") {
-        if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&prefs_str) {
-            if let Some(m) = parsed.get("ui_mode").and_then(|v| v.as_str()) {
-                mode = m.to_string();
-            }
-        }
+    let prefs = app::config_bridge::EditorPrefs::load();
+    if let Some(m) = prefs.ui_mode {
+        mode = m;
     }
 
     // 2. Allow environment variables to override

@@ -12,6 +12,7 @@ use super::importers::{
 };
 use super::morph_preview_from_preset;
 use super::signals::ThemeSignals;
+use crate::app::state::ThemeAppState;
 
 const PRESET_FLOATING_DRAG_JS: &str = r#"
 (function () {
@@ -73,6 +74,7 @@ pub struct PresetsPanelProps {
 
 #[component]
 pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
+    let theme = use_context::<ThemeAppState>();
     let presets = all_presets();
     let mut active = props.active_preset;
     let mut is_dark_mode = props.signals.is_dark_mode;
@@ -262,7 +264,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     async move {
                                         if url.trim().is_empty() { import_status.set("Paste URL first.".to_string()); return; }
                                         match fetch_remote_theme(&url).await {
-                                            Ok(config) => { signals.apply_config(&config); active.set(None); last_imported_gtk.set(None); import_status.set("Imported remote theme.".to_string()); }
+                                            Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported remote theme.".to_string()); }
                                             Err(err) => import_status.set(format!("Import failed: {}", err)),
                                         }
                                     }
@@ -283,7 +285,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                         if let Some(file) = evt.files().first() {
                                             if let Ok(bytes) = file.read_bytes().await {
                                                 match parse_theme_text(&String::from_utf8_lossy(&bytes)) {
-                                                    Ok(config) => { signals.apply_config(&config); active.set(None); last_imported_gtk.set(None); import_status.set("Imported local theme file.".to_string()); }
+                                                    Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported local theme file.".to_string()); }
                                                     Err(err) => import_status.set(format!("Import failed: {}", err)),
                                                 }
                                             }
@@ -305,7 +307,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                 class: "editor-button",
                                 onclick: move |_| {
                                     match parse_theme_text(&pasted_theme()) {
-                                        Ok(config) => { props.signals.apply_config(&config); active.set(None); last_imported_gtk.set(None); import_status.set("Imported pasted theme.".to_string()); }
+                                        Ok(config) => { props.signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported pasted theme.".to_string()); }
                                         Err(err) => import_status.set(format!("Import failed: {}", err)),
                                     }
                                 },
@@ -341,6 +343,7 @@ pub(crate) struct PresetCardProps {
 
 #[component]
 pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
+    let theme = use_context::<ThemeAppState>();
     let preset = &props.preset;
     let mut active = props.active_preset;
     let preset_for_click = preset.clone();
@@ -384,6 +387,7 @@ pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
                 let is_dark = *props.signals.is_dark_mode.read();
                 props.signals.apply_preset(&preset_for_click);
                 active.set(Some(preset_for_click.id));
+                theme.commit();
                 morph_preview_from_preset(&preset_for_click, is_dark);
             },
             div { style: "padding: 10px 12px; background: {bg_panel_css}; border-bottom: 1px solid {colors.border};",

@@ -75,6 +75,24 @@ impl ThemeSignals {
         let palette = if is_dark { &preset.dark } else { &preset.light };
 
         self.swap_palette(palette);
+        self.panel_border_width
+            .clone()
+            .set(palette.colors.panel_border_width.clone());
+        self.glow_spread
+            .clone()
+            .set(palette.colors.glow_spread.clone());
+        self.hover_scale
+            .clone()
+            .set(palette.colors.hover_scale.clone());
+        self.panel_border_image_url
+            .clone()
+            .set(palette.colors.panel_border_image_url.clone());
+        self.panel_border_image_slice
+            .clone()
+            .set(palette.colors.panel_border_image_slice.clone());
+        self.panel_border_image_repeat
+            .clone()
+            .set(palette.colors.panel_border_image_repeat.clone());
 
         let base = &preset.base_config;
         self.icons.clone().set(base.icons.clone());
@@ -254,25 +272,6 @@ impl ThemeSignals {
         self.fg_muted.clone().set(palette.colors.fg_muted.clone());
         self.accent.clone().set(palette.colors.accent.clone());
         self.border.clone().set(palette.colors.border.clone());
-
-        self.panel_border_width
-            .clone()
-            .set(palette.colors.panel_border_width.clone());
-        self.glow_spread
-            .clone()
-            .set(palette.colors.glow_spread.clone());
-        self.hover_scale
-            .clone()
-            .set(palette.colors.hover_scale.clone());
-        self.panel_border_image_url
-            .clone()
-            .set(palette.colors.panel_border_image_url.clone());
-        self.panel_border_image_slice
-            .clone()
-            .set(palette.colors.panel_border_image_slice.clone());
-        self.panel_border_image_repeat
-            .clone()
-            .set(palette.colors.panel_border_image_repeat.clone());
 
         self.background.clone().set(palette.background.clone());
     }

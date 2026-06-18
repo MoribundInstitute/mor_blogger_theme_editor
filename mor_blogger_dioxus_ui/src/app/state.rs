@@ -7,6 +7,12 @@ use crate::app::layout_state::CenterView;
 
 use super::config_bridge::{menu_label, menu_url};
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct ThemeHistory {
+    pub snapshots: Vec<Option<&'static str>>,
+    pub cursor: usize,
+}
+
 #[derive(Clone, Copy)]
 pub struct ThemeAppState {
     pub signals: ThemeSignals,
@@ -14,6 +20,7 @@ pub struct ThemeAppState {
     pub active_preset: Signal<Option<&'static str>>,
     pub center_view: Signal<CenterView>,
     pub show_undocked_presets: Signal<bool>,
+    pub history: Signal<ThemeHistory>,
 }
 
 pub fn use_theme_app_state() -> ThemeAppState {
@@ -84,6 +91,10 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let active_preset = use_signal(|| None::<&'static str>);
     let is_dark_mode = use_signal(|| true);
     let show_undocked_presets = use_signal(|| false);
+    let history = use_signal(|| ThemeHistory {
+        snapshots: vec![None],
+        cursor: 0,
+    });
 
     let signals = ThemeSignals {
         is_dark_mode,
@@ -231,10 +242,86 @@ pub fn use_theme_app_state() -> ThemeAppState {
         active_preset,
         center_view,
         show_undocked_presets,
+        history,
     }
 }
 
 impl ThemeAppState {
+    pub fn commit(&self) {
+        let current = *self.active_preset.read();
+        let mut history = self.history;
+        let mut hist = history.write();
+        if hist.snapshots.get(hist.cursor) == Some(&current) {
+            return;
+        }
+        let cursor = hist.cursor;
+        hist.snapshots.truncate(cursor + 1);
+        hist.snapshots.push(current);
+        if hist.snapshots.len() > 50 {
+            hist.snapshots.remove(0);
+        }
+        hist.cursor = hist.snapshots.len() - 1;
+    }
+
+    pub fn undo(&self) {
+        self._undo_internal();
+    }
+
+    pub fn redo(&self) {
+        self._redo_internal();
+    }
+
+    fn _undo_internal(&self) {
+        let mut history = self.history;
+        let mut hist = history.write();
+        if hist.cursor == 0 {
+            return;
+        }
+        hist.cursor -= 1;
+        let val = hist.snapshots[hist.cursor];
+        let mut active_preset = self.active_preset;
+        active_preset.set(val);
+        self.restore_preset(val);
+    }
+
+    fn _redo_internal(&self) {
+        let mut history = self.history;
+        let mut hist = history.write();
+        if hist.cursor + 1 >= hist.snapshots.len() {
+            return;
+        }
+        hist.cursor += 1;
+        let val = hist.snapshots[hist.cursor];
+        let mut active_preset = self.active_preset;
+        active_preset.set(val);
+        self.restore_preset(val);
+    }
+
+    pub fn can_undo(&self) -> bool {
+        self.history.read().cursor > 0
+    }
+
+    pub fn can_redo(&self) -> bool {
+        let hist = self.history.read();
+        hist.cursor + 1 < hist.snapshots.len()
+    }
+
+    fn restore_preset(&self, val: Option<&'static str>) {
+        let is_dark = *self.signals.is_dark_mode.read();
+        if val.is_none() {
+            let defaults = default_theme_config();
+            self.signals.apply_config(&defaults);
+            return;
+        }
+        let id = val.unwrap();
+        let presets = mor_blogger_core::presets::all_presets();
+        let preset = presets.iter().find(|p| p.id == id);
+        if let Some(p) = preset {
+            self.signals.apply_preset(p);
+            morph_preview_from_preset(p, is_dark);
+        }
+    }
+
     /// Toggle is_dark_mode. If active preset has no explicit distinct [light.colors]/[dark.colors]
     /// (i.e. light and dark palettes are identical), generate the opposite via ColorConfig::inverted_contrast
     /// (bg/fg value swap, preserve accent+border). Otherwise use the preset's designed pal.
@@ -259,29 +346,48 @@ impl ThemeAppState {
         };
 
         if no_explicit {
-            // Build a ColorConfig snapshot from current signals (accent/border included so preserve works)
-            let cur = ColorConfig {
-                bg_base: signals.bg_base.read().clone(),
-                bg_panel: signals.bg_panel.read().clone(),
-                bg_elevated: signals.bg_elevated.read().clone(),
-                fg_base: signals.fg_base.read().clone(),
-                fg_muted: signals.fg_muted.read().clone(),
-                accent: signals.accent.read().clone(),
-                border: signals.border.read().clone(),
-                panel_border_width: signals.panel_border_width.read().clone(),
-                glow_spread: signals.glow_spread.read().clone(),
-                hover_scale: signals.hover_scale.read().clone(),
-                panel_border_image_url: signals.panel_border_image_url.read().clone(),
-                panel_border_image_slice: signals.panel_border_image_slice.read().clone(),
-                panel_border_image_repeat: signals.panel_border_image_repeat.read().clone(),
-            };
-            let inv = cur.inverted_contrast();
-            signals.bg_base.set(inv.bg_base);
-            signals.bg_panel.set(inv.bg_panel);
-            signals.bg_elevated.set(inv.bg_elevated);
-            signals.fg_base.set(inv.fg_base);
-            signals.fg_muted.set(inv.fg_muted);
-            // accent + border intentionally left untouched (they were preserved in inv)
+            if active_id.is_none() {
+                // Failure 1: Default theme inversion. Use explicit light/dark configs.
+                let pal = if new_dark {
+                    mor_blogger_core::presets::PresetPalette {
+                        colors: mor_blogger_core::config::defaults::dark_color_config(),
+                        background: mor_blogger_core::config::defaults::dark_background_config(),
+                    }
+                } else {
+                    mor_blogger_core::presets::PresetPalette {
+                        colors: mor_blogger_core::config::defaults::light_color_config(),
+                        background: mor_blogger_core::config::defaults::light_background_config(),
+                    }
+                };
+                signals.swap_palette(&pal);
+            } else {
+                // Build a ColorConfig snapshot from current signals (accent/border included so preserve works)
+                let cur = ColorConfig {
+                    bg_base: signals.bg_base.read().clone(),
+                    bg_panel: signals.bg_panel.read().clone(),
+                    bg_elevated: signals.bg_elevated.read().clone(),
+                    fg_base: signals.fg_base.read().clone(),
+                    fg_muted: signals.fg_muted.read().clone(),
+                    accent: signals.accent.read().clone(),
+                    border: signals.border.read().clone(),
+                    panel_border_width: signals.panel_border_width.read().clone(),
+                    glow_spread: signals.glow_spread.read().clone(),
+                    hover_scale: signals.hover_scale.read().clone(),
+                    panel_border_image_url: signals.panel_border_image_url.read().clone(),
+                    panel_border_image_slice: signals.panel_border_image_slice.read().clone(),
+                    panel_border_image_repeat: signals.panel_border_image_repeat.read().clone(),
+                };
+                let inv = cur.inverted_contrast();
+                signals.bg_base.set(inv.bg_base);
+                signals.bg_panel.set(inv.bg_panel);
+                signals.bg_elevated.set(inv.bg_elevated);
+                signals.fg_base.set(inv.fg_base);
+                signals.fg_muted.set(inv.fg_muted);
+
+                // Also invert background!
+                let bg_cur = signals.background.read().clone();
+                signals.background.set(bg_cur.inverted_contrast());
+            }
         } else if let Some(id) = active_id {
             let presets = mor_blogger_core::presets::all_presets();
             if let Some(preset) = presets.iter().find(|p| p.id == id) {

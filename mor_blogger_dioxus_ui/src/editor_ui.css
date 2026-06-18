@@ -9,34 +9,23 @@
    Token bridge: maps legacy --editor-* aliases to live --mor-* theme variables. */
 
 :root {
-  /* Surfaces */
   --editor-bg: var(--mor-bg);
   --editor-bg-deep: var(--mor-header);
-
-  /* Glassmorphic Panels */
-  --editor-panel: color-mix(in srgb, var(--mor-panel) 85%, transparent);
+  --editor-panel: var(--mor-panel);
   --editor-panel-soft: color-mix(in srgb, var(--mor-panel) 50%, transparent);
-  --editor-panel-raised: color-mix(in srgb, var(--mor-btn-hover) 70%, transparent);
-
-  /* Borders & Dividers */
-  --editor-border: var(--mor-border-light);
-  --editor-border-soft: color-mix(in srgb, var(--mor-border-light) 50%, transparent);
-
-  /* Typography */
+  --editor-panel-raised: var(--mor-btn);
+  --editor-border: var(--mor-border);
+  --editor-border-soft: color-mix(in srgb, var(--mor-border) 50%, transparent);
   --editor-text: var(--mor-text);
   --editor-muted: var(--mor-text-muted);
-  --editor-muted-2: color-mix(in srgb, var(--mor-text-muted) 50%, transparent);
+  --editor-muted-2: color-mix(in srgb, var(--mor-text-muted) 70%, transparent);
   --font-sans: var(--mor-font);
-
-  /* Interactive Accents */
   --editor-accent: var(--mor-accent);
   --editor-accent-warm: var(--mor-accent-hover);
   --editor-good: var(--mor-success);
   --editor-danger: var(--mor-destructive);
   --editor-warning: var(--mor-warning);
   --editor-focus: color-mix(in srgb, var(--mor-accent) 35%, transparent);
-
-  /* Geometry */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -380,18 +369,18 @@ html {
 }
 
 .editor-accordion-section-open {
-  background: rgba(255, 255, 255, 0.015);
-  border-color: rgba(88, 166, 255, 0.4);
+  background: color-mix(in srgb, var(--editor-panel) 80%, transparent);
+  border-color: color-mix(in srgb, var(--editor-accent) 40%, transparent);
 }
 
-.editor-accordion-trigger {
+.editor-accordion-header {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--editor-panel-raised);
+  background-color: var(--editor-panel-raised);
   color: var(--editor-text);
   border: 0;
   cursor: pointer;
@@ -400,11 +389,13 @@ html {
   transition: background 0.2s;
 }
 
-.editor-accordion-trigger:hover {
-  background: rgba(255, 255, 255, 0.06);
+.editor-accordion-header:hover,
+.editor-accordion-header.active {
+  background-color: var(--editor-accent);
+  color: var(--editor-bg);
 }
 
-.editor-accordion-section-open .editor-accordion-trigger {
+.editor-accordion-section-open .editor-accordion-header {
   border-bottom: 1px solid var(--editor-border-soft);
   color: var(--editor-accent-warm);
 }
@@ -433,7 +424,7 @@ html {
 .editor-card {
   padding: 16px;
   margin: 0 0 16px 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--editor-panel-soft);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-md);
 }
@@ -470,7 +461,7 @@ html {
 .editor-textarea {
   width: 100%;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.25);
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
   color: var(--editor-text);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-sm);
@@ -507,30 +498,30 @@ html {
 
 .editor-button:hover {
   border-color: var(--editor-muted);
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
 }
 
 .editor-button-active {
   border-color: var(--editor-accent);
   color: var(--editor-accent);
-  background: rgba(88, 166, 255, 0.1);
+  background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
 }
 
 .editor-button-danger {
-  border-color: rgba(218, 54, 51, 0.4);
-  color: #ff7b72;
+  border-color: color-mix(in srgb, var(--editor-danger) 40%, transparent);
+  color: var(--editor-danger);
 }
 
 .editor-button-danger:hover {
-  background: rgba(218, 54, 51, 0.15);
+  background: color-mix(in srgb, var(--editor-danger) 15%, transparent);
   border-color: var(--editor-danger);
 }
 
 .editor-note {
   margin-top: 16px;
   padding: 12px;
-  background: rgba(88, 166, 255, 0.05);
-  border: 1px dashed rgba(88, 166, 255, 0.3);
+  background: color-mix(in srgb, var(--editor-accent) 5%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--editor-accent) 30%, transparent);
   border-radius: var(--radius-sm);
 }
 
@@ -633,46 +624,55 @@ html {
 /* ============================================================
    25-menu-bar.css
    ============================================================ */
-/* Global App Menu Bar */
+/* Global App Menu Bar (GTK4 / Libadwaita compliant) */
 .mor-menu-bar {
   display: flex;
-  background-color: #1a1a1c; /* Deep OBS-like dark */
-  border-bottom: 1px solid #2a2a2d;
-  height: 30px;
+  background-color: var(--editor-bg);
+  border-bottom: 1px solid var(--editor-border);
+  height: 32px;
   align-items: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 13px;
-  color: #cccccc;
+  color: var(--editor-text);
   user-select: none;
   position: relative;
   z-index: 9999; /* Must sit above all other panels */
+  padding: 0 4px;
 }
 
-.mor-menu-item {
+/* Top-level menu bar items */
+.mor-menu-bar > .mor-menu-item {
   position: relative;
-  height: 100%;
+  height: calc(100% - 6px);
+  margin: 3px 2px;
   display: flex;
   align-items: center;
   padding: 0 10px;
   cursor: default;
+  color: var(--editor-text);
+  border-radius: var(--radius-sm, 6px);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.mor-menu-item:hover {
-  background-color: #3e3e42;
-  color: #ffffff;
+.mor-menu-bar > .mor-menu-item:hover {
+  background-color: var(--editor-panel-raised);
+  color: var(--editor-text);
 }
 
 /* The Dropdown Container */
 .mor-menu-dropdown {
   display: none;
   position: absolute;
-  top: 30px;
+  top: 100%;
   left: 0;
-  background-color: #2b2b2d;
-  border: 1px solid #1a1a1c;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
-  min-width: 200px;
-  padding: 4px 0;
+  margin-top: 2px;
+  background-color: var(--editor-panel);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  min-width: 220px;
+  padding: 5px;
+  z-index: 10000;
 }
 
 .mor-menu-item:hover .mor-menu-dropdown {
@@ -680,28 +680,54 @@ html {
 }
 
 /* Individual Dropdown Buttons */
-.mor-menu-dropdown button {
-  display: block;
-  width: 100%;
-  text-align: left;
+.mor-menu-dropdown .mor-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(100% - 4px);
+  margin: 2px;
+  padding: 7px 12px;
   background: transparent;
   border: none;
-  color: #cccccc;
-  padding: 6px 16px;
+  color: var(--editor-text);
   font-size: 13px;
+  font-family: var(--font-sans), sans-serif;
   cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  transition: background-color 0.1s ease, color 0.1s ease;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.mor-menu-dropdown button:hover {
-  background-color: #007acc; /* Subtle blue highlight */
+.mor-menu-dropdown .mor-menu-item:hover:not(.disabled) {
+  background-color: var(--editor-accent);
   color: #ffffff;
+}
+
+.mor-menu-dropdown .mor-menu-item.disabled {
+  color: var(--editor-muted-2);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Keyboard Shortcut Display */
+.mor-menu-dropdown .mor-menu-item .shortcut {
+  font-size: 11px;
+  color: var(--editor-muted);
+  margin-left: 24px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.mor-menu-dropdown .mor-menu-item:hover:not(.disabled) .shortcut {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Horizontal Divider inside dropdowns */
 .mor-menu-divider {
   height: 1px;
-  background-color: #3e3e42;
-  margin: 4px 0;
+  background-color: var(--editor-border-soft);
+  margin: 5px 4px;
 }
 
 
@@ -738,19 +764,20 @@ html {
 .editor-presets__card {
   flex: 0 0 200px;
   padding: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--editor-panel-raised);
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   overflow: hidden;
   text-align: left;
   font-family: inherit;
-  color: inherit;
+  color: var(--editor-text);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .editor-presets__card:hover {
-  border-color: var(--editor-muted);
+  border-color: var(--editor-accent);
+  background: var(--editor-panel-soft);
   transform: translateY(-2px);
 }
 
@@ -778,6 +805,7 @@ html {
   white-space: normal;
   line-height: 1.4;
 }
+
 
 /* ============================================================
    31-panel-right-data.css
@@ -1383,8 +1411,8 @@ body.editor-floating-dragging * {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(35, 134, 54, 0.2);
-  color: #3fb950;
+  background: color-mix(in srgb, var(--editor-good) 20%, transparent);
+  color: var(--editor-good);
   font-size: 0.75rem;
   flex-shrink: 0;
 }
@@ -1411,15 +1439,15 @@ body.editor-floating-dragging * {
 }
 
 .diagnostics-badge.diagnostics-error {
-  background: rgba(218, 54, 51, 0.15);
-  color: #ff7b72;
-  border: 1px solid rgba(218, 54, 51, 0.3);
+  background: color-mix(in srgb, var(--editor-danger) 15%, transparent);
+  color: var(--editor-danger);
+  border: 1px solid color-mix(in srgb, var(--editor-danger) 30%, transparent);
 }
 
 .diagnostics-badge.diagnostics-warning {
-  background: rgba(210, 153, 34, 0.15);
-  color: #d29922;
-  border: 1px solid rgba(210, 153, 34, 0.3);
+  background: color-mix(in srgb, var(--editor-warning) 15%, transparent);
+  color: var(--editor-warning);
+  border: 1px solid color-mix(in srgb, var(--editor-warning) 30%, transparent);
 }
 
 .diagnostics-error, 
@@ -1431,11 +1459,11 @@ body.editor-floating-dragging * {
 }
 
 .diagnostics-error {
-  color: #ff7b72;
+  color: var(--editor-danger);
 }
 
 .diagnostics-warning {
-  color: #d29922;
+  color: var(--editor-warning);
 }
 
 .diagnostics-prefix {

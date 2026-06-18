@@ -1,5 +1,6 @@
 use crate::ui::shell::shortcut::use_shortcut;
 use crate::ui::workspace::layout::PanelLayout;
+use crate::app::state::ThemeAppState;
 use dioxus::prelude::*; 
 
 // =========================================================================
@@ -71,6 +72,7 @@ pub fn MenuSeparator() -> Element {
 #[component]
 pub fn AppMenuBar(
     mut show_prefs: Signal<bool>,
+    mut show_editor_settings: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
     mut show_plugins: Signal<bool>, 
@@ -92,6 +94,8 @@ pub fn AppMenuBar(
     on_toggle_split: EventHandler<()>,
     on_reset_viewport: EventHandler<()>,
 ) -> Element {
+    let theme = use_context::<ThemeAppState>();
+
     rsx! {
         MorMenuBar {
             // 1. FILE
@@ -140,8 +144,18 @@ pub fn AppMenuBar(
 
             // 2. EDIT
             MorMenuDropdown { label: "Edit".to_string(),
-                MenuItem { label: "Undo".to_string(), shortcut: "Ctrl+Z".to_string(), disabled: true }
-                MenuItem { label: "Redo".to_string(), shortcut: "Ctrl+Y".to_string(), disabled: true }
+                MenuItem {
+                    label: "Undo".to_string(),
+                    shortcut: "Ctrl+Z".to_string(),
+                    disabled: !theme.can_undo(),
+                    on_action: move |_| theme.undo(),
+                }
+                MenuItem {
+                    label: "Redo".to_string(),
+                    shortcut: "Ctrl+Y".to_string(),
+                    disabled: !theme.can_redo(),
+                    on_action: move |_| theme.redo(),
+                }
                 MenuSeparator {}
                 MenuItem { 
                     label: "Copy Raw XML".to_string(),
@@ -195,7 +209,10 @@ pub fn AppMenuBar(
                     label: "User Preferences".to_string(),
                     on_action: move |_| show_prefs.set(true)
                 }
-                MenuItem { label: "Editor Settings".to_string(), disabled: true }
+                MenuItem {
+                    label: "Editor Settings".to_string(),
+                    on_action: move |_| show_editor_settings.set(true)
+                }
             }
 
             // 6. TOOLS

@@ -37,12 +37,12 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     };
 
     let left_panel_html = format!(
-        "<span data-edit-target=\"icons.sidebar_left\" style=\"display: inline-flex; align-items: center; gap: 6px; cursor: pointer;\">{}<span class=\"header-btn-text\">Browse</span></span>",
+        "<span data-edit-target=\"icons.sidebar_left\" style=\"display: inline-flex; align-items: center; gap: 6px; cursor: pointer;\">{}<span class=\"visually-hidden\">Browse</span></span>",
         left_icon
     );
 
     let right_panel_html = format!(
-        "<span data-edit-target=\"icons.sidebar_right\" style=\"display: inline-flex; align-items: center; gap: 6px; cursor: pointer;\"><span class=\"header-btn-text\">Contents</span>{}</span>",
+        "<span data-edit-target=\"icons.sidebar_right\" style=\"display: inline-flex; align-items: center; gap: 6px; cursor: pointer;\"><span class=\"visually-hidden\">Contents</span>{}</span>",
         right_icon
     );
 

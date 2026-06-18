@@ -12,7 +12,7 @@
   --editor-text: var(--mor-text);
   --editor-muted: var(--mor-text-muted);
   --editor-muted-2: color-mix(in srgb, var(--mor-text-muted) 70%, transparent);
-  --font-sans: var(--mor-font-family);
+  --font-sans: var(--mor-font);
   --editor-accent: var(--mor-accent);
   --editor-accent-warm: var(--mor-accent-hover);
   --editor-good: var(--mor-success);

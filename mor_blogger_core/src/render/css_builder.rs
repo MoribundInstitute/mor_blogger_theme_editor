@@ -153,25 +153,30 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
 custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");
 custom_vars.push_str("#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }\n");
 
-    combined_css.push_str(&custom_vars);
+    // Prepend custom_vars so 00-Root-Section.css's :root {} (filled with the preset's designed
+    // light palette via {{LIGHT_*}} substitution) overrides the color vars here. Icon and button
+    // vars are not in 00-Root-Section.css, so they survive as fallback from this block.
+    let mut result = custom_vars;
+    result.push_str("\n\n");
+    result.push_str(&combined_css);
 
     if !config.icons.custom_icons.is_empty() {
-        combined_css.push_str("\n/* --- Custom Icon Utilities --- */\n");
+        result.push_str("\n/* --- Custom Icon Utilities --- */\n");
         for (key, value) in &config.icons.custom_icons {
             if value.trim().is_empty() {
                 continue;
             }
             let safe_key = key.replace(' ', "-").to_lowercase();
-            combined_css.push_str(&format!(
+            result.push_str(&format!(
                 ".custom-icon-{safe_key} {{\n  background-image: var(--icon-{safe_key});\n  background-size: contain;\n  background-repeat: no-repeat;\n  background-position: center;\n}}\n"
             ));
         }
     }
 
     if !config.preset_css.is_empty() {
-        combined_css.push_str("\n\n/* --- User Custom CSS --- */\n");
-        combined_css.push_str(&config.preset_css);
+        result.push_str("\n\n/* --- User Custom CSS --- */\n");
+        result.push_str(&config.preset_css);
     }
 
-    combined_css
+    result
 }

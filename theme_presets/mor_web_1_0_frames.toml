@@ -25,28 +25,32 @@ preset_css = '''
 }
 
 .main-header {
-  background: linear-gradient(90deg, #000080 0%, #1084d0 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 45%, var(--bg-base)) 0%,
+    color-mix(in srgb, var(--accent) 25%, var(--bg-panel)) 100%
+  ) !important;
+  color: var(--fg-base) !important;
   padding: 0 !important;
   font-weight: 700;
-  border-bottom: 2px solid #000040;
+  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 55%, var(--bg-base));
 }
 
 .main-header .header-top-row,
 .main-header .header-bottom-row {
   background: transparent !important;
-  color: #ffffff !important;
-  border-color: #000040 !important;
+  color: var(--fg-base) !important;
+  border-color: color-mix(in srgb, var(--border-color) 55%, var(--bg-base)) !important;
 }
 
 .main-header .header-top-row {
   padding: 10px 20px 9px !important;
-  border-bottom: 2px solid #000040 !important;
+  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 55%, var(--bg-base)) !important;
 }
 
 .main-header .header-bottom-row {
   padding: 6px 20px 8px !important;
-  border-top: 1px solid #2094e0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-color)) !important;
 }
 
 .main-header .institute-title {
@@ -59,13 +63,13 @@ preset_css = '''
 }
 
 .mor-nav a {
-  color: #ffffff !important;
+  color: var(--fg-base) !important;
   text-decoration: underline;
 }
 
 .mor-nav a:hover {
   background: transparent !important;
-  color: #ffff00 !important;
+  color: var(--accent) !important;
 }
 
 /* Buttons = classic 90s system buttons */
@@ -73,7 +77,7 @@ button,
 .panel-toggle,
 .pager-btn,
 .mor-post button {
-  background: var(--bg-elevated) !important;
+  background: color-mix(in srgb, var(--bg-panel) 70%, var(--fg-base)) !important;
   color: var(--fg-base) !important;
   border: 3px outset var(--border-color) !important;
   border-radius: 0 !important;
@@ -122,8 +126,8 @@ button:active,
 .mor-footer {
   background: var(--bg-panel);
   color: var(--fg-base);
-  border-top: 2px solid #ffffff;
-  border-bottom: 2px solid #808080;
+  border-top: 2px solid color-mix(in srgb, var(--fg-base) 22%, var(--bg-panel));
+  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 75%, var(--bg-base));
   font-family: "MS Sans Serif", Tahoma, sans-serif;
   font-size: 0.85rem;
   padding: 4px 8px;
@@ -145,7 +149,7 @@ button:active,
   content: " UNDER CONSTRUCTION";
   margin-left: 8px;
   animation: web1-blink 1.2s steps(2, end) infinite;
-  color: #ff0000;
+  color: color-mix(in srgb, var(--accent) 85%, var(--fg-base));
   font-weight: 700;
 }
 

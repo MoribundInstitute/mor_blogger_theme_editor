@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use mor_blogger_core::config::defaults::default_theme_config;
 use mor_blogger_core::config::{ColorConfig, MenuLink, TemplatePackConfig, ThemeConfig};
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::ui::panels::theme_palette::presets::{morph_preview_from_preset, ThemeSignals};
 use crate::app::layout_state::CenterView;
 
 use super::config_bridge::{menu_label, menu_url};
@@ -222,6 +222,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         template_pack: TemplatePackConfig::default(),
         blocks: Vec::new(),
         preset_css: preset_css(),
+        active_preset_id: active_preset().map(|s| s.to_string()),
     });
 
     ThemeAppState {
@@ -285,11 +286,14 @@ impl ThemeAppState {
             let presets = mor_blogger_core::presets::all_presets();
             if let Some(preset) = presets.iter().find(|p| p.id == id) {
                 let pal = if new_dark { &preset.dark } else { &preset.light };
-                signals.bg_base.set(pal.colors.bg_base.clone());
-                signals.bg_panel.set(pal.colors.bg_panel.clone());
-                signals.bg_elevated.set(pal.colors.bg_elevated.clone());
-                signals.fg_base.set(pal.colors.fg_base.clone());
-                signals.fg_muted.set(pal.colors.fg_muted.clone());
+                signals.swap_palette(pal);
+            }
+        }
+
+        if let Some(id) = active_id {
+            let presets = mor_blogger_core::presets::all_presets();
+            if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                morph_preview_from_preset(preset, new_dark);
             }
         }
     }

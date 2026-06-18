@@ -10,6 +10,7 @@ use super::importers::{
     choose_gtk_theme, fetch_remote_theme, normalize_preset_url, parse_theme_text,
     save_imported_gtk_preset,
 };
+use super::morph_preview_from_preset;
 use super::signals::ThemeSignals;
 
 const PRESET_FLOATING_DRAG_JS: &str = r#"
@@ -162,12 +163,14 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             } else if let Some(id) = active_id {
                                 if let Some(preset) = presets.iter().find(|p| p.id == id) {
                                     let pal = if new_mode { &preset.dark } else { &preset.light };
-                                    toggle_signals.bg_base.set(pal.colors.bg_base.clone());
-                                    toggle_signals.bg_panel.set(pal.colors.bg_panel.clone());
-                                    toggle_signals.bg_elevated.set(pal.colors.bg_elevated.clone());
-                                    toggle_signals.fg_base.set(pal.colors.fg_base.clone());
-                                    toggle_signals.fg_muted.set(pal.colors.fg_muted.clone());
+                                    toggle_signals.swap_palette(pal);
                                     toggle_signals.apply_preset_css(preset);
+                                }
+                            }
+
+                            if let Some(id) = active_id {
+                                if let Some(preset) = presets.iter().find(|p| p.id == id) {
+                                    morph_preview_from_preset(preset, new_mode);
                                 }
                             }
                         },
@@ -378,8 +381,10 @@ pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
             class: "{active_class}",
             style: "--preset-accent: {colors.accent}; flex: 0 0 240px; min-width: 240px; scroll-snap-align: start;",
             onclick: move |_| {
+                let is_dark = *props.signals.is_dark_mode.read();
                 props.signals.apply_preset(&preset_for_click);
                 active.set(Some(preset_for_click.id));
+                morph_preview_from_preset(&preset_for_click, is_dark);
             },
             div { style: "padding: 10px 12px; background: {bg_panel_css}; border-bottom: 1px solid {colors.border};",
                 div { style: "color: {colors.accent}; font-family: {heading_font}; font-size: 0.9rem; font-weight: bold; line-height: 1.2;", "{preset.base_config.site.site_title}" }

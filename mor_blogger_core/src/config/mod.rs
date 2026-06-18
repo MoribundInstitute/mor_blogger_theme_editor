@@ -44,6 +44,8 @@ pub struct ThemeConfig {
     pub blocks: Vec<LayoutBlock>,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub preset_css: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub active_preset_id: Option<String>,
 }
 
 impl Default for ThemeConfig {
@@ -74,6 +76,7 @@ impl Default for ThemeConfig {
             template_pack: TemplatePackConfig::default(),
             blocks: Vec::new(),
             preset_css: String::new(),
+            active_preset_id: None,
         }
     }
 }

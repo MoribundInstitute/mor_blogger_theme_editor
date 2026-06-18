@@ -141,11 +141,15 @@ pub fn PreviewCanvas(
                                             const oCss = doc.getElementById('mor-true-css'), nCss = nDoc.getElementById('mor-true-css');
                                             if (oCss && nCss && oCss.textContent !== nCss.textContent) oCss.textContent = nCss.textContent;
                                             if (doc.body.style.cssText !== nDoc.body.style.cssText) doc.body.style.cssText = nDoc.body.style.cssText;
+                                            if (doc.documentElement.style.cssText !== nDoc.documentElement.style.cssText) doc.documentElement.style.cssText = nDoc.documentElement.style.cssText;
+                                            if (doc.documentElement.className !== nDoc.documentElement.className) doc.documentElement.className = nDoc.documentElement.className;
+                                            if (doc.documentElement.getAttribute('data-theme') !== nDoc.documentElement.getAttribute('data-theme')) doc.documentElement.setAttribute('data-theme', nDoc.documentElement.getAttribute('data-theme') || "");
+                                            if (doc.body.className !== nDoc.body.className) doc.body.className = nDoc.body.className;
                                             
                                             doc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"], style').forEach(el => {
                                                 if (el.id !== 'mor-true-css' && !el.textContent.includes('[data-field-path]')) el.remove();
                                             });
-                                            nDoc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"]').forEach(el => doc.head.appendChild(el.cloneNode()));
+                                            nDoc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"], style').forEach(el => { if (el.id !== 'mor-true-css') doc.head.appendChild(el.cloneNode(true)); });
                                             
                                             const oT = doc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
                                             const nT = nDoc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');

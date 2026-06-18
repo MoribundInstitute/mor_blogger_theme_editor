@@ -96,7 +96,7 @@ fn generate_background_value(bg: &BackgroundMode) -> String {
 }
 
 pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
-    let (light_palette, dark_palette) = resolve_palette_pair(None, config);
+    let (light_palette, dark_palette) = resolve_palette_pair(config.active_preset_id.as_deref(), config);
 
     let light_bg_css = generate_background_css(&light_palette.background.mode);
     let dark_bg_css = generate_background_css(&dark_palette.background.mode);

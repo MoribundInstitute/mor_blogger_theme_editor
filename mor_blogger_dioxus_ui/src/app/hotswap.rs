@@ -14,3 +14,14 @@ pub fn apply_hotswap_json(signals: ThemeSignals, json_text: String) {
         }
     }
 }
+
+/// Injects CSS variables into the preview iframe, targeting both :root and html[data-theme='...']
+/// to ensure high specificity over the iframe's internal theme styles.
+pub fn execute_theme_morph(css_vars: &str, is_light_mode: bool) {
+    let theme = if is_light_mode { "light" } else { "dark" };
+    // One flat JS template string. No wrappers.
+    let js = format!(
+        r#"let f=document.getElementById('mor-preview-frame');if(f&&f.contentWindow){{let d=f.contentDocument||f.contentWindow.document;let t='{theme}';d.documentElement.setAttribute('data-theme',t);let s=d.getElementById('mor-hotswap-style');if(!s){{s=d.createElement('style');s.id='mor-hotswap-style';d.head.appendChild(s);}}s.textContent=`:root,html[data-theme='${{t}}']{{ {css_vars} }}`;}}"#,
+    );
+    let _ = dioxus::document::eval(&js);
+}

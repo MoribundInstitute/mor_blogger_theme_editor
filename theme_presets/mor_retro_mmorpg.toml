@@ -11,7 +11,7 @@ preset_css = '''
 
 /* Global text shadow for that bitmap-font-engine look */
 body, h1, h2, h3, h4, p, a, span, div, li {
-  text-shadow: 1px 1px 0 #000000 !important;
+  text-shadow: 1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)) !important;
 }
 
 /* Remove the base theme's vignette/glow */
@@ -20,17 +20,30 @@ body::before {
   opacity: 0 !important;
 }
 
-/* Replace the harsh black void with a warm brown gradient */
+/* Warm workspace gradient driven by editor palette */
 html,
 body {
-  background-color: #24170f !important;
+  background-color: var(--bg-base) !important;
 }
 
 body {
   background-image:
-    linear-gradient(180deg, #362317 0%, #24170f 42%, #1b120d 100%),
-    radial-gradient(circle at top center, rgba(140, 96, 50, 0.22), transparent 48%),
-    radial-gradient(circle at bottom center, rgba(84, 52, 29, 0.32), transparent 55%) !important;
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg-panel) 55%, var(--bg-base)) 0%,
+      var(--bg-base) 42%,
+      color-mix(in srgb, var(--bg-base) 82%, var(--border-color)) 100%
+    ),
+    radial-gradient(
+      circle at top center,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at bottom center,
+      color-mix(in srgb, var(--border-color) 28%, transparent),
+      transparent 55%
+    ) !important;
   background-attachment: fixed !important;
 }
 
@@ -41,12 +54,16 @@ body {
 .main-header,
 .mor-footer,
 .mor-catalog-dropdown {
-  background: linear-gradient(180deg, #5b4631 0%, #4a3929 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 72%, var(--accent)) 0%,
+    var(--bg-panel) 100%
+  ) !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 4px !important;
   box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.08),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.6) !important;
+    inset 1px 1px 0 color-mix(in srgb, var(--fg-base) 8%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
 }
 
 /* Make the header itself part of the brown surface instead of floating over black */
@@ -58,7 +75,11 @@ body {
 .main-header,
 .main-header .header-top-row,
 .main-header .header-bottom-row {
-  background: linear-gradient(180deg, #5a4430 0%, #473526 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 80%, var(--accent)) 0%,
+    color-mix(in srgb, var(--bg-panel) 88%, var(--bg-base)) 100%
+  ) !important;
 }
 
 .main-header .header-top-row {
@@ -66,18 +87,22 @@ body {
 }
 
 .main-header .header-bottom-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-top: 1px solid color-mix(in srgb, var(--fg-base) 6%, transparent) !important;
 }
 
 /* CONTENT surfaces inside containers */
 .runelite-panel .panel-content,
 .canvas-core .panel-content {
-  background: linear-gradient(180deg, #634d37 0%, #56422f 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 65%, var(--fg-base)) 0%,
+    color-mix(in srgb, var(--bg-panel) 82%, var(--bg-base)) 100%
+  ) !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 2px !important;
   margin: 6px !important;
   padding: 12px !important;
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: inset 2px 2px 5px color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
 }
 
 /* Headings (gold/orange) */
@@ -88,7 +113,9 @@ h1, h2, h3, h4,
   color: var(--accent) !important;
   font-weight: bold !important;
   letter-spacing: 0.5px !important;
-  text-shadow: 1px 1px 0 #000000, 2px 2px 0 rgba(0, 0, 0, 0.5) !important;
+  text-shadow:
+    1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)),
+    2px 2px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
 }
 
 .main-header .branding-link,
@@ -106,13 +133,13 @@ h1, h2, h3, h4,
 /* Main navigation band */
 .mor-nav a,
 .mor-nav button {
-  color: #d6b791 !important;
+  color: color-mix(in srgb, var(--fg-base) 78%, var(--accent)) !important;
 }
 
 .mor-nav > a:hover,
 .mor-nav > a:focus-visible {
-  background: #6f241b !important;
-  color: #fff2cf !important;
+  background: color-mix(in srgb, var(--accent) 38%, var(--bg-base)) !important;
+  color: var(--fg-base) !important;
 }
 
 /* The classic ember-red interface button */
@@ -121,15 +148,19 @@ h1, h2, h3, h4,
 .toc-jump-link,
 .back-to-top-btn,
 .mor-catalog-trigger {
-  background: linear-gradient(180deg, #7a261d 0%, #5b1a14 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 72%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 48%, var(--bg-base)) 100%
+  ) !important;
   color: var(--accent) !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 2px !important;
   padding: 6px 14px !important;
   font-weight: bold !important;
   box-shadow:
-    inset 1px 1px 0 rgba(255, 140, 100, 0.15),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.5) !important;
+    inset 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
   cursor: pointer;
   transition: background 100ms ease, box-shadow 100ms ease !important;
 }
@@ -139,8 +170,12 @@ h1, h2, h3, h4,
 .toc-jump-link:hover,
 .back-to-top-btn:hover,
 .mor-catalog-trigger:hover {
-  background: linear-gradient(180deg, #903126 0%, #732219 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 82%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 58%, var(--bg-base)) 100%
+  ) !important;
+  color: var(--fg-base) !important;
 }
 
 .pager-btn:active,
@@ -148,8 +183,8 @@ h1, h2, h3, h4,
 .toc-jump-link:active,
 .back-to-top-btn:active,
 .mor-catalog-trigger:active {
-  background: #4a1510 !important;
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6) !important;
+  background: color-mix(in srgb, var(--accent) 40%, var(--bg-base)) !important;
+  box-shadow: inset 2px 2px 4px color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
   transform: translateY(1px) !important;
 }
 
@@ -162,20 +197,24 @@ h1, h2, h3, h4,
 
 .mor-post .post-body a:hover,
 .panel-content a:hover {
-  color: #ffffff !important;
+  color: var(--fg-base) !important;
 }
 
 /* Panel headers */
 .panel-header,
 .mor-panel-heading {
-  background: linear-gradient(180deg, #7a261d 0%, #5d1a14 100%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 70%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 46%, var(--bg-base)) 100%
+  ) !important;
   color: var(--accent) !important;
   font-weight: bold !important;
   text-align: center !important;
   padding: 6px 10px !important;
   border-bottom: 2px solid var(--border-color) !important;
   border-radius: 2px 2px 0 0 !important;
-  box-shadow: inset 1px 1px 0 rgba(255, 100, 100, 0.15) !important;
+  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
 }
 
 /* Search / form fields */
@@ -184,8 +223,8 @@ input[type='search'],
 input[type='email'],
 textarea,
 select {
-  background: #d8d0b8 !important;
-  color: #000000 !important;
+  background: color-mix(in srgb, var(--bg-panel) 55%, var(--fg-base)) !important;
+  color: var(--fg-base) !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 0 !important;
   padding: 6px 8px !important;
@@ -199,8 +238,8 @@ input[type='email']:focus,
 textarea:focus,
 select:focus {
   outline: none !important;
-  background: #ffffff !important;
-  border-color: #000000 !important;
+  background: color-mix(in srgb, var(--bg-panel) 35%, var(--fg-base)) !important;
+  border-color: var(--accent) !important;
 }
 
 /* Scrollbars */
@@ -208,16 +247,16 @@ select:focus {
   width: 14px !important;
 }
 ::-webkit-scrollbar-track {
-  background: #4e3c2b !important;
+  background: color-mix(in srgb, var(--bg-panel) 80%, var(--bg-base)) !important;
   border-left: 2px solid var(--border-color) !important;
 }
 ::-webkit-scrollbar-thumb {
-  background: #7a261d !important;
+  background: color-mix(in srgb, var(--accent) 65%, var(--bg-base)) !important;
   border: 2px solid var(--border-color) !important;
-  box-shadow: inset 1px 1px 0 rgba(255, 100, 100, 0.15) !important;
+  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #903126 !important;
+  background: color-mix(in srgb, var(--accent) 78%, var(--bg-panel)) !important;
 }
 
 /* Header toggle compatibility */
@@ -244,7 +283,7 @@ select:focus {
   position: absolute !important;
   inset: 0 !important;
   display: block !important;
-  background-color: #f2e5bf !important;
+  background-color: color-mix(in srgb, var(--accent) 35%, var(--fg-base)) !important;
   background-image: none !important;
   opacity: 1 !important;
   transform: none !important;
@@ -299,7 +338,7 @@ text_transform = "none"
 bg_base = "#f5e9d3"
 fg_base = "#2c2118"
 fg_muted = "#6b5c4a"
-accent = "#ffae42"
+accent = "#8b5a00"
 border = "#c8b8a0"
 panel_border_width = "1px"
 glow_spread = "10px"

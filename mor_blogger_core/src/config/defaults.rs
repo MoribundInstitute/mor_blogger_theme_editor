@@ -101,6 +101,7 @@ pub fn default_theme_config() -> ThemeConfig {
 
         blocks: vec![],
         preset_css: "".to_string(),
+        active_preset_id: None,
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).
         icons: {

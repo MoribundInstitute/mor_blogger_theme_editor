@@ -27,7 +27,8 @@ impl PreviewTemplateMode {
     }
 }
 
-pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateMode) -> String {
+pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateMode, is_dark: bool) -> String {
+    let data_theme = if is_dark { "dark" } else { "light" };
     let background_tile_css = match &config.background.mode {
         BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
         BackgroundMode::Gradient { from, to, angle_deg } => format!(
@@ -188,7 +189,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 
     format!(
         r#"<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="{data_theme}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -206,6 +207,7 @@ html, body {{ overflow: hidden; }}
     {true_js}
 </body>
 </html>"#,
+        data_theme = data_theme,
         site_title = site_title,
         google_fonts_link = google_fonts_link,
         true_css = true_css,

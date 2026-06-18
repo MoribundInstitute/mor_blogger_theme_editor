@@ -147,11 +147,15 @@ pub fn resolve_palette_pair(
         }
     }
 
-    let fallback = PresetPalette {
+    let light = PresetPalette {
         colors: fallback_config.colors.clone(),
         background: fallback_config.background.clone(),
     };
-    (fallback.clone(), fallback)
+    let dark = PresetPalette {
+        colors: fallback_config.colors.inverted_contrast(),
+        background: fallback_config.background.clone(),
+    };
+    (light, dark)
 }
 
 // ---------------------------------------------------------------------------

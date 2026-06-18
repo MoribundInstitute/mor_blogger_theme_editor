@@ -192,19 +192,19 @@ border_width = "1px"
 text_transform = "uppercase"
 
 [light.colors]
-bg_base = "#1a1525"
-fg_base = "#7ee0e0"
-fg_muted = "#a89cb8"
-accent = "#d957d9"
-border = "#d957d9"
+bg_base = "#f0f0f5"
+fg_base = "#05010f"
+fg_muted = "#4a4a70"
+accent = "#cc00cc"
+border = "#00a0a0"
 
 [light.colors.bg_panel]
 mode = "Solid"
-color = "#23172e"
+color = "#e0e0e8"
 
 [light.colors.bg_elevated]
 mode = "Solid"
-color = "#2e1f3c"
+color = "#d0d0e0"
 
 [light.background.mode.Solid]
-color = "#1a1525"
+color = "#f0f0f5"

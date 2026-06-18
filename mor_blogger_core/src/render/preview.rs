@@ -70,8 +70,8 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 
     // Wire up the Plugin Pipeline for the Preview
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
-    if let Ok(json) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
-        if let Ok(prefs) = serde_json::from_str::<RenderPrefs>(&json) {
+    if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
+        if let Ok(prefs) = toml::from_str::<RenderPrefs>(&toml_str) {
             for p in prefs.plugins {
                 if p.enabled {
                     match p.id.as_str() {

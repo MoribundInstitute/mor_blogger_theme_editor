@@ -3,6 +3,7 @@ pub mod editor_settings_modal;
 pub mod menu_bar;
 pub mod prefs_modal;
 pub mod shortcut;
+pub mod shortcut_modal;
 pub mod theme;
 pub mod toolbars;
 pub mod window_frame;

@@ -77,6 +77,65 @@ pub fn resolve_effective_theme(base: MorTheme, overrides: &CustomEditorColors) -
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShortcutPrefs {
+    pub undo: Option<String>,
+    pub redo: Option<String>,
+    pub copy_raw_xml: Option<String>,
+    pub toggle_left_dock: Option<String>,
+    pub toggle_right_dock: Option<String>,
+    #[serde(default)] pub user_prefs: Option<String>,
+    #[serde(default)] pub theme_diagnostics: Option<String>,
+    #[serde(default)] pub toggle_preview: Option<String>,
+    #[serde(default)] pub exit_architect: Option<String>,
+    #[serde(default)] pub open_project: Option<String>,
+    #[serde(default)] pub save_project: Option<String>,
+    #[serde(default)] pub export_xml: Option<String>,
+    #[serde(default)] pub reset_zoom: Option<String>,
+}
+
+impl Default for ShortcutPrefs {
+    fn default() -> Self {
+        Self {
+            undo:             Some("Ctrl+Z".to_string()),
+            redo:             Some("Ctrl+Y".to_string()),
+            copy_raw_xml:     Some("Ctrl+C".to_string()),
+            toggle_left_dock: Some("Ctrl+B".to_string()),
+            toggle_right_dock:Some("Ctrl+E".to_string()),
+            user_prefs:       Some("Ctrl+P".to_string()),
+            theme_diagnostics:Some("Ctrl+D".to_string()),
+            toggle_preview:   Some("F9".to_string()),
+            exit_architect:   Some("Ctrl+Q".to_string()),
+            open_project:     Some("Ctrl+O".to_string()),
+            save_project:     Some("Ctrl+S".to_string()),
+            export_xml:       Some("Shift+Ctrl+E".to_string()),
+            reset_zoom:       Some("Ctrl+0".to_string()),
+        }
+    }
+}
+
+impl ShortcutPrefs {
+    pub fn load() -> Self {
+        let path = mor_blogger_core::config::prefs::shortcuts_path();
+        let Ok(toml_str) = std::fs::read_to_string(&path) else {
+            let default_prefs = Self::default();
+            let _ = default_prefs.save();
+            return default_prefs;
+        };
+        toml::from_str(&toml_str).unwrap_or_default()
+    }
+
+    pub fn save(&self) -> Result<(), std::io::Error> {
+        let path = mor_blogger_core::config::prefs::shortcuts_path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let toml_str = toml::to_string_pretty(self)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+        std::fs::write(&path, toml_str)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditorPrefs {
     #[serde(default)]
@@ -89,6 +148,8 @@ pub struct EditorPrefs {
     pub workspace_theme_preset: Option<String>,
     #[serde(default)]
     pub custom_editor_colors: CustomEditorColors,
+    #[serde(default)]
+    pub default_template_pack: Option<mor_blogger_core::config::TemplatePackConfig>,
 }
 
 impl EditorPrefs {
@@ -98,12 +159,11 @@ impl EditorPrefs {
             if let Some(parent) = path.parent() {
                 let _ = std::fs::create_dir_all(parent);
             }
-            let _ = std::fs::copy("editor_prefs.json", &path);
         }
-        let Ok(json) = std::fs::read_to_string(&path) else {
+        let Ok(toml_str) = std::fs::read_to_string(&path) else {
             return Self::default();
         };
-        serde_json::from_str(&json).unwrap_or_default()
+        toml::from_str(&toml_str).unwrap_or_default()
     }
 
     pub fn save(&self) -> Result<(), std::io::Error> {
@@ -111,9 +171,9 @@ impl EditorPrefs {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        let json = serde_json::to_string_pretty(self)
+        let toml_str = toml::to_string_pretty(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
-        std::fs::write(&path, json)
+        std::fs::write(&path, toml_str)
     }
 
     pub fn update_ui_mode(mode: String) {
@@ -131,6 +191,18 @@ impl EditorPrefs {
     pub fn update_custom_btn(btn: String) {
         let mut prefs = Self::load();
         prefs.custom_editor_colors.btn = Some(btn);
+        let _ = prefs.save();
+    }
+
+    pub fn update_default_template_pack(pack: mor_blogger_core::config::TemplatePackConfig) {
+        let mut prefs = Self::load();
+        prefs.default_template_pack = Some(pack);
+        let _ = prefs.save();
+    }
+
+    pub fn clear_default_template_pack() {
+        let mut prefs = Self::load();
+        prefs.default_template_pack = None;
         let _ = prefs.save();
     }
 }

@@ -159,6 +159,7 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem { 
                     label: "Copy Raw XML".to_string(),
+                    shortcut: "Ctrl+Shift+C".to_string(),
                     on_action: move |_| on_copy_xml.call(())
                 }
             }
@@ -210,8 +211,15 @@ pub fn AppMenuBar(
                     on_action: move |_| show_prefs.set(true)
                 }
                 MenuItem {
-                    label: "Editor Settings".to_string(),
+                    label: "Editor Settings (Graphical)".to_string(),
                     on_action: move |_| show_editor_settings.set(true)
+                }
+                MenuItem {
+                    label: "Open Config File (.toml)".to_string(),
+                    on_action: move |_| {
+                        let path = mor_blogger_core::config::prefs::editor_prefs_path();
+                        let _ = std::process::Command::new("xdg-open").arg(path).spawn();
+                    }
                 }
             }
 

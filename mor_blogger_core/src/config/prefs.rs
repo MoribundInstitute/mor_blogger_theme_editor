@@ -1,4 +1,4 @@
-//! Headless view of the editor preferences file (`editor_prefs.json`).
+//! Headless view of the editor preferences file (`editor_prefs.toml`).
 //!
 //! The full, UI-facing `EditorPrefs` lives in the Dioxus crate. The core
 //! renderer only needs to know which plugins are switched on so it can
@@ -13,8 +13,16 @@ pub fn editor_prefs_path() -> std::path::PathBuf {
     ProjectDirs::from("io", "Moribund", "MorBloggerThemeEditor")
         .unwrap()
         .config_dir()
-        .join("editor_prefs.json")
+        .join("editor_prefs.toml")
 }
+
+pub fn shortcuts_path() -> std::path::PathBuf {
+    ProjectDirs::from("io", "Moribund", "MorBloggerThemeEditor")
+        .unwrap()
+        .config_dir()
+        .join("shortcuts.toml")
+}
+
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct RenderPrefs {

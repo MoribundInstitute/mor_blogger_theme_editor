@@ -36,6 +36,15 @@ pub fn UserPreferencesModal(
                     }
                 }
             }
+
+            div { class: "editor-field-group",
+                label { class: "editor-field-label", "Workspace Defaults" }
+                button {
+                    class: "editor-btn",
+                    onclick: move |_| crate::app::config_bridge::EditorPrefs::clear_default_template_pack(),
+                    "Clear Default Template"
+                }
+            }
         }
     }
 }

@@ -53,8 +53,8 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
     let mut parts = resolve_template_parts(config);
 
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
-    if let Ok(json) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
-        if let Ok(prefs) = serde_json::from_str::<RenderPrefs>(&json) {
+    if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
+        if let Ok(prefs) = toml::from_str::<RenderPrefs>(&toml_str) {
             for p in prefs.plugins {
                 if p.enabled {
                     match p.id.as_str() {

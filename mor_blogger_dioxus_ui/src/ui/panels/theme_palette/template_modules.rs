@@ -117,6 +117,11 @@ pub fn TemplateModulesPanel(
                 CompactSelect { label: "Right Sidebar", val: pack.right_sidebar_variant.clone(), options: vec![("toc_right", "Table of Contents")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.right_sidebar_variant = v; f.call(nc); } } }
                 CompactSelect { label: "Footer Variant", val: pack.footer_variant.clone(), options: vec![("mega", "Mega Grid (Default)"), ("basic", "Basic Columns"), ("compact", "Compact Centered")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.footer_variant = v; f.call(nc); } } }
                 CompactSelect { label: "JS Behaviors", val: pack.script_variant.clone(), options: vec![("mor_panels", "Mor Collapsible Sidebars"), ("minimal", "None (Static Layout)")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.script_variant = v; f.call(nc); } } }
+                button {
+                    class: "editor-button",
+                    onclick: move |_| crate::app::config_bridge::EditorPrefs::update_default_template_pack(current_config.template_pack.clone()),
+                    "Save as Default Template"
+                }
             }
         }
     }

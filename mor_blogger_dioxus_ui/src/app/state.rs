@@ -24,7 +24,10 @@ pub struct ThemeAppState {
 }
 
 pub fn use_theme_app_state() -> ThemeAppState {
-    let defaults = default_theme_config();
+    let mut defaults = default_theme_config();
+    if let Some(pack) = crate::app::config_bridge::EditorPrefs::load().default_template_pack {
+        defaults.template_pack = pack;
+    }
 
     let site_title = use_signal(|| defaults.site.site_title.clone());
     let site_subtitle = use_signal(|| defaults.site.site_subtitle.clone());
@@ -82,6 +85,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let footer_license_url = use_signal(|| defaults.footer.footer_license_url.clone());
 
     let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
+    let template_pack = use_signal(|| defaults.template_pack.clone());
     let static_pages = use_signal(|| defaults.static_pages.clone());
     let ads = use_signal(|| defaults.ads.clone());
     let icons = use_signal(|| defaults.icons.clone());
@@ -145,6 +149,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         footer_license_label,
         footer_license_url,
         custom_js,
+        template_pack,
         preset_css,
         static_pages,
         ads,
@@ -230,7 +235,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         },
         static_pages: static_pages(),
         ads: ads(),
-        template_pack: TemplatePackConfig::default(),
+        template_pack: template_pack(),
         blocks: Vec::new(),
         preset_css: preset_css(),
         active_preset_id: active_preset().map(|s| s.to_string()),

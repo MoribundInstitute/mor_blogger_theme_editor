@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::{AdsConfig, BackgroundConfig, IconConfig, SurfaceFill, ThemeConfig};
+use mor_blogger_core::config::{AdsConfig, BackgroundConfig, IconConfig, SurfaceFill, TemplatePackConfig, ThemeConfig};
 use mor_blogger_core::presets::{Preset, PresetPalette};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -67,6 +67,7 @@ pub struct ThemeSignals {
     pub static_pages: Signal<mor_blogger_core::config::StaticPagesConfig>,
     pub ads: Signal<AdsConfig>,
     pub icons: Signal<IconConfig>,
+    pub template_pack: Signal<TemplatePackConfig>,
 }
 
 impl ThemeSignals {
@@ -162,6 +163,7 @@ impl ThemeSignals {
         self.background.clone().set(config.background.clone());
         self.icons.clone().set(config.icons.clone());
 
+        self.template_pack.clone().set(config.template_pack.clone());
         self.apply_config_except_palette(config);
         self.preset_css.clone().set(config.preset_css.clone());
     }

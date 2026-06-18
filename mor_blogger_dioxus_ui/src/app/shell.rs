@@ -5,6 +5,7 @@ use crate::ui::shell::css_builder_modal::CssBuilderModal;
 use crate::ui::shell::editor_settings_modal::EditorSettingsModal;
 use crate::ui::shell::menu_bar::AppMenuBar;
 use crate::ui::shell::prefs_modal::UserPreferencesModal;
+use crate::ui::shell::shortcut_modal::KeyboardShortcutsModal;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
 use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
@@ -66,15 +67,15 @@ pub fn render_app_shell(
     let mut show_about = use_signal(|| false);
     let show_prefs = use_signal(|| false);
     let show_editor_settings = use_signal(|| false);
-    let mut show_shortcuts = use_signal(|| false);
+    let show_shortcuts = use_signal(|| false);
     let show_plugins = use_signal(|| false); // Removed dead 'mut' warning
     let show_css_builder = use_signal(|| false);
     let mut show_diagnostics = use_signal(|| false);
     let mut show_docs = use_signal(|| false);
 
-    let prefs = EditorPrefs::load();
-    let launch_plugins = use_signal(|| prefs.plugins.clone());
-    let current_plugins = use_signal(|| prefs.plugins.clone());
+    let prefs = use_signal(|| EditorPrefs::load());
+    let launch_plugins = use_signal(|| prefs().plugins.clone());
+    let current_plugins = use_signal(|| prefs().plugins.clone());
     let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
 
     use_effect(|| {
@@ -131,8 +132,8 @@ pub fn render_app_shell(
     });
 
     let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-    let ui_mode_pref = use_signal(|| prefs.ui_mode.clone().unwrap_or_else(|| active_ui_mode.clone()));
-    let ui_theme_pref = use_signal(|| prefs.workspace_theme.clone().unwrap_or_else(|| get_native_os_theme().to_string()));
+    let ui_mode_pref = use_signal(|| prefs().ui_mode.clone().unwrap_or_else(|| active_ui_mode.clone()));
+    let ui_theme_pref = use_signal(|| prefs().workspace_theme.clone().unwrap_or_else(|| get_native_os_theme().to_string()));
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
@@ -185,31 +186,7 @@ pub fn render_app_shell(
                 active_theme_toml: ui_theme_pref,
             }
 
-            Modal {
-                title: "Keyboard Shortcuts".to_string(), open: show_shortcuts, on_close: move |_| show_shortcuts.set(false),
-                div { class: "editor-field-group",
-                    div { class: "editor-note",
-                        p { class: "editor-note-title", "Keyboard Shortcuts" }
-                        p { class: "editor-note-body", "Fast commands for moving around the MorBlogger editor." }
-                    }
-                    div { class: "editor-note", style: "margin-top: 12px;",
-                        p { class: "editor-note-title", "File" }
-                        p { class: "editor-note-body", "Ctrl+S — Save theme" }
-                        p { class: "editor-note-body", "Ctrl+O — Load theme" }
-                        p { class: "editor-note-body", "Ctrl+E — Export Blogger XML" }
-                    }
-                    div { class: "editor-note", style: "margin-top: 12px;",
-                        p { class: "editor-note-title", "Edit" }
-                        p { class: "editor-note-body", "Ctrl+Z — Undo" }
-                        p { class: "editor-note-body", "Ctrl+Y — Redo" }
-                    }
-                    div { class: "editor-note", style: "margin-top: 12px;",
-                        p { class: "editor-note-title", "View" }
-                        p { class: "editor-note-body", "Ctrl+P — Toggle preview monitor" }
-                        p { class: "editor-note-body", "Ctrl+0 — Reset viewport scale" }
-                    }
-                }
-            }
+            KeyboardShortcutsModal { open: show_shortcuts }
 
             CssBuilderModal { open: show_css_builder }
 
@@ -249,7 +226,12 @@ pub fn render_app_shell(
                     right_layout: layout.right_layout,
 
                     on_new_workspace: move |_| {
-                        signals.apply_config(&mor_blogger_core::config::defaults::default_theme_config());
+                        let fresh_prefs = crate::app::config_bridge::EditorPrefs::load();
+                        let mut config = mor_blogger_core::config::defaults::default_theme_config();
+                        if let Some(pack) = fresh_prefs.default_template_pack {
+                            config.template_pack = pack;
+                        }
+                        signals.apply_config(&config);
                         active_preset.set(None);
                         theme.commit();
                     },

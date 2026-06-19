@@ -549,7 +549,7 @@ button:focus-visible {
    10-Side-Panels.css
    ========================================================== */
 
-.runelite-panel {
+.mor-panel {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
   background-color: var(--bg-panel);
@@ -1167,7 +1167,7 @@ button:focus-visible {
     font-size: 1.25rem;
   }
 
-  .runelite-panel {
+  .mor-panel {
     position: fixed;
     top: 0;
     bottom: 0;
@@ -1310,7 +1310,7 @@ button:focus-visible {
     position: relative;
   }
 
-  .runelite-panel {
+  .mor-panel {
     position: relative;
     transform: none;
   }
@@ -1394,7 +1394,7 @@ button:focus-visible {
   </header>
 
   <div class='terminal-workspace'>
-    <aside class='runelite-panel panel-left sidebar-section' id='panel-left'>
+    <aside class='mor-panel panel-left sidebar-section' id='panel-left'>
       <div class='panel-header'>
         <span>Browse</span>
         <button class='panel-toggle' data-target='panel-left' type='button'>×</button>
@@ -1448,7 +1448,7 @@ button:focus-visible {
           </div>
         </footer>
 </main>
-    <aside class='runelite-panel panel-right sidebar-section' id='panel-right'>
+    <aside class='mor-panel panel-right sidebar-section' id='panel-right'>
       <div class='panel-header'>
         <span>Contents</span>
         <button class='panel-toggle' data-target='panel-right' type='button'>×</button>

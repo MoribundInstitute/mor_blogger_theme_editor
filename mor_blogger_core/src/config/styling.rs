@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -152,7 +152,11 @@ impl BackgroundMode {
     pub fn to_surface_fill(&self) -> SurfaceFill {
         match self {
             BackgroundMode::Solid { color } => SurfaceFill::solid(color.clone()),
-            BackgroundMode::Gradient { from, to, angle_deg } => SurfaceFill {
+            BackgroundMode::Gradient {
+                from,
+                to,
+                angle_deg,
+            } => SurfaceFill {
                 mode: SurfaceMode::Gradient,
                 color: from.clone(),
                 gradient_from: from.clone(),
@@ -182,7 +186,7 @@ impl BackgroundMode {
     pub fn inverted_contrast(&self) -> Self {
         match self {
             Self::Gradient { from, to, .. } => {
-                // Failure 1 Fix: Detect the default dark purple workspace gradient 
+                // Failure 1 Fix: Detect the default dark purple workspace gradient
                 // and swap it for the default light blue gradient.
                 if from == "#1e1a4d" && to == "#5b2c8a" {
                     return Self::Gradient {
@@ -304,45 +308,54 @@ impl Default for IconConfig {
     }
 }
 
-const ICON_SIDEBAR_LEFT_PATH: &str =
-    "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
+const ICON_SIDEBAR_LEFT_PATH: &str = "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
 
-const ICON_SIDEBAR_RIGHT_PATH: &str =
-    "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
+const ICON_SIDEBAR_RIGHT_PATH: &str = "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
 
 const ICON_CLOSE_PATH: &str =
     "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
 
 const ICON_SEARCH_PATH: &str = "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z M21 21l-5.5-5.5";
 
-const ICON_MENU_PATH: &str =
-    "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
+const ICON_MENU_PATH: &str = "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
 
 // New standard blog action icon paths (minimal Lucide/Feather style)
-const ICON_ARCHIVE_PATH: &str =
-    "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
+const ICON_ARCHIVE_PATH: &str = "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
 const ICON_LABEL_PATH: &str =
     "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z";
 const ICON_TOC_PATH: &str = "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01";
-const ICON_SHARE_PATH: &str =
-    "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13";
+const ICON_SHARE_PATH: &str = "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13";
 const ICON_USER_PATH: &str =
     "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8";
-const ICON_COMMENT_PATH: &str =
-    "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z";
-const ICON_ARROW_UP_PATH: &str =
-    "M12 19V5 M5 12l7-7 7 7";
+const ICON_COMMENT_PATH: &str = "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z";
+const ICON_ARROW_UP_PATH: &str = "M12 19V5 M5 12l7-7 7 7";
 const ICON_EXTERNAL_LINK_PATH: &str =
     "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3";
 
-fn default_archive_icon() -> String { svg_mask(ICON_ARCHIVE_PATH) }
-fn default_label_icon() -> String { svg_mask(ICON_LABEL_PATH) }
-fn default_toc_icon() -> String { svg_mask(ICON_TOC_PATH) }
-fn default_share_icon() -> String { svg_mask(ICON_SHARE_PATH) }
-fn default_user_icon() -> String { svg_mask(ICON_USER_PATH) }
-fn default_comment_icon() -> String { svg_mask(ICON_COMMENT_PATH) }
-fn default_arrow_up_icon() -> String { svg_mask(ICON_ARROW_UP_PATH) }
-fn default_external_link_icon() -> String { svg_mask(ICON_EXTERNAL_LINK_PATH) }
+fn default_archive_icon() -> String {
+    svg_mask(ICON_ARCHIVE_PATH)
+}
+fn default_label_icon() -> String {
+    svg_mask(ICON_LABEL_PATH)
+}
+fn default_toc_icon() -> String {
+    svg_mask(ICON_TOC_PATH)
+}
+fn default_share_icon() -> String {
+    svg_mask(ICON_SHARE_PATH)
+}
+fn default_user_icon() -> String {
+    svg_mask(ICON_USER_PATH)
+}
+fn default_comment_icon() -> String {
+    svg_mask(ICON_COMMENT_PATH)
+}
+fn default_arrow_up_icon() -> String {
+    svg_mask(ICON_ARROW_UP_PATH)
+}
+fn default_external_link_icon() -> String {
+    svg_mask(ICON_EXTERNAL_LINK_PATH)
+}
 
 pub fn svg_mask(path_d: &str) -> String {
     let encoded = path_d

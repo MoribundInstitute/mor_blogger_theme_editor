@@ -1,17 +1,17 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::ThemeConfig;
 use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
-use crate::ui::panels::theme_palette::effects_panel_2::{BordersPanel, EffectsPanel};
-use crate::ui::panels::theme_palette::icons_panel::SvgIconsPanel;
+use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
+use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
 use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
 use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use crate::ui::workspace::layout::PanelLayout;
+use mor_blogger_core::config::ThemeConfig;
 
 const LEFT_DOCK_CSS: &str = r#"
 .editor-left-panel.is-floating {
@@ -121,10 +121,10 @@ pub fn LeftVisualsPanel(
 
     rsx! {
         script { dangerous_inner_html: "{DOCK_DRAG_JS}" }
-        
+
         style { "{LEFT_DOCK_CSS}" }
 
-        aside { 
+        aside {
             class: if layout() == PanelLayout::Floating { "editor-left-panel is-floating" } else { "editor-left-panel" },
 
             if layout() == PanelLayout::Floating {
@@ -221,15 +221,6 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
-                EditorAccordion { id: "Borders", title: "Borders & Frames", active: active_tab,
-                    BordersPanel {
-                        panel_border_width: signals.panel_border_width,
-                        panel_border_image_url: signals.panel_border_image_url,
-                        panel_border_image_slice: signals.panel_border_image_slice,
-                        panel_border_image_repeat: signals.panel_border_image_repeat,
-                    }
-                }
-
                 EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
                     EffectsPanel {
                         glow_spread: signals.glow_spread,
@@ -237,8 +228,8 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
-                EditorAccordion { id: "Icons", title: "SVG Icons", active: active_tab,
-                    SvgIconsPanel {
+                EditorAccordion { id: "SvgFrames", title: "Borders & Frames", active: active_tab,
+                    SvgFramesPanel {
                         current_config: current_config.clone(),
                         on_apply_theme: move |new_config: ThemeConfig| {
                             on_apply_theme.call(new_config);

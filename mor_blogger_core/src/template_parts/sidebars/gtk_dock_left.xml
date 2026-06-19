@@ -1,4 +1,4 @@
-<aside class='runelite-panel panel-left' id='panel-left'>
+<aside class='mor-panel panel-left' id='panel-left'>
   <div class='panel-header'>
     <span>{{LEFT_PANEL_TITLE}}</span>
     <button aria-label='Close Browse panel' class='panel-toggle' data-target='panel-left'>{{LEFT_PANEL_CLOSE_LABEL}}</button>

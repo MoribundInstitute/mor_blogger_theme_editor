@@ -1,16 +1,22 @@
 //! CSS Builder module for sanitizing and concatenating base CSS files.
 
-use crate::config::{BackgroundMode, ThemeConfig};
 use crate::config::fonts::resolve_font_stack_with_fallback;
+use crate::config::{BackgroundMode, ThemeConfig};
 use crate::render::util::escape_attr;
 use crate::utils::svg_icons::svg_to_data_uri;
 
 fn generate_workspace_background_value(bg: &BackgroundMode) -> String {
     match bg {
         BackgroundMode::Solid { color } => escape_attr(color),
-        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+        BackgroundMode::Gradient {
+            from,
+            to,
+            angle_deg,
+        } => format!(
             "linear-gradient({}deg, {}, {})",
-            angle_deg, escape_attr(from), escape_attr(to)
+            angle_deg,
+            escape_attr(from),
+            escape_attr(to)
         ),
         BackgroundMode::Tile { url } if url.trim().is_empty() => "none".to_string(),
         BackgroundMode::Tile { url } => format!("url('{}')", escape_attr(url)),
@@ -30,11 +36,12 @@ pub fn clean_raw_css(input: &str) -> String {
     cleaned.trim().to_string()
 }
 
-pub const DEFAULT_ICON_SIDEBAR_LEFT:  &str = "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
+pub const DEFAULT_ICON_SIDEBAR_LEFT: &str = "M9 4v16M6 8h.01M6 12h.01 M3 4h18v16H3z";
 pub const DEFAULT_ICON_SIDEBAR_RIGHT: &str = "M15 4v16M18 8h.01M18 12h.01 M3 4h18v16H3z";
-pub const DEFAULT_ICON_PANEL_CLOSE:   &str = "M18 6 6 18M6 6l12 12";
-pub const DEFAULT_ICON_SEARCH:        &str = "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z M21 21l-5.5-5.5";
-pub const DEFAULT_ICON_MENU:          &str = "M4 7h16M4 12h16M4 17h16";
+pub const DEFAULT_ICON_PANEL_CLOSE: &str = "M18 6 6 18M6 6l12 12";
+pub const DEFAULT_ICON_SEARCH: &str =
+    "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z M21 21l-5.5-5.5";
+pub const DEFAULT_ICON_MENU: &str = "M4 7h16M4 12h16M4 17h16";
 
 /// Returns the configured icon if set, otherwise an inline-encoded fallback
 /// generated from a built-in path string.
@@ -147,11 +154,25 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         custom_vars.push_str(&format!("\n  --icon-{safe_key}: {svg_data};"));
     }
 
+    if config.enable_image_borders && config.custom_border_url.is_some() {
+        let url = config.custom_border_url.as_ref().unwrap();
+        custom_vars.push_str(&format!(
+            "\n  --mor-border-image: url(\"{}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};",
+            escape_attr(url),
+            escape_attr(&config.svg_border_slice),
+            escape_attr(&config.image_border_width),
+        ));
+    } else {
+        custom_vars.push_str(
+            "\n  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);",
+        );
+    }
+
     custom_vars.push_str("\n}\n");
 
-/* Widget header icons via CSS mask (scoped per widget ID/class for .widget h2::before) */
-custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");
-custom_vars.push_str("#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }\n");
+    /* Widget header icons via CSS mask (scoped per widget ID/class for .widget h2::before) */
+    custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");
+    custom_vars.push_str("#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }\n");
 
     // Prepend custom_vars so 00-Root-Section.css's :root {} (filled with the preset's designed
     // light palette via {{LIGHT_*}} substitution) overrides the color vars here. Icon and button

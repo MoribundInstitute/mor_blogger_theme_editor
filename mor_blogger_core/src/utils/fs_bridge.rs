@@ -5,57 +5,93 @@
 //! defaults so users can browse them with any native file manager. Subsequent
 //! launches skip files that already exist, preserving any user edits.
 
-use std::path::PathBuf;
 use directories::ProjectDirs;
+use std::path::PathBuf;
 
 const APP_QUALIFIER: &str = "io.moribund";
 const APP_ORG: &str = "Moribund Institute";
 const APP_NAME: &str = "MorBloggerThemeEditor";
 
 /// Category subdirectories that mirror `template_parts/`.
-pub const TEMPLATE_CATEGORIES: &[&str] = &[
-    "headers",
-    "footers",
-    "sidebars",
-    "layouts",
-    "content",
-];
+pub const TEMPLATE_CATEGORIES: &[&str] = &["headers", "footers", "sidebars", "layouts", "content"];
 
 /// Default modules seeded on first run. Tuple: (category, filename, content).
 const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
     // Headers
-    ("headers", "mor_header_baseline.xml",
-        include_str!("../template_parts/headers/mor_header_baseline.xml")),
-    ("headers", "gtk_headerbar.xml",
-        include_str!("../template_parts/headers/gtk_headerbar.xml")),
+    (
+        "headers",
+        "mor_header_baseline.xml",
+        include_str!("../template_parts/headers/mor_header_baseline.xml"),
+    ),
+    (
+        "headers",
+        "gtk_headerbar.xml",
+        include_str!("../template_parts/headers/gtk_headerbar.xml"),
+    ),
     // Footers
-    ("footers", "MorFooterBasic.xml",
-        include_str!("../template_parts/footers/MorFooterBasic.xml")),
-    ("footers", "MorFooterCompact.xml",
-        include_str!("../template_parts/footers/MorFooterCompact.xml")),
-    ("footers", "MorFooterMega.xml",
-        include_str!("../template_parts/footers/MorFooterMega.xml")),
+    (
+        "footers",
+        "MorFooterBasic.xml",
+        include_str!("../template_parts/footers/MorFooterBasic.xml"),
+    ),
+    (
+        "footers",
+        "MorFooterCompact.xml",
+        include_str!("../template_parts/footers/MorFooterCompact.xml"),
+    ),
+    (
+        "footers",
+        "MorFooterMega.xml",
+        include_str!("../template_parts/footers/MorFooterMega.xml"),
+    ),
     // Sidebars
-    ("sidebars", "blogger_left.xml",
-        include_str!("../template_parts/sidebars/blogger_left.xml")),
-    ("sidebars", "gtk_dock_left.xml",
-        include_str!("../template_parts/sidebars/gtk_dock_left.xml")),
-    ("sidebars", "toc_right.xml",
-        include_str!("../template_parts/sidebars/toc_right.xml")),
+    (
+        "sidebars",
+        "blogger_left.xml",
+        include_str!("../template_parts/sidebars/blogger_left.xml"),
+    ),
+    (
+        "sidebars",
+        "gtk_dock_left.xml",
+        include_str!("../template_parts/sidebars/gtk_dock_left.xml"),
+    ),
+    (
+        "sidebars",
+        "toc_right.xml",
+        include_str!("../template_parts/sidebars/toc_right.xml"),
+    ),
     // Layouts
-    ("layouts", "sidebars.xml",
-        include_str!("../template_parts/layouts/sidebars.xml")),
-    ("layouts", "single_column.xml",
-        include_str!("../template_parts/layouts/single_column.xml")),
+    (
+        "layouts",
+        "sidebars.xml",
+        include_str!("../template_parts/layouts/sidebars.xml"),
+    ),
+    (
+        "layouts",
+        "single_column.xml",
+        include_str!("../template_parts/layouts/single_column.xml"),
+    ),
     // Content
-    ("content", "blog_standard.xml",
-        include_str!("../template_parts/content/blog_standard.xml")),
-    ("content", "mor_magazine.xml",
-        include_str!("../template_parts/content/mor_magazine.xml")),
-    ("content", "mor_masonry.xml",
-        include_str!("../template_parts/content/mor_masonry.xml")),
-    ("content", "mor_minimal.xml",
-        include_str!("../template_parts/content/mor_minimal.xml")),
+    (
+        "content",
+        "blog_standard.xml",
+        include_str!("../template_parts/content/blog_standard.xml"),
+    ),
+    (
+        "content",
+        "mor_magazine.xml",
+        include_str!("../template_parts/content/mor_magazine.xml"),
+    ),
+    (
+        "content",
+        "mor_masonry.xml",
+        include_str!("../template_parts/content/mor_masonry.xml"),
+    ),
+    (
+        "content",
+        "mor_minimal.xml",
+        include_str!("../template_parts/content/mor_minimal.xml"),
+    ),
 ];
 
 // ─── Path helpers ────────────────────────────────────────────────────────────
@@ -63,8 +99,7 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
 /// Returns the app-scoped workspace root, e.g.
 /// `~/.local/share/morbloggerthemeeditor/` on Linux.
 pub fn workspace_root() -> Option<PathBuf> {
-    ProjectDirs::from(APP_QUALIFIER, APP_ORG, APP_NAME)
-        .map(|d| d.data_dir().to_path_buf())
+    ProjectDirs::from(APP_QUALIFIER, APP_ORG, APP_NAME).map(|d| d.data_dir().to_path_buf())
 }
 
 /// Returns the app-scoped templates root, e.g.
@@ -113,7 +148,11 @@ pub fn init_template_dirs() -> std::io::Result<()> {
         let dest = root.join(category).join(filename);
         if !dest.exists() {
             std::fs::write(&dest, content)?;
-            log::info!("[fs_bridge] Seeded default template: {}/{}", category, filename);
+            log::info!(
+                "[fs_bridge] Seeded default template: {}/{}",
+                category,
+                filename
+            );
         }
     }
 
@@ -126,11 +165,7 @@ pub fn init_template_dirs() -> std::io::Result<()> {
 /// Write a module XML buffer (e.g. from the ModuleWorkbench editor) into the
 /// matching category folder. Creates the folder if absent.
 /// Returns the path the file was written to.
-pub fn save_custom_module(
-    category: &str,
-    name: &str,
-    content: &str,
-) -> std::io::Result<PathBuf> {
+pub fn save_custom_module(category: &str, name: &str, content: &str) -> std::io::Result<PathBuf> {
     let dir = category_dir(category).ok_or_else(|| {
         std::io::Error::new(
             std::io::ErrorKind::NotFound,
@@ -142,7 +177,11 @@ pub fn save_custom_module(
     let safe_name = sanitize_filename(name);
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
-    log::info!("[fs_bridge] Saved custom module: {}/{}", category, safe_name);
+    log::info!(
+        "[fs_bridge] Saved custom module: {}/{}",
+        category,
+        safe_name
+    );
     Ok(dest)
 }
 
@@ -185,9 +224,7 @@ pub fn open_templates_folder() -> std::io::Result<()> {
 /// Spawn the platform-native file manager focused on the icons root.
 /// Creates the directory first if it does not yet exist.
 pub fn open_icons_folder() -> Result<(), String> {
-    let path = icons_root().ok_or_else(|| {
-        "Cannot determine system data directory".to_string()
-    })?;
+    let path = icons_root().ok_or_else(|| "Cannot determine system data directory".to_string())?;
 
     // Ensure the directory exists before asking the OS to open it.
     std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
@@ -226,7 +263,11 @@ fn sanitize_filename(name: &str) -> String {
         .collect();
 
     let cleaned = cleaned.trim_start_matches('.').to_string();
-    let cleaned = if cleaned.is_empty() { "custom_module".to_string() } else { cleaned };
+    let cleaned = if cleaned.is_empty() {
+        "custom_module".to_string()
+    } else {
+        cleaned
+    };
 
     if cleaned.to_lowercase().ends_with(".xml") {
         cleaned

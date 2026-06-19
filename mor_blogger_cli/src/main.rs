@@ -54,41 +54,58 @@ fn main() -> Result<()> {
     let start_time = Instant::now();
 
     match &cli.command {
-        Commands::Init { path, template, force } => {
+        Commands::Init {
+            path,
+            template,
+            force,
+        } => {
             let target_file = path.join("workspace.toml");
-            
+
             if target_file.exists() && !force {
                 anyhow::bail!(
-                    "Workspace already exists at {}. Use --force to overwrite.", 
+                    "Workspace already exists at {}. Use --force to overwrite.",
                     target_file.display().to_string().yellow()
                 );
             }
 
-            println!("{} Initializing new '{}' workspace in {:?}...", "➔".cyan(), template, path);
+            println!(
+                "{} Initializing new '{}' workspace in {:?}...",
+                "➔".cyan(),
+                template,
+                path
+            );
             println!("{} Workspace ready.", "✔".green().bold());
         }
         Commands::Check { input, strict } => {
             println!("{} Reading configuration...", "➔".cyan());
             let config = load_config(input)?;
-            
+
             println!("{} Rendering template to XML in memory...", "➔".cyan());
             let xml = render_theme(&config);
 
             println!("{} Running strict XML well-formedness check...", "➔".cyan());
-            
+
             match roxmltree::Document::parse(&xml) {
                 Ok(doc) => {
-                    let has_skin = doc.descendants().any(|n| n.has_tag_name("b:skin") || n.has_tag_name("b:template-skin"));
-                    
+                    let has_skin = doc
+                        .descendants()
+                        .any(|n| n.has_tag_name("b:skin") || n.has_tag_name("b:template-skin"));
+
                     if !has_skin {
                         if *strict {
                             anyhow::bail!("Validation failed: Missing required <b:skin> or <b:template-skin> block.");
                         } else {
-                            println!("{} Warning: No <b:skin> or <b:template-skin> block detected.", "⚠".yellow());
+                            println!(
+                                "{} Warning: No <b:skin> or <b:template-skin> block detected.",
+                                "⚠".yellow()
+                            );
                         }
                     }
 
-                    println!("{} Workspace and generated XML are valid.", "✔".green().bold());
+                    println!(
+                        "{} Workspace and generated XML are valid.",
+                        "✔".green().bold()
+                    );
                 }
                 Err(e) => {
                     anyhow::bail!(
@@ -106,7 +123,7 @@ fn main() -> Result<()> {
             let xml = render_theme(&config);
 
             save_xml_to_disk(&xml, output).map_err(|e| anyhow::anyhow!(e))?;
-            
+
             println!(
                 "{} Theme successfully compiled to {} in {:?}",
                 "✔".green().bold(),
@@ -121,7 +138,10 @@ fn main() -> Result<()> {
             println!("{} Resolving theme components...", "➔".cyan());
             let xml = render_theme(&config);
 
-            println!("{} Generating static HTML stencils and archiving...", "➔".cyan());
+            println!(
+                "{} Generating static HTML stencils and archiving...",
+                "➔".cyan()
+            );
             save_bundle_to_disk(&xml, &config.site.site_title, &config.static_pages, output)
                 .map_err(|e| anyhow::anyhow!(e))?;
 
@@ -141,8 +161,12 @@ fn load_config(path: &PathBuf) -> Result<ThemeConfig> {
     let toml_str = fs::read_to_string(path)
         .with_context(|| format!("Failed to read input file at '{}'", path.display()))?;
 
-    let config: ThemeConfig = toml::from_str(&toml_str)
-        .with_context(|| format!("Failed to parse valid TOML configuration from '{}'", path.display()))?;
+    let config: ThemeConfig = toml::from_str(&toml_str).with_context(|| {
+        format!(
+            "Failed to parse valid TOML configuration from '{}'",
+            path.display()
+        )
+    })?;
 
     Ok(config)
 }

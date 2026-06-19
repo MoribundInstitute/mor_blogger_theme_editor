@@ -38,7 +38,7 @@ body {
   to { background-position: 22% 10%, 78% 18%, 38% 82%, center; }
 }
 
-.canvas-core, .mor-post, .runelite-panel, .main-header, .mor-footer, .mor-catalog-dropdown {
+.canvas-core, .mor-post, .mor-panel, .main-header, .mor-footer, .mor-catalog-dropdown {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--bg-panel) 88%, var(--fg-base)) 0%,

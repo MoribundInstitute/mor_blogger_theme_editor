@@ -14,6 +14,8 @@ mod render_state;
 mod restore_drop;
 mod shell;
 pub mod state;
+#[cfg(not(target_arch = "wasm32"))]
+mod theme_hot_reload;
 
 use keyboard::use_keyboard_shortcuts;
 use layout_state::use_app_layout_state;
@@ -21,6 +23,8 @@ use render_state::use_app_render_state;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
 use state::use_theme_app_state;
+#[cfg(not(target_arch = "wasm32"))]
+use theme_hot_reload::use_theme_config_hot_reload;
 
 pub fn App() -> Element {
     let theme = use_theme_app_state();
@@ -31,6 +35,8 @@ pub fn App() -> Element {
 
     use_keyboard_shortcuts(layout);
     use_restore_drop_bridge(theme);
+    #[cfg(not(target_arch = "wasm32"))]
+    use_theme_config_hot_reload(theme);
 
     let render = use_app_render_state(theme, layout);
 

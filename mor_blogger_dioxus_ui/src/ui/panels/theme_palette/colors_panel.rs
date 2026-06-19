@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::{SurfaceFill, SurfaceMode};
 use crate::ui::components::inputs::{EditorCard, EditorInput};
+use mor_blogger_core::config::{SurfaceFill, SurfaceMode};
 
 #[component]
 pub fn ColorsPanel(

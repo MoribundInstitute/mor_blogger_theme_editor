@@ -18,7 +18,14 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
 
     let generated_xml = use_memo(move || {
         let config = current_config_for_xml();
-        render_theme(&config)
+        let rendered_xml = render_theme(&config);
+        match mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config) {
+            Ok(xml) => xml,
+            Err(err) => {
+                log::error!("Failed to inject rehydration state: {}", err);
+                rendered_xml
+            }
+        }
     });
 
     let current_config_for_preview = theme.current_config;
@@ -26,7 +33,11 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
     let is_dark_mode = theme.signals.is_dark_mode;
 
     let preview_html = use_memo(move || {
-        render_preview_html(&current_config_for_preview(), preview_template_mode(), is_dark_mode())
+        render_preview_html(
+            &current_config_for_preview(),
+            preview_template_mode(),
+            is_dark_mode(),
+        )
     });
 
     let current_config_for_diag_init = theme.current_config;

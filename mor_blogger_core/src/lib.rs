@@ -16,9 +16,9 @@ mod tests {
     fn test_default_theme_integrity() {
         let config = default_theme_config();
         let rendered_xml = render_theme(&config);
-        
+
         let result = check_integrity(&rendered_xml, &config.template_pack);
-        
+
         // Assert that the generated XML is valid and has no errors
         assert!(
             result.is_valid,
@@ -34,7 +34,7 @@ mod tests {
         );
         // Ensure the workspace gradient values are present (from default_theme_config)
         assert!(
-            rendered_xml.contains("#0a0c18") && rendered_xml.contains("#151b2c"),
+            rendered_xml.contains("#1e1a4d") && rendered_xml.contains("#5b2c8a"),
             "Workspace gradient colors from background struct not propagated"
         );
     }

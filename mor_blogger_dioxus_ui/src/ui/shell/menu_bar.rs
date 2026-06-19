@@ -1,7 +1,7 @@
+use crate::app::state::ThemeAppState;
 use crate::ui::shell::shortcut::use_shortcut;
 use crate::ui::workspace::layout::PanelLayout;
-use crate::app::state::ThemeAppState;
-use dioxus::prelude::*; 
+use dioxus::prelude::*;
 
 // =========================================================================
 // 1. GENERIC BUILDING BLOCKS
@@ -46,7 +46,7 @@ pub fn MenuItem(
     rsx! {
         button {
             class: if disabled { "mor-menu-item disabled" } else { "mor-menu-item" },
-            onmousedown: move |evt| evt.stop_propagation(), 
+            onmousedown: move |evt| evt.stop_propagation(),
             onclick: move |e| {
                 e.stop_propagation();
                 if !disabled {
@@ -75,7 +75,7 @@ pub fn AppMenuBar(
     mut show_editor_settings: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
-    mut show_plugins: Signal<bool>, 
+    mut show_plugins: Signal<bool>,
     mut show_css_builder: Signal<bool>,
     mut show_diagnostics: Signal<bool>,
     mut show_docs: Signal<bool>,
@@ -100,7 +100,7 @@ pub fn AppMenuBar(
         MorMenuBar {
             // 1. FILE
             MorMenuDropdown { label: "File".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "New Workspace".to_string(),
                     on_action: move |_| on_new_workspace.call(())
                 }
@@ -118,11 +118,11 @@ pub fn AppMenuBar(
                     on_action: move |_| on_import_xml.call(())
                 }
                 MenuSeparator {}
-                MenuItem { 
+                MenuItem {
                     label: "Import Sample Data (.json)".to_string(),
                     on_action: move |_| on_load_data.call(())
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Export Sample Data (.json)".to_string(),
                     on_action: move |_| on_save_data.call(())
                 }
@@ -157,7 +157,7 @@ pub fn AppMenuBar(
                     on_action: move |_| theme.redo(),
                 }
                 MenuSeparator {}
-                MenuItem { 
+                MenuItem {
                     label: "Copy Raw XML".to_string(),
                     shortcut: "Ctrl+Shift+C".to_string(),
                     on_action: move |_| on_copy_xml.call(())
@@ -166,15 +166,15 @@ pub fn AppMenuBar(
 
             // 3. VIEW
             MorMenuDropdown { label: "View".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "Toggle Preview Monitor".to_string(),
                     on_action: move |_| on_toggle_preview.call(())
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Toggle Code Split".to_string(),
                     on_action: move |_| on_toggle_split.call(())
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Reset Viewport Scale".to_string(),
                     on_action: move |_| on_reset_viewport.call(())
                 }
@@ -182,7 +182,7 @@ pub fn AppMenuBar(
 
             // 4. DOCKS
             MorMenuDropdown { label: "Docks".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "Toggle Theme Palette (Left)".to_string(),
                     on_action: move |_| {
                         if left_layout() == PanelLayout::Hidden {
@@ -192,7 +192,7 @@ pub fn AppMenuBar(
                         }
                     }
                 }
-                MenuItem { 
+                MenuItem {
                     label: "Toggle Site Data (Right)".to_string(),
                     on_action: move |_| {
                         if right_layout() == PanelLayout::Hidden {
@@ -225,11 +225,11 @@ pub fn AppMenuBar(
 
             // 6. TOOLS
             MorMenuDropdown { label: "Tools".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "Theme Diagnostics".to_string(),
                     on_action: move |_| show_diagnostics.set(true)
                 }
-                MenuItem { 
+                MenuItem {
                     label: "CSS Token Builder".to_string(),
                     on_action: move |_| show_css_builder.set(true)
                 }
@@ -242,7 +242,7 @@ pub fn AppMenuBar(
 
             // 7. HELP
             MorMenuDropdown { label: "Help".to_string(),
-                MenuItem { 
+                MenuItem {
                     label: "Documentation".to_string(),
                     on_action: move |_| show_docs.set(true)
                 }

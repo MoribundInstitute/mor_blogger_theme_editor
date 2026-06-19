@@ -74,7 +74,7 @@ pub struct TemplatePackConfig {
     pub footer_variant: String,
     pub script_variant: String,
     pub icon_pack: String,
-    
+
     /// Ledger tracking which widget IDs live in which socket IDs.
     pub widget_map: HashMap<String, Vec<String>>,
     /// User-editable widget display titles keyed by widget id.
@@ -94,7 +94,10 @@ impl Default for TemplatePackConfig {
             icon_pack: "default".to_string(),
             // THE FIX: Populate the standard layout so old configs don't boot empty.
             widget_map: HashMap::from([
-                ("sidebar-left".to_string(), vec!["Label1".to_string(), "BlogArchive1".to_string()]),
+                (
+                    "sidebar-left".to_string(),
+                    vec!["Label1".to_string(), "BlogArchive1".to_string()],
+                ),
                 ("sidebar-right".to_string(), vec!["HTML1".to_string()]),
             ]),
             widget_titles: HashMap::from([

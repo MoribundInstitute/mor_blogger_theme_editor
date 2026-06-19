@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::{AdsConfig, BackgroundConfig, IconConfig, SurfaceFill, TemplatePackConfig, ThemeConfig};
+use mor_blogger_core::config::{
+    AdsConfig, BackgroundConfig, IconConfig, SurfaceFill, TemplatePackConfig, ThemeConfig,
+};
 use mor_blogger_core::presets::{Preset, PresetPalette};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -68,6 +70,12 @@ pub struct ThemeSignals {
     pub ads: Signal<AdsConfig>,
     pub icons: Signal<IconConfig>,
     pub template_pack: Signal<TemplatePackConfig>,
+    pub enable_image_borders: Signal<bool>,
+    pub custom_border_url: Signal<Option<String>>,
+    pub svg_border_slice: Signal<String>,
+    pub image_border_width: Signal<String>,
+    pub target_sidebars: Signal<bool>,
+    pub target_canvas: Signal<bool>,
 }
 
 impl ThemeSignals {
@@ -164,6 +172,20 @@ impl ThemeSignals {
         self.icons.clone().set(config.icons.clone());
 
         self.template_pack.clone().set(config.template_pack.clone());
+        self.enable_image_borders
+            .clone()
+            .set(config.enable_image_borders);
+        self.custom_border_url
+            .clone()
+            .set(config.custom_border_url.clone());
+        self.svg_border_slice
+            .clone()
+            .set(config.svg_border_slice.clone());
+        self.image_border_width
+            .clone()
+            .set(config.image_border_width.clone());
+        self.target_sidebars.clone().set(config.target_sidebars);
+        self.target_canvas.clone().set(config.target_canvas);
         self.apply_config_except_palette(config);
         self.preset_css.clone().set(config.preset_css.clone());
     }
@@ -262,6 +284,20 @@ impl ThemeSignals {
         self.custom_js.clone().set(config.plugins.custom_js.clone());
         self.static_pages.clone().set(config.static_pages.clone());
         self.ads.clone().set(config.ads.clone());
+        self.enable_image_borders
+            .clone()
+            .set(config.enable_image_borders);
+        self.custom_border_url
+            .clone()
+            .set(config.custom_border_url.clone());
+        self.svg_border_slice
+            .clone()
+            .set(config.svg_border_slice.clone());
+        self.image_border_width
+            .clone()
+            .set(config.image_border_width.clone());
+        self.target_sidebars.clone().set(config.target_sidebars);
+        self.target_canvas.clone().set(config.target_canvas);
     }
 
     pub fn swap_palette(&self, palette: &PresetPalette) {

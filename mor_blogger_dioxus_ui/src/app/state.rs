@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::defaults::default_theme_config;
-use mor_blogger_core::config::{ColorConfig, MenuLink, TemplatePackConfig, ThemeConfig};
-use crate::ui::panels::theme_palette::presets::{morph_preview_from_preset, ThemeSignals};
 use crate::app::layout_state::CenterView;
+use crate::ui::panels::theme_palette::presets::{morph_preview_from_preset, ThemeSignals};
+use mor_blogger_core::config::defaults::default_theme_config;
+use mor_blogger_core::config::{ColorConfig, MenuLink, ThemeConfig};
 
 use super::config_bridge::{menu_label, menu_url};
 
@@ -90,6 +90,12 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let ads = use_signal(|| defaults.ads.clone());
     let icons = use_signal(|| defaults.icons.clone());
     let preset_css = use_signal(String::new);
+    let enable_image_borders = use_signal(|| defaults.enable_image_borders);
+    let custom_border_url = use_signal(|| defaults.custom_border_url.clone());
+    let svg_border_slice = use_signal(|| defaults.svg_border_slice.clone());
+    let image_border_width = use_signal(|| defaults.image_border_width.clone());
+    let target_sidebars = use_signal(|| defaults.target_sidebars);
+    let target_canvas = use_signal(|| defaults.target_canvas);
 
     let center_view = use_signal(|| CenterView::Preview);
     let active_preset = use_signal(|| None::<&'static str>);
@@ -154,6 +160,12 @@ pub fn use_theme_app_state() -> ThemeAppState {
         static_pages,
         ads,
         icons,
+        enable_image_borders,
+        custom_border_url,
+        svg_border_slice,
+        image_border_width,
+        target_sidebars,
+        target_canvas,
     };
 
     let current_config = use_memo(move || ThemeConfig {
@@ -239,6 +251,12 @@ pub fn use_theme_app_state() -> ThemeAppState {
         blocks: Vec::new(),
         preset_css: preset_css(),
         active_preset_id: active_preset().map(|s| s.to_string()),
+        enable_image_borders: enable_image_borders(),
+        custom_border_url: custom_border_url(),
+        svg_border_slice: svg_border_slice(),
+        image_border_width: image_border_width(),
+        target_sidebars: target_sidebars(),
+        target_canvas: target_canvas(),
     });
 
     ThemeAppState {
@@ -396,7 +414,11 @@ impl ThemeAppState {
         } else if let Some(id) = active_id {
             let presets = mor_blogger_core::presets::all_presets();
             if let Some(preset) = presets.iter().find(|p| p.id == id) {
-                let pal = if new_dark { &preset.dark } else { &preset.light };
+                let pal = if new_dark {
+                    &preset.dark
+                } else {
+                    &preset.light
+                };
                 signals.swap_palette(pal);
             }
         }

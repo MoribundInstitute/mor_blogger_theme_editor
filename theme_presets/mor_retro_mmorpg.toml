@@ -50,7 +50,7 @@ body {
 /* CONTAINER surfaces */
 .canvas-core,
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .main-header,
 .mor-footer,
 .mor-catalog-dropdown {
@@ -91,7 +91,7 @@ body {
 }
 
 /* CONTENT surfaces inside containers */
-.runelite-panel .panel-content,
+.mor-panel .panel-content,
 .canvas-core .panel-content {
   background: linear-gradient(
     180deg,

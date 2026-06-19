@@ -29,9 +29,7 @@ struct TomlExport<'a> {
     preset_css: &'a str,
 }
 
-pub(crate) fn save_imported_gtk_preset(
-    imported: &ImportedGtkPreset,
-) -> Result<String, String> {
+pub(crate) fn save_imported_gtk_preset(imported: &ImportedGtkPreset) -> Result<String, String> {
     let export = TomlExport {
         name: &imported.name,
         description: &imported.description,
@@ -52,7 +50,10 @@ pub(crate) fn save_imported_gtk_preset(
     let file_path = preset_dir.join(format!("{}.toml", imported.id));
     std::fs::write(&file_path, toml_str).map_err(|e| e.to_string())?;
 
-    Ok(format!("GTK Theme successfully compiled to {}", file_path.display()))
+    Ok(format!(
+        "GTK Theme successfully compiled to {}",
+        file_path.display()
+    ))
 }
 
 pub(crate) async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String> {
@@ -118,7 +119,7 @@ fn parse_json_wrapped_theme(text: &str) -> Result<ThemeConfig, String> {
     let mut config = wrapped
         .base_config
         .or(wrapped.config)
-                .or(wrapped.theme)
+        .or(wrapped.theme)
         .ok_or_else(|| "no base_config/config/theme object found".to_string())?;
 
     if config.preset_css.trim().is_empty() {

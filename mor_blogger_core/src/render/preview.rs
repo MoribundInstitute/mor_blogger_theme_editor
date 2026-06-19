@@ -2,10 +2,10 @@
 //! right-panel preview iframe. Distinct from `theme::render_theme`, which
 //! produces uploadable Blogger XML.
 
-use crate::config::{BackgroundMode, ThemeConfig};
-use crate::config::prefs::RenderPrefs;
 use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
+use crate::config::prefs::RenderPrefs;
+use crate::config::{BackgroundMode, ThemeConfig};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PreviewTemplateMode {
@@ -27,13 +27,23 @@ impl PreviewTemplateMode {
     }
 }
 
-pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateMode, is_dark: bool) -> String {
+pub fn render_preview_html(
+    config: &ThemeConfig,
+    _preview_mode: PreviewTemplateMode,
+    is_dark: bool,
+) -> String {
     let data_theme = if is_dark { "dark" } else { "light" };
     let background_tile_css = match &config.background.mode {
         BackgroundMode::Solid { color } => format!("background-color: {};", escape_attr(color)),
-        BackgroundMode::Gradient { from, to, angle_deg } => format!(
+        BackgroundMode::Gradient {
+            from,
+            to,
+            angle_deg,
+        } => format!(
             "background: linear-gradient({}deg, {}, {});",
-            angle_deg, escape_attr(from), escape_attr(to)
+            angle_deg,
+            escape_attr(from),
+            escape_attr(to)
         ),
         BackgroundMode::Tile { url } if url.trim().is_empty() => String::new(),
         BackgroundMode::Tile { url } => format!(
@@ -60,9 +70,20 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
     let site_title = escape_html(&config.site.site_title);
     let site_subtitle = escape_html(&config.site.site_subtitle);
     let footer_text = escape_html(&config.footer.footer_text);
-    let label_title = widget_title_h2("Label1", config.template_pack.widget_title("Label1", "Labels"));
-    let archive_title = widget_title_h2("BlogArchive1", config.template_pack.widget_title("BlogArchive1", "Archive"));
-    let toc_title = widget_title_h2("HTML1", config.template_pack.widget_title("HTML1", "Table of Contents"));
+    let label_title = widget_title_h2(
+        "Label1",
+        config.template_pack.widget_title("Label1", "Labels"),
+    );
+    let archive_title = widget_title_h2(
+        "BlogArchive1",
+        config.template_pack.widget_title("BlogArchive1", "Archive"),
+    );
+    let toc_title = widget_title_h2(
+        "HTML1",
+        config
+            .template_pack
+            .widget_title("HTML1", "Table of Contents"),
+    );
 
     // Fetch the TRUE CSS that will be injected into the final Blogger XML
     let mut parts = crate::render::template_resolver::resolve_template_parts(config);
@@ -75,9 +96,13 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
             for p in prefs.plugins {
                 if p.enabled {
                     match p.id.as_str() {
-                        "os_chameleon" => active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin)),
-                        "dewey_indexer" => active_plugins.push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
-                        "workspace_docks" => active_plugins.push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
+                        "os_chameleon" => {
+                            active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin))
+                        }
+                        "dewey_indexer" => active_plugins
+                            .push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
+                        "workspace_docks" => active_plugins
+                            .push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
                         _ => {}
                     }
                 }
@@ -95,9 +120,12 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 
     parts.javascript.push('\n');
     parts.javascript.push_str(&plugin_javascript);
-    
+
     // Securely wrap the aggregated JS for the iframe DOM
-    let true_js = crate::render::xml_parts::javascript_generator::render_javascript_sockets(parts.javascript, config);
+    let true_js = crate::render::xml_parts::javascript_generator::render_javascript_sockets(
+        parts.javascript,
+        config,
+    );
 
     let body_markup = format!(
         r##"
@@ -126,7 +154,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
 </header>
 
 <div class="mor-workspace" data-edit-target="colors.bg_base">
-    <aside class="runelite-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
+    <aside class="mor-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
         <div class="panel-header">
             <span data-edit-target="colors.accent">Browse</span>
             <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
@@ -168,7 +196,7 @@ pub fn render_preview_html(config: &ThemeConfig, _preview_mode: PreviewTemplateM
         </footer>
     </main>
 
-    <aside class="runelite-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
+    <aside class="mor-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
         <div class="panel-header">
             <span data-edit-target="colors.accent">Contents</span>
             <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>

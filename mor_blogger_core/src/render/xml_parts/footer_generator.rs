@@ -2,9 +2,18 @@ use crate::config::ThemeConfig;
 use crate::render::util::{escape_attr, escape_html};
 
 pub fn render_footer_sockets(mut xml: String, config: &ThemeConfig) -> String {
-    xml = xml.replace("{{FOOTER_SYS_MESSAGE}}", &escape_html(&config.footer.footer_text));
-    xml = xml.replace("{{FOOTER_LICENSE_URL}}", &escape_attr(&config.footer.footer_license_url));
-    xml = xml.replace("{{FOOTER_LICENSE_LABEL}}", &escape_html(&config.footer.footer_license_label));
+    xml = xml.replace(
+        "{{FOOTER_SYS_MESSAGE}}",
+        &escape_html(&config.footer.footer_text),
+    );
+    xml = xml.replace(
+        "{{FOOTER_LICENSE_URL}}",
+        &escape_attr(&config.footer.footer_license_url),
+    );
+    xml = xml.replace(
+        "{{FOOTER_LICENSE_LABEL}}",
+        &escape_html(&config.footer.footer_license_label),
+    );
     xml = xml.replace("{{BACK_TO_TOP_LABEL}}", "Back to Top");
 
     for (col_idx, col) in config.footer.columns.iter().enumerate() {

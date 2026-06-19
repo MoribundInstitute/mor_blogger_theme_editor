@@ -11,7 +11,7 @@ preset_css = '''
 /* Force chunky ridged borders on every major surface */
 .canvas-core,
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .main-header,
 .mor-footer,
 .mor-pager,
@@ -140,7 +140,7 @@ button:active,
 }
 
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .canvas-core {
   box-shadow: none;
 }

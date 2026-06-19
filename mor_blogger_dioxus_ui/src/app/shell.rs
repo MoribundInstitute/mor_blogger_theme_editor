@@ -15,16 +15,16 @@ use super::layout_state::{AppLayoutState, CenterView};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
-use mor_blogger_core::config::ThemeConfig;
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
 use crate::ui::panels::theme_palette::presets::PresetFloatingWindow;
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
+use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::layout::PanelLayout;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
-use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::right_dock::RightDataPanel;
+use mor_blogger_core::config::ThemeConfig;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
 
@@ -42,10 +42,14 @@ pub fn render_app_shell(
         let view = center_view();
         match view {
             CenterView::CodeEditor | CenterView::Export | CenterView::ModuleWorkbench => {
-                if (layout.left_layout)() == PanelLayout::Split || (layout.left_layout)() == PanelLayout::Wide {
+                if (layout.left_layout)() == PanelLayout::Split
+                    || (layout.left_layout)() == PanelLayout::Wide
+                {
                     layout.left_layout.set(PanelLayout::Hidden);
                 }
-                if (layout.right_layout)() == PanelLayout::Split || (layout.right_layout)() == PanelLayout::Wide {
+                if (layout.right_layout)() == PanelLayout::Split
+                    || (layout.right_layout)() == PanelLayout::Wide
+                {
                     layout.right_layout.set(PanelLayout::Hidden);
                 }
             }
@@ -58,11 +62,11 @@ pub fn render_app_shell(
     });
 
     let show_preview = use_signal(|| true);
-    
+
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
     let show_undocked_modules = use_signal(|| false);
-    
+
     // Dialog Signals
     let mut show_about = use_signal(|| false);
     let show_prefs = use_signal(|| false);
@@ -99,11 +103,16 @@ pub fn render_app_shell(
             match reqwest::get(target_url).await {
                 Ok(response) => {
                     if response.status().is_success() {
-                        if let Ok(remote_registry) = response.json::<Vec<CompendiumManifest>>().await {
+                        if let Ok(remote_registry) =
+                            response.json::<Vec<CompendiumManifest>>().await
+                        {
                             compendium_registry.set(remote_registry);
                         }
                     } else {
-                        log::warn!("GitHub returned a {} status. Triggering fallback.", response.status());
+                        log::warn!(
+                            "GitHub returned a {} status. Triggering fallback.",
+                            response.status()
+                        );
                         compendium_registry.set(vec![
                             CompendiumManifest { 
                                 id: "os_chameleon".to_string(), 
@@ -131,13 +140,25 @@ pub fn render_app_shell(
         });
     });
 
-    let active_ui_mode = std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
-    let ui_mode_pref = use_signal(|| prefs().ui_mode.clone().unwrap_or_else(|| active_ui_mode.clone()));
-    let ui_theme_pref = use_signal(|| prefs().workspace_theme.clone().unwrap_or_else(|| get_native_os_theme().to_string()));
+    let active_ui_mode =
+        std::env::var("MOR_ACTIVE_UI_MODE").unwrap_or_else(|_| "frameless".to_string());
+    let ui_mode_pref = use_signal(|| {
+        prefs()
+            .ui_mode
+            .clone()
+            .unwrap_or_else(|| active_ui_mode.clone())
+    });
+    let ui_theme_pref = use_signal(|| {
+        prefs()
+            .workspace_theme
+            .clone()
+            .unwrap_or_else(|| get_native_os_theme().to_string())
+    });
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
-    let config_toml_signal = use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
+    let config_toml_signal =
+        use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
     let mut tv_monitor = use_signal(|| String::new());
 
     use_effect(move || {
@@ -298,7 +319,7 @@ pub fn render_app_shell(
                     },
                     on_export_xml: move |_| { crate::utils::io::save_xml(&(render.generated_xml)()); },
                     on_export_zip: move |_| { crate::utils::io::export_bundle(&(render.generated_xml)(), &config_toml_signal()); },
-                    on_copy_xml: move |_| { 
+                    on_copy_xml: move |_| {
                         log::info!("Copy XML triggered (requires arboard binding)");
                     },
                     on_toggle_preview: move |_| {

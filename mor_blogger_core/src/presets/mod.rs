@@ -37,7 +37,7 @@ struct TomlPreset {
     name: String,
     #[serde(default)]
     description: String,
-    
+
     #[serde(default)]
     colors: ColorConfig,
     #[serde(default)]
@@ -57,12 +57,12 @@ struct TomlPreset {
 impl TomlPreset {
     fn into_preset(self, id: String) -> Preset {
         let mut base = crate::config::defaults::default_theme_config();
-        
+
         base.colors = self.colors.clone();
         base.background = self.background.clone();
         base.typography = self.typography;
         base.buttons = self.buttons;
-        
+
         let base_pal = PresetPalette {
             colors: self.colors.clone(),
             background: self.background.clone(),
@@ -85,7 +85,11 @@ impl TomlPreset {
             }
         });
 
-        let name = if self.name.is_empty() { "Unnamed Preset".to_string() } else { self.name };
+        let name = if self.name.is_empty() {
+            "Unnamed Preset".to_string()
+        } else {
+            self.name
+        };
 
         Preset {
             id: Box::leak(id.into_boxed_str()),
@@ -100,41 +104,44 @@ impl TomlPreset {
 }
 
 pub fn all_presets() -> Vec<Preset> {
-    LOADED_PRESETS.get_or_init(|| {
-        let mut presets = Vec::new();
-        
-        // Resilient path resolution: Check if we are running from the workspace root
-        // or from inside the mor_blogger_dioxus_ui crate.
-        let mut preset_dir = Path::new("theme_presets").to_path_buf();
-        if !preset_dir.exists() && Path::new("../theme_presets").exists() {
-            preset_dir = Path::new("../theme_presets").to_path_buf();
-        }
+    LOADED_PRESETS
+        .get_or_init(|| {
+            let mut presets = Vec::new();
 
-        if !preset_dir.exists() {
-            let _ = fs::create_dir_all(&preset_dir);
-            return presets;
-        }
+            // Resilient path resolution: Check if we are running from the workspace root
+            // or from inside the mor_blogger_dioxus_ui crate.
+            let mut preset_dir = Path::new("theme_presets").to_path_buf();
+            if !preset_dir.exists() && Path::new("../theme_presets").exists() {
+                preset_dir = Path::new("../theme_presets").to_path_buf();
+            }
 
-        if let Ok(entries) = fs::read_dir(&preset_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().and_then(|s| s.to_str()) == Some("toml") {
-                    if let Ok(contents) = fs::read_to_string(&path) {
-                        match toml::from_str::<TomlPreset>(&contents) {
-                            Ok(toml_preset) => {
-                                let id = path.file_stem().unwrap().to_str().unwrap().to_string();
-                                presets.push(toml_preset.into_preset(id));
+            if !preset_dir.exists() {
+                let _ = fs::create_dir_all(&preset_dir);
+                return presets;
+            }
+
+            if let Ok(entries) = fs::read_dir(&preset_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.extension().and_then(|s| s.to_str()) == Some("toml") {
+                        if let Ok(contents) = fs::read_to_string(&path) {
+                            match toml::from_str::<TomlPreset>(&contents) {
+                                Ok(toml_preset) => {
+                                    let id =
+                                        path.file_stem().unwrap().to_str().unwrap().to_string();
+                                    presets.push(toml_preset.into_preset(id));
+                                }
+                                Err(e) => eprintln!("Failed to parse preset {:?}: {}", path, e),
                             }
-                            Err(e) => eprintln!("Failed to parse preset {:?}: {}", path, e),
                         }
                     }
                 }
             }
-        }
 
-        presets.sort_by(|a, b| a.name.cmp(b.name));
-        presets
-    }).clone()
+            presets.sort_by(|a, b| a.name.cmp(b.name));
+            presets
+        })
+        .clone()
 }
 
 pub fn resolve_palette_pair(
@@ -160,7 +167,8 @@ pub fn resolve_palette_pair(
         }
         _ => {
             // Fallback: check bg_base directly
-            fallback_config.colors.bg_base == "#0f1026" || fallback_config.colors.bg_base == "#222129"
+            fallback_config.colors.bg_base == "#0f1026"
+                || fallback_config.colors.bg_base == "#222129"
         }
     };
 
@@ -195,7 +203,8 @@ pub fn resolve_palette_pair(
 
 pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
 pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-pub const STACK_SANS: &str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
+pub const STACK_SANS: &str =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
 pub const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
 pub const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
 pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif";

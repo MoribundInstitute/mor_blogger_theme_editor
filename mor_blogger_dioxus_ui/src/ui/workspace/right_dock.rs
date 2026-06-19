@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::ThemeConfig;
+use super::left_dock::{IconClose, IconGrip};
 use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::site_data::ads_panel::AdsPanel;
 use crate::ui::panels::site_data::assets_panel::AssetsPanel;
@@ -10,7 +10,7 @@ use crate::ui::panels::site_data::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::panels::site_data::site_panel::SitePanel;
 use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use crate::ui::workspace::layout::PanelLayout;
-use super::left_dock::{IconGrip, IconClose};
+use mor_blogger_core::config::ThemeConfig;
 
 const RIGHT_DOCK_CSS: &str = r#"
 .editor-right-panel.is-floating {
@@ -106,7 +106,7 @@ pub fn RightDataPanel(
 
         style { "{RIGHT_DOCK_CSS}" }
 
-        aside { 
+        aside {
             class: if layout() == PanelLayout::Floating { "editor-right-panel is-floating" } else { "editor-right-panel" },
 
             if layout() == PanelLayout::Floating {

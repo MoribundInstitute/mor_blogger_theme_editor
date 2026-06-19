@@ -7,14 +7,10 @@ use crate::render::template_resolver::resolve_template_parts;
 use crate::render::util::{escape_attr, escape_html, first_non_empty};
 
 use super::xml_parts::{
-    content_generator::render_content_sockets,
-    css_generator::render_css_sockets,
-    footer_generator::render_footer_sockets,
-    header_generator::render_header_sockets,
-    javascript_generator::render_javascript_sockets,
-    layout_compiler::render_layout_blocks,
-    meta_generator::render_meta_sockets,
-    sidebar_generator::render_sidebar_sockets,
+    content_generator::render_content_sockets, css_generator::render_css_sockets,
+    footer_generator::render_footer_sockets, header_generator::render_header_sockets,
+    javascript_generator::render_javascript_sockets, layout_compiler::render_layout_blocks,
+    meta_generator::render_meta_sockets, sidebar_generator::render_sidebar_sockets,
     widget_generator::render_widget_sockets,
 };
 
@@ -58,9 +54,13 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
             for p in prefs.plugins {
                 if p.enabled {
                     match p.id.as_str() {
-                        "os_chameleon" => active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin)),
-                        "dewey_indexer" => active_plugins.push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
-                        "workspace_docks" => active_plugins.push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
+                        "os_chameleon" => {
+                            active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin))
+                        }
+                        "dewey_indexer" => active_plugins
+                            .push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
+                        "workspace_docks" => active_plugins
+                            .push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
                         _ => {}
                     }
                 }
@@ -70,7 +70,8 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
     let mut plugin_javascript = String::new();
     let mut plugin_custom_css = String::new();
-    let mut plugin_widgets: std::collections::HashMap<&str, String> = std::collections::HashMap::new();
+    let mut plugin_widgets: std::collections::HashMap<&str, String> =
+        std::collections::HashMap::new();
 
     for plugin in active_plugins {
         if let Some(js) = plugin.inject_js() {
@@ -83,7 +84,9 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
         }
         if let Some(widgets) = plugin.inject_xml_widgets() {
             for widget in widgets {
-                let current = plugin_widgets.entry(widget.target_socket).or_insert_with(String::new);
+                let current = plugin_widgets
+                    .entry(widget.target_socket)
+                    .or_insert_with(String::new);
                 current.push_str(&widget.content);
                 current.push('\n');
             }
@@ -91,7 +94,9 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
     }
 
     if !plugin_custom_css.is_empty() {
-        parts.css.push_str("\n/* ===== Dynamic Plugin CSS ===== */\n");
+        parts
+            .css
+            .push_str("\n/* ===== Dynamic Plugin CSS ===== */\n");
         parts.css.push_str(&plugin_custom_css);
     }
 
@@ -112,7 +117,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
 
     let content = render_widget_sockets(render_content_sockets(parts.content, config), config);
     let footer = render_footer_sockets(parts.footer, config);
-    
+
     let main_layout = render_layout_blocks(
         parts
             .main
@@ -120,7 +125,7 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
             .replace("{{FOOTER_MODULE}}", &footer),
         config,
     );
-        
+
     let scripts = render_javascript_sockets(parts.javascript, config);
 
     let ads_consent_banner = crate::render::ads::render_ads_consent_banner(&config.ads);
@@ -144,15 +149,27 @@ pub(super) fn render_template(config: &ThemeConfig) -> String {
     }
 
     // --- GLOBAL IDENTITY SOCKETS ---
-    // These must be applied to the fully assembled template because they appear across 
+    // These must be applied to the fully assembled template because they appear across
     // multiple domains (SEO Meta, Header Branding, Content Schema, User Plugins).
     let site_home_url = first_non_empty(&config.site.home_url, "/");
     final_xml = final_xml.replace("{{SITE_TITLE}}", &escape_html(&config.site.site_title));
     final_xml = final_xml.replace("{{SITE_TITLE_ATTR}}", &escape_attr(&config.site.site_title));
-    final_xml = final_xml.replace("{{SITE_SUBTITLE}}", &escape_html(&config.site.site_subtitle));
-    final_xml = final_xml.replace("{{SITE_SUBTITLE_ATTR}}", &escape_attr(&config.site.site_subtitle));
-    final_xml = final_xml.replace("{{HEADER_LOGO_URL}}", &escape_attr(&config.site.header_logo_url));
-    final_xml = final_xml.replace("{{HEADER_LOGO_URL_ATTR}}", &escape_attr(&config.site.header_logo_url));
+    final_xml = final_xml.replace(
+        "{{SITE_SUBTITLE}}",
+        &escape_html(&config.site.site_subtitle),
+    );
+    final_xml = final_xml.replace(
+        "{{SITE_SUBTITLE_ATTR}}",
+        &escape_attr(&config.site.site_subtitle),
+    );
+    final_xml = final_xml.replace(
+        "{{HEADER_LOGO_URL}}",
+        &escape_attr(&config.site.header_logo_url),
+    );
+    final_xml = final_xml.replace(
+        "{{HEADER_LOGO_URL_ATTR}}",
+        &escape_attr(&config.site.header_logo_url),
+    );
     final_xml = final_xml.replace("{{SITE_HOME_URL}}", &escape_attr(site_home_url));
     final_xml = final_xml.replace("{{SITE_HOME_URL_ATTR}}", &escape_attr(site_home_url));
     final_xml = final_xml.replace("{{HOME_URL}}", &escape_attr(site_home_url));

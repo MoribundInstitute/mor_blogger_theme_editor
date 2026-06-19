@@ -74,39 +74,46 @@ pub fn default_theme_config() -> ThemeConfig {
         },
         colors: dark_color_config(),
         typography: TypographyConfig {
-            body_font_stack:    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif".to_string(), 
-            heading_font_stack: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif".to_string(), 
-            mono_font_stack:    "'Courier New', Courier, monospace".to_string(),
-            base_size:          "16px".to_string(),
-            scale_ratio:        "1.2".to_string(),
-            line_height:        "1.6".to_string(),
-            heading_weight:     "600".to_string(), 
+            body_font_stack:
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                    .to_string(),
+            heading_font_stack:
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                    .to_string(),
+            mono_font_stack: "'Courier New', Courier, monospace".to_string(),
+            base_size: "16px".to_string(),
+            scale_ratio: "1.2".to_string(),
+            line_height: "1.6".to_string(),
+            heading_weight: "600".to_string(),
         },
         buttons: ButtonConfig {
-            radius:         "14px".to_string(),
-            border_width:   "1px".to_string(),
+            radius: "14px".to_string(),
+            border_width: "1px".to_string(),
             text_transform: "none".to_string(),
         },
         background: dark_background_config(),
-        assets:       AssetConfig::default(),
-        seo:          SeoConfig::default(),
-        menu_links:   vec![],
-        footer:       FooterConfig::default(),
-        plugins:      PluginConfig::default(),
+        assets: AssetConfig::default(),
+        seo: SeoConfig::default(),
+        menu_links: vec![],
+        footer: FooterConfig::default(),
+        plugins: PluginConfig::default(),
         static_pages: StaticPagesConfig::default(),
-        ads:          AdsConfig::default(),
+        ads: AdsConfig::default(),
 
         template_pack: TemplatePackConfig {
-            header_variant:        "mor_header_baseline".to_string(),
-            main_variant:          "sidebars".to_string(),
-            content_variant:       "blog_standard".to_string(),
-            left_sidebar_variant:  "blogger_left".to_string(),
+            header_variant: "mor_header_baseline".to_string(),
+            main_variant: "sidebars".to_string(),
+            content_variant: "blog_standard".to_string(),
+            left_sidebar_variant: "blogger_left".to_string(),
             right_sidebar_variant: "toc_right".to_string(),
-            footer_variant:        "mega".to_string(),
-            script_variant:        "mor_panels".to_string(),
-            icon_pack:             "default".to_string(),
+            footer_variant: "mega".to_string(),
+            script_variant: "mor_panels".to_string(),
+            icon_pack: "default".to_string(),
             widget_map: HashMap::from([
-                ("sidebar-left".to_string(), vec!["Label1".to_string(), "BlogArchive1".to_string()]),
+                (
+                    "sidebar-left".to_string(),
+                    vec!["Label1".to_string(), "BlogArchive1".to_string()],
+                ),
                 ("sidebar-right".to_string(), vec!["HTML1".to_string()]),
             ]),
             widget_titles: TemplatePackConfig::default().widget_titles,
@@ -115,15 +122,22 @@ pub fn default_theme_config() -> ThemeConfig {
         blocks: vec![],
         preset_css: "".to_string(),
         active_preset_id: None,
+        enable_image_borders: false,
+        custom_border_url: None,
+        svg_border_slice: "30".to_string(),
+        image_border_width: "20px".to_string(),
+        target_sidebars: true,
+        target_canvas: false,
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).
         icons: {
             let mut i = crate::config::styling::IconConfig::default();
             // ensure label/archive/toc still populate custom_icons for --icon-* widget vars (css_builder)
             i.custom_icons.insert("label".to_string(), i.label.clone());
-            i.custom_icons.insert("archive".to_string(), i.archive.clone());
+            i.custom_icons
+                .insert("archive".to_string(), i.archive.clone());
             i.custom_icons.insert("toc".to_string(), i.toc.clone());
             i
-        }, 
+        },
     }
 }

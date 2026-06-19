@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::{BackgroundConfig, BackgroundMode};
 use crate::ui::components::inputs::{EditorCard, EditorSelect, PanelNote};
+use mor_blogger_core::config::{BackgroundConfig, BackgroundMode};
 
 #[component]
 pub fn BackgroundPanel(mut background: Signal<BackgroundConfig>) -> Element {

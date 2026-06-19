@@ -27,6 +27,8 @@ zip.workspace = true
 # Native Desktop Clipboard (Linux/Mac/Windows)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 arboard = "3.3"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+notify = "6.1"
 
 # Browser-only WebAssembly dependencies
 [target.'cfg(target_arch = "wasm32")'.dependencies]

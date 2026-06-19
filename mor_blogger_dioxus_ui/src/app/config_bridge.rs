@@ -1,6 +1,6 @@
-use mor_blogger_core::config::ThemeConfig;
-use crate::ui::workspace::layout::PanelLayout;
 use crate::ui::shell::theme::MorTheme;
+use crate::ui::workspace::layout::PanelLayout;
+use mor_blogger_core::config::ThemeConfig;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -22,7 +22,7 @@ pub struct CompendiumManifest {
     pub display_name: String,
     pub version: String,
     pub description: String,
-    pub payload_url: String, 
+    pub payload_url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
@@ -46,6 +46,8 @@ pub struct CustomEditorColors {
     pub destructive: Option<String>,
     pub success: Option<String>,
     pub warning: Option<String>,
+    #[serde(default)]
+    pub panel_title_color: Option<String>,
 }
 
 pub fn resolve_effective_theme(base: MorTheme, overrides: &CustomEditorColors) -> MorTheme {
@@ -74,6 +76,12 @@ pub fn resolve_effective_theme(base: MorTheme, overrides: &CustomEditorColors) -
         destructive: apply!(destructive),
         success: apply!(success),
         warning: apply!(warning),
+        enable_image_borders: base.enable_image_borders,
+        custom_border_url: base.custom_border_url.clone(),
+        svg_border_slice: base.svg_border_slice.clone(),
+        image_border_width: base.image_border_width.clone(),
+        target_sidebars: base.target_sidebars,
+        target_canvas: base.target_canvas,
     }
 }
 
@@ -84,32 +92,40 @@ pub struct ShortcutPrefs {
     pub copy_raw_xml: Option<String>,
     pub toggle_left_dock: Option<String>,
     pub toggle_right_dock: Option<String>,
-    #[serde(default)] pub user_prefs: Option<String>,
-    #[serde(default)] pub theme_diagnostics: Option<String>,
-    #[serde(default)] pub toggle_preview: Option<String>,
-    #[serde(default)] pub exit_architect: Option<String>,
-    #[serde(default)] pub open_project: Option<String>,
-    #[serde(default)] pub save_project: Option<String>,
-    #[serde(default)] pub export_xml: Option<String>,
-    #[serde(default)] pub reset_zoom: Option<String>,
+    #[serde(default)]
+    pub user_prefs: Option<String>,
+    #[serde(default)]
+    pub theme_diagnostics: Option<String>,
+    #[serde(default)]
+    pub toggle_preview: Option<String>,
+    #[serde(default)]
+    pub exit_architect: Option<String>,
+    #[serde(default)]
+    pub open_project: Option<String>,
+    #[serde(default)]
+    pub save_project: Option<String>,
+    #[serde(default)]
+    pub export_xml: Option<String>,
+    #[serde(default)]
+    pub reset_zoom: Option<String>,
 }
 
 impl Default for ShortcutPrefs {
     fn default() -> Self {
         Self {
-            undo:             Some("Ctrl+Z".to_string()),
-            redo:             Some("Ctrl+Y".to_string()),
-            copy_raw_xml:     Some("Ctrl+C".to_string()),
+            undo: Some("Ctrl+Z".to_string()),
+            redo: Some("Ctrl+Y".to_string()),
+            copy_raw_xml: Some("Ctrl+C".to_string()),
             toggle_left_dock: Some("Ctrl+B".to_string()),
-            toggle_right_dock:Some("Ctrl+E".to_string()),
-            user_prefs:       Some("Ctrl+P".to_string()),
-            theme_diagnostics:Some("Ctrl+D".to_string()),
-            toggle_preview:   Some("F9".to_string()),
-            exit_architect:   Some("Ctrl+Q".to_string()),
-            open_project:     Some("Ctrl+O".to_string()),
-            save_project:     Some("Ctrl+S".to_string()),
-            export_xml:       Some("Shift+Ctrl+E".to_string()),
-            reset_zoom:       Some("Ctrl+0".to_string()),
+            toggle_right_dock: Some("Ctrl+E".to_string()),
+            user_prefs: Some("Ctrl+P".to_string()),
+            theme_diagnostics: Some("Ctrl+D".to_string()),
+            toggle_preview: Some("F9".to_string()),
+            exit_architect: Some("Ctrl+Q".to_string()),
+            open_project: Some("Ctrl+O".to_string()),
+            save_project: Some("Ctrl+S".to_string()),
+            export_xml: Some("Shift+Ctrl+E".to_string()),
+            reset_zoom: Some("Ctrl+0".to_string()),
         }
     }
 }
@@ -208,11 +224,19 @@ impl EditorPrefs {
 }
 
 pub fn menu_label(config: &ThemeConfig, index: usize) -> String {
-    config.menu_links.get(index).map(|link| link.label.clone()).unwrap_or_default()
+    config
+        .menu_links
+        .get(index)
+        .map(|link| link.label.clone())
+        .unwrap_or_default()
 }
 
 pub fn menu_url(config: &ThemeConfig, index: usize) -> String {
-    config.menu_links.get(index).map(|link| link.url.clone()).unwrap_or_default()
+    config
+        .menu_links
+        .get(index)
+        .map(|link| link.url.clone())
+        .unwrap_or_default()
 }
 
 pub fn panel_layout_class(layout: PanelLayout) -> &'static str {
@@ -223,3 +247,105 @@ pub fn panel_layout_class(layout: PanelLayout) -> &'static str {
         PanelLayout::Hidden => "hidden",
     }
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+mod theme_reload_watcher {
+    use std::path::PathBuf;
+    use std::sync::OnceLock;
+    use std::thread;
+    use std::time::Duration;
+
+    use dioxus::prelude::UnboundedSender;
+    use notify::{recommended_watcher, Event, EventKind, RecursiveMode, Watcher};
+
+    static THEME_RELOAD_TX: OnceLock<UnboundedSender<String>> = OnceLock::new();
+
+    pub fn register_theme_reload_sender(tx: UnboundedSender<String>) {
+        let _ = THEME_RELOAD_TX.set(tx);
+    }
+
+    pub fn spawn_editor_prefs_watcher() {
+        static WATCHER_STARTED: OnceLock<()> = OnceLock::new();
+        if WATCHER_STARTED.set(()).is_err() {
+            return;
+        }
+
+        thread::spawn(|| {
+            let prefs_path = mor_blogger_core::config::prefs::editor_prefs_path();
+            let prefs_file_name = prefs_path
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| "editor_prefs.toml".to_string());
+            let watch_dir = prefs_path
+                .parent()
+                .map(PathBuf::from)
+                .unwrap_or_else(|| PathBuf::from("."));
+
+            if let Some(parent) = prefs_path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+
+            let target_path = prefs_path.clone();
+            let watched_file_name = prefs_file_name.clone();
+            let mut watcher = match recommended_watcher(move |result: Result<Event, notify::Error>| {
+                let Ok(event) = result else {
+                    return;
+                };
+
+                if !matches!(event.kind, EventKind::Modify(_)) {
+                    return;
+                }
+
+                let is_target = event.paths.iter().any(|path| {
+                    path.file_name()
+                        .map(|name| name == watched_file_name.as_str())
+                        .unwrap_or(false)
+                });
+                if !is_target {
+                    return;
+                }
+
+                thread::sleep(Duration::from_millis(50));
+
+                let Ok(toml_str) = std::fs::read_to_string(&target_path) else {
+                    log::warn!("editor_prefs.toml changed but could not be read");
+                    return;
+                };
+
+                if let Some(tx) = THEME_RELOAD_TX.get() {
+                    if tx.unbounded_send(toml_str).is_err() {
+                        log::warn!("Theme hot-reload channel closed");
+                    }
+                }
+            }) {
+                Ok(watcher) => watcher,
+                Err(err) => {
+                    log::error!("Failed to create editor_prefs.toml watcher: {}", err);
+                    return;
+                }
+            };
+
+            if let Err(err) = watcher.watch(&watch_dir, RecursiveMode::NonRecursive) {
+                log::error!(
+                    "Failed to watch {:?} for editor_prefs.toml changes: {}",
+                    watch_dir,
+                    err
+                );
+                return;
+            }
+
+            log::info!(
+                "Watching {:?} for external edits to {}",
+                watch_dir,
+                prefs_file_name
+            );
+
+            loop {
+                thread::sleep(Duration::from_secs(3600));
+            }
+        });
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use theme_reload_watcher::{register_theme_reload_sender, spawn_editor_prefs_watcher};

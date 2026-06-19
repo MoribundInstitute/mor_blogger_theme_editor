@@ -1,6 +1,6 @@
-use dioxus::prelude::*;
-use crate::ui::components::modal::Modal;
 use crate::app::config_bridge::EditorPrefs;
+use crate::ui::components::modal::Modal;
+use dioxus::prelude::*;
 
 #[component]
 pub fn UserPreferencesModal(

@@ -40,7 +40,7 @@ body::after {
 
 .canvas-core,
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .main-header,
 .mor-footer,
 .mor-catalog-dropdown {

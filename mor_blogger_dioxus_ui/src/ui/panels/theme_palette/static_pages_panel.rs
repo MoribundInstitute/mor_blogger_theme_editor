@@ -1,12 +1,12 @@
 use dioxus::prelude::*;
 
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::utils::clipboard::copy_to_clipboard;
 use mor_blogger_core::config::pages::StaticPagesConfig;
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
     generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
 };
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
-use crate::utils::clipboard::copy_to_clipboard;
 
 // (tab id, button label)
 const TABS: &[(&str, &str)] = &[

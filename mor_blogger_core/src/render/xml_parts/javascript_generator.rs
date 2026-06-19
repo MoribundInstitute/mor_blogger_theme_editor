@@ -33,7 +33,7 @@ fn escape_javascript_cdata(javascript: &str) -> String {
 
 pub fn render_javascript_sockets(mut js_payload: String, config: &ThemeConfig) -> String {
     let custom_javascript = config.plugins.custom_js.trim();
-    
+
     if js_payload.contains(CUSTOM_BEFORE_BODY_JS_TOKEN) {
         js_payload = js_payload.replace(CUSTOM_BEFORE_BODY_JS_TOKEN, custom_javascript);
     } else if !custom_javascript.is_empty() {

@@ -27,9 +27,10 @@ pub fn SmartCodeDock(
     let mut jump_to = move |target: &str| {
         let target_str = target.to_string();
         active_target.set(Some(target_str.clone())); // Store active state
-        
+
         spawn(async move {
-            let eval = dioxus::document::eval(r#"
+            let eval = dioxus::document::eval(
+                r#"
                 let target = await dioxus.recv();
                 let el = document.getElementById("toml-editor-textarea");
                 if (el) {
@@ -46,7 +47,8 @@ pub fn SmartCodeDock(
                         el.scrollTop = Math.max(0, (linesBefore * lineHeight) - (el.clientHeight / 2));
                     }
                 }
-            "#);
+            "#,
+            );
             let _ = eval.send(target_str);
         });
     };
@@ -55,10 +57,10 @@ pub fn SmartCodeDock(
         div {
             class: "export-viewport",
             style: "display: flex; flex-direction: row; border: 1px solid var(--editor-border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel);",
-            
+
             div {
                 style: "width: 220px; border-right: 1px solid var(--editor-border); display: flex; flex-direction: column;",
-                
+
                 div {
                     style: "padding: 12px; border-bottom: 1px solid var(--editor-border-soft); background: var(--bg-elevated);",
                     span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;", "Template Layouts" }
@@ -75,7 +77,7 @@ pub fn SmartCodeDock(
                         }
                     }
                 }
-                
+
                 div {
                     style: "padding: 12px; border-top: 1px solid var(--editor-border-soft); border-bottom: 1px solid var(--editor-border-soft); background: var(--bg-elevated);",
                     span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;", "Core Identity" }

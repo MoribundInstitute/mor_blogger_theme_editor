@@ -11,7 +11,11 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let header_logo_img = if config.site.header_logo_url.trim().is_empty() {
         String::new()
     } else {
-        format!("<img alt=\"{} logo\" class='institute-logo' src=\"{}\"/>", escape_attr(&config.site.site_title), escape_attr(&config.site.header_logo_url))
+        format!(
+            "<img alt=\"{} logo\" class='institute-logo' src=\"{}\"/>",
+            escape_attr(&config.site.site_title),
+            escape_attr(&config.site.header_logo_url)
+        )
     };
 
     let menu_1 = menu_link_or_empty(config, 0);
@@ -52,14 +56,38 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let catalog_label = escape_html("Catalog");
     xml = xml.replace("{{CATALOG_OPEN_LABEL}}", &catalog_label);
 
-    xml = xml.replace("{{NAV_HOME_LABEL}}", &escape_html(first_non_empty(&menu_1.label, "Home")));
-    xml = xml.replace("{{NAV_HOME_URL}}", &escape_attr(first_non_empty(&menu_1.url, site_home_url)));
-    xml = xml.replace("{{NAV_ABOUT_LABEL}}", &escape_html(first_non_empty(&menu_2.label, "About")));
-    xml = xml.replace("{{NAV_ABOUT_URL}}", &escape_attr(first_non_empty(&menu_2.url, "#")));
-    xml = xml.replace("{{NAV_PROJECTS_LABEL}}", &escape_html(first_non_empty(&menu_3.label, "Projects")));
-    xml = xml.replace("{{NAV_PROJECTS_URL}}", &escape_attr(first_non_empty(&menu_3.url, "#")));
-    xml = xml.replace("{{NAV_CONTACT_LABEL}}", &escape_html(first_non_empty(&menu_4.label, "Contact")));
-    xml = xml.replace("{{NAV_CONTACT_URL}}", &escape_attr(first_non_empty(&menu_4.url, "#")));
+    xml = xml.replace(
+        "{{NAV_HOME_LABEL}}",
+        &escape_html(first_non_empty(&menu_1.label, "Home")),
+    );
+    xml = xml.replace(
+        "{{NAV_HOME_URL}}",
+        &escape_attr(first_non_empty(&menu_1.url, site_home_url)),
+    );
+    xml = xml.replace(
+        "{{NAV_ABOUT_LABEL}}",
+        &escape_html(first_non_empty(&menu_2.label, "About")),
+    );
+    xml = xml.replace(
+        "{{NAV_ABOUT_URL}}",
+        &escape_attr(first_non_empty(&menu_2.url, "#")),
+    );
+    xml = xml.replace(
+        "{{NAV_PROJECTS_LABEL}}",
+        &escape_html(first_non_empty(&menu_3.label, "Projects")),
+    );
+    xml = xml.replace(
+        "{{NAV_PROJECTS_URL}}",
+        &escape_attr(first_non_empty(&menu_3.url, "#")),
+    );
+    xml = xml.replace(
+        "{{NAV_CONTACT_LABEL}}",
+        &escape_html(first_non_empty(&menu_4.label, "Contact")),
+    );
+    xml = xml.replace(
+        "{{NAV_CONTACT_URL}}",
+        &escape_attr(first_non_empty(&menu_4.url, "#")),
+    );
     xml = xml.replace("{{NAV_MERCH_LABEL}}", "Shop");
     xml = xml.replace("{{NAV_MERCH_URL}}", "#");
     xml = xml.replace("{{NAV_POSTS_LABEL}}", "Posts");
@@ -68,7 +96,7 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{NAV_CATEGORIES_URL}}", "#");
     xml = xml.replace("{{NAV_ARCHIVE_LABEL}}", "Archive");
     xml = xml.replace("{{NAV_ARCHIVE_URL}}", "#");
-    
+
     xml = xml.replace("{{SEARCH_ACTION_URL}}", "/search");
     xml = xml.replace("{{SEARCH_ACTION_URL_ATTR}}", "/search");
     xml = xml.replace("{{SEARCH_PROMPT}}", "Search");

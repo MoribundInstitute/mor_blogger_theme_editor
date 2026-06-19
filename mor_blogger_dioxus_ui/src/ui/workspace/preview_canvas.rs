@@ -127,16 +127,36 @@ pub fn PreviewCanvas(
                                     r#"
                                     (function() {
                                         const SID = "mor-preview-html-source", FID = "mor-preview-frame";
+
+                                        // Full document rewrite. Uses document.write (not innerHTML) so that
+                                        // <script> tags (plugin JS) actually execute on (re)load.
+                                        function reload(doc, html) {
+                                            doc.open(); doc.write(html); doc.close();
+                                            setTimeout(() => setup(doc), 50);
+                                        }
+
+                                        // Stable identity for an editable node, used to detect structural
+                                        // reorders (a widget moving between regions) vs pure content edits.
+                                        function keyOf(el) {
+                                            return el.getAttribute('data-block-id')
+                                                || el.getAttribute('data-field-path')
+                                                || el.getAttribute('data-edit-target')
+                                                || '';
+                                        }
+
                                         function write(src, frm) {
                                             const html = src.textContent || "";
                                             if (!html.trim() || src._last === html) return;
                                             src._last = html;
                                             const doc = frm.contentDocument || frm.contentWindow.document;
                                             if (!doc) return;
-                                            if (!doc.body || !doc.body.innerHTML.trim() || src._reload) {
-                                                doc.open(); doc.write(html); doc.close(); src._reload = false;
-                                                setTimeout(() => setup(doc), 50); return;
+
+                                            // First paint (blank iframe) or empty body.
+                                            if (!doc.body || !doc.body.innerHTML.trim()) {
+                                                reload(doc, html);
+                                                return;
                                             }
+
                                             const nDoc = new DOMParser().parseFromString(html, 'text/html');
                                             const oCss = doc.getElementById('mor-true-css'), nCss = nDoc.getElementById('mor-true-css');
                                             if (oCss && nCss && oCss.textContent !== nCss.textContent) oCss.textContent = nCss.textContent;
@@ -145,17 +165,32 @@ pub fn PreviewCanvas(
                                             if (doc.documentElement.className !== nDoc.documentElement.className) doc.documentElement.className = nDoc.documentElement.className;
                                             if (doc.documentElement.getAttribute('data-theme') !== nDoc.documentElement.getAttribute('data-theme')) doc.documentElement.setAttribute('data-theme', nDoc.documentElement.getAttribute('data-theme') || "");
                                             if (doc.body.className !== nDoc.body.className) doc.body.className = nDoc.body.className;
-                                            
+
                                             doc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"], style').forEach(el => {
                                                 if (el.id !== 'mor-true-css' && !el.textContent.includes('[data-field-path]')) el.remove();
                                             });
                                             nDoc.querySelectorAll('link[href*="fonts.googleapis"], link[href*="fonts.gstatic"], style').forEach(el => { if (el.id !== 'mor-true-css') doc.head.appendChild(el.cloneNode(true)); });
-                                            
+
                                             const oT = doc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
                                             const nT = nDoc.querySelectorAll('[data-field-path], [data-block-id], [data-edit-target]');
-                                            if (oT.length !== nT.length) { src._reload = true; write(src, frm); return; }
-                                            oT.forEach((el, i) => { 
-                                                if (el.innerHTML !== nT[i].innerHTML) el.innerHTML = nT[i].innerHTML; 
+
+                                            // Match editable nodes by key AND verify identical order. If the
+                                            // set or ordering changed (e.g. a widget moved regions), an in-place
+                                            // innerHTML patch would scramble content across slots, so reload.
+                                            let sameShape = (oT.length === nT.length);
+                                            if (sameShape) {
+                                                for (let i = 0; i < oT.length; i++) {
+                                                    if (keyOf(oT[i]) !== keyOf(nT[i])) { sameShape = false; break; }
+                                                }
+                                            }
+                                            if (!sameShape) { reload(doc, html); return; }
+
+                                            // Same nodes, same order: only inner content can differ, so index
+                                            // pairing is now provably safe. Skip a field the user is actively
+                                            // editing so a background re-render doesn't wipe the caret / text.
+                                            oT.forEach((el, i) => {
+                                                if (el.isContentEditable && doc.activeElement === el) return;
+                                                if (el.innerHTML !== nT[i].innerHTML) el.innerHTML = nT[i].innerHTML;
                                                 if (el.hasAttribute('data-block-id')) el.draggable = true;
                                             });
                                         }
@@ -217,6 +252,7 @@ pub fn PreviewCanvas(
                                                 draggedId = null;
                                             });
                                             doc.addEventListener('click', e => {
+                                                if (e.shiftKey) { const targetEl = e.target.closest("[data-edit-target^='icons.']"); if (targetEl) { e.preventDefault(); dioxus.send({action: "ICON_EDIT", target: targetEl.getAttribute("data-edit-target")}); return; } }
                                                 const t = e.target, btn = t.closest('#mor-theme-toggle'), a = t.closest('a');
                                                 if (btn) { e.preventDefault(); dioxus.send({action: "TOGGLE_DARK_MODE"}); }
                                                 else if (a && (a.getAttribute('href')||'').match(/^[/|#]/)) {

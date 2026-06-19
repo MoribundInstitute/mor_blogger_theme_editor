@@ -1,5 +1,5 @@
 //! Moribund Client OS - Modular Plugin Architecture
-//! This establishes the core trait for all native plugins. 
+//! This establishes the core trait for all native plugins.
 //! Disabled plugins incur zero memory or payload overhead.
 
 use crate::render::xml_generator::XmlNode;
@@ -32,7 +32,7 @@ pub trait MorBloggerPlugin: Send + Sync {
         None
     }
 
-    /// Optional: Analyzes the current layout and returns a plain-English warning 
+    /// Optional: Analyzes the current layout and returns a plain-English warning
     /// if a missing tag or optimization issue is detected.
     fn run_diagnostics(&self) -> Option<String> {
         None
@@ -47,20 +47,21 @@ pub trait MorBloggerPlugin: Send + Sync {
 pub struct OsChameleonPlugin;
 
 impl MorBloggerPlugin for OsChameleonPlugin {
-    fn id(&self) -> &'static str { 
-        "os_chameleon" 
+    fn id(&self) -> &'static str {
+        "os_chameleon"
     }
-    
-    fn display_name(&self) -> &'static str { 
-        "OS Chameleon (Dark Mode)" 
+
+    fn display_name(&self) -> &'static str {
+        "OS Chameleon (Dark Mode)"
     }
-    
-    fn version(&self) -> &'static str { 
-        "1.0.0" 
+
+    fn version(&self) -> &'static str {
+        "1.0.0"
     }
-    
+
     fn inject_js(&self) -> Option<&'static str> {
-        Some(r##"
+        Some(
+            r##"
             const themeToggle = document.getElementById('mor-theme-toggle');
             const body = document.body;
             const currentTheme = localStorage.getItem('mor-theme') || 
@@ -75,7 +76,8 @@ impl MorBloggerPlugin for OsChameleonPlugin {
                     localStorage.setItem('mor-theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
                 });
             }
-        "##)
+        "##,
+        )
     }
 }
 
@@ -83,20 +85,21 @@ impl MorBloggerPlugin for OsChameleonPlugin {
 pub struct DeweyIndexerPlugin;
 
 impl MorBloggerPlugin for DeweyIndexerPlugin {
-    fn id(&self) -> &'static str { 
-        "dewey_indexer" 
+    fn id(&self) -> &'static str {
+        "dewey_indexer"
     }
-    
-    fn display_name(&self) -> &'static str { 
-        "Dewey Indexer (Auto-TOC)" 
+
+    fn display_name(&self) -> &'static str {
+        "Dewey Indexer (Auto-TOC)"
     }
-    
-    fn version(&self) -> &'static str { 
-        "1.1.0" 
+
+    fn version(&self) -> &'static str {
+        "1.1.0"
     }
-    
+
     fn inject_js(&self) -> Option<&'static str> {
-        Some(r##"
+        Some(
+            r##"
             const tocContainer = document.querySelector('.mor-toc-container');
             const postBody = document.querySelector('.mor-post-body');
             
@@ -127,16 +130,15 @@ impl MorBloggerPlugin for DeweyIndexerPlugin {
                     tocContainer.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No document anchors found.</p>';
                 }
             }
-        "##)
+        "##,
+        )
     }
 
     fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
-        Some(vec![
-            XmlNode::new(
-                "{{PLUGIN_WIDGET_SIDEBAR_RIGHT}}",
-                "<div class='mor-toc-container'></div>"
-            )
-        ])
+        Some(vec![XmlNode::new(
+            "{{PLUGIN_WIDGET_SIDEBAR_RIGHT}}",
+            "<div class='mor-toc-container'></div>",
+        )])
     }
 }
 /// Adds collapsible left/right sidebar ("dock") toggles with persisted state.
@@ -156,7 +158,8 @@ impl MorBloggerPlugin for WorkspaceDocksPlugin {
     }
 
     fn inject_js(&self) -> Option<&'static str> {
-        Some(r##"
+        Some(
+            r##"
             (function() {
                 const body = document.body;
                 const leftToggle  = document.getElementById('mor-dock-left-toggle');
@@ -180,6 +183,7 @@ impl MorBloggerPlugin for WorkspaceDocksPlugin {
                 bindToggle(leftToggle,  'mor-dock-left-collapsed',  'mor-dock-left');
                 bindToggle(rightToggle, 'mor-dock-right-collapsed', 'mor-dock-right');
             })();
-        "##)
+        "##,
+        )
     }
 }

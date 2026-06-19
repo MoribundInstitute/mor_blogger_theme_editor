@@ -116,7 +116,12 @@ fn compile_collapsible(block: &LayoutBlock, sid: &str, out: &mut String) {
     );
 
     let widget_id = format!("Collapse{sid}");
-    push_html_widget(out, &widget_id, first_non_empty(&block.title, "Section"), &body);
+    push_html_widget(
+        out,
+        &widget_id,
+        first_non_empty(&block.title, "Section"),
+        &body,
+    );
 }
 
 fn compile_widget_row(widget_ids: &[String], out: &mut String) {

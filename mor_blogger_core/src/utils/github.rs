@@ -34,15 +34,22 @@ pub enum GitHubError {
     /// Device code expired; restart the flow from `request_device_code`.
     ExpiredToken,
     /// Fork creation returned an unexpected error status.
-    ForkFailed { message: String },
+    ForkFailed {
+        message: String,
+    },
     /// Fork was queued but did not become available within the polling window.
     ForkTimeout,
     /// A pull request from this fork+branch already exists upstream.
     PullRequestDuplicate,
     /// PR creation failed for a reason other than duplication.
-    PullRequestFailed { message: String },
+    PullRequestFailed {
+        message: String,
+    },
     /// Catch-all for unexpected GitHub API responses.
-    Api { status: u16, message: String },
+    Api {
+        status: u16,
+        message: String,
+    },
 }
 
 impl fmt::Display for GitHubError {
@@ -64,7 +71,11 @@ impl fmt::Display for GitHubError {
 
 impl std::error::Error for GitHubError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        if let Self::Http(e) = self { Some(e) } else { None }
+        if let Self::Http(e) = self {
+            Some(e)
+        } else {
+            None
+        }
     }
 }
 
@@ -242,11 +253,7 @@ impl GitHubClient {
         }
     }
 
-    async fn fork_repository(
-        &self,
-        owner: &str,
-        repo: &str,
-    ) -> Result<ForkInfo, GitHubError> {
+    async fn fork_repository(&self, owner: &str, repo: &str) -> Result<ForkInfo, GitHubError> {
         let url = format!("{}/repos/{}/{}/forks", API_ROOT, owner, repo);
         let resp = self
             .authed_post(&url)
@@ -346,7 +353,10 @@ impl GitHubClient {
         } else if status == 422 {
             let text = resp.text().await.unwrap_or_default();
             // GitHub signals a duplicate PR with 422 + message containing this phrase.
-            if text.to_ascii_lowercase().contains("pull request already exists") {
+            if text
+                .to_ascii_lowercase()
+                .contains("pull request already exists")
+            {
                 Err(GitHubError::PullRequestDuplicate)
             } else {
                 Err(GitHubError::PullRequestFailed { message: text })
@@ -421,10 +431,7 @@ pub async fn request_device_code(client_id: &str) -> Result<DeviceCodeResponse, 
 /// Step 2: Single poll attempt for an OAuth access token.
 /// Returns `Ok(token)` once the user completes authorisation.
 /// `AuthorizationPending` and `SlowDown` are expected transient states — keep polling.
-pub async fn poll_for_token(
-    client_id: &str,
-    device_code: &str,
-) -> Result<String, GitHubError> {
+pub async fn poll_for_token(client_id: &str, device_code: &str) -> Result<String, GitHubError> {
     let client = anon_client();
     let resp = client
         .post("https://github.com/login/oauth/access_token")

@@ -19,7 +19,7 @@ pub fn MainDock(
                 div {
                     class: "export-panel-header",
                     div {
-                        class: "preview-toolbar-group", 
+                        class: "preview-toolbar-group",
                         style: "margin-bottom: 8px; align-items: center;",
                         {tabs}
                     }

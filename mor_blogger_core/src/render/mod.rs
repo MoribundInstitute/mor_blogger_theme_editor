@@ -1,11 +1,11 @@
 pub mod ads;
 pub mod css_builder;
-pub mod tracking;
 pub mod pages;
 pub mod plugins;
 pub mod preview;
 pub mod template_resolver;
 pub mod theme;
+pub mod tracking;
 pub mod util;
 pub mod xml_generator;
 pub mod xml_parts;

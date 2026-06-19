@@ -138,7 +138,7 @@ html, body {{
   outline: none;
 }}
 
-.runelite-panel {{
+.mor-panel {{
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 88%, transparent), var(--bg-panel)) !important;
   border-color: var(--border-color) !important;

@@ -50,7 +50,7 @@ video {
   /* Flatten surfaces and enforce strict foreground/background contrast */
   .canvas-core, 
   .mor-post, 
-  .runelite-panel, 
+  .mor-panel, 
   .main-header, 
   .mor-footer, 
   .mor-catalog-dropdown,

@@ -28,7 +28,9 @@ fn esc(s: &str) -> String {
 }
 
 fn esc_attr(s: &str) -> String {
-    s.replace('&', "&amp;").replace('"', "&quot;").replace('\'', "&#39;")
+    s.replace('&', "&amp;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }
 
 fn pick_xml<'a>(registry: &'a [ComponentManifest], id: &str) -> &'a str {
@@ -45,8 +47,12 @@ fn resolve_module_xml(module_key: &str, config: &ThemeConfig) -> String {
         "header_variant" => pick_xml(HEADER_REGISTRY, &pack.header_variant).to_string(),
         "main_variant" => pick_xml(LAYOUT_REGISTRY, &pack.main_variant).to_string(),
         "content_variant" => pick_xml(CONTENT_REGISTRY, &pack.content_variant).to_string(),
-        "left_sidebar_variant" => pick_xml(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).to_string(),
-        "right_sidebar_variant" => pick_xml(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).to_string(),
+        "left_sidebar_variant" => {
+            pick_xml(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).to_string()
+        }
+        "right_sidebar_variant" => {
+            pick_xml(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).to_string()
+        }
         "footer_variant" => pick_xml(FOOTER_REGISTRY, &pack.footer_variant).to_string(),
         _ => String::new(),
     }
@@ -69,7 +75,9 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
     );
     let toc_title = mor_blogger_core::render::tracking::widget_title_h2(
         "HTML1",
-        config.template_pack.widget_title("HTML1", "Table of Contents"),
+        config
+            .template_pack
+            .widget_title("HTML1", "Table of Contents"),
     );
     let site_widget_title = mor_blogger_core::render::tracking::widget_title_h2(
         "HTML2",
@@ -80,9 +88,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
         .iter()
         .enumerate()
         .filter(|(_, l)| !l.label.trim().is_empty())
-        .map(|(i, l)| {
-            mor_blogger_core::render::tracking::menu_link_anchor(i, &l.url, &l.label)
-        })
+        .map(|(i, l)| mor_blogger_core::render::tracking::menu_link_anchor(i, &l.url, &l.label))
         .collect::<Vec<_>>()
         .join("");
 
@@ -108,7 +114,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
         ),
 
         "main_variant" => format!(r##"<div class="mor-workspace" style="height:100vh;">
-  <aside class="runelite-panel panel-left" style="display:flex!important;transform:none!important;position:relative!important;">
+  <aside class="mor-panel panel-left" style="display:flex!important;transform:none!important;position:relative!important;">
     <div class="panel-header"><span>Browse</span></div>
     <div class="panel-content sidebar-section">
       <div class="widget" data-block-id="Label1">{label_title}
@@ -121,7 +127,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
   <main class="canvas-core">
     <div class="canvas-content" style="padding:24px;color:var(--fg-muted);">— canvas area —</div>
   </main>
-  <aside class="runelite-panel panel-right" style="display:flex!important;transform:none!important;position:relative!important;">
+  <aside class="mor-panel panel-right" style="display:flex!important;transform:none!important;position:relative!important;">
     <div class="panel-header"><span>Contents</span></div>
     <div class="panel-content sidebar-section">
       <div class="widget" data-block-id="HTML1">{toc_title}</div>
@@ -153,7 +159,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
 
         "left_sidebar_variant" => format!(
             r##"<div style="display:flex;height:100vh;">
-  <aside class="runelite-panel panel-left" style="display:flex!important;transform:none!important;position:relative!important;width:300px!important;">
+  <aside class="mor-panel panel-left" style="display:flex!important;transform:none!important;position:relative!important;width:300px!important;">
     <div class="panel-header"><span>Browse</span><button class="panel-toggle">Close</button></div>
     <div class="panel-content sidebar-section">
       <div class="widget" data-block-id="Label1">{label_title}
@@ -175,7 +181,7 @@ fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
 
         "right_sidebar_variant" => format!(r##"<div style="display:flex;height:100vh;">
   <main style="flex:1;padding:24px;color:var(--fg-muted);">right sidebar isolated preview →</main>
-  <aside class="runelite-panel panel-right" style="display:flex!important;transform:none!important;position:relative!important;width:300px!important;">
+  <aside class="mor-panel panel-right" style="display:flex!important;transform:none!important;position:relative!important;width:300px!important;">
     <div class="panel-header"><span>Contents</span><button class="panel-toggle">Close</button></div>
     <div class="panel-content sidebar-section">
       <div class="widget" data-block-id="HTML1">{toc_title}
@@ -281,7 +287,11 @@ pub fn ModuleWorkbench(
     // Show user's scratchpad edits; fall back to the config-derived XML when pristine.
     let display_xml = use_memo(move || {
         let edited = edited_xml();
-        if edited.is_empty() { module_xml() } else { edited }
+        if edited.is_empty() {
+            module_xml()
+        } else {
+            edited
+        }
     });
 
     // Generate the isolated module preview HTML from the live config.

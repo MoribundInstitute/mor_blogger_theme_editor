@@ -10,9 +10,13 @@ use mor_blogger_core::config::BackgroundMode;
 
 // Ownership: Borrow preset. Return raw CSS string.
 pub fn build_css_vars(preset: &ThemePreset, is_light: bool) -> String {
-    let palette = if is_light { &preset.light } else { &preset.dark };
+    let palette = if is_light {
+        &preset.light
+    } else {
+        &preset.dark
+    };
     let colors = &palette.colors;
-    
+
     // Extract gradient data securely. Fallback to solid color if no gradient exists.
     let (grad_from, grad_to) = match &palette.background.mode {
         BackgroundMode::Gradient { from, to, .. } => (from.clone(), to.clone()),

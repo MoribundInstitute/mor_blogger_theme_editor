@@ -1,6 +1,6 @@
 //! Floating Plugin Manager window for the Moribund Theme Architect.
-use dioxus::prelude::*;
 use crate::app::config_bridge::{CompendiumManifest, PluginState};
+use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
 enum ManagerTab {
@@ -27,16 +27,22 @@ pub fn PluginManagerPanel(
     let compendium_read = compendium_registry.read();
 
     let installed_count = current_read.len();
-    
-    let updates_available: Vec<_> = current_read.iter().filter_map(|local| {
-        compendium_read.iter().find(|remote| remote.id == local.id).and_then(|remote| {
-            if remote.version != local.version {
-                Some((local.clone(), remote.clone()))
-            } else {
-                None
-            }
+
+    let updates_available: Vec<_> = current_read
+        .iter()
+        .filter_map(|local| {
+            compendium_read
+                .iter()
+                .find(|remote| remote.id == local.id)
+                .and_then(|remote| {
+                    if remote.version != local.version {
+                        Some((local.clone(), remote.clone()))
+                    } else {
+                        None
+                    }
+                })
         })
-    }).collect();
+        .collect();
 
     let updates_count = updates_available.len();
 

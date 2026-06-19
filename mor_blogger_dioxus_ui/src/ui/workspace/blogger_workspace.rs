@@ -1,13 +1,13 @@
-use mor_blogger_core::config::ThemeConfig;
-use mor_blogger_core::diagnostics::DiagnosticResult;
 use crate::app::layout_state::CenterView;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
 };
-use mor_blogger_core::render::PreviewTemplateMode;
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use crate::utils::clipboard::copy_to_clipboard;
 use dioxus::prelude::*;
+use mor_blogger_core::config::ThemeConfig;
+use mor_blogger_core::diagnostics::DiagnosticResult;
+use mor_blogger_core::render::PreviewTemplateMode;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 use super::main_dock::MainDock;
@@ -24,12 +24,27 @@ const PICKER_ICONS: [(&str, &str); 15] = [
     ("Chevron Right", "m9 18 6-6-6-6"),
     ("Home", "m3 11 9-8 9 8 M5 10v10h14V10 M9 20v-6h6v6"),
     ("Archive", "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z"),
-    ("Label", "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z"),
-    ("Share", "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13"),
-    ("User", "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8"),
-    ("Comment", "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"),
+    (
+        "Label",
+        "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z",
+    ),
+    (
+        "Share",
+        "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13",
+    ),
+    (
+        "User",
+        "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8",
+    ),
+    (
+        "Comment",
+        "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+    ),
     ("Arrow Up", "M12 19V5 M5 12l7-7 7 7"),
-    ("External Link", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3"),
+    (
+        "External Link",
+        "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14L21 3",
+    ),
 ];
 
 fn encode_path_to_mask(path_d: &str) -> String {
@@ -39,18 +54,18 @@ fn encode_path_to_mask(path_d: &str) -> String {
 
 fn set_icon_slot(config: &mut ThemeConfig, slot: &str, mask: String) {
     match slot {
-        "icons.panel_close"    => config.icons.panel_close    = mask,
-        "icons.search"         => config.icons.search         = mask,
-        "icons.menu"           => config.icons.menu           = mask,
-        "icons.sidebar_left"   => config.icons.sidebar_left   = mask,
-        "icons.sidebar_right"  => config.icons.sidebar_right  = mask,
-        "icons.archive"        => config.icons.archive        = mask,
-        "icons.label"          => config.icons.label          = mask,
-        "icons.share"          => config.icons.share          = mask,
-        "icons.user"           => config.icons.user           = mask,
-        "icons.comment"        => config.icons.comment        = mask,
-        "icons.arrow_up"       => config.icons.arrow_up       = mask,
-        "icons.external_link"  => config.icons.external_link  = mask,
+        "icons.panel_close" => config.icons.panel_close = mask,
+        "icons.search" => config.icons.search = mask,
+        "icons.menu" => config.icons.menu = mask,
+        "icons.sidebar_left" => config.icons.sidebar_left = mask,
+        "icons.sidebar_right" => config.icons.sidebar_right = mask,
+        "icons.archive" => config.icons.archive = mask,
+        "icons.label" => config.icons.label = mask,
+        "icons.share" => config.icons.share = mask,
+        "icons.user" => config.icons.user = mask,
+        "icons.comment" => config.icons.comment = mask,
+        "icons.arrow_up" => config.icons.arrow_up = mask,
+        "icons.external_link" => config.icons.external_link = mask,
         _ => {}
     }
 }
@@ -86,23 +101,23 @@ pub fn BloggerWorkspace(
     let error_count = diag.read().errors.len();
     let mut active_icon_picker = use_signal(|| None::<String>);
     let is_xray_active = use_signal(|| false);
-    
+
     let mut is_fullscreen = use_signal(|| false);
 
-    let export_xml = use_memo(move || {
-        match build_fresh_export_xml(&config_toml()) {
-            Ok(xml) => xml,
-            Err(err) => {
-                log::error!("Render failed: {}", err);
-                format!("Render failed: {}", err)
-            }
+    let export_xml = use_memo(move || match build_fresh_export_xml(&config_toml()) {
+        Ok(xml) => xml,
+        Err(err) => {
+            log::error!("Render failed: {}", err);
+            format!("Render failed: {}", err)
         }
     });
 
     let apply_text_edit = {
         let restore = on_restore.clone();
         move |target: String, val: String, cfg: String| {
-            if target.is_empty() { return; }
+            if target.is_empty() {
+                return;
+            }
             let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
             if let Some(widget_id) = target
                 .strip_prefix("widget.")
@@ -114,12 +129,12 @@ pub fn BloggerWorkspace(
                     .insert(widget_id.to_string(), val);
             } else {
                 match target.as_str() {
-                    "site.site_title"               => config.site.site_title = val,
-                    "site.site_subtitle"            => config.site.site_subtitle = val,
-                    "footer.footer_text"            => config.footer.footer_text = val,
-                    "typography.body_font_stack"    => config.typography.body_font_stack = val,
+                    "site.site_title" => config.site.site_title = val,
+                    "site.site_subtitle" => config.site.site_subtitle = val,
+                    "footer.footer_text" => config.footer.footer_text = val,
+                    "typography.body_font_stack" => config.typography.body_font_stack = val,
                     "typography.heading_font_stack" => config.typography.heading_font_stack = val,
-                    "typography.mono_font_stack"    => config.typography.mono_font_stack = val,
+                    "typography.mono_font_stack" => config.typography.mono_font_stack = val,
                     _ => return,
                 }
             }
@@ -130,7 +145,9 @@ pub fn BloggerWorkspace(
     let apply_widget_move = {
         let restore = on_restore.clone();
         move |id: String, dest: String, cfg: String| {
-            if id.is_empty() || dest.is_empty() { return; }
+            if id.is_empty() || dest.is_empty() {
+                return;
+            }
             let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
             config.template_pack.move_widget(&id, &dest);
             restore.call(config);
@@ -140,7 +157,9 @@ pub fn BloggerWorkspace(
     let apply_drop_svg = {
         let restore = on_restore.clone();
         move |(target, content): (String, String), cfg: String| {
-            if target.is_empty() || !is_svg(&content) { return; }
+            if target.is_empty() || !is_svg(&content) {
+                return;
+            }
             let mask = svg_to_data_uri(&content);
             let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
             set_icon_slot(&mut config, &target, mask);
@@ -149,9 +168,10 @@ pub fn BloggerWorkspace(
     };
 
     rsx! {
+        script { dangerous_inner_html: "window.addEventListener('dragover', function(e) {{ e.preventDefault(); }}, false); window.addEventListener('drop', function(e) {{ e.preventDefault(); }}, false);" }
         MainDock {
             hide_header: is_fullscreen(),
-            
+
             tabs: rsx! {
                 if !is_fullscreen() {
                     button {
@@ -164,7 +184,7 @@ pub fn BloggerWorkspace(
                     WorkspaceTabs { center_view }
                 }
             },
-            
+
             toolbar: if center_view() == CenterView::Preview && !is_fullscreen() {
                 Some(rsx! {
                     ViewportToolbar {
@@ -182,7 +202,7 @@ pub fn BloggerWorkspace(
                 div {
                     class: "editor-panel",
                     style: "position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);",
-                    
+
                     if center_view() == CenterView::Preview {
                         ViewportToolbar {
                             preview_viewport,
@@ -415,9 +435,10 @@ fn IconPickerModal(
     target: String,
     config_toml: String,
     on_close: EventHandler<()>,
-    on_restore: EventHandler<ThemeConfig>
+    on_restore: EventHandler<ThemeConfig>,
 ) -> Element {
     let mut status_msg = use_signal(String::new);
+    let mut raw_svg_input = use_signal(String::new);
 
     rsx! {
         div {
@@ -438,18 +459,49 @@ fn IconPickerModal(
                 div { style: "font-size: 0.85em; color: var(--fg-muted); margin-bottom: 16px;", "Target slot: ", code { style: "color: var(--accent);", "{target}" } }
                 if !status_msg().is_empty() { div { class: "export-status", "{status_msg}" } }
 
-                h4 { style: "margin: 0 0 10px 0; font-size: 0.85em; color: var(--fg-base); text-transform: uppercase; letter-spacing: 0.05em;", "Custom File" }
-                div {
-                    style: "margin-bottom: 24px;",
+                h4 { style: "margin: 0 0 10px 0; font-size: 0.85em; color: var(--fg-base); text-transform: uppercase; letter-spacing: 0.05em;", "Paste Raw SVG" }
+                div { style: "display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;",
+                    textarea {
+                        class: "editor-textarea",
+                        style: "width: 100%; box-sizing: border-box; min-height: 80px; resize: vertical; font-family: monospace; font-size: 11px;",
+                        placeholder: "Paste raw <svg> code here...",
+                        value: "{raw_svg_input}",
+                        oninput: move |evt| raw_svg_input.set(evt.value()),
+                    }
                     button {
-                        class: "editor-button", style: "width: 100%; justify-content: center;",
+                        class: "editor-button",
+                        style: "justify-content: center;",
                         onclick: {
-                            let target_slot = target.clone();
-                            let restore = on_restore.clone();
+                            let icon_target = target.clone();
                             let toml_str = config_toml.clone();
+                            let restore = on_restore.clone();
                             move |_| {
-                                let slot = target_slot.clone();
-                                let cfg = toml_str.clone();
+                                let raw_svg = raw_svg_input().trim().to_string();
+                                if raw_svg.is_empty() || !is_svg(&raw_svg) {
+                                    status_msg.set("Error: Invalid or empty SVG.".to_string());
+                                    return;
+                                }
+                                let mask = svg_to_data_uri(&raw_svg);
+                                let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
+                                set_icon_slot(&mut config, &icon_target, mask);
+                                restore.call(config);
+                                status_msg.set("SVG applied!".to_string());
+                                raw_svg_input.set(String::new());
+                            }
+                        },
+                        "Apply Pasted SVG"
+                    }
+                    button {
+                        class: "editor-button",
+                        style: "justify-content: center;",
+                        onclick: {
+                            let icon_target = target.clone();
+                            let toml_str = config_toml.clone();
+                            let restore = on_restore.clone();
+                            move |_| {
+                                let slot = icon_target.clone();
+                                let cfg_str = toml_str.clone();
+                                let apply = restore.clone();
                                 spawn(async move {
                                     if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
                                         let bytes = file.read().await;
@@ -459,15 +511,15 @@ fn IconPickerModal(
                                             return;
                                         }
                                         let mask = svg_to_data_uri(&raw_svg);
-                                        let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
+                                        let mut config = toml::from_str::<ThemeConfig>(&cfg_str).unwrap_or_default();
                                         set_icon_slot(&mut config, &slot, mask);
-                                        restore.call(config);
-                                        status_msg.set(format!("Custom SVG applied from {}", file.file_name()));
+                                        apply.call(config);
+                                        status_msg.set(format!("SVG applied from {}", file.file_name()));
                                     }
                                 });
                             }
                         },
-                        "Browse System for .svg..."
+                        "Browse OS for .svg..."
                     }
                 }
 

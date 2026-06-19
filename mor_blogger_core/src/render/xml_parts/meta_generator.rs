@@ -1,7 +1,7 @@
-use crate::config::ThemeConfig;
-use crate::render::util::{escape_attr, first_non_empty};
 use crate::config::fonts::build_google_font_imports;
+use crate::config::ThemeConfig;
 use crate::render::ads::render_ads_head_script;
+use crate::render::util::{escape_attr, first_non_empty};
 
 pub fn render_meta_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let site_home_url = first_non_empty(&config.site.home_url, "/");
@@ -14,14 +14,23 @@ pub fn render_meta_sockets(mut xml: String, config: &ThemeConfig) -> String {
         &config.typography.mono_font_stack,
     ]);
 
-    xml = xml.replace("{{META_DESCRIPTION}}", &escape_attr(&config.seo.meta_description));
+    xml = xml.replace(
+        "{{META_DESCRIPTION}}",
+        &escape_attr(&config.seo.meta_description),
+    );
     xml = xml.replace("{{META_KEYWORDS}}", &escape_attr(&config.seo.meta_keywords));
     xml = xml.replace("{{CUSTOM_ROBOTS}}", &escape_attr(&config.seo.custom_robots));
     xml = xml.replace("{{AUTHOR_NAME}}", &escape_attr(&config.seo.author_name));
-    xml = xml.replace("{{THEME_COLOR}}", &escape_attr(&config.colors.bg_panel.to_css()));
-    
+    xml = xml.replace(
+        "{{THEME_COLOR}}",
+        &escape_attr(&config.colors.bg_panel.to_css()),
+    );
+
     xml = xml.replace("{{OG_IMAGE_URL}}", &escape_attr(social_card_image_url));
-    xml = xml.replace("{{SOCIAL_CARD_IMAGE_URL}}", &escape_attr(social_card_image_url));
+    xml = xml.replace(
+        "{{SOCIAL_CARD_IMAGE_URL}}",
+        &escape_attr(social_card_image_url),
+    );
 
     xml = xml.replace("{{FAVICON_URL}}", &escape_attr(favicon_url));
     xml = xml.replace("{{FAVICON_16_URL}}", &escape_attr(favicon_url));

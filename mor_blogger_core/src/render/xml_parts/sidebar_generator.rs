@@ -1,16 +1,30 @@
 use crate::config::ThemeConfig;
 use crate::render::ads::render_ads_widget_sidebar;
+use crate::render::css_builder::{icon_or_default, DEFAULT_ICON_PANEL_CLOSE};
 
 pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str) -> String {
+    let close_icon = icon_or_default(&config.icons.panel_close, DEFAULT_ICON_PANEL_CLOSE)
+        .replace('"', "'");
+    xml = xml.replace("{{ICON_PANEL_CLOSE}}", &close_icon);
+
     if side == "LEFT" {
         xml = xml.replace("{{LEFT_PANEL_TITLE}}", "Browse");
-        xml = xml.replace("{{LEFT_PANEL_CLOSE_LABEL}}", "<span class=\"visually-hidden\">Close</span>");
+        xml = xml.replace(
+            "{{LEFT_PANEL_CLOSE_LABEL}}",
+            "<span class=\"visually-hidden\">Close</span>",
+        );
     } else {
         xml = xml.replace("{{RIGHT_PANEL_TITLE}}", "Contents");
-        xml = xml.replace("{{RIGHT_PANEL_CLOSE_LABEL}}", "<span class=\"visually-hidden\">Close</span>");
+        xml = xml.replace(
+            "{{RIGHT_PANEL_CLOSE_LABEL}}",
+            "<span class=\"visually-hidden\">Close</span>",
+        );
     }
 
-    xml = xml.replace("{{WIDGET_ADSENSE_SIDEBAR}}", &render_ads_widget_sidebar(&config.ads));
+    xml = xml.replace(
+        "{{WIDGET_ADSENSE_SIDEBAR}}",
+        &render_ads_widget_sidebar(&config.ads),
+    );
 
     xml = xml.replace(
         "{{LABEL_WIDGET_TITLE}}",
@@ -37,11 +51,16 @@ pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str)
 
     xml = xml.replace(
         "{{RIGHT_WIDGET_TITLE}}",
-        config.template_pack.widget_title("HTML1", "Table of Contents"),
+        config
+            .template_pack
+            .widget_title("HTML1", "Table of Contents"),
     );
     xml = xml.replace("{{TOC_LOADING_MESSAGE}}", "Building contents...");
     xml = xml.replace("{{TOC_WAITING_MESSAGE}}", "Waiting for document...");
-    xml = xml.replace("{{TOC_EMPTY_MESSAGE}}", "No anchor points found in document.");
+    xml = xml.replace(
+        "{{TOC_EMPTY_MESSAGE}}",
+        "No anchor points found in document.",
+    );
     xml = xml.replace("{{TOC_HEADING_SELECTOR}}", "h2, h3, h4, h5");
     xml = xml.replace("{{TOC_INDENT_STEP}}", "15");
     xml = xml.replace("{{TOC_PRIMARY_MARKER}}", ">");

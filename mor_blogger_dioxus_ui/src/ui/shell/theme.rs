@@ -99,6 +99,30 @@ pub struct MorTheme {
     pub destructive: String,
     pub success: String,
     pub warning: String,
+    #[serde(default)]
+    pub enable_image_borders: bool,
+    #[serde(default)]
+    pub custom_border_url: Option<String>,
+    #[serde(default = "default_slice")]
+    pub svg_border_slice: String,
+    #[serde(default = "default_image_width")]
+    pub image_border_width: String,
+    #[serde(default = "default_true")]
+    pub target_sidebars: bool,
+    #[serde(default)]
+    pub target_canvas: bool,
+}
+
+fn default_slice() -> String {
+    "30".to_string()
+}
+
+fn default_image_width() -> String {
+    "20px".to_string()
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for MorTheme {
@@ -125,6 +149,12 @@ impl Default for MorTheme {
             destructive: "#ff5555".to_string(),
             success: "#50fa7b".to_string(),
             warning: "#f1fa8c".to_string(),
+            enable_image_borders: false,
+            custom_border_url: None,
+            svg_border_slice: default_slice(),
+            image_border_width: default_image_width(),
+            target_sidebars: default_true(),
+            target_canvas: false,
         }
     }
 }
@@ -139,9 +169,19 @@ impl MorTheme {
     }
 
     pub fn to_css_vars(&self) -> String {
+        let image_vars = if self.enable_image_borders && self.custom_border_url.is_some() {
+            let url = self.custom_border_url.as_ref().unwrap();
+            format!(
+                "  --mor-border-image: url(\"{}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};",
+                url, self.svg_border_slice, self.image_border_width
+            )
+        } else {
+            "  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);"
+                .to_string()
+        };
         format!(
-            ":root {{\n  --mor-bg: {};\n  --mor-panel: {};\n  --mor-header: {};\n  --mor-text: {};\n  --mor-text-muted: {};\n  --mor-border: {};\n  --mor-border-light: {};\n  --mor-accent: {};\n  --mor-accent-hover: {};\n  --mor-btn: {};\n  --mor-btn-hover: {};\n  --mor-font: {};\n  --mor-font-size: {};\n  --mor-font-h1: {};\n  --mor-padding: {};\n  --mor-radius: {};\n  --mor-destructive: {};\n  --mor-success: {};\n  --mor-warning: {};\n}}",
-            self.bg, self.panel, self.header, self.text, self.text_muted, self.border, self.border_light, self.accent, self.accent_hover, self.btn, self.btn_hover, self.font_family, self.font_size_base, self.font_size_h1, self.padding_base, self.border_radius, self.destructive, self.success, self.warning
+            ":root {{\n  --mor-bg: {};\n  --mor-panel: {};\n  --mor-header: {};\n  --mor-text: {};\n  --mor-text-muted: {};\n  --mor-border: {};\n  --mor-border-light: {};\n  --mor-accent: {};\n  --mor-accent-hover: {};\n  --mor-btn: {};\n  --mor-btn-hover: {};\n  --mor-font: {};\n  --mor-font-size: {};\n  --mor-font-h1: {};\n  --mor-padding: {};\n  --mor-radius: {};\n  --mor-destructive: {};\n  --mor-success: {};\n  --mor-warning: {};\n{}\n}}",
+            self.bg, self.panel, self.header, self.text, self.text_muted, self.border, self.border_light, self.accent, self.accent_hover, self.btn, self.btn_hover, self.font_family, self.font_size_base, self.font_size_h1, self.padding_base, self.border_radius, self.destructive, self.success, self.warning, image_vars
         )
     }
 }
@@ -510,8 +550,17 @@ pub fn MorStyleProvider(
 ) -> Element {
     let base = MorTheme::from_toml(&theme_toml).unwrap_or_default();
     let prefs = crate::app::config_bridge::EditorPrefs::load();
-    let theme = crate::app::config_bridge::resolve_effective_theme(base, &prefs.custom_editor_colors);
-    let css_vars = theme.to_css_vars();
+    let theme =
+        crate::app::config_bridge::resolve_effective_theme(base, &prefs.custom_editor_colors);
+    let mut css_vars = theme.to_css_vars();
+    if let Some(ref c) = prefs.custom_editor_colors.panel_title_color {
+        let mut safe_css = css_vars.trim_end().to_string();
+        if safe_css.ends_with("}") {
+            safe_css.pop();
+            safe_css.push_str(&format!("  --panel-title-color: {};\n}}", c));
+            css_vars = safe_css;
+        }
+    }
 
     rsx! {
         style { "{css_vars}" }

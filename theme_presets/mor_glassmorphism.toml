@@ -121,7 +121,7 @@ html::after {
    template wraps sidebars in containers with `left` or `right`
    in the class/id, the asymmetric overrides below kick in.
    ============================================================ */
-.runelite-panel,
+.mor-panel,
 .mor-catalog-dropdown {
   background: var(--glass-subtle) !important;
   backdrop-filter: blur(14px) saturate(115%);
@@ -134,24 +134,24 @@ html::after {
 /* Asymmetric overrides for edge-hugging sidebars.
    Broad selectors so they catch whatever class scheme the base
    template uses ([id*="left"], .sidebar-left, .left-sidebar). */
-[id*="sidebar-left"] .runelite-panel,
-[class*="sidebar-left"] .runelite-panel,
-[id*="left-sidebar"] .runelite-panel,
-[class*="left-sidebar"] .runelite-panel {
+[id*="sidebar-left"] .mor-panel,
+[class*="sidebar-left"] .mor-panel,
+[id*="left-sidebar"] .mor-panel,
+[class*="left-sidebar"] .mor-panel {
   border-radius: 0 10px 10px 0 !important;
   border-left: none !important;
 }
 
-[id*="sidebar-right"] .runelite-panel,
-[class*="sidebar-right"] .runelite-panel,
-[id*="right-sidebar"] .runelite-panel,
-[class*="right-sidebar"] .runelite-panel {
+[id*="sidebar-right"] .mor-panel,
+[class*="sidebar-right"] .mor-panel,
+[id*="right-sidebar"] .mor-panel,
+[class*="right-sidebar"] .mor-panel {
   border-radius: 10px 0 0 10px !important;
   border-right: none !important;
 }
 
 /* Panel internals stay flat */
-.runelite-panel .panel-content,
+.mor-panel .panel-content,
 .canvas-core .panel-content {
   background: transparent !important;
   border: none !important;
@@ -333,7 +333,7 @@ select:focus {
 @media (max-width: 768px) {
   .main-header { backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); }
   .mor-post    { backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%); }
-  .runelite-panel, .mor-footer, .mor-catalog-dropdown {
+  .mor-panel, .mor-footer, .mor-catalog-dropdown {
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   body::before, body::after { filter: blur(55px); }
@@ -342,7 +342,7 @@ select:focus {
 /* ---- Fallback ---------------------------------------------- */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .mor-post,
-  .runelite-panel,
+  .mor-panel,
   .main-header,
   .mor-footer,
   .mor-catalog-dropdown {

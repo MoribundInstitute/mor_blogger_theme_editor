@@ -1,4 +1,4 @@
-.runelite-panel { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--bg-workspace); border: var(--panel-border-width) solid var(--theme-border-color); border-image: var(--theme-border-image); display: flex; flex-direction: column; flex-shrink: 0; transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out; }
+.mor-panel { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--bg-workspace); border-style: solid; border-color: var(--theme-border-color); border-width: var(--mor-border-width-img); border-image: var(--theme-border-image); display: flex; flex-direction: column; flex-shrink: 0; transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out; border-image-source: var(--mor-border-image, none); border-image-slice: var(--mor-border-slice, 0); border-image-repeat: round; }
 .panel-right { border-image: var(--theme-border-image); }
 .panel-left.is-collapsed { margin-left: calc(var(--sidebar-width) * -1); }
 .panel-right.is-collapsed { margin-right: calc(var(--sidebar-width) * -1); }

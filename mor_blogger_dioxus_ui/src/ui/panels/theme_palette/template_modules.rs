@@ -2,8 +2,8 @@
 //! Allows users to hot-swap structural XML components via a docked compact view
 //! or an expanded, floating grid layout.
 
-use mor_blogger_core::config::ThemeConfig;
 use dioxus::prelude::*;
+use mor_blogger_core::config::ThemeConfig;
 
 const MODULE_FLOATING_DRAG_JS: &str = r#"
 (function () {
@@ -160,33 +160,89 @@ pub fn TemplateModulesFloatingWindow(
 
     // Data maps for the visual grid
     let headers = vec![
-        ModuleDef { id: "mor", name: "Mor Baseline", desc: "The standard multi-row header with centered navigation." },
-        ModuleDef { id: "gtk_headerbar", name: "GTK4 Headerbar", desc: "A compact, desktop-style unified titlebar and navigation row." }
+        ModuleDef {
+            id: "mor",
+            name: "Mor Baseline",
+            desc: "The standard multi-row header with centered navigation.",
+        },
+        ModuleDef {
+            id: "gtk_headerbar",
+            name: "GTK4 Headerbar",
+            desc: "A compact, desktop-style unified titlebar and navigation row.",
+        },
     ];
     let main_layouts = vec![
-        ModuleDef { id: "sidebars", name: "Three Column (Sidebars)", desc: "Classic blog layout with left and right docking panels." },
-        ModuleDef { id: "single_column", name: "Single Column", desc: "A focused, distraction-free reading environment without sidebars." }
+        ModuleDef {
+            id: "sidebars",
+            name: "Three Column (Sidebars)",
+            desc: "Classic blog layout with left and right docking panels.",
+        },
+        ModuleDef {
+            id: "single_column",
+            name: "Single Column",
+            desc: "A focused, distraction-free reading environment without sidebars.",
+        },
     ];
     let contents = vec![
-        ModuleDef { id: "blog_standard", name: "Standard Feed", desc: "Chronological vertical list of full posts." },
-        ModuleDef { id: "mor_magazine", name: "Magazine", desc: "A large featured hero post followed by a structured grid." },
-        ModuleDef { id: "mor_masonry", name: "Masonry", desc: "A dense, interlocking Pinterest-style grid of post cards." },
-        ModuleDef { id: "mor_minimal", name: "Minimal", desc: "Stripped-down, text-heavy list for rapid scanning." }
+        ModuleDef {
+            id: "blog_standard",
+            name: "Standard Feed",
+            desc: "Chronological vertical list of full posts.",
+        },
+        ModuleDef {
+            id: "mor_magazine",
+            name: "Magazine",
+            desc: "A large featured hero post followed by a structured grid.",
+        },
+        ModuleDef {
+            id: "mor_masonry",
+            name: "Masonry",
+            desc: "A dense, interlocking Pinterest-style grid of post cards.",
+        },
+        ModuleDef {
+            id: "mor_minimal",
+            name: "Minimal",
+            desc: "Stripped-down, text-heavy list for rapid scanning.",
+        },
     ];
-    let left_bars = vec![
-        ModuleDef { id: "blogger_left", name: "Blogger Widgets", desc: "Native Blogger widget wrappers for Archives and Labels." }
-    ];
-    let right_bars = vec![
-        ModuleDef { id: "toc_right", name: "Table of Contents", desc: "An empty socket ready for the Dewey Indexer plugin to inject the TOC." }
-    ];
+    let left_bars = vec![ModuleDef {
+        id: "blogger_left",
+        name: "Blogger Widgets",
+        desc: "Native Blogger widget wrappers for Archives and Labels.",
+    }];
+    let right_bars = vec![ModuleDef {
+        id: "toc_right",
+        name: "Table of Contents",
+        desc: "An empty socket ready for the Dewey Indexer plugin to inject the TOC.",
+    }];
     let footers = vec![
-        ModuleDef { id: "mega", name: "Mega Grid", desc: "Massive 6-column link directory for institutional sites." },
-        ModuleDef { id: "basic", name: "Basic Columns", desc: "A standard 4-column layout for links and resources." },
-        ModuleDef { id: "compact", name: "Compact Centered", desc: "A single minimal line for copyright and legal links." }
+        ModuleDef {
+            id: "mega",
+            name: "Mega Grid",
+            desc: "Massive 6-column link directory for institutional sites.",
+        },
+        ModuleDef {
+            id: "basic",
+            name: "Basic Columns",
+            desc: "A standard 4-column layout for links and resources.",
+        },
+        ModuleDef {
+            id: "compact",
+            name: "Compact Centered",
+            desc: "A single minimal line for copyright and legal links.",
+        },
     ];
     let scripts = vec![
-        ModuleDef { id: "mor_panels", name: "Mor Sidebars", desc: "Includes the core framework for mobile collapsible sidebars." },
-        ModuleDef { id: "minimal", name: "Static Layout", desc: "No panel toggle behaviors. Purely static CSS grids." }
+        ModuleDef {
+            id: "mor_panels",
+            name: "Mor Sidebars",
+            desc: "Includes the core framework for mobile collapsible sidebars.",
+        },
+        ModuleDef {
+            id: "minimal",
+            name: "Static Layout",
+            desc: "No panel toggle behaviors. Purely static CSS grids.",
+        },
     ];
 
     let current_selection = match active_category() {
@@ -220,7 +276,7 @@ pub fn TemplateModulesFloatingWindow(
                     border: 1px solid rgba(236, 231, 218, 0.22); border-radius: 4px; \
                     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.45); \
                     font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Times New Roman', serif;",
-            
+
             script { "{MODULE_FLOATING_DRAG_JS}" }
 
             // Title bar
@@ -249,12 +305,12 @@ pub fn TemplateModulesFloatingWindow(
             // Split Layout
             div {
                 style: "flex: 1 1 auto; display: flex; min-height: 0;",
-                
+
                 // Left Navigation
                 nav {
                     style: "flex: 0 0 220px; display: flex; flex-direction: column; \
                             border-right: 1px solid rgba(236, 231, 218, 0.18); padding: 18px;",
-                    
+
                     div { style: "display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto;",
                         CategoryButton { label: "Header Variant", active: active_category() == ModuleCategory::Header, on_click: move |_| active_category.set(ModuleCategory::Header) }
                         CategoryButton { label: "Main Canvas", active: active_category() == ModuleCategory::MainCanvas, on_click: move |_| active_category.set(ModuleCategory::MainCanvas) }
@@ -290,7 +346,7 @@ pub fn TemplateModulesFloatingWindow(
                 // Right Grid Area
                 div {
                     style: "flex: 1 1 auto; overflow-y: auto; padding: 18px; background: #0f0e0c;",
-                    
+
                     div {
                         style: "display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;",
                         for module in active_list {
@@ -298,7 +354,7 @@ pub fn TemplateModulesFloatingWindow(
                                 key: "{module.id}",
                                 style: format!("display: flex; flex-direction: column; justify-content: space-between; \
                                                 padding: 16px; background: #16140f; border-radius: 4px; cursor: pointer; \
-                                                transition: all 0.2s; border: 2px solid {};", 
+                                                transition: all 0.2s; border: 2px solid {};",
                                                 if current_selection == module.id { "#ece7da" } else { "rgba(236, 231, 218, 0.12)" }),
                                 onclick: {
                                     let id = module.id;
@@ -324,7 +380,7 @@ pub fn TemplateModulesFloatingWindow(
                                     h3 { style: "margin: 0 0 6px; font-size: 1.05rem; font-weight: 600; color: #f4f1ea;", "{module.name}" }
                                     p { style: "margin: 0; font-size: 0.85rem; line-height: 1.5; color: #a8a294;", "{module.desc}" }
                                 }
-                                
+
                                 div {
                                     style: "margin-top: 16px; font-family: monospace; font-size: 0.75rem; text-align: right;",
                                     if current_selection == module.id {
@@ -343,12 +399,16 @@ pub fn TemplateModulesFloatingWindow(
 }
 
 #[component]
-fn CategoryButton(label: &'static str, active: bool, on_click: EventHandler<MouseEvent>) -> Element {
+fn CategoryButton(
+    label: &'static str,
+    active: bool,
+    on_click: EventHandler<MouseEvent>,
+) -> Element {
     rsx! {
         button {
             style: format!("text-align: left; padding: 8px 12px; border: none; cursor: pointer; border-radius: 3px; \
                             font-family: inherit; font-size: 0.95rem; transition: background 0.2s; \
-                            background: {}; color: {}; font-weight: {};", 
+                            background: {}; color: {}; font-weight: {};",
                             if active { "rgba(236, 231, 218, 0.08)" } else { "transparent" },
                             if active { "#f4f1ea" } else { "#a8a294" },
                             if active { "600" } else { "400" }),

@@ -234,7 +234,7 @@ body::before {
 
 /* Side panels (Browse / Contents): treat them like a "stories on this
    page" sidebar in a print paper. Hairline border, no glow. */
-.runelite-panel,
+.mor-panel,
 .panel-content,
 .mor-catalog-dropdown {
   background: var(--bg-panel) !important;

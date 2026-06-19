@@ -1,9 +1,9 @@
-pub mod prefs;
 pub mod ads;
 pub mod defaults;
 pub mod fonts;
 pub mod gtk_theme;
 pub mod pages;
+pub mod prefs;
 pub mod styling;
 pub mod template_pack;
 
@@ -20,6 +20,18 @@ pub use gtk_theme::*;
 pub use pages::*;
 pub use styling::*;
 pub use template_pack::*;
+
+fn default_slice() -> String {
+    "30".to_string()
+}
+
+fn default_image_width() -> String {
+    "20px".to_string()
+}
+
+fn default_true() -> bool {
+    true
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -46,6 +58,18 @@ pub struct ThemeConfig {
     pub preset_css: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub active_preset_id: Option<String>,
+    #[serde(default)]
+    pub enable_image_borders: bool,
+    #[serde(default)]
+    pub custom_border_url: Option<String>,
+    #[serde(default = "default_slice")]
+    pub svg_border_slice: String,
+    #[serde(default = "default_image_width")]
+    pub image_border_width: String,
+    #[serde(default = "default_true")]
+    pub target_sidebars: bool,
+    #[serde(default)]
+    pub target_canvas: bool,
 }
 
 impl Default for ThemeConfig {
@@ -77,6 +101,12 @@ impl Default for ThemeConfig {
             blocks: Vec::new(),
             preset_css: String::new(),
             active_preset_id: None,
+            enable_image_borders: false,
+            custom_border_url: None,
+            svg_border_slice: default_slice(),
+            image_border_width: default_image_width(),
+            target_sidebars: default_true(),
+            target_canvas: false,
         }
     }
 }

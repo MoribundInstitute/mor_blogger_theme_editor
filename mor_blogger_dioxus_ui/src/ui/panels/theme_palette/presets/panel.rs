@@ -86,6 +86,10 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut pasted_theme = use_signal(String::new);
     let mut import_status = use_signal(String::new);
     let mut last_imported_gtk = use_signal(|| None::<ImportedGtkPreset>);
+    let mut show_advanced = use_signal(|| false);
+    let mut modal_pos = use_signal(|| (100.0f64, 100.0f64));
+    let mut is_dragging = use_signal(|| false);
+    let mut drag_offset = use_signal(|| (0.0f64, 0.0f64));
 
     let active_label = active()
         .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
@@ -180,35 +184,81 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     }
 
                     button {
-                        class: "editor-button editor-button-small",
-                        onclick: move |_| {
-                            match choose_gtk_theme(&current_config_for_gtk) {
-                                Ok(Some(imported)) => {
-                                    let status = format!("Imported GTK theme '{}' from {}. {}", imported.name, imported.source_dir.display(), imported.report.short_status());
-                                    on_apply_gtk_theme.call(imported.config.clone());
-                                    active.set(None);
-                                    last_imported_gtk.set(Some(imported));
-                                    import_status.set(status);
-                                }
-                                Ok(None) => {}
-                                Err(err) => import_status.set(format!("GTK import failed: {}", err)),
-                            }
-                        },
-                        "Import GTK4"
-                    }
-
-                    a {
-                        class: "editor-button editor-button-small",
-                        href: "https://www.gnome-look.org/browse/",
-                        target: "_blank",
-                        title: "Download GTK themes to import",
-                        "Get GTK4"
+                        class: if show_advanced() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        onclick: move |_| show_advanced.set(!show_advanced()),
+                        "⚙ Advanced"
                     }
 
                     button {
                         class: if show_undocked_presets() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
                         onclick: move |_| show_undocked_presets.set(!show_undocked_presets()),
                         if show_undocked_presets() { "Dock Presets" } else { "Undock Presets" }
+                    }
+                }
+            }
+
+            if show_advanced() {
+                div {
+                    style: "position: fixed; left: {modal_pos().0}px; top: {modal_pos().1}px; z-index: 100; background-color: var(--bg-panel); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; gap: 8px; min-width: 200px;",
+                    onmousedown: move |e| {
+                        is_dragging.set(true);
+                        let coords = e.client_coordinates();
+                        drag_offset.set((coords.x - modal_pos().0, coords.y - modal_pos().1));
+                    },
+                    onmousemove: move |e| {
+                        if is_dragging() {
+                            let coords = e.client_coordinates();
+                            modal_pos.set((coords.x - drag_offset().0, coords.y - drag_offset().1));
+                        }
+                    },
+                    onmouseup: move |_| is_dragging.set(false),
+                    onmouseleave: move |_| is_dragging.set(false),
+                    div {
+                        style: "background: var(--bg-elevated); padding: 8px; cursor: grab; font-weight: bold; border-bottom: 1px solid var(--border-color); user-select: none;",
+                        "⚙ Advanced Options"
+                    }
+                    div { style: "padding: 10px; display: flex; flex-direction: column; gap: 8px;",
+                        button {
+                            class: "editor-button editor-button-small",
+                            onclick: move |_| {
+                                match choose_gtk_theme(&current_config_for_gtk) {
+                                    Ok(Some(imported)) => {
+                                        let status = format!("Imported GTK theme '{}' from {}. {}", imported.name, imported.source_dir.display(), imported.report.short_status());
+                                        on_apply_gtk_theme.call(imported.config.clone());
+                                        active.set(None);
+                                        last_imported_gtk.set(Some(imported));
+                                        import_status.set(status);
+                                    }
+                                    Ok(None) => {}
+                                    Err(err) => import_status.set(format!("GTK import failed: {}", err)),
+                                }
+                            },
+                            "Import GTK4"
+                        }
+                        a {
+                            class: "editor-button editor-button-small",
+                            href: "https://www.gnome-look.org/browse/",
+                            target: "_blank",
+                            "Get GTK4"
+                        }
+                        button {
+                            class: "editor-button editor-button-small",
+                            onclick: move |_| {
+                                let _ = std::process::Command::new("xdg-open").arg("theme_presets").spawn();
+                            },
+                            "Edit Presets (.toml)"
+                        }
+                        a {
+                            class: "editor-button editor-button-small",
+                            href: "https://mor-theme-compendium.blogspot.com/",
+                            target: "_blank",
+                            "Theme Compendium"
+                        }
+                        button {
+                            class: "editor-button editor-button-small",
+                            onclick: move |_| show_advanced.set(false),
+                            "Close"
+                        }
                     }
                 }
             }

@@ -25,7 +25,7 @@ body {
 /* CONTAINER surfaces (outer cards) — get the full Web 2.0 treatment */
 .canvas-core,
 .mor-post,
-.runelite-panel,
+.mor-panel,
 .main-header,
 .mor-footer,
 .mor-catalog-dropdown {
@@ -40,7 +40,7 @@ body {
 
 /* CONTENT surfaces inside containers — flat, transparent,
    or softly inset. Let the outer container do the heavy lifting. */
-.runelite-panel .panel-content,
+.mor-panel .panel-content,
 .canvas-core .panel-content {
   background: transparent !important;
   border: none !important;

@@ -23,7 +23,6 @@ pub fn shortcuts_path() -> std::path::PathBuf {
         .join("shortcuts.toml")
 }
 
-
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct RenderPrefs {
     #[serde(default)]

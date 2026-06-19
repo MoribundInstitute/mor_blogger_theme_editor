@@ -2,7 +2,7 @@ pub mod background_panel;
 pub mod buttons_panel;
 pub mod colors_panel;
 pub mod effects_panel_2;
-pub mod icons_panel;
+pub mod frames_panel;
 pub mod presets;
 pub mod static_pages_panel;
 pub mod template_modules;

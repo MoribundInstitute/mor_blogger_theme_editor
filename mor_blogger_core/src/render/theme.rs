@@ -93,5 +93,8 @@ pub fn save_bundle_to_disk(
     zip.finish()
         .map_err(|e| format!("Failed to finalize zip: {}", e))?;
 
-    Ok(format!("System success: Bundle exported to {:?}", file_path))
+    Ok(format!(
+        "System success: Bundle exported to {:?}",
+        file_path
+    ))
 }

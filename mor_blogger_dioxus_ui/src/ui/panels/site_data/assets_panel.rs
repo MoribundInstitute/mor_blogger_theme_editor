@@ -1,6 +1,6 @@
-use mor_blogger_core::config::ThemeConfig;
 use crate::ui::components::inputs::{EditorCard, EditorInput};
 use dioxus::prelude::*;
+use mor_blogger_core::config::ThemeConfig;
 
 #[component]
 pub fn AssetsPanel(

@@ -1,2 +1,2 @@
-pub mod io;
 pub mod clipboard;
+pub mod io;

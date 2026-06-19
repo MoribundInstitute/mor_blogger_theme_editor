@@ -30,10 +30,11 @@ fn main() {
                 .with_inner_size(LogicalSize::new(1280.0, 800.0))
                 .with_decorations(is_native)
                 .with_transparent(!is_native),
-        );
+        )
+        .with_disable_drag_drop_handler(true);
 
     std::env::set_var("MOR_ACTIVE_UI_MODE", mode);
-    
+
     // THE FIX: Modern Dioxus 0.7 LaunchBuilder
     LaunchBuilder::new().with_cfg(cfg).launch(app::App);
 }

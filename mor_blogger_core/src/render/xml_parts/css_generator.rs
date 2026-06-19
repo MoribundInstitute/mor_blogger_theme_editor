@@ -318,6 +318,10 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     );
     xml = xml.replace("{{COLOR_ACCENT_WASH}}", &escape_attr(&color_accent_wash));
     xml = xml.replace("{{FLUID_GLOW_CSS}}", &fluid_glow);
+    xml = xml.replace(
+        "{{GLOBAL_CURSOR_CSS}}",
+        &escape_attr(&config.cursor_style),
+    );
 
     xml = xml.replace("{{FONT_BODY}}", &escape_attr(&body_stack));
     xml = xml.replace("{{FONT_HEADING}}", &escape_attr(&heading_stack));
@@ -374,15 +378,17 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{HOVER_SCALE}}", &escape_attr(&config.colors.hover_scale));
     xml = xml.replace("{{SIDEBAR_WIDTH}}", "300px");
 
+    let active_glow = if config.colors.glow_color.is_empty() { &config.colors.accent } else { &config.colors.glow_color };
+    let custom_glow_soft = hex_to_rgba(active_glow, 0.45);
     let soft_glow = format!(
         "0 0 calc({} / 2) {}",
         escape_attr(glow_spread),
-        escape_attr(&color_accent_soft)
+        escape_attr(&custom_glow_soft)
     );
     let strong_glow = format!(
         "0 0 {} {}",
         escape_attr(glow_spread),
-        escape_attr(&config.colors.accent)
+        escape_attr(active_glow)
     );
     xml = xml.replace("{{GLOW_SOFT}}", &soft_glow);
     xml = xml.replace("{{GLOW_STRONG}}", &strong_glow);

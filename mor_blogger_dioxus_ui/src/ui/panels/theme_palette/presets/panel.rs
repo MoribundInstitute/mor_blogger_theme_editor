@@ -159,6 +159,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     panel_border_image_url: toggle_signals.panel_border_image_url.read().clone(),
                                     panel_border_image_slice: toggle_signals.panel_border_image_slice.read().clone(),
                                     panel_border_image_repeat: toggle_signals.panel_border_image_repeat.read().clone(),
+                                    ..Default::default()
                                 };
                                 let inv = cur.inverted_contrast();
                                 toggle_signals.bg_base.set(inv.bg_base);

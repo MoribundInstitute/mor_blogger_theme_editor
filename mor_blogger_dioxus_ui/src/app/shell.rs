@@ -20,6 +20,7 @@ use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
 use crate::ui::panels::theme_palette::presets::PresetFloatingWindow;
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
+use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::layout::PanelLayout;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
@@ -66,6 +67,7 @@ pub fn render_app_shell(
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
     let show_undocked_modules = use_signal(|| false);
+    let show_advanced_glow = theme.show_advanced_glow;
 
     // Dialog Signals
     let mut show_about = use_signal(|| false);
@@ -353,6 +355,7 @@ pub fn render_app_shell(
                         show_undocked_presets,
                         show_undocked_pages,
                         show_undocked_modules,
+                        show_advanced_glow: theme.show_advanced_glow,
                         preview_html: tv_monitor,
                         base_preview_html: render.preview_html,
                     }
@@ -423,6 +426,10 @@ pub fn render_app_shell(
 
                 if show_undocked_presets() {
                     PresetFloatingWindow { signals, active_preset, show_undocked_presets }
+                }
+
+                if show_advanced_glow() {
+                    AdvancedGlowWindow { show_advanced_glow, signals: signals.clone() }
                 }
 
                 if show_undocked_pages() {

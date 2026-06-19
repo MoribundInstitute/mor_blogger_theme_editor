@@ -20,6 +20,7 @@ pub struct ThemeAppState {
     pub active_preset: Signal<Option<&'static str>>,
     pub center_view: Signal<CenterView>,
     pub show_undocked_presets: Signal<bool>,
+    pub show_advanced_glow: Signal<bool>,
     pub history: Signal<ThemeHistory>,
 }
 
@@ -96,11 +97,28 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let image_border_width = use_signal(|| defaults.image_border_width.clone());
     let target_sidebars = use_signal(|| defaults.target_sidebars);
     let target_canvas = use_signal(|| defaults.target_canvas);
+    let glow_color = use_signal(|| defaults.colors.glow_color.clone());
+    let glow_logo = use_signal(|| defaults.colors.glow_logo);
+    let glow_title = use_signal(|| defaults.colors.glow_title);
+    let glow_toc = use_signal(|| defaults.colors.glow_toc);
+    let glow_sidebar = use_signal(|| defaults.colors.glow_sidebar);
+    let glow_logo_color = use_signal(|| defaults.colors.glow_logo_color.clone());
+    let glow_title_color = use_signal(|| defaults.colors.glow_title_color.clone());
+    let glow_toc_color = use_signal(|| defaults.colors.glow_toc_color.clone());
+    let glow_sidebar_color = use_signal(|| defaults.colors.glow_sidebar_color.clone());
+    let glow_text = use_signal(|| defaults.colors.glow_text);
+    let glow_containers = use_signal(|| defaults.colors.glow_containers);
+    let glow_icons = use_signal(|| defaults.colors.glow_icons);
+    let glow_text_color = use_signal(|| defaults.colors.glow_text_color.clone());
+    let glow_containers_color = use_signal(|| defaults.colors.glow_containers_color.clone());
+    let glow_icons_color = use_signal(|| defaults.colors.glow_icons_color.clone());
+    let cursor_style = use_signal(|| defaults.cursor_style.clone());
 
     let center_view = use_signal(|| CenterView::Preview);
     let active_preset = use_signal(|| None::<&'static str>);
     let is_dark_mode = use_signal(|| true);
     let show_undocked_presets = use_signal(|| false);
+    let show_advanced_glow = use_signal(|| false);
     let history = use_signal(|| ThemeHistory {
         snapshots: vec![None],
         cursor: 0,
@@ -166,6 +184,22 @@ pub fn use_theme_app_state() -> ThemeAppState {
         image_border_width,
         target_sidebars,
         target_canvas,
+        glow_color,
+        glow_logo,
+        glow_title,
+        glow_toc,
+        glow_sidebar,
+        glow_logo_color,
+        glow_title_color,
+        glow_toc_color,
+        glow_sidebar_color,
+        glow_text,
+        glow_containers,
+        glow_icons,
+        glow_text_color,
+        glow_containers_color,
+        glow_icons_color,
+        cursor_style,
     };
 
     let current_config = use_memo(move || ThemeConfig {
@@ -189,6 +223,21 @@ pub fn use_theme_app_state() -> ThemeAppState {
             panel_border_image_url: panel_border_image_url(),
             panel_border_image_slice: panel_border_image_slice(),
             panel_border_image_repeat: panel_border_image_repeat(),
+            glow_color: glow_color(),
+            glow_logo: glow_logo(),
+            glow_title: glow_title(),
+            glow_toc: glow_toc(),
+            glow_sidebar: glow_sidebar(),
+            glow_logo_color: glow_logo_color(),
+            glow_title_color: glow_title_color(),
+            glow_toc_color: glow_toc_color(),
+            glow_sidebar_color: glow_sidebar_color(),
+            glow_text: glow_text(),
+            glow_containers: glow_containers(),
+            glow_icons: glow_icons(),
+            glow_text_color: glow_text_color(),
+            glow_containers_color: glow_containers_color(),
+            glow_icons_color: glow_icons_color(),
             ..Default::default()
         },
         icons: icons(),
@@ -257,6 +306,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         image_border_width: image_border_width(),
         target_sidebars: target_sidebars(),
         target_canvas: target_canvas(),
+        cursor_style: cursor_style(),
     });
 
     ThemeAppState {
@@ -265,6 +315,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         active_preset,
         center_view,
         show_undocked_presets,
+        show_advanced_glow,
         history,
     }
 }
@@ -399,6 +450,22 @@ impl ThemeAppState {
                     panel_border_image_url: signals.panel_border_image_url.read().clone(),
                     panel_border_image_slice: signals.panel_border_image_slice.read().clone(),
                     panel_border_image_repeat: signals.panel_border_image_repeat.read().clone(),
+                    glow_color: signals.glow_color.read().clone(),
+                    glow_logo: *signals.glow_logo.read(),
+                    glow_title: *signals.glow_title.read(),
+                    glow_toc: *signals.glow_toc.read(),
+                    glow_sidebar: *signals.glow_sidebar.read(),
+                    glow_logo_color: signals.glow_logo_color.read().clone(),
+                    glow_title_color: signals.glow_title_color.read().clone(),
+                    glow_toc_color: signals.glow_toc_color.read().clone(),
+                    glow_sidebar_color: signals.glow_sidebar_color.read().clone(),
+                    glow_text: *signals.glow_text.read(),
+                    glow_containers: *signals.glow_containers.read(),
+                    glow_icons: *signals.glow_icons.read(),
+                    glow_text_color: signals.glow_text_color.read().clone(),
+                    glow_containers_color: signals.glow_containers_color.read().clone(),
+                    glow_icons_color: signals.glow_icons_color.read().clone(),
+                    ..Default::default()
                 };
                 let inv = cur.inverted_contrast();
                 signals.bg_base.set(inv.bg_base);

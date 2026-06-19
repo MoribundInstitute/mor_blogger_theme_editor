@@ -11,6 +11,7 @@ pub struct ColorConfig {
     pub fg_muted: String,
     pub accent: String,
     pub border: String,
+    pub glow_color: String,
 
     pub panel_border_width: String,
     pub glow_spread: String,
@@ -19,6 +20,24 @@ pub struct ColorConfig {
     pub panel_border_image_url: String,
     pub panel_border_image_slice: String,
     pub panel_border_image_repeat: String,
+
+    #[serde(default = "default_true")]
+    pub glow_text: bool,
+    #[serde(default = "default_true")]
+    pub glow_containers: bool,
+    #[serde(default = "default_true")]
+    pub glow_icons: bool,
+    pub glow_logo: bool,
+    pub glow_title: bool,
+    pub glow_toc: bool,
+    pub glow_sidebar: bool,
+    pub glow_logo_color: String,
+    pub glow_title_color: String,
+    pub glow_toc_color: String,
+    pub glow_sidebar_color: String,
+    pub glow_text_color: String,
+    pub glow_containers_color: String,
+    pub glow_icons_color: String,
 }
 
 impl Default for ColorConfig {
@@ -32,15 +51,32 @@ impl Default for ColorConfig {
             fg_muted: "#bc8d6b".to_string(),
             accent: "#a9aae2".to_string(),
             border: "#6f6078".to_string(),
+            glow_color: String::new(),
             panel_border_width: "1px".to_string(),
             glow_spread: "10px".to_string(),
             hover_scale: "1.02".to_string(),
             panel_border_image_url: String::new(),
             panel_border_image_slice: "30%".to_string(),
             panel_border_image_repeat: "stretch".to_string(),
+            glow_text: true,
+            glow_containers: true,
+            glow_icons: true,
+            glow_logo: false,
+            glow_title: false,
+            glow_toc: false,
+            glow_sidebar: false,
+            glow_logo_color: String::new(),
+            glow_title_color: String::new(),
+            glow_toc_color: String::new(),
+            glow_sidebar_color: String::new(),
+            glow_text_color: String::new(),
+            glow_containers_color: String::new(),
+            glow_icons_color: String::new(),
         }
     }
 }
+
+fn default_true() -> bool { true }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]

@@ -4,6 +4,7 @@ use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
+use crate::ui::panels::theme_palette::cursor_panel::CursorPanel;
 use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
 use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
 use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
@@ -94,6 +95,7 @@ pub fn LeftVisualsPanel(
     show_undocked_presets: Signal<bool>,
     show_undocked_pages: Signal<bool>,
     mut show_undocked_modules: Signal<bool>,
+    show_advanced_glow: Signal<bool>,
     mut preview_html: Signal<String>,
     base_preview_html: ReadSignal<String>,
 ) -> Element {
@@ -221,10 +223,16 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
+                // FIX: Removed `cursor_style` prop here. Component consumes context.
+                EditorAccordion { id: "Cursors", title: "Cursors", active: active_tab,
+                    CursorPanel {}
+                }
+
                 EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
                     EffectsPanel {
                         glow_spread: signals.glow_spread,
                         hover_scale: signals.hover_scale,
+                        show_advanced_glow,
                     }
                 }
 

@@ -2,6 +2,8 @@ mod importers;
 mod panel;
 mod signals;
 
+use dioxus::prelude::*;
+
 pub use mor_blogger_core::presets::Preset as ThemePreset;
 pub use panel::{PresetFloatingWindow, PresetsPanel};
 pub use signals::ThemeSignals;
@@ -27,19 +29,26 @@ pub fn build_css_vars(preset: &ThemePreset, is_light: bool) -> String {
     let bg_panel = colors.bg_panel.to_css();
     let bg_elevated = colors.bg_elevated.to_css();
 
+    let active_glow_color = if colors.glow_color.is_empty() { &colors.accent } else { &colors.glow_color };
+
+    let cursor_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+        .map(|state| state.signals.cursor_style.read().to_string())
+        .unwrap_or_else(|| "default".to_string());
+
     format!(
-        "--bg-base: {bg}; --bg-panel: {panel}; --bg-highlight: {elevated}; --bg-soft: {panel}; --bg-elevated: {elevated}; --bg-workspace: {bg}; --fg-base: {fg}; --fg-dim: {muted}; --fg-muted: {muted}; --accent: {acc}; --border-color: {border}; --border-soft: {border}; --theme-border-color: {border}; --panel-border-width: {border_w}; --bg-gradient-from: {g_from}; --bg-gradient-to: {g_to}; --glow: 0 0 {glow} {acc}; --glow-strong: 0 0 calc({glow} * 2) {acc};",
+        "--bg-base: {bg}; --bg-panel: {panel}; --bg-highlight: {elevated}; --bg-soft: {panel}; --bg-elevated: {elevated}; --bg-workspace: {bg}; --fg-base: {fg}; --fg-dim: {muted}; --fg-muted: {muted}; --accent: {acc}; --border-color: {border}; --border-soft: {border}; --theme-border-color: {border}; --panel-border-width: {border_w}; --bg-gradient-from: {g_from}; --bg-gradient-to: {g_to}; --glow: 0 0 {glow} {acc}; --glow-strong: 0 0 calc({glow} * 2) {acc}; --theme-cursor: {cursor};",
         bg = colors.bg_base,
         panel = bg_panel,
         elevated = bg_elevated,
         fg = colors.fg_base,
         muted = colors.fg_muted,
-        acc = colors.accent,
+        acc = active_glow_color,
         border = colors.border,
         border_w = colors.panel_border_width,
         g_from = grad_from,
         g_to = grad_to,
         glow = colors.glow_spread,
+        cursor = cursor_val,
     )
 }
 

@@ -1,0 +1,1507 @@
+/* --- 12-Terminal-Post-Styling.css --- */
+
+.mor-post { margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+.post-title { margin-top: 0; font-family: var(--font-heading); font-size: 1.5rem; line-height: 1.25; }
+.post-title a { color: var(--fg-base); border-bottom: none; }
+.post-title a:hover, .post-title a:focus-visible { background: transparent; color: var(--fg-base); text-shadow: var(--glow-strong); }
+.post-meta { color: var(--fg-dim); font-size: 0.85rem; margin-bottom: 20px; line-height: var(--line-height-body); }
+.sys-tags a { color: var(--fg-dim); }
+.post-body { line-height: var(--line-height-body); overflow-wrap: break-word; }
+.post-body pre { max-width: 100%; overflow-x: auto; border: 1px solid var(--border-color); background: var(--bg-soft); padding: 12px; }
+.post-body code { background: var(--bg-soft); border: 1px solid var(--border-soft); padding: 1px 4px; }
+
+
+/* --- 13-Pagination.css --- */
+
+.mor-pager { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 30px; justify-content: flex-start; }
+.pager-btn { color: var(--fg-dim); border: none; }
+.pager-btn:hover, .pager-btn:focus-visible { color: var(--bg-base); background: var(--fg-base); }
+
+
+/* --- 23-Comments.css --- */
+
+/* ============================================================
+   23. Comments Section
+   ============================================================ */
+
+#comments {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px dashed var(--border-color);
+}
+
+#comments h3.title {
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+  color: var(--fg-base);
+  font-family: var(--font-heading);
+}
+
+/* Individual Comment Wrapper */
+.comments .comment {
+  margin-bottom: 24px;
+  clear: both;
+}
+
+/* Avatar Styling */
+.comments .avatar-image-container {
+  float: left;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--bg-panel);
+  box-shadow: var(--shadow-soft);
+}
+
+.comments .author-avatar {
+  width: 100%;
+  height: auto;
+}
+
+/* Comment Box */
+.comments .comment-block {
+  margin-left: 56px; /* Makes room for the floating avatar */
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-inset-highlight);
+}
+
+.comments .comment-author {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.comments .comment-author a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.comments .comment-body {
+  color: var(--fg-base);
+  line-height: var(--line-height-body);
+  font-size: 0.95rem;
+}
+
+.comments .comment-footer {
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Nested (Threaded) Replies */
+.comments .comment-thread.inline-thread {
+  padding-left: 24px;
+  border-left: 2px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  margin-top: 20px;
+}
+
+/* The Comment Input Form (Iframe) */
+.comment-form {
+  margin-top: 30px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.comment-form h4 {
+  margin-top: 0;
+  color: var(--fg-base);
+  margin-bottom: 16px;
+}
+
+/* --- 24-Author-Profile.css --- */
+
+/* ============================================================
+   24. Author Profile Block
+   ============================================================ */
+
+.author-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 24px; /* Slightly reduced top/bottom padding for the pill shape */
+  margin: 40px 0;
+  background: color-mix(in srgb, var(--bg-panel) 60%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 133px; /* Kept your custom pill radius! */
+  
+  /* THIS IS THE MAGIC BULLET */
+  width: fit-content; 
+}
+
+.author-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.author-about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Flex alignment for the By label and the Name */
+.author-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.author-label {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+.author-name a {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fg-base);
+  text-decoration: none;
+}
+
+.author-desc {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  line-height: var(--line-height-body);
+}
+
+/* --- 25-Share-Menu.css --- */
+
+/* ============================================================
+   25. Share Buttons & Dropdown Menu
+   ============================================================ */
+
+.post-share-buttons {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* The trigger button itself (Shrunk & Softened) */
+.sharing-button {
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  border-radius: var(--btn-radius, 8px);
+  padding: 6px 12px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.sharing-button:hover {
+  color: var(--fg-base);
+  border-color: var(--fg-base);
+  background: color-mix(in srgb, var(--bg-elevated) 30%, transparent);
+}
+
+/* Force Blogger's native trigger SVGs to size correctly (Shrunk to 16px) */
+.sharing-button svg,
+.flat-icon-button svg {
+    width: 16px !important;
+    height: 16px !important;
+    fill: currentColor !important;
+}
+
+/* The Popup Container */
+.share-buttons-container {
+  position: absolute;
+  bottom: 100%; /* Makes it drop-up instead of drop-down */
+  left: 0;
+  margin-bottom: 8px;
+  z-index: var(--dropdown-z, 1300);
+}
+
+/* The actual ul list */
+ul.share-buttons {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-dropdown);
+  min-width: 160px;
+  
+  /* Hidden by default, toggled by Blogger's native JS */
+  display: none; 
+}
+
+/* Blogger's JS removes the 'hidden' class when the button is clicked */
+ul.share-buttons:not(.hidden) {
+  display: block;
+  animation: share-menu-fade-in 0.15s ease-out forwards;
+}
+
+@keyframes share-menu-fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+ul.share-buttons li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* The individual share links */
+.sharing-platform-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: var(--fg-base);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.sharing-platform-button:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+/* Size down Blogger's injected SVG icons in the dropdown */
+.sharing-platform-button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* --- 30-Content-Magazine.css --- */
+
+/* =========================================================
+   30-Content-Magazine.css
+   Layout: First post spans 100% width with a large hero image.
+   Subsequent posts form a 2-column grid.
+   ========================================================= */
+
+.mor-magazine-feed {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+/* The first post stretches across both columns */
+.mor-post.hero-post {
+  grid-column: 1 / -1;
+  border-bottom: 2px solid var(--theme-border-color);
+  padding-bottom: 30px;
+  margin-bottom: 0; /* Override baseline */
+}
+
+.hero-post .post-title {
+  font-size: 2.5rem;
+}
+
+.hero-post .post-thumbnail {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 20px;
+}
+
+/* The grid posts */
+.mor-post.grid-post {
+  display: flex;
+  flex-direction: column;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.grid-post .post-title {
+  font-size: 1.4rem;
+}
+
+.grid-post .post-thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 15px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mor-magazine-feed { grid-template-columns: 1fr; }
+  .hero-post .post-title { font-size: 1.8rem; }
+  .hero-post .post-thumbnail { height: 250px; }
+}
+
+
+/* --- 31-Content-Masonry.css --- */
+
+/* =========================================================
+   31-Content-Masonry.css
+   Layout: Pure CSS columns for a Pinterest-style masonry grid.
+   ========================================================= */
+
+.mor-masonry-feed {
+  column-count: 3;
+  column-gap: 25px;
+  width: 100%;
+}
+
+.mor-post.masonry-card {
+  break-inside: avoid;
+  page-break-inside: avoid; /* Fallback for older browsers */
+  display: block;
+  margin-bottom: 25px; /* Vertical spacing between cards */
+  width: 100%;
+  
+  /* Optional: Reset base margins from standard post styling to fit grid */
+  padding-bottom: 15px; 
+  border-bottom: none;
+}
+
+.masonry-card .post-thumbnail {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--btn-radius, 4px);
+  margin-bottom: 15px;
+}
+
+/* Tablet Responsiveness: 2 Columns */
+@media (max-width: 1024px) {
+  .mor-masonry-feed {
+    column-count: 2;
+  }
+}
+
+/* Mobile Responsiveness: 1 Column */
+@media (max-width: 768px) {
+  .mor-masonry-feed {
+    column-count: 1;
+  }
+}
+
+
+/* --- 32-Content-Minimal.css --- */
+
+/* =========================================================
+   32-Content-Minimal.css
+   Layout: Dense, text-heavy horizontal list.
+   Date (Left) | Title (Center/Grow) | Tags (Right)
+   ========================================================= */
+
+.mor-minimal-feed {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mor-post.minimal-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 12px 0;
+  margin-bottom: 0; /* Overrides base .mor-post margins */
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Ensure the very last item doesn't have a double border with pagination */
+.mor-post.minimal-row:last-child {
+  border-bottom: none;
+}
+
+/* 1. Date (Far Left) */
+.minimal-row .post-date {
+  flex: 0 0 130px; /* Fixed width to keep titles aligned */
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2. Title (Middle) */
+.minimal-row .post-title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: var(--line-height-body);
+}
+
+.minimal-row .post-title a {
+  border-bottom: none;
+}
+
+/* 3. Tags (Far Right) */
+.minimal-row .post-tags {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.minimal-row .minimal-tag {
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  border-bottom: none;
+}
+
+.minimal-row .minimal-tag:hover,
+.minimal-row .minimal-tag:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+/* Responsive Collapse for Mobile */
+@media (max-width: 768px) {
+  .mor-post.minimal-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 0;
+  }
+  
+  .minimal-row .post-date {
+    flex: 1 1 100%;
+    font-size: 0.8rem;
+  }
+  
+  .minimal-row .post-title {
+    flex: 1 1 100%;
+  }
+  
+  .minimal-row .post-tags {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+}
+
+/* --- 00-Root-Section.css --- */
+
+:root {
+  /* LIGHT MODE (Default) */
+  --bg-base: {{LIGHT_BG_BASE}};
+  --bg-panel: {{LIGHT_BG_PANEL}};
+  --bg-highlight: {{LIGHT_BG_ELEVATED}};
+  --bg-soft: {{LIGHT_BG_PANEL}};
+  --bg-elevated: {{LIGHT_BG_ELEVATED}};
+  --bg-workspace: {{LIGHT_BG_WORKSPACE}};
+
+  --fg-base: {{LIGHT_FG_BASE}};
+  --fg-dim: {{LIGHT_FG_MUTED}};
+  --fg-muted: {{LIGHT_FG_MUTED}};
+  --accent: {{LIGHT_ACCENT}};
+
+  --border-color: {{LIGHT_BORDER}};
+  --border-soft: {{LIGHT_BORDER}};
+  --theme-border-color: {{LIGHT_BORDER}};
+  --panel-border-width: {{PANEL_BORDER_WIDTH}};
+  --theme-border-image: {{LIGHT_PANEL_BORDER_IMAGE_VALUE}};
+
+  --font-body: {{FONT_BODY}};
+  --font-heading: {{FONT_HEADING}};
+  --font-mono: {{FONT_MONO}};
+  --font-size-base: {{BASE_SIZE}};
+  --line-height-body: {{LINE_HEIGHT}};
+  --heading-weight: {{HEADING_WEIGHT}};
+  --sidebar-width: 300px;
+  --header-z: 1100;
+  --overlay-z: 1200;
+  --dropdown-z: 1300;
+
+  --glow: 0 0 4px {{LIGHT_ACCENT}};
+  --glow-strong: 0 0 8px {{LIGHT_ACCENT}};
+  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--fg-base) 15%, transparent);
+  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--fg-base) 90%, transparent);
+  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--fg-base) 10%, transparent);
+  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--fg-base) 20%, transparent);
+  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
+
+  {{LIGHT_BACKGROUND_TILE_CSS}}
+}
+
+/* DARK MODE (Triggered via JS) */
+html[data-theme="dark"] {
+  --bg-base: {{DARK_BG_BASE}};
+  --bg-panel: {{DARK_BG_PANEL}};
+  --bg-highlight: {{DARK_BG_ELEVATED}};
+  --bg-soft: {{DARK_BG_PANEL}};
+  --bg-elevated: {{DARK_BG_ELEVATED}};
+  --bg-workspace: {{DARK_BG_WORKSPACE}};
+
+  --fg-base: {{DARK_FG_BASE}};
+  --fg-dim: {{DARK_FG_MUTED}};
+  --fg-muted: {{DARK_FG_MUTED}};
+  --accent: {{DARK_ACCENT}};
+
+  --border-color: {{DARK_BORDER}};
+  --border-soft: {{DARK_BORDER}};
+  --theme-border-color: {{DARK_BORDER}};
+  --theme-border-image: {{DARK_PANEL_BORDER_IMAGE_VALUE}};
+
+  --glow: 0 0 4px {{DARK_ACCENT}};
+  --glow-strong: 0 0 8px {{DARK_ACCENT}};
+  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--bg-base) 65%, transparent);
+  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--bg-base) 90%, transparent);
+  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--bg-base) 10%, transparent);
+  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--bg-base) 20%, transparent);
+  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
+
+  {{DARK_BACKGROUND_TILE_CSS}}
+}
+
+/* --- 01-Reset-Base.css --- */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size-base);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-body);
+  line-height: var(--line-height-body);
+}
+
+body {
+  min-width: 0;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
+/* ============================================================
+   Universal Accessibility Overrides
+   These rules sit at the bottom of the cascade and intercept
+   OS-level accessibility requests, overriding TOML presets.
+   ============================================================ */
+
+/* 1. Keyboard Focus Safety 
+   Never allow an outline to be removed without replacing it. */
+*:focus-visible {
+  outline: 2px solid var(--fg-base) !important;
+  outline-offset: 4px !important;
+  box-shadow: none !important;
+}
+
+/* 2. High Contrast Mode (prefers-contrast: more)
+   Strips gradients, blurs, and glows. Enforces hard lines. */
+@media (prefers-contrast: more) {
+  :root {
+    --glow-spread: 0px !important;
+  }
+  
+  /* Flatten surfaces and enforce strict foreground/background contrast */
+  .canvas-core, 
+  .mor-post, 
+  .mor-panel, 
+  .main-header, 
+  .mor-footer, 
+  .mor-catalog-dropdown,
+  button, 
+  input {
+    background: var(--bg-base) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--fg-base) !important;
+    color: var(--fg-base) !important;
+    text-shadow: none !important;
+  }
+
+  /* Force links to be aggressively underlined so they don't rely on color alone */
+  a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 3px !important;
+  }
+}
+
+/* 3. Reduced Motion (prefers-reduced-motion: reduce)
+   Kills all background drifts, hover floats, and CSS animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 4. Visually Hidden Utility
+   Hides element from screen while keeping it accessible to screen readers.
+   Robust against font-size or color overrides. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* --- 02-Typography-Links.css --- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+}
+
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+a { color: var(--fg-base); text-decoration: none; border-bottom: 1px dotted var(--fg-dim); }
+a:hover, a:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+
+
+/* --- 03-Buttons.css --- */
+
+button { background: transparent; color: var(--fg-base); border: 1px solid var(--border-color); cursor: pointer; font-family: var(--font-mono); padding: 4px 8px; line-height: 1.2; }
+button:hover, button:focus { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+button:focus-visible { box-shadow: 0 0 0 2px var(--fg-dim); }
+.panel-toggle { min-width: 92px; text-align: center; white-space: nowrap; }
+.panel-header .panel-toggle { min-width: auto; padding: 2px 7px; }
+
+
+/* --- 17-Scrollbars.css --- */
+
+.sidebar-section .widget-content::-webkit-scrollbar, .panel-content::-webkit-scrollbar, .canvas-core::-webkit-scrollbar { width: 6px; }
+.sidebar-section .widget-content::-webkit-scrollbar-track, .panel-content::-webkit-scrollbar-track, .canvas-core::-webkit-scrollbar-track { background: var(--bg-base); }
+.sidebar-section .widget-content::-webkit-scrollbar-thumb, .panel-content::-webkit-scrollbar-thumb, .canvas-core::-webkit-scrollbar-thumb { background: var(--border-color); }
+.sidebar-section .widget-content::-webkit-scrollbar-thumb:hover, .panel-content::-webkit-scrollbar-thumb:hover, .canvas-core::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }
+
+
+/* --- 19-Responsive-Mobile-Tablet.css --- */
+
+@media screen and (max-width: 900px) {
+  :root { --sidebar-width: 85vw; }
+  html, body { height: auto; min-height: 100vh; overflow-x: hidden; }
+  body { display: block; }
+  .main-header { position: sticky; top: 0; z-index: 50; background: transparent; }
+  .header-top-row { min-height: 60px; padding: 10px 15px; gap: 12px; }
+  .institute-logo { width: 40px; height: 40px; border-radius: 8px; }
+  .branding .institute-title { font-size: 1.05rem; letter-spacing: 1px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; }
+  .panel-toggle { min-width: auto; font-size: 0.9rem; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-width: 1px; }
+  .header-bottom-row { flex-direction: column; align-items: stretch; padding: 12px 15px; gap: 15px; }
+  .mor-nav { width: 100%; gap: 15px; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+  .mor-nav a, .mor-nav button { font-size: 0.95rem; padding: 8px 10px; white-space: nowrap; }
+  .mor-search { width: 100%; }
+  .mor-search form { width: 100%; align-items: stretch; }
+  .mor-search .prompt { display: none; }
+  .mor-search input { width: 100%; flex: 1; padding: 10px; font-size: 1rem; }
+  .mor-workspace { display: block; height: auto; min-height: 100vh; overflow: visible; }
+  .canvas-core { height: auto; min-height: 100vh; overflow: visible; background: transparent; }
+  .canvas-content { padding: 24px 16px; max-width: none; gap: 40px; background: transparent; }
+  .post-title { font-size: 1.35rem; line-height: 1.3; }
+  .mor-panel { position: fixed; top: 0; bottom: 0; width: var(--sidebar-width); max-width: 350px; height: 100vh; z-index: var(--overlay-z, 100); box-shadow: var(--shadow-overlay); margin: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-workspace); overflow-y: auto; }
+  .panel-left { left: 0; right: auto; border-right: 1px solid var(--border-color); transform: translateX(-100%); }
+  .panel-right { right: 0; left: auto; border-left: 1px solid var(--border-color); transform: translateX(100%); }
+  .panel-left:not(.is-collapsed), .panel-right:not(.is-collapsed) { transform: translateX(0); }
+  .panel-content { padding: 20px; background: transparent; }
+  .sidebar-section .widget-content { max-height: none; }
+  .mor-footer { margin-top: auto; padding: 20px 15px; width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .footer-sys-info { align-items: flex-start; flex-direction: column; gap: 10px; }
+}
+
+
+/* --- 20-Responsive-Very-Small-Screens.css --- */
+
+@media screen and (max-width: 480px) {
+  .institute-logo { width: 38px; height: 38px; border-radius: 7px; }
+  .branding .institute-title { font-size: 0.8rem; max-width: 38vw; }
+  .header-top-row { gap: 6px; }
+  .panel-toggle { font-size: 0.72rem; padding: 4px 5px; }
+  .mor-nav { font-size: 0.8rem; }
+  .mor-catalog-dropdown { left: 6px; right: 6px; top: 140px; max-height: calc(100vh - 155px); }
+  .mor-catalog-left, .mor-catalog-right { padding: 0.65rem; }
+  .mor-catalog-category, .mor-catalog-panel a, .mor-catalog-all { padding: 0.55rem 0.6rem; }
+  .post-meta { font-size: 0.78rem; }
+}
+
+
+/* --- 21-Responsive-Desktop.css --- */
+
+@media screen and (min-width: 901px) {
+  html, body { height: 100vh; overflow: hidden; }
+  body { display: flex; flex-direction: column; }
+  .main-header { position: relative; }
+  .mor-panel { position: relative; transform: none; }
+  .panel-left.is-collapsed { margin-left: calc(var(--sidebar-width) * -1); }
+  .panel-right.is-collapsed { margin-right: calc(var(--sidebar-width) * -1); }
+}
+
+
+/* --- 22-Export-Safety.css --- */
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+    min-width: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    flex-shrink: 0 !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    text-shadow: none !important;
+    background-color: transparent !important;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.header-panel-toggle:hover,
+.header-top-row > .panel-toggle:hover {
+    background-color: color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--border-color) 50%, transparent) !important;
+}
+
+.header-panel-toggle-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-sidebar-left) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-left) center/20px no-repeat;
+}
+
+.header-panel-toggle-right::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-sidebar-right) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-right) center/20px no-repeat;
+}
+
+.panel-header .panel-toggle {
+    min-width: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    border: 1px solid transparent !important;
+    flex-shrink: 0 !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    text-shadow: none !important;
+    background-color: transparent !important;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.panel-header .panel-toggle::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-panel-close) center/18px no-repeat;
+    -webkit-mask: var(--icon-panel-close) center/18px no-repeat;
+}
+
+.panel-header .panel-toggle:hover {
+    background-color: color-mix(in srgb, var(--fg-base) 15%, transparent) !important;
+}
+
+/* --- 26-Analytics-Dashboard.css --- */
+
+/* ---------------------------------------------------------
+   26 - Analytics Dashboard Static Page
+   Paste-ready HTML page stencil styles. Uses Mor theme tokens.
+   --------------------------------------------------------- */
+
+.mor-analytics-dashboard {
+  display: grid;
+  gap: 1rem;
+  color: var(--fg-base);
+}
+
+.mor-analytics-intro,
+.mor-analytics-summary,
+.mor-analytics-card,
+.mor-analytics-updated,
+.mor-analytics-notice {
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-elevated);
+}
+
+.mor-analytics-intro {
+  padding: 1.25rem;
+}
+
+.mor-analytics-kicker {
+  margin-bottom: 0.35rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.mor-analytics-title {
+  margin: 0;
+  color: var(--fg-base);
+}
+
+.mor-analytics-desc {
+  max-width: 72ch;
+  margin: 0.75rem 0 0;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-notice {
+  padding: 0.9rem 1rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-summary {
+  padding: 1.25rem;
+}
+
+.mor-analytics-summary h3,
+.mor-analytics-card h3 {
+  margin-top: 0;
+}
+
+.mor-analytics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-stat-grid li {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+}
+
+.mor-analytics-stat-grid span {
+  display: block;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.mor-analytics-stat-grid strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--fg-base);
+  font-size: 1.45rem;
+}
+
+.mor-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mor-analytics-card {
+  padding: 1.25rem;
+}
+
+.mor-analytics-card-head p {
+  margin-top: 0.3rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.mor-analytics-button {
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--fg-base);
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+}
+
+.mor-analytics-button:hover,
+.mor-analytics-button:focus,
+.mor-analytics-button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
+.mor-analytics-chart {
+  min-height: 17rem;
+  border: 1px dashed var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.mor-analytics-placeholder {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.mor-analytics-bars {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 13rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.mor-analytics-bar {
+  flex: 1;
+  min-width: 0.5rem;
+  background: var(--accent);
+  opacity: 0.82;
+}
+
+.mor-analytics-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+.mor-analytics-category-layout {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.mor-analytics-pie {
+  width: 11rem;
+  height: 11rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      var(--accent) 0 38%,
+      var(--fg-muted) 38% 61%,
+      var(--border-color) 61% 78%,
+      var(--bg-elevated) 78% 100%
+    );
+}
+
+.mor-analytics-legend {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-legend li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 0.4rem;
+}
+
+.mor-analytics-legend strong {
+  color: var(--accent);
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.mor-analytics-updated {
+  padding: 0.85rem 1rem;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .mor-analytics-stat-grid,
+  .mor-analytics-grid,
+  .mor-analytics-category-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mor-analytics-pie {
+    justify-self: center;
+  }
+}
+
+
+/* --- 18-Footer-Base.css --- */
+
+/* =========================================================
+   18-Footer-Base.css
+   Shared footer chrome. Loaded for EVERY footer variant
+   (Basic / Compact / Mega): the outer container + the
+   bottom system-info bar.
+   ========================================================= */
+
+.mor-footer {
+  margin-top: auto;
+  border-top: 1px dashed var(--border-color);
+  padding: 30px 40px 20px;
+  font-size: 0.85rem;
+  width: 100%;
+  min-width: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.footer-sys-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.footer-sys-info a {
+  color: var(--fg-dim);
+  border-bottom: 1px dotted var(--fg-dim);
+}
+
+.footer-sys-info a:hover,
+.footer-sys-info a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+.back-to-top-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--fg-dim);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.back-to-top-btn:hover {
+  background: var(--fg-base);
+  color: var(--bg-base);
+}
+
+/* Footer grid for basic/compact variants (fluid to prevent overflow when sidebars reduce canvas width) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+
+.footer-col {
+  min-width: 0;
+}
+
+.footer-col h4 {
+  color: var(--fg-base);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col li {
+  margin-bottom: 8px;
+}
+
+/* --- 18-Footer-Mega.css --- */
+
+/* =========================================================
+   18-Footer-Mega.css
+   Mega-footer ONLY: the multi-column link directory grid.
+   Pulled in only when footer_variant resolves to the "mor"
+   manifest (MorFooterMega.xml). Layers on top of
+   18-Footer-Base.css.
+   ========================================================= */
+
+.footer-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+
+.footer-col a {
+  color: var(--fg-dim);
+  border-bottom: none;
+  display: inline-block;
+}
+
+.footer-col a:hover,
+.footer-col a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}
+
+/* --- NEW: Logo & Brand Constraints --- */
+.footer-brand-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 30px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-logo {
+  max-width: 200px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.footer-brand-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--fg-base);
+}
+
+/* --- NEW: Footer System Info Layout Fix --- */
+.footer-sys-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-copyright {
+  margin: 0;
+  flex: 1 1 100%;
+}
+
+.footer-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 768px) {
+  .footer-copyright {
+    flex: 0 1 auto;
+  }
+}
+
+/* --- 04-Main-Header.css --- */
+
+.main-header { display: flex; flex-direction: column; flex-shrink: 0; border-bottom: var(--panel-border-width) solid var(--theme-border-color); background: transparent; width: 100%; position: relative; z-index: var(--header-z); }
+
+/* The fix: Background is now transparent so the parent's glass/gradient shines through */
+.header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 10px 20px 9px; line-height: 1.2; border-bottom: var(--panel-border-width) dashed var(--theme-border-color); background: transparent; }
+.header-bottom-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 12px 20px 14px; flex-wrap: wrap; line-height: 1.2; background: transparent; }
+
+/* Group wrappers to maintain strict center alignment of the logo */
+.header-side-controls { display: flex; align-items: center; gap: 8px; flex: 1 1 0; }
+.right-controls { justify-content: flex-end; }
+
+/* --- Light/Dark Toggle SVG Logic --- */
+/* Sun shown in light mode, Moon shown in dark mode (standard convention) */
+/* Use ID selector to guarantee we override 22-Export-Safety.css */
+#mor-theme-toggle { 
+  color: var(--fg-base) !important; 
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Kill the engine's default icon mask so it doesn't overlap the SVGs */
+#mor-theme-toggle::before,
+#mor-theme-toggle::after { 
+  display: none !important; 
+  background: none !important;
+  content: none !important;
+}
+
+#mor-theme-toggle svg { 
+  width: 18px !important; 
+  height: 18px !important; 
+  fill: currentColor !important; 
+}
+
+/* Light Mode: Show Sun, Hide Moon */
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: none !important; }
+
+/* Dark Mode: Show Moon, Hide Sun */
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: block !important; }
+
+/* --- 05-Branding.css --- */
+
+.branding { min-width: 0; text-align: center; }
+.branding-link { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: inherit; border-bottom: none; }
+.branding-link:hover, .branding-link:focus-visible { background: transparent; color: inherit; }
+.institute-logo { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: var(--glow); }
+.branding .institute-title { display: inline-block; font-size: 1.05rem; font-weight: bold; letter-spacing: 2px; line-height: 1.2; color: var(--fg-base); text-shadow: var(--glow-strong); white-space: nowrap; }
+.branding-link:hover .institute-logo, .branding-link:focus-visible .institute-logo { border-color: var(--fg-dim); box-shadow: var(--glow-strong); }
+.branding-link:hover .institute-title, .branding-link:focus-visible .institute-title { color: var(--fg-base); text-decoration: underline; }
+
+
+/* --- 06-Main-Navigation.css --- */
+
+.mor-nav { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.mor-nav a, .mor-nav button { color: var(--fg-dim); border-bottom: none; font-size: 0.95rem; white-space: nowrap; }
+.mor-nav > a { border: none; }
+.mor-nav > a:hover, .mor-nav > a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }
+
+
+/* --- 07-Catalog-Mega-Dropdown.css --- */
+
+.mor-catalog-menu { position: relative; display: inline-flex; align-items: center; }
+.mor-catalog-trigger { appearance: none; display: inline-flex; align-items: center; gap: 0.35rem; border: none; background: transparent; color: var(--fg-dim); font: inherit; cursor: pointer; padding: 0; }
+.mor-catalog-trigger:hover, .mor-catalog-trigger:focus-visible, .mor-catalog-menu.is-open .mor-catalog-trigger { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-dropdown { position: absolute; top: 100%; left: 0; z-index: var(--dropdown-z); display: none; grid-template-columns: minmax(230px, 280px) minmax(340px, 520px); width: min(860px, calc(100vw - 2rem)); max-height: min(72vh, 680px); background: var(--bg-elevated); border: var(--panel-border-width) solid var(--theme-border-color); border-image: var(--theme-border-image); box-shadow: var(--shadow-elevated); overflow: hidden; }
+.mor-catalog-menu.is-open .mor-catalog-dropdown, .mor-catalog-menu:focus-within .mor-catalog-dropdown { display: grid; }
+.mor-catalog-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 8px; }
+.mor-catalog-left, .mor-catalog-right { padding: 0.85rem; overflow-y: auto; overflow-x: hidden; }
+.mor-catalog-left { background: var(--bg-panel); border-right: var(--panel-border-width) solid var(--theme-border-color); }
+.mor-catalog-right { background: var(--bg-base); min-width: 0; }
+.mor-catalog-category { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid transparent; background: transparent; color: var(--fg-base); cursor: pointer; padding: 0.65rem 0.75rem; text-align: left; font: inherit; }
+.mor-catalog-category:hover, .mor-catalog-category:focus-visible, .mor-catalog-category.is-active { border-color: var(--fg-dim); background: var(--bg-highlight); color: var(--fg-base); text-shadow: var(--glow-strong); outline: none; }
+.mor-catalog-all { display: block; margin-top: 0.75rem; padding: 0.65rem 0.75rem; border-top: var(--panel-border-width) solid var(--theme-border-color); border-bottom: none; color: var(--fg-dim); }
+.mor-catalog-all:hover, .mor-catalog-all:focus-visible { background: var(--fg-base); color: var(--bg-base); }
+.mor-catalog-panel { display: none; }
+.mor-catalog-panel.is-active { display: grid; gap: 0.2rem; align-content: start; }
+.mor-catalog-panel a { display: block; padding: 0.55rem 0.75rem; color: var(--fg-base); border-bottom: none; white-space: normal; }
+.mor-catalog-panel a:hover, .mor-catalog-panel a:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-panel .mor-panel-heading { border: var(--panel-border-width) solid var(--theme-border-color); border-image: var(--theme-border-image); background: var(--bg-highlight); color: var(--fg-base); font-weight: bold; margin-bottom: 0.35rem; text-shadow: var(--glow-strong); }
+.mor-catalog-panel .mor-panel-heading:hover, .mor-catalog-panel .mor-panel-heading:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; }
+.mor-catalog-left::-webkit-scrollbar, .mor-catalog-right::-webkit-scrollbar { width: 6px; }
+.mor-catalog-left::-webkit-scrollbar-track, .mor-catalog-right::-webkit-scrollbar-track { background: var(--bg-base); }
+.mor-catalog-left::-webkit-scrollbar-thumb, .mor-catalog-right::-webkit-scrollbar-thumb { background: var(--border-color); }
+.mor-catalog-left::-webkit-scrollbar-thumb:hover, .mor-catalog-right::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }
+
+
+/* --- 08-Command-Line-Search.css --- */
+
+.mor-search { min-width: 0; }
+.mor-search form { display: flex; align-items: center; gap: 8px; margin: 0; }
+.mor-search .prompt { display: none; color: var(--fg-dim); font-size: 0.9rem; white-space: nowrap; }
+.mor-search input { background: transparent; border: none; border-bottom: 1px solid var(--border-color); color: var(--fg-base); font-family: var(--font-mono); outline: none; width: 180px; padding: 3px 4px; transition: width 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+.mor-search input:focus { width: 240px; border-bottom: 1px solid var(--fg-base); box-shadow: 0 1px 0 var(--fg-base); }
+.mor-search input::placeholder { color: var(--fg-muted); }
+.mor-search button.icon-search-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background-color: var(--fg-base);
+    -webkit-mask-image: var(--icon-search);
+    -webkit-mask-size: 20px 20px;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    cursor: pointer;
+    transition: background-color 0.2s ease, filter 0.2s ease;
+}
+
+.mor-search button.icon-search-btn:hover {
+    background-color: var(--accent);
+    filter: drop-shadow(0 0 4px var(--accent));
+}
+
+
+/* --- 09-Workspace-Layout.css --- */
+
+.mor-workspace { display: flex; flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden; }
+
+
+/* --- 10-Side-Panels.css --- */
+
+.mor-panel { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--bg-workspace); border-style: solid; border-color: var(--theme-border-color); border-width: var(--mor-border-width-img); border-image: var(--theme-border-image); display: flex; flex-direction: column; flex-shrink: 0; transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out; border-image-source: var(--mor-border-image, none); border-image-slice: var(--mor-border-slice, 0); border-image-repeat: round; }
+.panel-right { border-image: var(--theme-border-image); }
+.panel-left.is-collapsed { margin-left: calc(var(--sidebar-width) * -1); }
+.panel-right.is-collapsed { margin-right: calc(var(--sidebar-width) * -1); }
+.panel-header { padding: 10px; border-bottom: var(--panel-border-width) solid var(--theme-border-color); display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: bold; font-size: 0.9rem; line-height: 1.2; background: var(--bg-highlight); }
+.panel-header span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.panel-content { padding: 15px; overflow-y: auto; overflow-x: hidden; flex-grow: 1; min-height: 0; font-size: 0.85rem; background: transparent; }
+
+
+/* --- 11-Main-Canvas.css --- */
+
+.canvas-core { flex-grow: 1; display: flex; flex-direction: column; height: auto; min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden; background: transparent; }
+.canvas-header { padding: 10px 20px; border-bottom: var(--panel-border-width) solid var(--theme-border-color); display: flex; justify-content: space-between; align-items: center; }
+.system-status { color: var(--fg-dim); font-size: 0.8rem; }
+.canvas-content { padding: 24px 20px 20px; max-width: 1200px; margin: 0 auto; width: 100%; min-width: 0; display: flex; flex-direction: column; flex-grow: 1; gap: 60px; background: transparent; }
+
+
+/* --- 14-Widgets-Sidebars.css --- */
+
+.widget { margin-bottom: 25px; }
+.widget h2 { margin-top: 0; font-size: 1rem; border-bottom: var(--panel-border-width) solid var(--theme-border-color); padding-bottom: 5px; }
+.widget.BlogArchive h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-archive);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.Label h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-label);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.HTML h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-toc);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+.sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+.sidebar-section .Label ul,
+.sidebar-section .BlogArchive ul:not(.posts) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sidebar-section .Label li { padding: 0; font-size: 0.75rem; }
+.sidebar-section .Label a,
+.sidebar-section .BlogArchive ul:not(.posts) a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 1px solid var(--accent);
+  border-radius: var(--btn-radius, 4px);
+  background: transparent;
+  color: var(--fg-dim);
+  text-decoration: none;
+  text-align: center;
+}
+.sidebar-section .Label a:hover,
+.sidebar-section .Label a:focus-visible,
+.sidebar-section .BlogArchive ul:not(.posts) a:hover,
+.sidebar-section .BlogArchive ul:not(.posts) a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.sidebar-section .Label a .label-count,
+.sidebar-section .BlogArchive .post-count {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+
+/* --- 15-Archive-Widget.css --- */
+
+.sidebar-section .BlogArchive { font-size: 0.75rem; }
+.sidebar-section .BlogArchive .hierarchy-title { color: var(--fg-dim); margin-top: 10px; border-bottom: var(--panel-border-width) dotted var(--theme-border-color); padding-bottom: 2px; }
+.sidebar-section .BlogArchive ul.posts { display: flex; flex-direction: column; gap: 6px; padding-left: 8px; border-left: var(--panel-border-width) dashed var(--theme-border-color); margin-left: 4px; margin-top: 6px; }
+.sidebar-section .BlogArchive ul.posts li { padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* --- 16-Table-of-Contents.css --- */
+
+#mor-toc-wrapper { font-size: 0.85rem; }
+#mor-toc-list li { line-height: 1.35; }
+.toc-jump-link { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+
+

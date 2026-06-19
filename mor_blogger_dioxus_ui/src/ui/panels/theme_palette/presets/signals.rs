@@ -76,6 +76,22 @@ pub struct ThemeSignals {
     pub image_border_width: Signal<String>,
     pub target_sidebars: Signal<bool>,
     pub target_canvas: Signal<bool>,
+    pub glow_color: Signal<String>,
+    pub glow_logo: Signal<bool>,
+    pub glow_title: Signal<bool>,
+    pub glow_toc: Signal<bool>,
+    pub glow_sidebar: Signal<bool>,
+    pub glow_logo_color: Signal<String>,
+    pub glow_title_color: Signal<String>,
+    pub glow_toc_color: Signal<String>,
+    pub glow_sidebar_color: Signal<String>,
+    pub glow_text: Signal<bool>,
+    pub glow_containers: Signal<bool>,
+    pub glow_icons: Signal<bool>,
+    pub glow_text_color: Signal<String>,
+    pub glow_containers_color: Signal<String>,
+    pub glow_icons_color: Signal<String>,
+    pub cursor_style: Signal<String>,
 }
 
 impl ThemeSignals {
@@ -102,6 +118,51 @@ impl ThemeSignals {
         self.panel_border_image_repeat
             .clone()
             .set(palette.colors.panel_border_image_repeat.clone());
+        self.glow_color
+            .clone()
+            .set(palette.colors.glow_color.clone());
+        self.glow_logo_color
+            .clone()
+            .set(palette.colors.glow_logo_color.clone());
+        self.glow_title_color
+            .clone()
+            .set(palette.colors.glow_title_color.clone());
+        self.glow_toc_color
+            .clone()
+            .set(palette.colors.glow_toc_color.clone());
+        self.glow_sidebar_color
+            .clone()
+            .set(palette.colors.glow_sidebar_color.clone());
+        self.glow_logo
+            .clone()
+            .set(palette.colors.glow_logo);
+        self.glow_title
+            .clone()
+            .set(palette.colors.glow_title);
+        self.glow_toc
+            .clone()
+            .set(palette.colors.glow_toc);
+        self.glow_sidebar
+            .clone()
+            .set(palette.colors.glow_sidebar);
+        self.glow_text
+            .clone()
+            .set(palette.colors.glow_text);
+        self.glow_containers
+            .clone()
+            .set(palette.colors.glow_containers);
+        self.glow_icons
+            .clone()
+            .set(palette.colors.glow_icons);
+        self.glow_text_color
+            .clone()
+            .set(palette.colors.glow_text_color.clone());
+        self.glow_containers_color
+            .clone()
+            .set(palette.colors.glow_containers_color.clone());
+        self.glow_icons_color
+            .clone()
+            .set(palette.colors.glow_icons_color.clone());
 
         let base = &preset.base_config;
         self.icons.clone().set(base.icons.clone());
@@ -186,6 +247,51 @@ impl ThemeSignals {
             .set(config.image_border_width.clone());
         self.target_sidebars.clone().set(config.target_sidebars);
         self.target_canvas.clone().set(config.target_canvas);
+        self.glow_color
+            .clone()
+            .set(config.colors.glow_color.clone());
+        self.glow_logo_color
+            .clone()
+            .set(config.colors.glow_logo_color.clone());
+        self.glow_title_color
+            .clone()
+            .set(config.colors.glow_title_color.clone());
+        self.glow_toc_color
+            .clone()
+            .set(config.colors.glow_toc_color.clone());
+        self.glow_sidebar_color
+            .clone()
+            .set(config.colors.glow_sidebar_color.clone());
+        self.glow_logo
+            .clone()
+            .set(config.colors.glow_logo);
+        self.glow_title
+            .clone()
+            .set(config.colors.glow_title);
+        self.glow_toc
+            .clone()
+            .set(config.colors.glow_toc);
+        self.glow_sidebar
+            .clone()
+            .set(config.colors.glow_sidebar);
+        self.glow_text
+            .clone()
+            .set(config.colors.glow_text);
+        self.glow_containers
+            .clone()
+            .set(config.colors.glow_containers);
+        self.glow_icons
+            .clone()
+            .set(config.colors.glow_icons);
+        self.glow_text_color
+            .clone()
+            .set(config.colors.glow_text_color.clone());
+        self.glow_containers_color
+            .clone()
+            .set(config.colors.glow_containers_color.clone());
+        self.glow_icons_color
+            .clone()
+            .set(config.colors.glow_icons_color.clone());
         self.apply_config_except_palette(config);
         self.preset_css.clone().set(config.preset_css.clone());
     }
@@ -298,6 +404,7 @@ impl ThemeSignals {
             .set(config.image_border_width.clone());
         self.target_sidebars.clone().set(config.target_sidebars);
         self.target_canvas.clone().set(config.target_canvas);
+        self.cursor_style.clone().set(config.cursor_style.clone());
     }
 
     pub fn swap_palette(&self, palette: &PresetPalette) {
@@ -310,6 +417,39 @@ impl ThemeSignals {
         self.fg_muted.clone().set(palette.colors.fg_muted.clone());
         self.accent.clone().set(palette.colors.accent.clone());
         self.border.clone().set(palette.colors.border.clone());
+        self.glow_color
+            .clone()
+            .set(palette.colors.glow_color.clone());
+        self.glow_logo_color
+            .clone()
+            .set(palette.colors.glow_logo_color.clone());
+        self.glow_title_color
+            .clone()
+            .set(palette.colors.glow_title_color.clone());
+        self.glow_toc_color
+            .clone()
+            .set(palette.colors.glow_toc_color.clone());
+        self.glow_sidebar_color
+            .clone()
+            .set(palette.colors.glow_sidebar_color.clone());
+        self.glow_text
+            .clone()
+            .set(palette.colors.glow_text);
+        self.glow_containers
+            .clone()
+            .set(palette.colors.glow_containers);
+        self.glow_icons
+            .clone()
+            .set(palette.colors.glow_icons);
+        self.glow_text_color
+            .clone()
+            .set(palette.colors.glow_text_color.clone());
+        self.glow_containers_color
+            .clone()
+            .set(palette.colors.glow_containers_color.clone());
+        self.glow_icons_color
+            .clone()
+            .set(palette.colors.glow_icons_color.clone());
 
         self.background.clone().set(palette.background.clone());
     }

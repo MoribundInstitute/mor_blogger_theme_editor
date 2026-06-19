@@ -33,6 +33,10 @@ fn default_true() -> bool {
     true
 }
 
+fn default_cursor_style() -> String {
+    "default".to_string()
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ThemeConfig {
@@ -49,6 +53,8 @@ pub struct ThemeConfig {
     pub plugins: PluginConfig,
     pub static_pages: StaticPagesConfig,
     pub ads: AdsConfig,
+    #[serde(default = "default_cursor_style")]
+    pub cursor_style: String,
     #[serde(default)]
     pub template_pack: TemplatePackConfig,
     /// Structural layout blocks compiled into Blogger sections/widgets.
@@ -97,6 +103,7 @@ impl Default for ThemeConfig {
             plugins: PluginConfig::default(),
             static_pages: StaticPagesConfig::default(),
             ads: AdsConfig::default(),
+            cursor_style: default_cursor_style(),
             template_pack: TemplatePackConfig::default(),
             blocks: Vec::new(),
             preset_css: String::new(),

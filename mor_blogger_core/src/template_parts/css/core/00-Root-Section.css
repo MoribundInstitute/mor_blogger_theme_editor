@@ -1,47 +1,5 @@
 :root {
-  /* LIGHT MODE (Default) */
-  --bg-base: {{LIGHT_BG_BASE}};
-  --bg-panel: {{LIGHT_BG_PANEL}};
-  --bg-highlight: {{LIGHT_BG_ELEVATED}};
-  --bg-soft: {{LIGHT_BG_PANEL}};
-  --bg-elevated: {{LIGHT_BG_ELEVATED}};
-  --bg-workspace: {{LIGHT_BG_WORKSPACE}};
-
-  --fg-base: {{LIGHT_FG_BASE}};
-  --fg-dim: {{LIGHT_FG_MUTED}};
-  --fg-muted: {{LIGHT_FG_MUTED}};
-  --accent: {{LIGHT_ACCENT}};
-
-  --border-color: {{LIGHT_BORDER}};
-  --border-soft: {{LIGHT_BORDER}};
-  --theme-border-color: {{LIGHT_BORDER}};
-  --panel-border-width: {{PANEL_BORDER_WIDTH}};
-  --theme-border-image: {{LIGHT_PANEL_BORDER_IMAGE_VALUE}};
-
-  --font-body: {{FONT_BODY}};
-  --font-heading: {{FONT_HEADING}};
-  --font-mono: {{FONT_MONO}};
-  --font-size-base: {{BASE_SIZE}};
-  --line-height-body: {{LINE_HEIGHT}};
-  --heading-weight: {{HEADING_WEIGHT}};
-  --sidebar-width: 300px;
-  --header-z: 1100;
-  --overlay-z: 1200;
-  --dropdown-z: 1300;
-
-  --glow: 0 0 4px {{LIGHT_ACCENT}};
-  --glow-strong: 0 0 8px {{LIGHT_ACCENT}};
-  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--fg-base) 15%, transparent);
-  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--fg-base) 90%, transparent);
-  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--fg-base) 10%, transparent);
-  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--fg-base) 20%, transparent);
-  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
-
-  {{LIGHT_BACKGROUND_TILE_CSS}}
-}
-
-/* DARK MODE (Triggered via JS) */
-html[data-theme="dark"] {
+  /* DARK MODE (Default) */
   --bg-base: {{DARK_BG_BASE}};
   --bg-panel: {{DARK_BG_PANEL}};
   --bg-highlight: {{DARK_BG_ELEVATED}};
@@ -57,7 +15,27 @@ html[data-theme="dark"] {
   --border-color: {{DARK_BORDER}};
   --border-soft: {{DARK_BORDER}};
   --theme-border-color: {{DARK_BORDER}};
+  --panel-border-width: {{PANEL_BORDER_WIDTH}};
   --theme-border-image: {{DARK_PANEL_BORDER_IMAGE_VALUE}};
+
+  --font-body: {{FONT_BODY}};
+  --font-heading: {{FONT_HEADING}};
+  --font-mono: {{FONT_MONO}};
+  --font-size-base: {{BASE_SIZE}};
+  --line-height-body: {{LINE_HEIGHT}};
+  --heading-weight: {{HEADING_WEIGHT}};
+  --sidebar-width: 300px;
+  --header-z: 1100;
+  --overlay-z: 1200;
+  --dropdown-z: 1300;
+
+  --theme-cursor-default: {{CURSOR_DEFAULT}};
+  --theme-cursor-pointer: {{CURSOR_POINTER}};
+  
+  --theme-scrollbar-width: {{SCROLLBAR_WIDTH}};
+  --theme-scrollbar-track: {{SCROLLBAR_TRACK}};
+  --theme-scrollbar-thumb: {{SCROLLBAR_THUMB}};
+  --theme-scrollbar-thumb-hover: {{SCROLLBAR_THUMB_HOVER}};
 
   --glow: 0 0 4px {{DARK_ACCENT}};
   --glow-strong: 0 0 8px {{DARK_ACCENT}};
@@ -68,4 +46,34 @@ html[data-theme="dark"] {
   --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
 
   {{DARK_BACKGROUND_TILE_CSS}}
+}
+
+/* LIGHT MODE (Triggered via JS) */
+html[data-theme="light"] {
+  --bg-base: {{LIGHT_BG_BASE}};
+  --bg-panel: {{LIGHT_BG_PANEL}};
+  --bg-highlight: {{LIGHT_BG_ELEVATED}};
+  --bg-soft: {{LIGHT_BG_PANEL}};
+  --bg-elevated: {{LIGHT_BG_ELEVATED}};
+  --bg-workspace: {{LIGHT_BG_WORKSPACE}};
+
+  --fg-base: {{LIGHT_FG_BASE}};
+  --fg-dim: {{LIGHT_FG_MUTED}};
+  --fg-muted: {{LIGHT_FG_MUTED}};
+  --accent: {{LIGHT_ACCENT}};
+
+  --border-color: {{LIGHT_BORDER}};
+  --border-soft: {{LIGHT_BORDER}};
+  --theme-border-color: {{LIGHT_BORDER}};
+  --theme-border-image: {{LIGHT_PANEL_BORDER_IMAGE_VALUE}};
+
+  --glow: 0 0 4px {{LIGHT_ACCENT}};
+  --glow-strong: 0 0 8px {{LIGHT_ACCENT}};
+  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--fg-base) 15%, transparent);
+  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--fg-base) 90%, transparent);
+  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--fg-base) 10%, transparent);
+  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--fg-base) 20%, transparent);
+  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
+
+  {{LIGHT_BACKGROUND_TILE_CSS}}
 }

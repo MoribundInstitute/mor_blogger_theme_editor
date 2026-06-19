@@ -7,4 +7,5 @@ pub mod frames_panel;
 pub mod presets;
 pub mod static_pages_panel;
 pub mod template_modules;
+pub mod scrollbar_panel;
 pub mod typography_panel;

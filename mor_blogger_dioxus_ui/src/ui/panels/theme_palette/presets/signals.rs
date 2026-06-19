@@ -92,6 +92,10 @@ pub struct ThemeSignals {
     pub glow_containers_color: Signal<String>,
     pub glow_icons_color: Signal<String>,
     pub cursor_style: Signal<String>,
+    pub scrollbar_width: Signal<String>,
+    pub scrollbar_track_color: Signal<String>,
+    pub scrollbar_thumb_color: Signal<String>,
+    pub scrollbar_thumb_hover_color: Signal<String>,
 }
 
 impl ThemeSignals {
@@ -197,6 +201,18 @@ impl ThemeSignals {
         self.heading_weight
             .clone()
             .set(base.typography.heading_weight.clone());
+        self.scrollbar_width
+            .clone()
+            .set(base.scrollbar_width.clone());
+        self.scrollbar_track_color
+            .clone()
+            .set(base.scrollbar_track_color.clone());
+        self.scrollbar_thumb_color
+            .clone()
+            .set(base.scrollbar_thumb_color.clone());
+        self.scrollbar_thumb_hover_color
+            .clone()
+            .set(base.scrollbar_thumb_hover_color.clone());
     }
 
     pub fn apply_config(&self, config: &ThemeConfig) {
@@ -292,6 +308,18 @@ impl ThemeSignals {
         self.glow_icons_color
             .clone()
             .set(config.colors.glow_icons_color.clone());
+        self.scrollbar_width
+            .clone()
+            .set(config.scrollbar_width.clone());
+        self.scrollbar_track_color
+            .clone()
+            .set(config.scrollbar_track_color.clone());
+        self.scrollbar_thumb_color
+            .clone()
+            .set(config.scrollbar_thumb_color.clone());
+        self.scrollbar_thumb_hover_color
+            .clone()
+            .set(config.scrollbar_thumb_hover_color.clone());
         self.apply_config_except_palette(config);
         self.preset_css.clone().set(config.preset_css.clone());
     }
@@ -405,6 +433,18 @@ impl ThemeSignals {
         self.target_sidebars.clone().set(config.target_sidebars);
         self.target_canvas.clone().set(config.target_canvas);
         self.cursor_style.clone().set(config.cursor_style.clone());
+        self.scrollbar_width
+            .clone()
+            .set(config.scrollbar_width.clone());
+        self.scrollbar_track_color
+            .clone()
+            .set(config.scrollbar_track_color.clone());
+        self.scrollbar_thumb_color
+            .clone()
+            .set(config.scrollbar_thumb_color.clone());
+        self.scrollbar_thumb_hover_color
+            .clone()
+            .set(config.scrollbar_thumb_hover_color.clone());
     }
 
     pub fn swap_palette(&self, palette: &PresetPalette) {

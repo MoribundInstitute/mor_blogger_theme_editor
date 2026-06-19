@@ -34,7 +34,23 @@ fn default_true() -> bool {
 }
 
 fn default_cursor_style() -> String {
-    "default".to_string()
+    "auto".to_string()
+}
+
+fn default_scrollbar_width() -> String {
+    "6px".to_string()
+}
+
+fn default_scrollbar_track_color() -> String {
+    "transparent".to_string()
+}
+
+fn default_scrollbar_thumb_color() -> String {
+    "#4c566a".to_string()
+}
+
+fn default_scrollbar_thumb_hover_color() -> String {
+    "#81a1c1".to_string()
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -55,6 +71,14 @@ pub struct ThemeConfig {
     pub ads: AdsConfig,
     #[serde(default = "default_cursor_style")]
     pub cursor_style: String,
+    #[serde(default = "default_scrollbar_width")]
+    pub scrollbar_width: String,
+    #[serde(default = "default_scrollbar_track_color")]
+    pub scrollbar_track_color: String,
+    #[serde(default = "default_scrollbar_thumb_color")]
+    pub scrollbar_thumb_color: String,
+    #[serde(default = "default_scrollbar_thumb_hover_color")]
+    pub scrollbar_thumb_hover_color: String,
     #[serde(default)]
     pub template_pack: TemplatePackConfig,
     /// Structural layout blocks compiled into Blogger sections/widgets.
@@ -104,6 +128,10 @@ impl Default for ThemeConfig {
             static_pages: StaticPagesConfig::default(),
             ads: AdsConfig::default(),
             cursor_style: default_cursor_style(),
+            scrollbar_width: default_scrollbar_width(),
+            scrollbar_track_color: default_scrollbar_track_color(),
+            scrollbar_thumb_color: default_scrollbar_thumb_color(),
+            scrollbar_thumb_hover_color: default_scrollbar_thumb_hover_color(),
             template_pack: TemplatePackConfig::default(),
             blocks: Vec::new(),
             preset_css: String::new(),

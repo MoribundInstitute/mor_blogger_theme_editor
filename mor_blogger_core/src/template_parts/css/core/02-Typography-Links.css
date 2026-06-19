@@ -15,5 +15,17 @@ samp {
   font-family: var(--font-mono);
 }
 
-a { color: var(--fg-base); text-decoration: none; border-bottom: 1px dotted var(--fg-dim); }
-a:hover, a:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+a { 
+  color: var(--fg-base); 
+  text-decoration: none; 
+  border-bottom: 1px dotted var(--fg-dim); 
+  cursor: var(--theme-cursor-pointer, pointer);
+}
+
+a:hover, 
+a:focus-visible { 
+  background: var(--fg-base); 
+  color: var(--bg-base); 
+  text-shadow: none; 
+  outline: none; 
+}

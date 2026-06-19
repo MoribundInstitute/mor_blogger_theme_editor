@@ -10,6 +10,7 @@ use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
 use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
+use crate::ui::panels::theme_palette::scrollbar_panel::ScrollbarPanel;
 use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use crate::ui::workspace::layout::PanelLayout;
 use mor_blogger_core::config::ThemeConfig;
@@ -259,6 +260,10 @@ pub fn LeftVisualsPanel(
                         line_height: signals.line_height,
                         heading_weight: signals.heading_weight,
                     }
+                }
+
+                EditorAccordion { id: "Scrollbars", title: "Scrollbars", active: active_tab,
+                    ScrollbarPanel {}
                 }
 
                 EditorAccordion { id: "Buttons", title: "Button Styles", active: active_tab,

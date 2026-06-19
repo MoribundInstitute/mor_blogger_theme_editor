@@ -35,8 +35,24 @@ pub fn build_css_vars(preset: &ThemePreset, is_light: bool) -> String {
         .map(|state| state.signals.cursor_style.read().to_string())
         .unwrap_or_else(|| "default".to_string());
 
+    let scrollbar_width_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+        .map(|state| state.signals.scrollbar_width.read().to_string())
+        .unwrap_or_else(|| preset.base_config.scrollbar_width.clone());
+
+    let scrollbar_track_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+        .map(|state| state.signals.scrollbar_track_color.read().to_string())
+        .unwrap_or_else(|| preset.base_config.scrollbar_track_color.clone());
+
+    let scrollbar_thumb_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+        .map(|state| state.signals.scrollbar_thumb_color.read().to_string())
+        .unwrap_or_else(|| preset.base_config.scrollbar_thumb_color.clone());
+
+    let scrollbar_thumb_hover_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+        .map(|state| state.signals.scrollbar_thumb_hover_color.read().to_string())
+        .unwrap_or_else(|| preset.base_config.scrollbar_thumb_hover_color.clone());
+
     format!(
-        "--bg-base: {bg}; --bg-panel: {panel}; --bg-highlight: {elevated}; --bg-soft: {panel}; --bg-elevated: {elevated}; --bg-workspace: {bg}; --fg-base: {fg}; --fg-dim: {muted}; --fg-muted: {muted}; --accent: {acc}; --border-color: {border}; --border-soft: {border}; --theme-border-color: {border}; --panel-border-width: {border_w}; --bg-gradient-from: {g_from}; --bg-gradient-to: {g_to}; --glow: 0 0 {glow} {acc}; --glow-strong: 0 0 calc({glow} * 2) {acc}; --theme-cursor: {cursor};",
+        "--bg-base: {bg}; --bg-panel: {panel}; --bg-highlight: {elevated}; --bg-soft: {panel}; --bg-elevated: {elevated}; --bg-workspace: {bg}; --fg-base: {fg}; --fg-dim: {muted}; --fg-muted: {muted}; --accent: {acc}; --border-color: {border}; --border-soft: {border}; --theme-border-color: {border}; --panel-border-width: {border_w}; --bg-gradient-from: {g_from}; --bg-gradient-to: {g_to}; --glow: 0 0 {glow} {acc}; --glow-strong: 0 0 calc({glow} * 2) {acc}; --theme-cursor: {cursor}; --theme-scrollbar-width: {scrollbar_width}; --theme-scrollbar-track: {scrollbar_track}; --theme-scrollbar-thumb: {scrollbar_thumb}; --theme-scrollbar-thumb-hover: {scrollbar_thumb_hover};",
         bg = colors.bg_base,
         panel = bg_panel,
         elevated = bg_elevated,
@@ -49,6 +65,10 @@ pub fn build_css_vars(preset: &ThemePreset, is_light: bool) -> String {
         g_to = grad_to,
         glow = colors.glow_spread,
         cursor = cursor_val,
+        scrollbar_width = scrollbar_width_val,
+        scrollbar_track = scrollbar_track_val,
+        scrollbar_thumb = scrollbar_thumb_val,
+        scrollbar_thumb_hover = scrollbar_thumb_hover_val,
     )
 }
 

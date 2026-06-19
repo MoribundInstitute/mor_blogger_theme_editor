@@ -322,6 +322,24 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         "{{GLOBAL_CURSOR_CSS}}",
         &escape_attr(&config.cursor_style),
     );
+    xml = xml.replace("{{CURSOR_DEFAULT}}", &config.cursor_style);
+    xml = xml.replace("{{CURSOR_POINTER}}", "pointer");
+    xml = xml.replace(
+        "{{SCROLLBAR_WIDTH}}",
+        &escape_attr(&config.scrollbar_width),
+    );
+    xml = xml.replace(
+        "{{SCROLLBAR_TRACK}}",
+        &escape_attr(&config.scrollbar_track_color),
+    );
+    xml = xml.replace(
+        "{{SCROLLBAR_THUMB}}",
+        &escape_attr(&config.scrollbar_thumb_color),
+    );
+    xml = xml.replace(
+        "{{SCROLLBAR_THUMB_HOVER}}",
+        &escape_attr(&config.scrollbar_thumb_hover_color),
+    );
 
     xml = xml.replace("{{FONT_BODY}}", &escape_attr(&body_stack));
     xml = xml.replace("{{FONT_HEADING}}", &escape_attr(&heading_stack));

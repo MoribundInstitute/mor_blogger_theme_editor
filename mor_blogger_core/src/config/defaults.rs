@@ -129,7 +129,11 @@ pub fn default_theme_config() -> ThemeConfig {
         plugins: PluginConfig::default(),
         static_pages: StaticPagesConfig::default(),
         ads: AdsConfig::default(),
-        cursor_style: "default".to_string(),
+        cursor_style: "auto".to_string(),
+        scrollbar_width: "6px".to_string(),
+        scrollbar_track_color: "transparent".to_string(),
+        scrollbar_thumb_color: "#4c566a".to_string(),
+        scrollbar_thumb_hover_color: "#81a1c1".to_string(),
 
         template_pack: TemplatePackConfig {
             header_variant: "mor_header_baseline".to_string(),

@@ -14,6 +14,7 @@ body {
   color: var(--fg-base);
   font-family: var(--font-body);
   line-height: var(--line-height-body);
+  cursor: var(--theme-cursor-default, auto);
 }
 
 body {

@@ -113,6 +113,10 @@ pub fn use_theme_app_state() -> ThemeAppState {
     let glow_containers_color = use_signal(|| defaults.colors.glow_containers_color.clone());
     let glow_icons_color = use_signal(|| defaults.colors.glow_icons_color.clone());
     let cursor_style = use_signal(|| defaults.cursor_style.clone());
+    let scrollbar_width = use_signal(|| defaults.scrollbar_width.clone());
+    let scrollbar_track_color = use_signal(|| defaults.scrollbar_track_color.clone());
+    let scrollbar_thumb_color = use_signal(|| defaults.scrollbar_thumb_color.clone());
+    let scrollbar_thumb_hover_color = use_signal(|| defaults.scrollbar_thumb_hover_color.clone());
 
     let center_view = use_signal(|| CenterView::Preview);
     let active_preset = use_signal(|| None::<&'static str>);
@@ -200,6 +204,10 @@ pub fn use_theme_app_state() -> ThemeAppState {
         glow_containers_color,
         glow_icons_color,
         cursor_style,
+        scrollbar_width,
+        scrollbar_track_color,
+        scrollbar_thumb_color,
+        scrollbar_thumb_hover_color,
     };
 
     let current_config = use_memo(move || ThemeConfig {
@@ -306,7 +314,11 @@ pub fn use_theme_app_state() -> ThemeAppState {
         image_border_width: image_border_width(),
         target_sidebars: target_sidebars(),
         target_canvas: target_canvas(),
-        cursor_style: cursor_style(),
+        cursor_style: signals.cursor_style.read().clone(),
+        scrollbar_width: scrollbar_width(),
+        scrollbar_track_color: scrollbar_track_color(),
+        scrollbar_thumb_color: scrollbar_thumb_color(),
+        scrollbar_thumb_hover_color: scrollbar_thumb_hover_color(),
     });
 
     ThemeAppState {
@@ -487,6 +499,7 @@ impl ThemeAppState {
                     &preset.light
                 };
                 signals.swap_palette(pal);
+                signals.apply_preset_css(preset);
             }
         }
 

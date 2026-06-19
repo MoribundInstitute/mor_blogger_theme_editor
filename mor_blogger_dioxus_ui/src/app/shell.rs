@@ -11,7 +11,7 @@ use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
-use super::layout_state::{AppLayoutState, CenterView};
+use super::layout_state::{AppLayoutState, CenterView, DockPosition};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
@@ -25,6 +25,7 @@ use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::layout::PanelLayout;
 use crate::ui::workspace::left_dock::LeftVisualsPanel;
 use crate::ui::workspace::right_dock::RightDataPanel;
+use crate::ui::workspace::CssEditorPanel;
 use mor_blogger_core::config::ThemeConfig;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
@@ -340,24 +341,41 @@ pub fn render_app_shell(
                     "data-left-layout": panel_layout_class((layout.left_layout)()),
                     "data-right-layout": panel_layout_class((layout.right_layout)()),
 
-                    LeftVisualsPanel {
-                        active_tab: layout.active_left_tab,
-                        layout: layout.left_layout,
-                        active_preset,
-                        signals,
-                        show_preview,
-                        current_config: current_config(),
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            signals.apply_config(&new_config);
-                            active_preset.set(None);
-                            theme.commit();
-                        },
-                        show_undocked_presets,
-                        show_undocked_pages,
-                        show_undocked_modules,
-                        show_advanced_glow: theme.show_advanced_glow,
-                        preview_html: tv_monitor,
-                        base_preview_html: render.preview_html,
+                    // Left slot — render whichever tool is docked Left
+                    if (layout.theme_palette_pos)() == DockPosition::Left {
+                        LeftVisualsPanel {
+                            active_tab: layout.active_left_tab,
+                            layout: layout.left_layout,
+                            active_preset,
+                            signals,
+                            show_preview,
+                            current_config: current_config(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                signals.apply_config(&new_config);
+                                active_preset.set(None);
+                                theme.commit();
+                            },
+                            show_undocked_presets,
+                            show_undocked_pages,
+                            show_undocked_modules,
+                            show_advanced_glow: theme.show_advanced_glow,
+                            preview_html: tv_monitor,
+                            base_preview_html: render.preview_html,
+                        }
+                    }
+                    if (layout.site_data_pos)() == DockPosition::Left {
+                        RightDataPanel {
+                            active_tab: layout.active_left_tab,
+                            layout: layout.left_layout,
+                            signals,
+                            current_config: current_config(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                signals.apply_config(&new_config);
+                            },
+                        }
+                    }
+                    if (layout.css_editor_pos)() == DockPosition::Left {
+                        CssEditorPanel { }
                     }
 
                     BloggerWorkspace {
@@ -413,14 +431,41 @@ pub fn render_app_shell(
                         },
                     }
 
-                    RightDataPanel {
-                        active_tab: layout.active_right_tab,
-                        layout: layout.right_layout,
-                        signals,
-                        current_config: current_config(),
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            signals.apply_config(&new_config);
-                        },
+                    // Right slot — render whichever tool is docked Right
+                    if (layout.theme_palette_pos)() == DockPosition::Right {
+                        LeftVisualsPanel {
+                            active_tab: layout.active_right_tab,
+                            layout: layout.right_layout,
+                            active_preset,
+                            signals,
+                            show_preview,
+                            current_config: current_config(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                signals.apply_config(&new_config);
+                                active_preset.set(None);
+                                theme.commit();
+                            },
+                            show_undocked_presets,
+                            show_undocked_pages,
+                            show_undocked_modules,
+                            show_advanced_glow: theme.show_advanced_glow,
+                            preview_html: tv_monitor,
+                            base_preview_html: render.preview_html,
+                        }
+                    }
+                    if (layout.site_data_pos)() == DockPosition::Right {
+                        RightDataPanel {
+                            active_tab: layout.active_right_tab,
+                            layout: layout.right_layout,
+                            signals,
+                            current_config: current_config(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                signals.apply_config(&new_config);
+                            },
+                        }
+                    }
+                    if (layout.css_editor_pos)() == DockPosition::Right {
+                        CssEditorPanel { }
                     }
                 }
 

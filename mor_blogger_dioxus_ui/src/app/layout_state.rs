@@ -2,13 +2,28 @@ use dioxus::prelude::*;
 
 use crate::ui::workspace::layout::{PanelLayout, PreviewTemplateMode, PreviewViewport};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CenterView {
     Preview,
     CodeEditor,
     Split,
     Export,
     ModuleWorkbench,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DockTool {
+    ThemePalette,
+    SiteData,
+    CssEditor,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DockPosition {
+    Left,
+    Right,
+    Floating,
+    Hidden,
 }
 
 #[derive(Clone, Copy)]
@@ -20,6 +35,9 @@ pub struct AppLayoutState {
     pub preview_viewport: Signal<PreviewViewport>,
     pub preview_width: Signal<u32>,
     pub preview_template_mode: Signal<PreviewTemplateMode>,
+    pub theme_palette_pos: Signal<DockPosition>,
+    pub site_data_pos: Signal<DockPosition>,
+    pub css_editor_pos: Signal<DockPosition>,
 }
 
 pub fn use_app_layout_state() -> AppLayoutState {
@@ -31,5 +49,8 @@ pub fn use_app_layout_state() -> AppLayoutState {
         preview_viewport: use_signal(|| PreviewViewport::Desktop),
         preview_width: use_signal(|| 1200u32),
         preview_template_mode: use_signal(|| PreviewTemplateMode::Sidebars),
+        theme_palette_pos: use_signal(|| DockPosition::Left),
+        site_data_pos: use_signal(|| DockPosition::Right),
+        css_editor_pos: use_signal(|| DockPosition::Hidden),
     }
 }

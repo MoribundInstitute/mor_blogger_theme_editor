@@ -25,7 +25,7 @@ use render_state::use_app_render_state;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
 use state::use_theme_app_state;
-use crate::ui::workspace::css_editor::VfsDictionary;
+use crate::ui::docks::css_dock::VfsDictionary;
 #[cfg(not(target_arch = "wasm32"))]
 use theme_hot_reload::use_theme_config_hot_reload;
 

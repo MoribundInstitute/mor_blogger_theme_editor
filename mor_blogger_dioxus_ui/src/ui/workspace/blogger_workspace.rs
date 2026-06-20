@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::app::layout_state::CenterView;
-use crate::ui::workspace::css_editor::VfsDictionary;
+use crate::ui::docks::css_dock::VfsDictionary;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
 };
@@ -13,9 +13,9 @@ use mor_blogger_core::diagnostics::DiagnosticResult;
 use mor_blogger_core::render::PreviewTemplateMode;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
-use super::main_dock::MainDock;
+use crate::ui::shell::panes::main_pane::MainPane;
 use super::module_workbench::ModuleWorkbench;
-use super::smart_code_dock::SmartCodeDock;
+use crate::ui::docks::smart_code_dock::SmartCodeDock;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
@@ -173,7 +173,7 @@ pub fn BloggerWorkspace(
 
     rsx! {
         script { dangerous_inner_html: "window.addEventListener('dragover', function(e) {{ e.preventDefault(); }}, false); window.addEventListener('drop', function(e) {{ e.preventDefault(); }}, false);" }
-        MainDock {
+        MainPane {
             hide_header: is_fullscreen(),
 
             tabs: rsx! {

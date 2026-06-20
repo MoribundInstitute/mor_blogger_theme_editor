@@ -11,7 +11,7 @@ use mor_blogger_core::render::xml_parts::css_generator::render_css_sockets;
 use mor_blogger_core::utils::fs_bridge;
 
 use crate::app::layout_state::AppLayoutState;
-use crate::ui::workspace::css_editor::VfsDictionary;
+use crate::ui::docks::css_dock::VfsDictionary;
 use crate::ui::workspace::layout::{apply_preview_viewport, clamp_preview_width, PreviewViewport};
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 

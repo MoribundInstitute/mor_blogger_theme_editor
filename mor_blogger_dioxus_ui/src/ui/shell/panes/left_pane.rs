@@ -15,11 +15,11 @@ use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use crate::ui::workspace::layout::PanelLayout;
 use mor_blogger_core::config::ThemeConfig;
 
-const LEFT_DOCK_CSS: &str = r#"
+const LEFT_PANE_CSS: &str = r#"
 .editor-left-panel.is-floating {
     position: fixed !important;
-    left: var(--left-dock-x, 20px) !important;
-    top: var(--left-dock-y, 80px) !important;
+    left: var(--left-pane-x, 20px) !important;
+    top: var(--left-pane-y, 80px) !important;
     right: auto !important;
     bottom: auto !important;
     margin: 0 !important;
@@ -30,10 +30,10 @@ const LEFT_DOCK_CSS: &str = r#"
 }
 "#;
 
-const DOCK_DRAG_JS: &str = r#"
+const PANE_DRAG_JS: &str = r#"
 (function () {
-    if (window.__morCoreDockDragInstalled) return;
-    window.__morCoreDockDragInstalled = true;
+    if (window.__morCorePaneDragInstalled) return;
+    window.__morCorePaneDragInstalled = true;
 
     document.addEventListener('pointerdown', function (e) {
         const bar = e.target.closest('.floating-editor-window-bar');
@@ -48,8 +48,8 @@ const DOCK_DRAG_JS: &str = r#"
         e.preventDefault();
         
         const isLeft = panel.classList.contains('editor-left-panel');
-        const varX = isLeft ? '--left-dock-x' : '--right-dock-x';
-        const varY = isLeft ? '--left-dock-y' : '--right-dock-y';
+        const varX = isLeft ? '--left-pane-x' : '--right-pane-x';
+        const varY = isLeft ? '--left-pane-y' : '--right-pane-y';
 
         const rect = panel.getBoundingClientRect();
         const startX = e.clientX;
@@ -84,6 +84,7 @@ const DOCK_DRAG_JS: &str = r#"
 })();
 "#;
 
+
 #[component]
 pub fn LeftVisualsPanel(
     mut layout: Signal<PanelLayout>,
@@ -113,9 +114,9 @@ pub fn LeftVisualsPanel(
     }
 
     rsx! {
-        script { dangerous_inner_html: "{DOCK_DRAG_JS}" }
+        script { dangerous_inner_html: "{PANE_DRAG_JS}" }
 
-        style { "{LEFT_DOCK_CSS}" }
+        style { "{LEFT_PANE_CSS}" }
 
         aside {
             class: if layout() == PanelLayout::Floating { "editor-left-panel is-floating" } else { "editor-left-panel" },
@@ -129,9 +130,9 @@ pub fn LeftVisualsPanel(
                         button {
                             class: "editor-mini-button",
                             style: "display: flex; align-items: center; padding: 4px;",
-                            title: "Dock to window",
+                            title: "Pane to window",
                             onclick: move |_| layout.set(PanelLayout::Split),
-                            IconDock {}
+                            IconPane {}
                         }
                         button {
                             class: "editor-mini-button",
@@ -302,7 +303,7 @@ pub fn IconGrip() -> Element {
 }
 
 #[component]
-fn IconDock() -> Element {
+fn IconPane() -> Element {
     rsx! {
         svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
             rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }

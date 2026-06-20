@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use super::left_dock::{IconClose, IconGrip};
+use super::left_pane::{IconClose, IconGrip};
 use crate::ui::components::accordion::EditorAccordion;
 use crate::ui::panels::site_data::ads_panel::AdsPanel;
 use crate::ui::panels::site_data::assets_panel::AssetsPanel;
@@ -12,11 +12,11 @@ use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use crate::ui::workspace::layout::PanelLayout;
 use mor_blogger_core::config::ThemeConfig;
 
-const RIGHT_DOCK_CSS: &str = r#"
+const RIGHT_PANE_CSS: &str = r#"
 .editor-right-panel.is-floating {
     position: fixed !important;
-    left: var(--right-dock-x, calc(100vw - 340px)) !important;
-    top: var(--right-dock-y, 80px) !important;
+    left: var(--right-pane-x, calc(100vw - 340px)) !important;
+    top: var(--right-pane-y, 80px) !important;
     right: auto !important;
     bottom: auto !important;
     margin: 0 !important;
@@ -27,10 +27,10 @@ const RIGHT_DOCK_CSS: &str = r#"
 }
 "#;
 
-const DOCK_DRAG_JS: &str = r#"
+const PANE_DRAG_JS: &str = r#"
 (function () {
-    if (window.__morCoreDockDragInstalled) return;
-    window.__morCoreDockDragInstalled = true;
+    if (window.__morCorePaneDragInstalled) return;
+    window.__morCorePaneDragInstalled = true;
 
     document.addEventListener('pointerdown', function (e) {
         const bar = e.target.closest('.floating-editor-window-bar');
@@ -45,8 +45,8 @@ const DOCK_DRAG_JS: &str = r#"
         e.preventDefault();
         
         const isLeft = panel.classList.contains('editor-left-panel');
-        const varX = isLeft ? '--left-dock-x' : '--right-dock-x';
-        const varY = isLeft ? '--left-dock-y' : '--right-dock-y';
+        const varX = isLeft ? '--left-pane-x' : '--right-pane-x';
+        const varY = isLeft ? '--left-pane-y' : '--right-pane-y';
 
         const rect = panel.getBoundingClientRect();
         const startX = e.clientX;
@@ -94,9 +94,9 @@ pub fn RightDataPanel(
     }
 
     rsx! {
-        script { dangerous_inner_html: "{DOCK_DRAG_JS}" }
+        script { dangerous_inner_html: "{PANE_DRAG_JS}" }
 
-        style { "{RIGHT_DOCK_CSS}" }
+        style { "{RIGHT_PANE_CSS}" }
 
         aside {
             class: if layout() == PanelLayout::Floating { "editor-right-panel is-floating" } else { "editor-right-panel" },
@@ -109,9 +109,9 @@ pub fn RightDataPanel(
                         button {
                             class: "editor-mini-button",
                             style: "display: flex; align-items: center; padding: 4px;",
-                            title: "Dock to window",
+                            title: "Pane to window",
                             onclick: move |_| layout.set(PanelLayout::Split),
-                            "Dock"
+                            "Pane"
                         }
                         button {
                             class: "editor-mini-button",

@@ -114,6 +114,12 @@ pub fn icons_root() -> Option<PathBuf> {
     workspace_root().map(|r| r.join("icons"))
 }
 
+/// Returns the app-scoped css root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/css/` on Linux.
+pub fn css_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("css"))
+}
+
 /// Returns the directory for a specific category inside the templates root.
 pub fn category_dir(category: &str) -> Option<PathBuf> {
     templates_root().map(|r| r.join(category))
@@ -143,6 +149,15 @@ pub fn init_template_dirs() -> std::io::Result<()> {
     })?;
     std::fs::create_dir_all(&icons)?;
     log::info!("[fs_bridge] Icons dir ready at: {}", icons.display());
+
+    let css = css_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&css)?;
+    log::info!("[fs_bridge] CSS dir ready at: {}", css.display());
 
     for (category, filename, content) in DEFAULT_MODULES {
         let dest = root.join(category).join(filename);
@@ -274,4 +289,50 @@ fn sanitize_filename(name: &str) -> String {
     } else {
         format!("{}.xml", cleaned)
     }
+}
+
+/// Strip path-traversal characters and ensure a `.css` extension.
+fn sanitize_css_filename(name: &str) -> String {
+    let cleaned: String = name
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => '_',
+            c => c,
+        })
+        .collect();
+
+    let cleaned = cleaned.trim_start_matches('.').to_string();
+    let cleaned = if cleaned.is_empty() {
+        "custom_css".to_string()
+    } else {
+        cleaned
+    };
+
+    if cleaned.to_lowercase().ends_with(".css") {
+        cleaned
+    } else {
+        format!("{}.css", cleaned)
+    }
+}
+
+/// Write a CSS buffer (e.g. from the VFS) into the css folder.
+/// Creates the folder if absent.
+/// Returns the path the file was written to.
+pub fn save_custom_css(filename: &str, content: &str) -> std::io::Result<PathBuf> {
+    let dir = css_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&dir)?;
+
+    let safe_name = sanitize_css_filename(filename);
+    let dest = dir.join(&safe_name);
+    std::fs::write(&dest, content)?;
+    log::info!(
+        "[fs_bridge] Saved custom CSS: {}",
+        safe_name
+    );
+    Ok(dest)
 }

@@ -24,9 +24,9 @@ use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingW
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
 use crate::ui::workspace::layout::PanelLayout;
-use crate::ui::workspace::left_dock::LeftVisualsPanel;
-use crate::ui::workspace::right_dock::RightDataPanel;
-use crate::ui::workspace::CssEditorPanel;
+use crate::ui::shell::panes::left_pane::LeftVisualsPanel;
+use crate::ui::shell::panes::right_pane::RightDataPanel;
+use crate::ui::docks::CssEditorPanel;
 use mor_blogger_core::config::ThemeConfig;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
@@ -74,8 +74,15 @@ fn DockZone(position: DockPosition) -> Element {
     let show_diagnostics = (layout.diagnostics_pos)() == position;
     let show_plugin_manager = (layout.plugin_manager_pos)() == position;
     let show_presets = (layout.presets_pos)() == position;
+    let show_css_editor = (layout.css_editor_pos)() == position;
 
     let _ = use_app_layout_state;
+
+    if show_css_editor {
+        return rsx! {
+            CssEditorPanel {}
+        };
+    }
 
     if show_theme_palette {
         return rsx! {
@@ -532,7 +539,7 @@ pub fn render_app_shell(
                     }
                 }
 
-                if (layout.css_editor_pos)() != DockPosition::Hidden {
+                if (layout.css_editor_pos)() == DockPosition::Floating {
                     CssEditorPanel {}
                 }
 

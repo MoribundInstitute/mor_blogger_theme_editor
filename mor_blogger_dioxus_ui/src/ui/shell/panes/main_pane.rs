@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn MainDock(
+pub fn MainPane(
     #[props(default = false)] hide_header: bool,
     tabs: Element,
     #[props(default)] toolbar: Option<Element>,

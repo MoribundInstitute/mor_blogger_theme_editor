@@ -5,7 +5,7 @@ use mor_blogger_core::render::{render_preview_html, render_theme};
 
 use super::layout_state::AppLayoutState;
 use super::state::ThemeAppState;
-use crate::ui::workspace::css_editor::VfsDictionary;
+use crate::ui::docks::css_dock::VfsDictionary;
 
 #[derive(Clone, Copy)]
 pub struct AppRenderState {
@@ -39,7 +39,7 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
             &current_config_for_preview(),
             preview_template_mode(),
             is_dark_mode(),
-            &*vfs.read(),
+            &*vfs.peek(),
         )
     });
 

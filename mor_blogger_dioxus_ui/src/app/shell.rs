@@ -1,31 +1,29 @@
 use dioxus::prelude::*;
 
 // 1. IMPORT THE LOCAL UI KIT PIECES
-use crate::ui::components::modal::Modal;
-use crate::ui::shell::css_builder_modal::CssBuilderModal;
-use crate::ui::shell::editor_settings_modal::EditorSettingsModal;
+
 use crate::ui::shell::menu_bar::AppMenuBar;
-use crate::ui::shell::prefs_modal::UserPreferencesModal;
-use crate::ui::shell::shortcut_modal::KeyboardShortcutsModal;
 use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
 use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
-// 2. IMPORT THE EDITOR PANELS
-use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
 use super::layout_state::{AppLayoutState, CenterView, DockPosition, use_app_layout_state};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
-use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
-use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
+use crate::ui::dialogs::about_dialog::AboutDialog;
+use crate::ui::dialogs::css_token_builder_dialog::CssTokenBuilderDialog;
+use crate::ui::dialogs::diagnostics_dialog::DiagnosticsDialog;
+use crate::ui::dialogs::documentation_dialog::DocumentationDialog;
+use crate::ui::dialogs::plugin_manager_dialog::PluginManagerDialog;
+use crate::ui::dialogs::shortcuts_dialog::ShortcutsDialog;
+use crate::ui::dialogs::user_preferences_dialog::UserPreferencesDialog;
+use crate::ui::dialogs::workspace_settings_dialog::WorkspaceSettingsDialog;
 use crate::ui::panels::theme_palette::presets::{PresetFloatingWindow, PresetsPanel};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
-use crate::ui::workspace::layout::PanelLayout;
-use crate::ui::shell::panes::left_pane::LeftVisualsPanel;
-use crate::ui::shell::panes::right_pane::RightDataPanel;
+use crate::ui::shell::docks::{ThemePaletteDock, SiteDataDock};
 use crate::ui::docks::CssEditorPanel;
 use mor_blogger_core::config::ThemeConfig;
 
@@ -58,21 +56,14 @@ fn DockZone(position: DockPosition) -> Element {
     let theme = use_context::<ThemeAppState>();
     let render = use_context::<AppRenderState>();
     let local = use_context::<DockLocalSignals>();
-    let show_plugin_panel = use_signal(|| true);
 
     let active_tab = match position {
         DockPosition::Left => layout.active_left_tab,
         _ => layout.active_right_tab,
     };
-    let current_layout = match position {
-        DockPosition::Left => layout.left_layout,
-        _ => layout.right_layout,
-    };
 
     let show_theme_palette = (layout.theme_palette_pos)() == position;
     let show_site_data = (layout.site_data_pos)() == position;
-    let show_diagnostics = (layout.diagnostics_pos)() == position;
-    let show_plugin_manager = (layout.plugin_manager_pos)() == position;
     let show_presets = (layout.presets_pos)() == position;
     let show_css_editor = (layout.css_editor_pos)() == position;
 
@@ -86,9 +77,8 @@ fn DockZone(position: DockPosition) -> Element {
 
     if show_theme_palette {
         return rsx! {
-            LeftVisualsPanel {
+            ThemePaletteDock {
                 active_tab,
-                layout: current_layout,
                 active_preset: theme.active_preset,
                 signals: theme.signals,
                 show_preview: local.show_preview,
@@ -111,31 +101,13 @@ fn DockZone(position: DockPosition) -> Element {
 
     if show_site_data {
         return rsx! {
-            RightDataPanel {
+            SiteDataDock {
                 active_tab,
-                layout: current_layout,
                 signals: theme.signals,
                 current_config: (theme.current_config)(),
                 on_apply_theme: move |new_config: ThemeConfig| {
                     theme.signals.apply_config(&new_config);
                 },
-            }
-        };
-    }
-
-    if show_diagnostics {
-        return rsx! {
-            DiagnosticsPanel { result: render.diag }
-        };
-    }
-
-    if show_plugin_manager {
-        return rsx! {
-            PluginManagerPanel {
-                show_panel: show_plugin_panel,
-                launch_state: local.launch_plugins,
-                current_state: local.current_plugins,
-                compendium_registry: local.compendium_registry,
             }
         };
     }
@@ -172,14 +144,7 @@ pub fn render_app_shell(
 
     provide_context(render);
 
-    use_effect(move || {
-        let view = center_view();
-
-        if let CenterView::CodeEditor | CenterView::Export | CenterView::ModuleWorkbench = view {
-            layout.left_layout.set(PanelLayout::Hidden);
-            layout.right_layout.set(PanelLayout::Hidden);
-        }
-    });
+    // Active panels are determined reactively based on center_view()
 
     let show_preview = use_signal(|| true);
 
@@ -188,12 +153,14 @@ pub fn render_app_shell(
     let show_undocked_modules = use_signal(|| false);
     let show_advanced_glow = theme.show_advanced_glow;
 
-    let mut show_about = use_signal(|| false);
+    let show_about = use_signal(|| false);
     let show_prefs = use_signal(|| false);
     let show_editor_settings = use_signal(|| false);
     let show_shortcuts = use_signal(|| false);
     let show_css_builder = use_signal(|| false);
-    let mut show_docs = use_signal(|| false);
+    let show_docs = use_signal(|| false);
+    let show_diagnostics = use_signal(|| false);
+    let show_plugin_manager = use_signal(|| false);
 
     let prefs = use_signal(|| EditorPrefs::load());
     let launch_plugins = use_signal(|| prefs().plugins.clone());
@@ -256,8 +223,11 @@ pub fn render_app_shell(
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
-    let config_toml_signal =
-        use_memo(move || toml::to_string_pretty(&current_config()).unwrap_or_default());
+    let mut original_toml = use_signal(|| toml::to_string_pretty(&current_config()).unwrap_or_default());
+    let config_toml_signal = use_memo(move || {
+        let updated = current_config();
+        mor_blogger_core::config::update_toml_preserve_comments(&original_toml(), &updated)
+    });
     let mut tv_monitor = use_signal(|| String::new());
 
     use_effect(move || {
@@ -273,6 +243,21 @@ pub fn render_app_shell(
         current_plugins,
         compendium_registry,
     });
+
+    let show_panels = matches!(center_view(), CenterView::Preview | CenterView::Split);
+    let has_left_dock = (layout.theme_palette_pos)() == DockPosition::Left
+        || (layout.site_data_pos)() == DockPosition::Left
+        || (layout.css_editor_pos)() == DockPosition::Left;
+
+    let has_right_dock = (layout.theme_palette_pos)() == DockPosition::Right
+        || (layout.site_data_pos)() == DockPosition::Right
+        || (layout.css_editor_pos)() == DockPosition::Right;
+
+    let left_active = show_panels && has_left_dock;
+    let right_active = show_panels && has_right_dock;
+
+    let left_width = if left_active { "var(--left-pane-width, 360px)" } else { "0px" };
+    let right_width = if right_active { "var(--right-pane-width, 360px)" } else { "0px" };
 
     rsx! {
         MorStyleProvider { theme_toml: ui_theme_pref() }
@@ -295,35 +280,35 @@ pub fn render_app_shell(
                 }
             }
 
-            Modal {
-                title: "About MorBlogger".to_string(), open: show_about, on_close: move |_| show_about.set(false),
-                div { class: "editor-note",
-                    p { class: "editor-note-title", "Version 0.1.0" }
-                    p { class: "editor-note-body", "Frugal desktop theme engine for Blogger." }
-                }
-            }
+            AboutDialog { open: show_about }
 
-            UserPreferencesModal {
+            UserPreferencesDialog {
                 show_prefs,
                 ui_mode_pref,
                 active_ui_mode: active_ui_mode.clone(),
             }
 
-            EditorSettingsModal {
+            WorkspaceSettingsDialog {
                 open: show_editor_settings,
                 active_theme_toml: ui_theme_pref,
             }
 
-            KeyboardShortcutsModal { open: show_shortcuts }
+            ShortcutsDialog { open: show_shortcuts }
 
-            CssBuilderModal { open: show_css_builder }
+            CssTokenBuilderDialog { open: show_css_builder }
 
-            Modal {
-                title: "Documentation".to_string(), open: show_docs, on_close: move |_| show_docs.set(false),
-                div { class: "editor-note",
-                    p { class: "editor-note-title", "Online Resources" }
-                    p { class: "editor-note-body", "Read the architecture and integration guides in the MOR_PLAN.md at the repository root." }
-                }
+            DocumentationDialog { open: show_docs }
+
+            DiagnosticsDialog {
+                open: show_diagnostics,
+                result: render.diag,
+            }
+
+            PluginManagerDialog {
+                show_panel: show_plugin_manager,
+                launch_state: launch_plugins,
+                current_state: current_plugins,
+                compendium_registry,
             }
 
             div { class: "editor-shell", style: "height: 100%;",
@@ -333,12 +318,10 @@ pub fn render_app_shell(
                     show_editor_settings,
                     show_about,
                     show_shortcuts,
-                    plugin_manager_pos: layout.plugin_manager_pos,
+                    show_plugin_manager,
                     show_css_builder,
-                    diagnostics_pos: layout.diagnostics_pos,
+                    show_diagnostics,
                     show_docs,
-                    left_layout: layout.left_layout,
-                    right_layout: layout.right_layout,
 
                     on_new_workspace: move |_| {
                         let fresh_prefs = crate::app::config_bridge::EditorPrefs::load();
@@ -347,6 +330,7 @@ pub fn render_app_shell(
                             config.template_pack = pack;
                         }
                         signals.apply_config(&config);
+                        original_toml.set(toml::to_string_pretty(&config).unwrap_or_default());
                         active_preset.set(None);
                         theme.commit();
                     },
@@ -354,10 +338,15 @@ pub fn render_app_shell(
                         if let Some(content) = crate::utils::io::load_toml() {
                             if let Ok(new_config) = toml::from_str::<ThemeConfig>(&content) {
                                 signals.apply_config(&new_config);
+                                original_toml.set(content);
                             }
                         }
                     },
-                    on_save_theme: move |_| { crate::utils::io::save_toml(&config_toml_signal()); },
+                    on_save_theme: move |_| {
+                        let toml_str = config_toml_signal();
+                        crate::utils::io::save_toml(&toml_str);
+                        original_toml.set(toml_str);
+                    },
 
                     on_import_xml: {
                         let sigs = signals.clone();
@@ -371,7 +360,10 @@ pub fn render_app_shell(
                                     .await else { return; };
                                 let Ok(xml_str) = std::fs::read_to_string(file.path()) else { return; };
                                 match mor_blogger_core::utils::rehydration::extract_and_decode(&xml_str) {
-                                    Ok(restored_config) => sigs.apply_config(&restored_config),
+                                    Ok(restored_config) => {
+                                        sigs.apply_config(&restored_config);
+                                        original_toml.set(toml::to_string_pretty(&restored_config).unwrap_or_default());
+                                    }
                                     Err(e) => log::error!("Failed to import XML: {}", e),
                                 }
                             });
@@ -421,11 +413,11 @@ pub fn render_app_shell(
 
                 div {
                     class: "editor-main",
-                    "data-left-layout": panel_layout_class((layout.left_layout)()),
-                    "data-right-layout": panel_layout_class((layout.right_layout)()),
-                    // Read Grid Pinned state directly from the Panel Layout to kill split-brain logic
-                    "data-left-pinned": "{(layout.left_layout)() != PanelLayout::Floating}",
-                    "data-right-pinned": "{(layout.right_layout)() != PanelLayout::Floating}",
+                    style: "grid-template-columns: 48px {left_width} 1fr {right_width} 48px;",
+                    "data-left-layout": if left_active { "split" } else { "hidden" },
+                    "data-right-layout": if right_active { "split" } else { "hidden" },
+                    "data-left-pinned": "{left_active}",
+                    "data-right-pinned": "{right_active}",
 
                     // Left Dock Strip - Enforcing Flex Column natively
                     div { 
@@ -435,12 +427,9 @@ pub fn render_app_shell(
                         button { class: "dock-btn", title: "Theme Palette",
                             onclick: move |_| {
                                 if (layout.theme_palette_pos)() == DockPosition::Left {
-                                    let mut current = layout.left_layout;
-                                    current.set(if current() == PanelLayout::Hidden { PanelLayout::Split } else { PanelLayout::Hidden });
+                                    layout.theme_palette_pos.set(DockPosition::Hidden);
                                 } else {
                                     layout.theme_palette_pos.set(DockPosition::Left);
-                                    layout.css_editor_pos.set(DockPosition::Hidden);
-                                    layout.left_layout.set(PanelLayout::Split);
                                 }
                             },
                             IconPalette {}
@@ -527,15 +516,47 @@ pub fn render_app_shell(
                         
                         button { class: "dock-btn", title: "Site Data",
                             onclick: move |_| {
-                                let mut current = layout.right_layout;
-                                if current() == PanelLayout::Hidden {
-                                    current.set(PanelLayout::Split);
+                                if (layout.site_data_pos)() == DockPosition::Right {
+                                    layout.site_data_pos.set(DockPosition::Hidden);
                                 } else {
-                                    current.set(PanelLayout::Hidden);
+                                    layout.site_data_pos.set(DockPosition::Right);
                                 }
                             },
                             IconSiteData {}
                         }
+                    }
+                }
+
+                if (layout.theme_palette_pos)() == DockPosition::Floating {
+                    ThemePaletteDock {
+                        active_tab: layout.active_left_tab,
+                        active_preset: theme.active_preset,
+                        signals: theme.signals,
+                        show_preview: show_preview,
+                        current_config: (theme.current_config)(),
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            let mut theme = theme;
+                            theme.signals.apply_config(&new_config);
+                            theme.active_preset.set(None);
+                            theme.commit();
+                        },
+                        show_undocked_presets: theme.show_undocked_presets,
+                        show_undocked_pages: show_undocked_pages,
+                        show_undocked_modules: show_undocked_modules,
+                        show_advanced_glow: theme.show_advanced_glow,
+                        preview_html: tv_monitor,
+                        base_preview_html: render.preview_html,
+                    }
+                }
+
+                if (layout.site_data_pos)() == DockPosition::Floating {
+                    SiteDataDock {
+                        active_tab: layout.active_right_tab,
+                        signals: theme.signals,
+                        current_config: (theme.current_config)(),
+                        on_apply_theme: move |new_config: ThemeConfig| {
+                            theme.signals.apply_config(&new_config);
+                        },
                     }
                 }
 

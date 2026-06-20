@@ -1,7 +1,7 @@
 use rfd::FileDialog;
 use std::fs::File;
 use std::io::Write;
-use zip::write::FileOptions;
+use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
 
 pub fn save_xml(xml: &str) {
@@ -47,7 +47,8 @@ pub fn export_bundle(xml: &str, toml: &str) {
     {
         if let Ok(file) = File::create(path) {
             let mut zip = zip::ZipWriter::new(file);
-            let options = FileOptions::default().compression_method(CompressionMethod::Stored);
+            let options =
+                SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
 
             // Add the compiled XML
             let _ = zip.start_file("theme.xml", options);

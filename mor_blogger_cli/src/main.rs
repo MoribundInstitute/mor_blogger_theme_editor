@@ -133,7 +133,14 @@ fn main() -> Result<()> {
         }
         Commands::Bundle { input, output } => {
             println!("{} Reading workspace configuration...", "➔".cyan());
-            let config = load_config(input)?;
+            let toml_str = fs::read_to_string(input)
+                .with_context(|| format!("Failed to read input file at '{}'", input.display()))?;
+            let config: ThemeConfig = toml::from_str(&toml_str).with_context(|| {
+                format!(
+                    "Failed to parse valid TOML configuration from '{}'",
+                    input.display()
+                )
+            })?;
 
             println!("{} Resolving theme components...", "➔".cyan());
             let xml = render_theme(&config, &std::collections::HashMap::new());
@@ -142,7 +149,7 @@ fn main() -> Result<()> {
                 "{} Generating static HTML stencils and archiving...",
                 "➔".cyan()
             );
-            save_bundle_to_disk(&xml, &config.site.site_title, &config.static_pages, output)
+            save_bundle_to_disk(&xml, &toml_str, output)
                 .map_err(|e| anyhow::anyhow!(e))?;
 
             println!(

@@ -22,6 +22,7 @@ pub struct ThemeAppState {
     pub show_undocked_presets: Signal<bool>,
     pub show_advanced_glow: Signal<bool>,
     pub history: Signal<ThemeHistory>,
+    pub active_static_page: Signal<Option<String>>,
 }
 
 pub fn use_theme_app_state() -> ThemeAppState {
@@ -120,6 +121,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
 
     let center_view = use_signal(|| CenterView::Preview);
     let active_preset = use_signal(|| None::<&'static str>);
+    let active_static_page = use_signal(|| None::<String>);
     let is_dark_mode = use_signal(|| true);
     let show_undocked_presets = use_signal(|| false);
     let show_advanced_glow = use_signal(|| false);
@@ -329,6 +331,7 @@ pub fn use_theme_app_state() -> ThemeAppState {
         show_undocked_presets,
         show_advanced_glow,
         history,
+        active_static_page,
     }
 }
 

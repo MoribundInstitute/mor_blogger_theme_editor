@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::ui::components::code_editor::CodeEditor;
 
 // 1. Data-Driven Definitions. Zero repetitive DOM slop.
 const TEMPLATE_LAYOUTS: &[(&str, &str)] = &[
@@ -20,9 +21,11 @@ const CORE_IDENTITY: &[(&str, &str)] = &[
 pub fn SmartCodeDock(
     config_toml: ReadSignal<String>,
     on_load_theme: EventHandler<String>,
+    #[props(default)] active_xray_target: Option<Signal<Option<String>>>,
 ) -> Element {
     // 2. Memory cell tracks current selection
     let mut active_target = use_signal(|| None::<String>);
+
 
     let mut jump_to = move |target: &str| {
         let target_str = target.to_string();
@@ -52,6 +55,15 @@ pub fn SmartCodeDock(
             let _ = eval.send(target_str);
         });
     };
+
+    if let Some(mut target_sig) = active_xray_target {
+        use_effect(move || {
+            if let Some(target_str) = target_sig() {
+                jump_to(&target_str);
+                target_sig.set(None);
+            }
+        });
+    }
 
     rsx! {
         div {
@@ -103,13 +115,12 @@ pub fn SmartCodeDock(
                     span { style: "font-size: 0.8rem; color: var(--editor-accent-warm); font-family: var(--font-mono);", "theme_config.toml" }
                     span { style: "font-size: 0.75rem; color: var(--fg-muted);", "Live Reload Active" }
                 }
-                textarea {
-                    id: "toml-editor-textarea",
-                    class: "export-xml-textarea",
-                    style: "flex: 1; border: none; border-radius: 0; margin: 0; background: transparent;",
-                    value: "{config_toml()}",
-                    oninput: move |evt| {
-                        on_load_theme.call(evt.value());
+                CodeEditor {
+                    id: "toml-editor-textarea".to_string(), // CRITICAL for jump_to logic to still work
+                    value: config_toml,
+                    mode: "toml".to_string(),
+                    on_change: move |new_val| {
+                        on_load_theme.call(new_val);
                     }
                 }
             }

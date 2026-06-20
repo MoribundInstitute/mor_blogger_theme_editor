@@ -74,6 +74,7 @@ pub fn StaticPagesPanel(
     mut preview_html: Signal<String>,
     base_preview_html: ReadSignal<String>,
 ) -> Element {
+    let theme_state = use_context::<crate::app::state::ThemeAppState>();
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
     let mut active_tab = use_signal(|| "Archive");
@@ -86,6 +87,9 @@ pub fn StaticPagesPanel(
     use_effect(move || {
         // Prevent auto-reloading on every keystroke if user is typing in the pasteboard
         if active_tab() == "Community" {
+            return;
+        }
+        if *theme_state.center_view.read() == crate::app::layout_state::CenterView::StaticPageEditor {
             return;
         }
 
@@ -134,7 +138,20 @@ pub fn StaticPagesPanel(
                         button {
                             key: "{id}",
                             class: if active_tab() == id { "editor-button editor-button-active" } else { "editor-button" },
-                            onclick: move |_| active_tab.set(id),
+                            onclick: {
+                                let id = id;
+                                move |_| {
+                                    active_tab.set(id);
+                                    let mut ts = theme_state;
+                                    ts.center_view.set(crate::app::layout_state::CenterView::StaticPageEditor);
+                                    ts.active_static_page.set(Some(id.to_string()));
+                                    
+                                    let base = base_preview_html();
+                                    let pages_snapshot = pages();
+                                    let new_html = preview_html_for_tab(id, &pages_snapshot);
+                                    preview_html.set(inject_static_page(&base, &new_html));
+                                }
+                            },
                             "{label}"
                         }
                     }

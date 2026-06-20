@@ -1,0 +1,13 @@
+<footer class='mor-footer-social' id='mor-footer-social' style='text-align: center; padding: 2rem 1rem;'>
+  <div class='footer-social-row' style='display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1rem; align-items: center;'>
+    <h4 data-field-path='footer.columns.0.heading' style='margin: 0; font-size: 1rem;'>{{FOOTER_COL_1_HEADING}}</h4>
+    <a href='{{FOOTER_1_LINK_1_URL}}' rel='noopener' target='_blank' data-field-path='footer.columns.0.links.0.label'>{{FOOTER_1_LINK_1_LABEL}}</a>
+    <a href='{{FOOTER_1_LINK_2_URL}}' rel='noopener' target='_blank' data-field-path='footer.columns.0.links.1.label'>{{FOOTER_1_LINK_2_LABEL}}</a>
+    <a href='{{FOOTER_1_LINK_3_URL}}' rel='noopener' target='_blank' data-field-path='footer.columns.0.links.2.label'>{{FOOTER_1_LINK_3_LABEL}}</a>
+    <a href='{{FOOTER_1_LINK_4_URL}}' rel='noopener' target='_blank' data-field-path='footer.columns.0.links.3.label'>{{FOOTER_1_LINK_4_LABEL}}</a>
+  </div>
+  <div class='footer-sys-info'>
+    <span data-field-path='footer.footer_text'>{{FOOTER_SYS_MESSAGE}}</span>
+    <a href='{{FOOTER_LICENSE_URL}}' rel='noopener' target='_blank' data-field-path='footer.footer_license_label'>{{FOOTER_LICENSE_LABEL}}</a>
+  </div>
+</footer>

@@ -1,18 +1,18 @@
 /* Floating panel window bars and absolute positioning. */
 
 .floating-editor-window-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: -20px -20px 16px -20px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid var(--editor-border);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
-  cursor: grab;
-  user-select: none;
-  touch-action: none;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 12px !important;
+  background: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--editor-border-soft) !important;
+  cursor: move !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  flex: 0 0 44px !important; /* CRITICAL: Prevents vertical collapse */
+  min-height: 44px !important;
+  overflow: hidden !important;
 }
 
 .floating-editor-window-bar:active { cursor: grabbing; }
@@ -24,19 +24,26 @@
   pointer-events: none;
 }
 
+.floating-editor-grip-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
 .floating-editor-title {
-  flex: 1 1 auto;
-  color: var(--editor-text);
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  pointer-events: none;
+  margin: 0 !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
 }
 
 .floating-editor-window-actions {
-  display: flex;
-  gap: 6px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
 /* Floating behavior (Triggered via data attributes) */

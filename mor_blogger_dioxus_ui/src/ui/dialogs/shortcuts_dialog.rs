@@ -2,7 +2,7 @@ use crate::ui::components::modal::Modal;
 use dioxus::prelude::*;
 
 #[component]
-pub fn KeyboardShortcutsModal(open: Signal<bool>) -> Element {
+pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
     let mut shortcuts = use_signal(|| crate::app::config_bridge::ShortcutPrefs::load());
 
     macro_rules! keys {

@@ -13,9 +13,10 @@ use mor_blogger_core::diagnostics::DiagnosticResult;
 use mor_blogger_core::render::PreviewTemplateMode;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
-use crate::ui::shell::panes::main_pane::MainPane;
+use crate::ui::shell::main_pane::MainPane;
 use super::module_workbench::ModuleWorkbench;
 use crate::ui::docks::smart_code_dock::SmartCodeDock;
+use super::static_page_editor::StaticPageEditor;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
@@ -87,7 +88,7 @@ pub fn BloggerWorkspace(
     preview_width: Signal<u32>,
     preview_template_mode: Signal<PreviewTemplateMode>,
 
-    preview_html: ReadSignal<String>,
+    preview_html: Signal<String>,
     show_preview: Signal<bool>,
     mut center_view: Signal<CenterView>,
     diag: Signal<DiagnosticResult>,
@@ -104,6 +105,7 @@ pub fn BloggerWorkspace(
     let error_count = diag.read().errors.len();
     let mut active_icon_picker = use_signal(|| None::<String>);
     let is_xray_active = use_signal(|| false);
+    let mut active_xray_target = use_signal(|| None::<String>);
 
     let mut is_fullscreen = use_signal(|| false);
     let vfs = use_context::<VfsDictionary>().0;
@@ -246,6 +248,7 @@ pub fn BloggerWorkspace(
                         xray_active: Some(is_xray_active),
                         preview_html: preview_html(),
                         on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
+                        on_select: move |target: String| { active_xray_target.set(Some(target)); },
                         on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
                         on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                         on_update_value: {
@@ -266,6 +269,7 @@ pub fn BloggerWorkspace(
                     SmartCodeDock {
                         config_toml,
                         on_load_theme: on_load_theme.clone(),
+                        active_xray_target,
                     }
                 },
                 CenterView::Split => rsx! {
@@ -277,6 +281,7 @@ pub fn BloggerWorkspace(
                                 xray_active: Some(is_xray_active),
                                 preview_html: preview_html(),
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
+                                on_select: move |target: String| { active_xray_target.set(Some(target)); },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
                                 on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                                 on_update_value: {
@@ -297,6 +302,7 @@ pub fn BloggerWorkspace(
                             SmartCodeDock {
                                 config_toml,
                                 on_load_theme: on_load_theme.clone(),
+                                active_xray_target,
                             }
                         }
                     }
@@ -313,6 +319,11 @@ pub fn BloggerWorkspace(
                     ModuleWorkbench {
                         config_toml,
                         on_load_theme: on_load_theme.clone(),
+                    }
+                },
+                CenterView::StaticPageEditor => rsx! {
+                    StaticPageEditor {
+                        preview_html,
                     }
                 }
             }
@@ -342,6 +353,11 @@ fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
             class: if center_view() == CenterView::ModuleWorkbench { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
             onclick: move |_| center_view.set(CenterView::ModuleWorkbench),
             "Module Workbench"
+        }
+        button {
+            class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| center_view.set(CenterView::StaticPageEditor),
+            "Static Pages"
         }
     }
 }
@@ -645,12 +661,12 @@ fn ExportResultView(
                                 let xml = export_xml();
                                 let cfg_str = config_toml();
                                 spawn(async move {
-                                    let config = match toml::from_str::<ThemeConfig>(&cfg_str) {
-                                        Ok(c) => c,
-                                        Err(err) => { status_msg.set(format!("Config error: {}", err)); return; }
-                                    };
+                                    if let Err(err) = toml::from_str::<ThemeConfig>(&cfg_str) {
+                                        status_msg.set(format!("Config error: {}", err));
+                                        return;
+                                    }
                                     if let Some(handle) = rfd::AsyncFileDialog::new().set_file_name("theme_bundle.zip").add_filter("ZIP", &["zip"]).save_file().await {
-                                        match mor_blogger_core::render::save_bundle_to_disk(&xml, "Moribund_Institute", &config.static_pages, handle.path()) {
+                                        match mor_blogger_core::render::save_bundle_to_disk(&xml, &cfg_str, handle.path()) {
                                             Ok(_) => status_msg.set("Bundle exported.".to_string()),
                                             Err(err) => status_msg.set(format!("Bundle failed: {}", err)),
                                         }

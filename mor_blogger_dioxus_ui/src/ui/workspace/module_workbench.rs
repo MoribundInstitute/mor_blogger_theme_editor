@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use dioxus::prelude::*;
+use crate::ui::components::code_editor::CodeEditor;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::render::template_resolver::{
     ComponentManifest, CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY, LAYOUT_REGISTRY,
@@ -299,6 +300,22 @@ pub fn ModuleWorkbench(
         }
     });
 
+    let mut module_xml_signal = use_signal(String::new);
+    let current_xml = display_xml();
+    let mut last_base = use_signal(|| current_xml.clone());
+    if last_base() != current_xml {
+        last_base.set(current_xml.clone());
+        module_xml_signal.set(current_xml);
+    }
+
+    use_effect(move || {
+        let val = module_xml_signal();
+        if !val.is_empty() && val != display_xml.read().as_str() {
+            edited_xml.set(val);
+            on_load_theme.call(config_toml());
+        }
+    });
+
     // Generate the isolated module preview HTML from the live config.
     let module_preview_html = use_memo(move || match (layout.active_workbench_module)() {
         Some(key) => {
@@ -508,15 +525,11 @@ pub fn ModuleWorkbench(
                         }
                     }
 
-                    textarea {
-                        class: "export-xml-textarea",
-                        style: "flex: 1; border: none; border-radius: 0; margin: 0; background: transparent;",
-                        placeholder: "Select a module from the left panel to inspect its XML fragment.",
-                        value: "{display_xml()}",
-                        oninput: move |evt| {
-                            let val = evt.value();
-                            edited_xml.set(val.clone());
-                            on_load_theme.call(config_toml());
+                    CodeEditor {
+                        value: module_xml_signal,
+                        mode: "xml".to_string(),
+                        on_change: move |new_val| {
+                            module_xml_signal.set(new_val);
                         }
                     }
                 }

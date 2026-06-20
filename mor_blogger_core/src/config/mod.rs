@@ -335,3 +335,121 @@ impl Default for FooterConfig {
 pub struct PluginConfig {
     pub custom_js: String,
 }
+
+pub fn update_toml_preserve_comments(original_toml: &str, updated_config: &ThemeConfig) -> String {
+    let mut doc = match original_toml.parse::<toml_edit::DocumentMut>() {
+        Ok(d) => d,
+        Err(_) => {
+            return toml::to_string_pretty(updated_config).unwrap_or_default();
+        }
+    };
+
+    let updated_toml_str = match toml::to_string_pretty(updated_config) {
+        Ok(s) => s,
+        Err(_) => return original_toml.to_string(),
+    };
+
+    let updated_doc = match updated_toml_str.parse::<toml_edit::DocumentMut>() {
+        Ok(d) => d,
+        Err(_) => return original_toml.to_string(),
+    };
+
+    let mut orig_item = toml_edit::Item::Table(doc.as_table().clone());
+    let upd_item = toml_edit::Item::Table(updated_doc.as_table().clone());
+    merge_items(&mut orig_item, &upd_item);
+
+    if let toml_edit::Item::Table(merged_tbl) = orig_item {
+        *doc.as_table_mut() = merged_tbl;
+    }
+
+    doc.to_string()
+}
+
+fn merge_items(original: &mut toml_edit::Item, updated: &toml_edit::Item) {
+    match (original, updated) {
+        (toml_edit::Item::Table(orig_table), toml_edit::Item::Table(upd_table)) => {
+            let keys_to_remove: Vec<String> = orig_table
+                .iter()
+                .map(|(k, _)| k.to_string())
+                .filter(|k| !upd_table.contains_key(k))
+                .collect();
+            for key in keys_to_remove {
+                orig_table.remove(&key);
+            }
+
+            for (key, upd_val) in upd_table.iter() {
+                if let Some(orig_val) = orig_table.get_mut(key) {
+                    merge_items(orig_val, upd_val);
+                } else {
+                    orig_table.insert(key, upd_val.clone());
+                }
+            }
+        }
+        (toml_edit::Item::ArrayOfTables(orig_aot), toml_edit::Item::ArrayOfTables(upd_aot)) => {
+            let mut i = 0;
+            while i < orig_aot.len() && i < upd_aot.len() {
+                if let (Some(orig_tbl), Some(upd_tbl)) = (orig_aot.get_mut(i), upd_aot.get(i)) {
+                    let mut orig_item = toml_edit::Item::Table(orig_tbl.clone());
+                    let upd_item = toml_edit::Item::Table(upd_tbl.clone());
+                    merge_items(&mut orig_item, &upd_item);
+                    if let toml_edit::Item::Table(merged_tbl) = orig_item {
+                        *orig_tbl = merged_tbl;
+                    }
+                }
+                i += 1;
+            }
+            while i < upd_aot.len() {
+                if let Some(upd_tbl) = upd_aot.get(i) {
+                    orig_aot.push(upd_tbl.clone());
+                }
+                i += 1;
+            }
+            while orig_aot.len() > upd_aot.len() {
+                orig_aot.remove(orig_aot.len() - 1);
+            }
+        }
+        (orig_item, upd_item) => {
+            if let (Some(orig_val), Some(upd_val)) = (orig_item.as_value_mut(), upd_item.as_value()) {
+                let decor = orig_val.decor().clone();
+                *orig_val = upd_val.clone();
+                *orig_val.decor_mut() = decor;
+            } else {
+                *orig_item = upd_item.clone();
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_preserve_comments() {
+        let original = r##"# This is a comment at the top
+[site]
+# The title of the site
+site_title = "Original Title"
+site_subtitle = "Original Subtitle"
+
+[colors]
+# Accent color
+accent = "#ff0000"
+"##;
+
+        let mut config = ThemeConfig::default();
+        config.site.site_title = "New Title".to_string();
+        config.site.site_subtitle = "Original Subtitle".to_string();
+        config.colors.accent = "#00ff00".to_string();
+
+        let updated = update_toml_preserve_comments(original, &config);
+        println!("Updated:\n{}", updated);
+
+        assert!(updated.contains("# This is a comment at the top"));
+        assert!(updated.contains("# The title of the site"));
+        assert!(updated.contains("# Accent color"));
+        assert!(updated.contains("site_title = \"New Title\""));
+        assert!(updated.contains("accent = \"#00ff00\""));
+    }
+}
+

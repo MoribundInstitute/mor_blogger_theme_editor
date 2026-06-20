@@ -1,5 +1,5 @@
 use crate::ui::shell::theme::MorTheme;
-use crate::ui::workspace::layout::PanelLayout;
+
 use mor_blogger_core::config::ThemeConfig;
 use serde::{Deserialize, Serialize};
 
@@ -240,14 +240,7 @@ pub fn menu_url(config: &ThemeConfig, index: usize) -> String {
         .unwrap_or_default()
 }
 
-pub fn panel_layout_class(layout: PanelLayout) -> &'static str {
-    match layout {
-        PanelLayout::Split => "split",
-        PanelLayout::Wide => "wide",
-        PanelLayout::Floating => "floating",
-        PanelLayout::Hidden => "hidden",
-    }
-}
+
 
 #[cfg(not(target_arch = "wasm32"))]
 mod theme_reload_watcher {

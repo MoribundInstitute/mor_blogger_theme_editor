@@ -78,6 +78,17 @@ pub const HEADER_REGISTRY: &[ComponentManifest] = &[
         ],
         js_deps: &[],
     },
+    ComponentManifest {
+        id: "minimal",
+        category: ComponentCategory::Header,
+        xml_content: include_str!("../template_parts/headers/mor_header_minimal.xml"),
+        css_deps: &[
+            "04-Main-Header.css",
+            "05-Branding.css",
+            "06-Main-Navigation.css",
+        ],
+        js_deps: &[],
+    },
 ];
 
 pub const LAYOUT_REGISTRY: &[ComponentManifest] = &[
@@ -96,6 +107,13 @@ pub const LAYOUT_REGISTRY: &[ComponentManifest] = &[
         id: "single_column",
         category: ComponentCategory::Layout,
         xml_content: include_str!("../template_parts/layouts/single_column.xml"),
+        css_deps: &["09-Workspace-Layout.css", "11-Main-Canvas.css"],
+        js_deps: &[],
+    },
+    ComponentManifest {
+        id: "two_column_right",
+        category: ComponentCategory::Layout,
+        xml_content: include_str!("../template_parts/layouts/two_column_right.xml"),
         css_deps: &["09-Workspace-Layout.css", "11-Main-Canvas.css"],
         js_deps: &[],
     },
@@ -184,6 +202,13 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
         category: ComponentCategory::Footer,
         xml_content: include_str!("../template_parts/footers/MorFooterMega.xml"),
         css_deps: &["18-Footer-Base.css", "18-Footer-Mega.css"],
+        js_deps: &[],
+    },
+    ComponentManifest {
+        id: "social",
+        category: ComponentCategory::Footer,
+        xml_content: include_str!("../template_parts/footers/MorFooterSocial.xml"),
+        css_deps: &["18-Footer-Base.css"],
         js_deps: &[],
     },
 ];

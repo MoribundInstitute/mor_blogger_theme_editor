@@ -32,9 +32,14 @@
   z-index: 100;
 }
 
+.cinnamon-dock.left {
+  grid-column: 1;
+}
+
 .cinnamon-dock.right {
   border-right: none;
   border-left: 1px solid var(--editor-border);
+  grid-column: 5;
 }
 
 .dock-btn {
@@ -66,10 +71,16 @@
 
 .panel-container.left {
   border-right: 1px solid var(--editor-border);
+  grid-column: 2;
 }
 
 .panel-container.right {
   border-left: 1px solid var(--editor-border);
+  grid-column: 4;
+}
+
+.editor-center-workspace {
+  grid-column: 3;
 }
 
 /* Visibility Control */

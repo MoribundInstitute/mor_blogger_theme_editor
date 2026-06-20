@@ -7,7 +7,6 @@ pub fn MainPane(
     #[props(default)] toolbar: Option<Element>,
     children: Element,
 ) -> Element {
-    // FIX: Do the math outside the rsx macro
     let padding = if hide_header { "8px" } else { "24px" };
 
     rsx! {

@@ -2,17 +2,14 @@
 
 use std::collections::HashMap;
 use std::fs::{self, File};
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::Path;
-use zip::write::FileOptions;
+use zip::write::SimpleFileOptions;
 use zip::ZipWriter;
 
 use super::xml_generator;
-use crate::config::{StaticPagesConfig, ThemeConfig};
-use crate::render::pages::{
-    generate_about_html, generate_archive_html, generate_categories_html,
-    generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
-};
+use crate::config::ThemeConfig;
+use crate::utils::fs_bridge;
 
 pub fn render_theme(config: &ThemeConfig, vfs: &HashMap<String, String>) -> String {
     eprintln!(
@@ -30,72 +27,50 @@ pub fn save_xml_to_disk(xml_content: &str, file_path: &Path) -> Result<String, S
     }
 }
 
+/// Packages the master XML, the raw TOML config, and the user's custom CSS
+/// into a standard deployment .zip file.
 pub fn save_bundle_to_disk(
     xml_content: &str,
-    site_title: &str,
-    pages_config: &StaticPagesConfig,
-    file_path: &Path,
-) -> Result<String, String> {
-    let file = File::create(file_path).map_err(|e| format!("Failed to create zip file: {}", e))?;
+    toml_content: &str,
+    dest_path: &Path,
+) -> std::io::Result<()> {
+    let file = File::create(dest_path)?;
     let mut zip = ZipWriter::new(file);
-    let options = FileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated)
-        .unix_permissions(0o755);
 
-    let safe_title = site_title.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
-    let xml_filename = format!("{}_theme.xml", safe_title.to_lowercase());
-    zip.start_file(&xml_filename, options)
-        .map_err(|e| format!("Zip error: {}", e))?;
-    zip.write_all(xml_content.as_bytes())
-        .map_err(|e| format!("Write error: {}", e))?;
+    // Use SimpleFileOptions for newer `zip` crate versions, or FileOptions for older ones.
+    let options = SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated);
 
-    let mut stencils = Vec::new();
+    // 1. Write the compiled Blogger XML payload
+    zip.start_file("theme.xml", options)?;
+    zip.write_all(xml_content.as_bytes())?;
 
-    if pages_config.archive.include_in_bundle {
-        stencils.push(("archive.html", generate_archive_html(&pages_config.archive)));
-    }
-    if pages_config.categories.include_in_bundle {
-        stencils.push((
-            "directory.html",
-            generate_categories_html(&pages_config.categories),
-        ));
-    }
-    if pages_config.portfolio.include_in_bundle {
-        stencils.push((
-            "portfolio.html",
-            generate_portfolio_html(&pages_config.portfolio),
-        ));
-    }
-    if pages_config.about.include_in_bundle {
-        stencils.push(("about.html", generate_about_html(&pages_config.about)));
-    }
-    if pages_config.lms.include_catalog_in_bundle {
-        stencils.push((
-            "course_catalog.html",
-            generate_course_catalog_html(&pages_config.lms),
-        ));
-    }
-    if pages_config.lms.include_syllabus_in_bundle {
-        stencils.push(("syllabus.html", generate_syllabus_html(&pages_config.lms)));
-    }
+    // 2. Write the raw TOML configuration backup
+    zip.start_file("theme_config.toml", options)?;
+    zip.write_all(toml_content.as_bytes())?;
 
-    if !stencils.is_empty() {
-        zip.add_directory("html_pages", options)
-            .map_err(|e| format!("Zip error: {}", e))?;
+    // 3. Scrape the local workspace and bundle all CSS overrides
+    if let Some(css_dir) = fs_bridge::css_root() {
+        if css_dir.exists() {
+            zip.add_directory("css/", options)?;
 
-        for (filename, html) in stencils {
-            zip.start_file(format!("html_pages/{}", filename), options)
-                .map_err(|e| format!("Zip error: {}", e))?;
-            zip.write_all(html.as_bytes())
-                .map_err(|e| format!("Write error: {}", e))?;
+            for entry in std::fs::read_dir(css_dir)? {
+                let entry = entry?;
+                let path = entry.path();
+
+                if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("css") {
+                    if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
+                        zip.start_file(format!("css/{}", filename), options)?;
+                        let mut f = File::open(&path)?;
+                        let mut buffer = Vec::new();
+                        f.read_to_end(&mut buffer)?;
+                        zip.write_all(&buffer)?;
+                    }
+                }
+            }
         }
     }
 
-    zip.finish()
-        .map_err(|e| format!("Failed to finalize zip: {}", e))?;
-
-    Ok(format!(
-        "System success: Bundle exported to {:?}",
-        file_path
-    ))
+    zip.finish()?;
+    Ok(())
 }

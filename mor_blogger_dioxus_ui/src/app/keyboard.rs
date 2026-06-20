@@ -1,12 +1,10 @@
 use dioxus::prelude::*;
 
-use crate::ui::workspace::layout::PanelLayout;
-
-use super::layout_state::AppLayoutState;
+use super::layout_state::{AppLayoutState, DockPosition};
 
 pub fn use_keyboard_shortcuts(layout: AppLayoutState) {
-    let mut left_layout = layout.left_layout;
-    let mut right_layout = layout.right_layout;
+    let mut theme_palette_pos = layout.theme_palette_pos;
+    let mut site_data_pos = layout.site_data_pos;
 
     use_effect(move || {
         let mut eval = dioxus::document::eval(
@@ -33,30 +31,26 @@ pub fn use_keyboard_shortcuts(layout: AppLayoutState) {
                 if let Some(cmd) = value.as_str() {
                     match cmd {
                         "toggle_left" => {
-                            if left_layout() == PanelLayout::Hidden {
-                                left_layout.set(PanelLayout::Split);
+                            if theme_palette_pos() == DockPosition::Hidden {
+                                theme_palette_pos.set(DockPosition::Left);
                             } else {
-                                left_layout.set(PanelLayout::Hidden);
+                                theme_palette_pos.set(DockPosition::Hidden);
                             }
                         }
                         "toggle_right" => {
-                            if right_layout() == PanelLayout::Hidden {
-                                right_layout.set(PanelLayout::Split);
+                            if site_data_pos() == DockPosition::Hidden {
+                                site_data_pos.set(DockPosition::Right);
                             } else {
-                                right_layout.set(PanelLayout::Hidden);
+                                site_data_pos.set(DockPosition::Hidden);
                             }
                         }
-                        "layout_split" => {
-                            left_layout.set(PanelLayout::Split);
-                            right_layout.set(PanelLayout::Split);
-                        }
-                        "layout_wide" => {
-                            left_layout.set(PanelLayout::Wide);
-                            right_layout.set(PanelLayout::Wide);
+                        "layout_split" | "layout_wide" => {
+                            theme_palette_pos.set(DockPosition::Left);
+                            site_data_pos.set(DockPosition::Right);
                         }
                         "layout_float" => {
-                            left_layout.set(PanelLayout::Floating);
-                            right_layout.set(PanelLayout::Floating);
+                            theme_palette_pos.set(DockPosition::Floating);
+                            site_data_pos.set(DockPosition::Floating);
                         }
                         _ => {}
                     }

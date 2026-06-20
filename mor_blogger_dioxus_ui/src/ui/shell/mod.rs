@@ -1,10 +1,7 @@
-pub mod css_builder_modal;
-pub mod editor_settings_modal;
 pub mod menu_bar;
-pub mod panes;
-pub mod prefs_modal;
+pub mod main_pane;
+pub mod docks;
 pub mod shortcut;
-pub mod shortcut_modal;
 pub mod theme;
 pub mod toolbars;
 pub mod window_frame;

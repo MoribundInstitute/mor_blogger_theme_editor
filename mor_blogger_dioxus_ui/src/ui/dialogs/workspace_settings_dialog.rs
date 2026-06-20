@@ -4,13 +4,13 @@ use crate::ui::shell::theme::{get_native_os_theme, MorTheme, GTK4_DARK_TOML, MAC
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
-pub struct EditorSettingsModalProps {
+pub struct WorkspaceSettingsDialogProps {
     pub open: Signal<bool>,
     pub active_theme_toml: Signal<String>,
 }
 
 #[component]
-pub fn EditorSettingsModal(mut props: EditorSettingsModalProps) -> Element {
+pub fn WorkspaceSettingsDialog(mut props: WorkspaceSettingsDialogProps) -> Element {
     let mut open = props.open;
     let active_theme_toml = props.active_theme_toml;
     let mut current_tab = use_signal(|| 0); // 0: Presets & Colors, 1: Typography & Geometry
@@ -160,7 +160,7 @@ fn ColorInput(props: ColorInputProps) -> Element {
         div {
           style: "display: flex; align-items: center; gap: 8px; width: 100%;",
           input {
-            type: "color",
+            r#type: "color",
             class: "editor-color-field",
             style: "width: 38px; height: 32px; border: 1px solid var(--editor-border); border-radius: var(--radius-sm); cursor: pointer; background: transparent; padding: 0;",
             value: "{props.value}",
@@ -169,7 +169,7 @@ fn ColorInput(props: ColorInputProps) -> Element {
             }
           }
           input {
-            type: "text",
+            r#type: "text",
             class: "editor-field",
             style: "flex: 1; font-family: monospace; font-size: 13px;",
             value: "{val_clone}",
@@ -274,7 +274,7 @@ fn TypographySection(props: TypographySectionProps) -> Element {
             style: "display: flex; flex-direction: column; gap: 4px;",
             label { class: "editor-field-label", "Custom Font Family (Text Input)" }
             input {
-              type: "text",
+              r#type: "text",
               class: "editor-field",
               placeholder: "e.g. system-ui, sans-serif",
               value: "{theme.font_family}",
@@ -317,7 +317,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             style: "display: flex; flex-direction: column; gap: 4px;",
             label { class: "editor-field-label", "Base Font Size" }
             input {
-              type: "text",
+              r#type: "text",
               class: "editor-field",
               placeholder: "e.g. 13px",
               value: "{theme.font_size_base}",
@@ -336,7 +336,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             style: "display: flex; flex-direction: column; gap: 4px;",
             label { class: "editor-field-label", "Heading Font Size" }
             input {
-              type: "text",
+              r#type: "text",
               class: "editor-field",
               placeholder: "e.g. 20px",
               value: "{theme.font_size_h1}",
@@ -359,7 +359,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             style: "display: flex; flex-direction: column; gap: 4px;",
             label { class: "editor-field-label", "Control Padding" }
             input {
-              type: "text",
+              r#type: "text",
               class: "editor-field",
               placeholder: "e.g. 8px",
               value: "{theme.padding_base}",
@@ -378,7 +378,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             style: "display: flex; flex-direction: column; gap: 4px;",
             label { class: "editor-field-label", "Border Radius" }
             input {
-              type: "text",
+              r#type: "text",
               class: "editor-field",
               placeholder: "e.g. 6px",
               value: "{theme.border_radius}",
@@ -403,7 +403,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             div {
               style: "display: flex; align-items: center; gap: 8px;",
               input {
-                type: "color",
+                r#type: "color",
                 class: "editor-color-field",
                 style: "width: 38px; height: 32px; border: 1px solid var(--editor-border); border-radius: var(--radius-sm); cursor: pointer; background: transparent; padding: 0;",
                 value: "{theme.accent}",
@@ -417,7 +417,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
                 }
               }
               input {
-                type: "text",
+                r#type: "text",
                 class: "editor-field",
                 style: "flex: 1; font-family: monospace; font-size: 13px;",
                 value: "{theme.accent}",
@@ -439,7 +439,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
             div {
               style: "display: flex; align-items: center; gap: 8px;",
               input {
-                type: "color",
+                r#type: "color",
                 class: "editor-color-field",
                 style: "width: 38px; height: 32px; border: 1px solid var(--editor-border); border-radius: var(--radius-sm); cursor: pointer; background: transparent; padding: 0;",
                 value: "{theme.accent_hover}",
@@ -453,7 +453,7 @@ fn GeometrySection(props: GeometrySectionProps) -> Element {
                 }
               }
               input {
-                type: "text",
+                r#type: "text",
                 class: "editor-field",
                 style: "flex: 1; font-family: monospace; font-size: 13px;",
                 value: "{theme.accent_hover}",

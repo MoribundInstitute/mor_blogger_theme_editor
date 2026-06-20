@@ -1,7 +1,7 @@
 use crate::app::layout_state::{AppLayoutState, DockPosition};
 use crate::app::state::ThemeAppState;
 use crate::ui::shell::shortcut::use_shortcut;
-use crate::ui::workspace::layout::PanelLayout;
+
 use dioxus::prelude::*;
 
 // =========================================================================
@@ -76,12 +76,10 @@ pub fn AppMenuBar(
     mut show_editor_settings: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
-    mut plugin_manager_pos: Signal<DockPosition>,
+    mut show_plugin_manager: Signal<bool>,
     mut show_css_builder: Signal<bool>,
-    mut diagnostics_pos: Signal<DockPosition>,
+    mut show_diagnostics: Signal<bool>,
     mut show_docs: Signal<bool>,
-    mut left_layout: Signal<PanelLayout>,
-    mut right_layout: Signal<PanelLayout>,
     on_new_workspace: EventHandler<()>,
     on_load_theme: EventHandler<()>,
     on_save_theme: EventHandler<()>,
@@ -187,20 +185,22 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "Toggle Theme Palette (Left)".to_string(),
                     on_action: move |_| {
-                        if left_layout() == PanelLayout::Hidden {
-                            left_layout.set(PanelLayout::Split);
+                        let current = (layout.theme_palette_pos)();
+                        if current == DockPosition::Hidden {
+                            layout.theme_palette_pos.set(DockPosition::Left);
                         } else {
-                            left_layout.set(PanelLayout::Hidden);
+                            layout.theme_palette_pos.set(DockPosition::Hidden);
                         }
                     }
                 }
                 MenuItem {
                     label: "Toggle Site Data (Right)".to_string(),
                     on_action: move |_| {
-                        if right_layout() == PanelLayout::Hidden {
-                            right_layout.set(PanelLayout::Split);
+                        let current = (layout.site_data_pos)();
+                        if current == DockPosition::Hidden {
+                            layout.site_data_pos.set(DockPosition::Right);
                         } else {
-                            right_layout.set(PanelLayout::Hidden);
+                            layout.site_data_pos.set(DockPosition::Hidden);
                         }
                     }
                 }
@@ -240,13 +240,7 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Tools".to_string(),
                 MenuItem {
                     label: "Theme Diagnostics".to_string(),
-                    on_action: move |_| {
-                        if diagnostics_pos() == DockPosition::Hidden {
-                            diagnostics_pos.set(DockPosition::Right);
-                        } else {
-                            diagnostics_pos.set(DockPosition::Hidden);
-                        }
-                    }
+                    on_action: move |_| show_diagnostics.set(true)
                 }
                 MenuItem {
                     label: "CSS Token Builder".to_string(),
@@ -255,13 +249,7 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem {
                     label: "Plugin Manager".to_string(),
-                    on_action: move |_| {
-                        if plugin_manager_pos() == DockPosition::Hidden {
-                            plugin_manager_pos.set(DockPosition::Left);
-                        } else {
-                            plugin_manager_pos.set(DockPosition::Hidden);
-                        }
-                    }
+                    on_action: move |_| show_plugin_manager.set(true)
                 }
             }
 

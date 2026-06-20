@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use std::collections::HashMap;
 use crate::app::layout_state::{AppLayoutState, CenterView, DockPosition};
 use crate::app::state::ThemeAppState;
-use crate::ui::workspace::layout::PanelLayout;
+use crate::ui::components::code_editor::CodeEditor;
 use mor_blogger_core::render::template_resolver::{
     fetch_default_css, ComponentManifest, CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY,
     LAYOUT_REGISTRY, SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
@@ -45,6 +45,36 @@ const EDITOR_DRAG_JS: &str = r#"
             document.removeEventListener('pointerup', onUp);
         };
 
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    });
+})();
+"#;
+
+const PANE_RESIZE_JS: &str = r#"
+(function() {
+    if (window.__morPaneResizeInstalled) return;
+    window.__morPaneResizeInstalled = true;
+    document.addEventListener('pointerdown', function(e) {
+        const resizer = e.target.closest('.pane-resizer');
+        if (!resizer) return;
+        e.preventDefault();
+        const isLeft = resizer.classList.contains('pane-resizer-right');
+        const startX = e.clientX;
+        const panel = resizer.closest('.editor-left-panel, .editor-right-panel');
+        const startWidth = panel.getBoundingClientRect().width;
+        
+        const onMove = function(moveEvt) {
+            const dx = moveEvt.clientX - startX;
+            const newWidth = isLeft ? startWidth + dx : startWidth - dx;
+            const clamped = Math.max(200, Math.min(newWidth, window.innerWidth / 2.5));
+            const varName = isLeft ? '--left-pane-width' : '--right-pane-width';
+            document.documentElement.style.setProperty(varName, clamped + 'px');
+        };
+        const onUp = function() {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        };
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
     });
@@ -115,6 +145,45 @@ const EDITOR_CSS: &str = r#"
         padding: 16px;
         resize: none;
     }
+    .editor-left-panel:not(.is-floating) { width: var(--left-pane-width, 320px) !important; position: relative; }
+    .editor-right-panel:not(.is-floating) { width: var(--right-pane-width, 320px) !important; position: relative; }
+    .pane-resizer { position: absolute; top: 0; bottom: 0; width: 6px; z-index: 999; cursor: ew-resize; background: transparent; transition: background 0.1s; }
+    .pane-resizer:hover, .pane-resizer:active { background: var(--editor-accent, rgba(255,255,255,0.2)); }
+    .pane-resizer-right { right: 0; }
+    .pane-resizer-left { left: 0; }
+    .floating-editor-window-bar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 12px !important;
+        background: var(--bg-elevated) !important;
+        border-bottom: 1px solid var(--editor-border-soft) !important;
+        cursor: move !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        flex: 0 0 44px !important; /* CRITICAL: Prevents vertical collapse */
+        min-height: 44px !important;
+        overflow: hidden !important;
+    }
+    .floating-editor-grip-group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+    .floating-editor-title {
+        margin: 0 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        white-space: nowrap !important;
+    }
+    .floating-editor-window-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
 "#;
 
 fn get_css_deps<'a>(registry: &'a [ComponentManifest], target_id: &str) -> Vec<&'a str> {
@@ -130,6 +199,8 @@ pub fn CssEditorPanel() -> Element {
     let mut layout = use_context::<AppLayoutState>();
     let theme = use_context::<ThemeAppState>();
     let mut vfs = use_context::<VfsDictionary>().0;
+    let mut last_workbench_key = use_signal(|| None::<String>);
+    let mut active_tab = use_signal(|| "preset_css.css".to_string());
     
     let pos = (layout.css_editor_pos)();
     if pos == DockPosition::Hidden {
@@ -145,19 +216,61 @@ pub fn CssEditorPanel() -> Element {
     if view == CenterView::ModuleWorkbench {
         if let Some(key) = (layout.active_workbench_module)() {
             let deps = match key {
-                "header_variant" => get_css_deps(HEADER_REGISTRY, &pack.header_variant),
-                "main_variant" => get_css_deps(LAYOUT_REGISTRY, &pack.main_variant),
-                "content_variant" => get_css_deps(CONTENT_REGISTRY, &pack.content_variant),
-                "left_sidebar_variant" => get_css_deps(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant),
-                "right_sidebar_variant" => get_css_deps(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant),
-                "footer_variant" => get_css_deps(FOOTER_REGISTRY, &pack.footer_variant),
+                "header_variant" => {
+                    let mut d = get_css_deps(HEADER_REGISTRY, &pack.header_variant);
+                    if d.is_empty() {
+                        d.push("header.css");
+                    }
+                    d
+                }
+                "main_variant" => {
+                    let mut d = get_css_deps(LAYOUT_REGISTRY, &pack.main_variant);
+                    if d.is_empty() {
+                        d.push("layout.css");
+                    }
+                    d
+                }
+                "content_variant" => {
+                    let mut d = get_css_deps(CONTENT_REGISTRY, &pack.content_variant);
+                    if d.is_empty() {
+                        d.push("content.css");
+                    }
+                    d
+                }
+                "left_sidebar_variant" | "right_sidebar_variant" => {
+                    let mut d = if key == "left_sidebar_variant" {
+                        get_css_deps(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant)
+                    } else {
+                        get_css_deps(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant)
+                    };
+                    if d.is_empty() {
+                        d.push("sidebar.css");
+                    }
+                    d
+                }
+                "footer_variant" => {
+                    let mut d = get_css_deps(FOOTER_REGISTRY, &pack.footer_variant);
+                    if d.is_empty() {
+                        d.push("footer.css");
+                    }
+                    d
+                }
                 _ => vec![],
             };
             available_files.extend(deps);
-        }
-    }
 
-    let mut active_tab = use_signal(|| "preset_css.css".to_string());
+            if let Some(current_key) = (layout.active_workbench_module)() {
+                if last_workbench_key() != Some(current_key.to_string()) {
+                    last_workbench_key.set(Some(current_key.to_string()));
+                    if available_files.len() > 1 {
+                        active_tab.set(available_files[1].to_string());
+                    }
+                }
+            }
+        }
+    } else {
+        last_workbench_key.set(None);
+    }
     
     // BLOAT KILLER: Pure derived state. No use_effect watcher fighting the render cycle.
     let current_file = if available_files.contains(&active_tab().as_str()) {
@@ -174,12 +287,25 @@ pub fn CssEditorPanel() -> Element {
         vfs.read().get(&current_file).cloned().unwrap_or_else(|| fetch_default_css(&current_file).to_string())
     };
 
+    let mut last_file = use_signal(|| current_file.clone());
+    let mut last_external_val = use_signal(|| css_val.clone());
+    let mut current_editor_content = use_signal(|| css_val.clone());
+    
+    if last_file() != current_file {
+        last_file.set(current_file.clone());
+        current_editor_content.set(css_val.clone());
+        last_external_val.set(css_val.clone());
+    } else if last_external_val() != css_val {
+        last_external_val.set(css_val.clone());
+        current_editor_content.set(css_val.clone());
+    }
+
     let is_floating = pos == DockPosition::Floating;
 
     let sync_vfs = vfs;
 
     let header_actions = rsx! {
-        div { class: "floating-editor-window-actions", style: "display: flex; gap: 4px; align-items: center;",
+        div { class: "floating-editor-window-actions",
             button {
                 class: "editor-mini-button",
                 style: "padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; font-weight: 600;",
@@ -205,10 +331,7 @@ pub fn CssEditorPanel() -> Element {
                     style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Left",
                     onclick: move |_| {
-                        layout.css_editor_pos.set(DockPosition::Left);
-                        if (layout.left_layout)() == PanelLayout::Hidden {
-                            layout.left_layout.set(PanelLayout::Split);
-                        }
+                        layout.request_exclusive_dock("css", DockPosition::Left);
                     },
                     IconDockLeft {}
                 }
@@ -219,10 +342,7 @@ pub fn CssEditorPanel() -> Element {
                     style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Right",
                     onclick: move |_| {
-                        layout.css_editor_pos.set(DockPosition::Right);
-                        if (layout.right_layout)() == PanelLayout::Hidden {
-                            layout.right_layout.set(PanelLayout::Split);
-                        }
+                        layout.request_exclusive_dock("css", DockPosition::Right);
                     },
                     IconDockRight {}
                 }
@@ -250,20 +370,30 @@ pub fn CssEditorPanel() -> Element {
 
     let editor_body = rsx! {
         script { dangerous_inner_html: "{EDITOR_DRAG_JS}" }
+        script { dangerous_inner_html: "{PANE_RESIZE_JS}" }
         style { dangerous_inner_html: "{EDITOR_CSS}" }
 
         if is_floating {
-            div { class: "floating-editor-window-bar", style: "cursor: move;",
-                span { class: "floating-editor-grip", style: "display: flex; align-items: center;", "⠿" }
-                span { class: "floating-editor-title", "CSS Architect" }
+            div {
+                class: "floating-editor-window-bar",
+                div {
+                    class: "floating-editor-grip-group",
+                    span { class: "floating-editor-grip", style: "display: flex; align-items: center;", "⠿" }
+                    span {
+                        class: "floating-editor-title",
+                        "CSS Editor"
+                    }
+                }
                 {header_actions}
             }
         } else {
             div { class: "editor-panel-header", style: "display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--editor-border-soft); box-sizing: border-box;",
-                h2 { class: "editor-panel-title", style: "margin: 0; font-size: 0.9rem; font-weight: 600;", "CSS Architect" }
+                h2 { class: "editor-panel-title", style: "margin: 0; font-size: 0.9rem; font-weight: 600;", "CSS Editor" }
                 {header_actions}
             }
         }
+
+
 
         div { class: "css-tab-bar",
             for file in available_files {
@@ -280,16 +410,17 @@ pub fn CssEditorPanel() -> Element {
 
         div {
             style: "display: flex; flex-direction: column; flex: 1 1 auto; width: 100%; min-height: 0;",
-            textarea {
-                class: "css-editor-textarea",
-                value: "{css_val}",
-                oninput: move |evt| { 
+            CodeEditor {
+                value: current_editor_content,
+                mode: "css".to_string(),
+                on_change: move |new_val: String| {
                     let file = current_file.clone();
                     if file == "preset_css.css" {
-                        preset_css_signal.set(evt.value()); 
+                        preset_css_signal.set(new_val.clone());
                     } else {
-                        vfs.write().insert(file, evt.value());
+                        vfs.write().insert(file, new_val.clone());
                     }
+                    last_external_val.set(new_val);
                 }
             }
         }
@@ -299,16 +430,18 @@ pub fn CssEditorPanel() -> Element {
         DockPosition::Left => {
             rsx! {
                 aside {
-                    class: if (layout.left_layout)() == PanelLayout::Floating { "editor-left-panel is-floating css-editor-mode" } else { "editor-left-panel css-editor-mode" },
+                    class: "editor-left-panel css-editor-mode",
                     {editor_body}
+                    div { class: "pane-resizer pane-resizer-right" }
                 }
             }
         }
         DockPosition::Right => {
             rsx! {
                 aside {
-                    class: if (layout.right_layout)() == PanelLayout::Floating { "editor-right-panel is-floating css-editor-mode" } else { "editor-right-panel css-editor-mode" },
+                    class: "editor-right-panel css-editor-mode",
                     {editor_body}
+                    div { class: "pane-resizer pane-resizer-left" }
                 }
             }
         }
@@ -360,6 +493,25 @@ fn IconDockRight() -> Element {
         svg { width: "14", height: "14", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
             rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
             path { d: "M10.5 2.5v11" }
+        }
+    }
+}
+
+#[component]
+fn IconSplit() -> Element {
+    rsx! {
+        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
+            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
+            path { d: "M8 2.5v11" }
+        }
+    }
+}
+
+#[component]
+fn IconWide() -> Element {
+    rsx! {
+        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
+            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
         }
     }
 }

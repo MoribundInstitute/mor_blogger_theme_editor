@@ -28,6 +28,11 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
         "gtk_headerbar.xml",
         include_str!("../template_parts/headers/gtk_headerbar.xml"),
     ),
+    (
+        "headers",
+        "mor_header_minimal.xml",
+        include_str!("../template_parts/headers/mor_header_minimal.xml"),
+    ),
     // Footers
     (
         "footers",
@@ -43,6 +48,11 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
         "footers",
         "MorFooterMega.xml",
         include_str!("../template_parts/footers/MorFooterMega.xml"),
+    ),
+    (
+        "footers",
+        "MorFooterSocial.xml",
+        include_str!("../template_parts/footers/MorFooterSocial.xml"),
     ),
     // Sidebars
     (
@@ -70,6 +80,11 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
         "layouts",
         "single_column.xml",
         include_str!("../template_parts/layouts/single_column.xml"),
+    ),
+    (
+        "layouts",
+        "two_column_right.xml",
+        include_str!("../template_parts/layouts/two_column_right.xml"),
     ),
     // Content
     (
@@ -120,6 +135,18 @@ pub fn css_root() -> Option<PathBuf> {
     workspace_root().map(|r| r.join("css"))
 }
 
+/// Returns the app-scoped plugins root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/plugins/` on Linux.
+pub fn plugins_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("plugins"))
+}
+
+/// Returns the app-scoped pages root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/pages/` on Linux.
+pub fn pages_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("pages"))
+}
+
 /// Returns the directory for a specific category inside the templates root.
 pub fn category_dir(category: &str) -> Option<PathBuf> {
     templates_root().map(|r| r.join(category))
@@ -158,6 +185,15 @@ pub fn init_template_dirs() -> std::io::Result<()> {
     })?;
     std::fs::create_dir_all(&css)?;
     log::info!("[fs_bridge] CSS dir ready at: {}", css.display());
+
+    let plugins = plugins_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&plugins)?;
+    log::info!("[fs_bridge] Plugins dir ready at: {}", plugins.display());
 
     for (category, filename, content) in DEFAULT_MODULES {
         let dest = root.join(category).join(filename);
@@ -336,3 +372,78 @@ pub fn save_custom_css(filename: &str, content: &str) -> std::io::Result<PathBuf
     );
     Ok(dest)
 }
+
+/// Load all custom CSS files from the css directory.
+/// If the directory doesn't exist, returns an empty HashMap.
+pub fn load_all_custom_css() -> std::io::Result<std::collections::HashMap<String, String>> {
+    let mut css_files = std::collections::HashMap::new();
+    let dir = match css_root() {
+        Some(d) => d,
+        None => return Ok(css_files),
+    };
+    if !dir.exists() {
+        return Ok(css_files);
+    }
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(ext) = path.extension() {
+                if ext == "css" {
+                    if let Some(filename) = path.file_name().and_then(|f| f.to_str()) {
+                        let content = std::fs::read_to_string(&path)?;
+                        css_files.insert(filename.to_string(), content);
+                    }
+                }
+            }
+        }
+    }
+    Ok(css_files)
+}
+
+/// Copies the given plugin file into the plugins directory.
+pub fn install_local_plugin(file_path: &std::path::Path) -> std::io::Result<PathBuf> {
+    let plugins_dir = plugins_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+
+    // Ensure the folder exists (in case it was deleted or not created)
+    std::fs::create_dir_all(&plugins_dir)?;
+
+    let file_name = file_path.file_name().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "File path does not have a valid filename",
+        )
+    })?;
+
+    let dest = plugins_dir.join(file_name);
+    std::fs::copy(file_path, &dest)?;
+    log::info!("[fs_bridge] Installed local plugin to: {}", dest.display());
+    Ok(dest)
+}
+
+/// Write a static page HTML buffer into the pages folder.
+/// Creates the folder if absent. Returns the path the file was written to.
+pub fn save_custom_page(name: &str, content: &str) -> std::io::Result<PathBuf> {
+    let dir = pages_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&dir)?;
+
+    let safe_name = format!("{}.html", name.to_lowercase());
+    let dest = dir.join(&safe_name);
+    std::fs::write(&dest, content)?;
+    log::info!(
+        "[fs_bridge] Saved custom static page HTML: {}",
+        safe_name
+    );
+    Ok(dest)
+}
+

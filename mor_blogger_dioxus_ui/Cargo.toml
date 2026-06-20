@@ -16,6 +16,7 @@ mor_blogger_core = { path = "../mor_blogger_core" }
 dioxus = "0.7"
 dioxus-logger = "0.5.1"
 rfd = "0.17.2"
+syntect = "5.2"
 
 log.workspace = true
 serde.workspace = true

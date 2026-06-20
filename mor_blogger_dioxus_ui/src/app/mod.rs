@@ -4,15 +4,13 @@
 //! `src/lib.rs` declares `pub mod app;`, so this file is the module root
 //! when the old flat `src/app.rs` file is removed.
 
-use std::collections::HashMap;
-
 use dioxus::prelude::*;
 
 pub mod config_bridge;
 pub mod hotswap;
 mod keyboard;
 pub mod layout_state;
-mod render_state;
+pub mod render_state;
 mod restore_drop;
 mod shell;
 pub mod state;
@@ -32,7 +30,7 @@ use theme_hot_reload::use_theme_config_hot_reload;
 #[allow(non_snake_case)]
 pub fn App() -> Element {
     // VFS must be provided before any hook that calls use_context::<VfsDictionary>()
-    let vfs_map = use_signal(|| HashMap::<String, String>::new());
+    let vfs_map = use_signal(|| mor_blogger_core::utils::fs_bridge::load_all_custom_css().unwrap_or_default());
     provide_context(VfsDictionary(vfs_map));
 
     let theme = use_theme_app_state();

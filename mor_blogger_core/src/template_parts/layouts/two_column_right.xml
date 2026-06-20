@@ -1,0 +1,17 @@
+<main class='canvas-core' style='display: grid; grid-template-columns: 1fr 300px; gap: 24px;'>
+  <div class='canvas-content'>
+    {{LAYOUT_BLOCKS}}
+
+    <b:section class='main-section' id='main-content' showaddelement='no'>
+      {{MAIN_CONTENT_MODULE}}
+    </b:section>
+  </div>
+
+  <aside class='sidebar-right-grid' style='grid-column: 2;'>
+    <!-- Right sidebar elements -->
+  </aside>
+
+  <div style='grid-column: span 2;'>
+    {{FOOTER_MODULE}}
+  </div>
+</main>

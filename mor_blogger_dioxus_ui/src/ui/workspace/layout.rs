@@ -11,13 +11,6 @@
 
 use dioxus::prelude::*;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum PanelLayout {
-    Split,
-    Wide,
-    Floating,
-    Hidden,
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PreviewViewport {

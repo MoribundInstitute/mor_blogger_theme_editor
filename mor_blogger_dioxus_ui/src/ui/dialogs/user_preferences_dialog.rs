@@ -3,7 +3,7 @@ use crate::ui::components::modal::Modal;
 use dioxus::prelude::*;
 
 #[component]
-pub fn UserPreferencesModal(
+pub fn UserPreferencesDialog(
     mut show_prefs: Signal<bool>,
     mut ui_mode_pref: Signal<String>,
     active_ui_mode: String,

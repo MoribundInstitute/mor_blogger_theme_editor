@@ -367,11 +367,40 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                                 draggedId = null;
                                             });
                                             doc.addEventListener('click', e => {
-                                                if (e.shiftKey) { const targetEl = e.target.closest("[data-edit-target^='icons.']"); if (targetEl) { e.preventDefault(); dioxus.send({action: "ICON_EDIT", target: targetEl.getAttribute("data-edit-target")}); return; } }
+                                                // 1. Icon Edit (Shift+Click)
+                                                if (e.shiftKey) { 
+                                                    const targetEl = e.target.closest("[data-edit-target^='icons.']"); 
+                                                    if (targetEl) { 
+                                                        e.preventDefault(); 
+                                                        dioxus.send({action: "ICON_EDIT", target: targetEl.getAttribute("data-edit-target")}); 
+                                                        return; 
+                                                    } 
+                                                }
+                                                
+                                                // 2. Theme Toggle
                                                 const t = e.target, btn = t.closest('#mor-theme-toggle'), a = t.closest('a');
-                                                if (btn) { e.preventDefault(); dioxus.send({action: "TOGGLE_DARK_MODE"}); }
-                                                else if (a && (a.getAttribute('href')||'').match(/^[/|#]/)) {
+                                                if (btn) { e.preventDefault(); dioxus.send({action: "TOGGLE_DARK_MODE"}); return; }
+                                                
+                                                // 3. Navigation
+                                                if (a && (a.getAttribute('href')||'').match(/^[\/#]/)) {
                                                     e.preventDefault(); dioxus.send({action: "NAVIGATE", target: a.getAttribute('href')});
+                                                    return;
+                                                }
+
+                                                // 4. NEW: X-Ray Selection Bridge
+                                                if (window.__morXrayActive) {
+                                                    // Did they click a widget block or a theme token?
+                                                    const selectable = e.target.closest('[data-block-id], [data-edit-target]');
+                                                    if (selectable) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        
+                                                        // Prefer the edit target (specific token), fallback to block id (widget wrapper)
+                                                        const targetId = selectable.getAttribute('data-edit-target') || selectable.getAttribute('data-block-id');
+                                                        if (targetId) {
+                                                            dioxus.send({action: "SELECT", target: targetId});
+                                                        }
+                                                    }
                                                 }
                                             });
                                             applyXray(doc, window.__morXrayActive);

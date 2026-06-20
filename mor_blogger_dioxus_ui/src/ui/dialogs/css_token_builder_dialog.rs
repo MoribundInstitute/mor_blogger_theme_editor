@@ -9,12 +9,12 @@ pub enum Tab {
 }
 
 #[derive(Props, Clone, PartialEq)]
-pub struct CssBuilderModalProps {
+pub struct CssTokenBuilderDialogProps {
     pub open: Signal<bool>,
 }
 
 #[component]
-pub fn CssBuilderModal(props: CssBuilderModalProps) -> Element {
+pub fn CssTokenBuilderDialog(props: CssTokenBuilderDialogProps) -> Element {
     let mut open = props.open;
     let active_tab = use_signal(|| Tab::Light);
     let light_primary = use_signal(|| "#3b82f6".to_string());

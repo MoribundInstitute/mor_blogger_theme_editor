@@ -1,0 +1,8 @@
+<header class="mor-header-minimal" id="mor-header">
+    <div class="mor-header-brand">
+        {{HEADER_LOGO_IMG}}
+    </div>
+    <nav class="mor-main-navigation">
+        <!-- Minimal flexbox navigation link row -->
+    </nav>
+</header>

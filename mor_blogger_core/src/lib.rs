@@ -15,7 +15,7 @@ mod tests {
     #[test]
     fn test_default_theme_integrity() {
         let config = default_theme_config();
-        let rendered_xml = render_theme(&config);
+        let rendered_xml = render_theme(&config, &std::collections::HashMap::new());
 
         let result = check_integrity(&rendered_xml, &config.template_pack);
 

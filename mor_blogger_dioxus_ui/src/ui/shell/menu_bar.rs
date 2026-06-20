@@ -1,3 +1,4 @@
+use crate::app::layout_state::{AppLayoutState, DockPosition};
 use crate::app::state::ThemeAppState;
 use crate::ui::shell::shortcut::use_shortcut;
 use crate::ui::workspace::layout::PanelLayout;
@@ -75,9 +76,9 @@ pub fn AppMenuBar(
     mut show_editor_settings: Signal<bool>,
     mut show_about: Signal<bool>,
     mut show_shortcuts: Signal<bool>,
-    mut show_plugins: Signal<bool>,
+    mut plugin_manager_pos: Signal<DockPosition>,
     mut show_css_builder: Signal<bool>,
-    mut show_diagnostics: Signal<bool>,
+    mut diagnostics_pos: Signal<DockPosition>,
     mut show_docs: Signal<bool>,
     mut left_layout: Signal<PanelLayout>,
     mut right_layout: Signal<PanelLayout>,
@@ -95,6 +96,7 @@ pub fn AppMenuBar(
     on_reset_viewport: EventHandler<()>,
 ) -> Element {
     let theme = use_context::<ThemeAppState>();
+    let mut layout = use_context::<AppLayoutState>();
 
     rsx! {
         MorMenuBar {
@@ -202,6 +204,17 @@ pub fn AppMenuBar(
                         }
                     }
                 }
+                MenuItem {
+                    label: "Toggle CSS Editor".to_string(),
+                    on_action: move |_| {
+                        let current = (layout.css_editor_pos)();
+                        let next = match current {
+                            DockPosition::Hidden => DockPosition::Right,
+                            _ => DockPosition::Hidden,
+                        };
+                        layout.css_editor_pos.set(next);
+                    }
+                }
             }
 
             // 5. PROFILE
@@ -227,7 +240,13 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Tools".to_string(),
                 MenuItem {
                     label: "Theme Diagnostics".to_string(),
-                    on_action: move |_| show_diagnostics.set(true)
+                    on_action: move |_| {
+                        if diagnostics_pos() == DockPosition::Hidden {
+                            diagnostics_pos.set(DockPosition::Right);
+                        } else {
+                            diagnostics_pos.set(DockPosition::Hidden);
+                        }
+                    }
                 }
                 MenuItem {
                     label: "CSS Token Builder".to_string(),
@@ -236,7 +255,13 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem {
                     label: "Plugin Manager".to_string(),
-                    on_action: move |_| show_plugins.set(true)
+                    on_action: move |_| {
+                        if plugin_manager_pos() == DockPosition::Hidden {
+                            plugin_manager_pos.set(DockPosition::Left);
+                        } else {
+                            plugin_manager_pos.set(DockPosition::Hidden);
+                        }
+                    }
                 }
             }
 

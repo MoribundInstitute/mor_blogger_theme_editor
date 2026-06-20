@@ -4,6 +4,8 @@
 //! `src/lib.rs` declares `pub mod app;`, so this file is the module root
 //! when the old flat `src/app.rs` file is removed.
 
+use std::collections::HashMap;
+
 use dioxus::prelude::*;
 
 pub mod config_bridge;
@@ -23,10 +25,16 @@ use render_state::use_app_render_state;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
 use state::use_theme_app_state;
+use crate::ui::workspace::css_editor::VfsDictionary;
 #[cfg(not(target_arch = "wasm32"))]
 use theme_hot_reload::use_theme_config_hot_reload;
 
+#[allow(non_snake_case)]
 pub fn App() -> Element {
+    // VFS must be provided before any hook that calls use_context::<VfsDictionary>()
+    let vfs_map = use_signal(|| HashMap::<String, String>::new());
+    provide_context(VfsDictionary(vfs_map));
+
     let theme = use_theme_app_state();
     let layout = use_app_layout_state();
 

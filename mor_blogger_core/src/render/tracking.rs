@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn exported_theme_carries_tracking_hooks() {
-        let xml = crate::render::render_theme(&crate::config::ThemeConfig::default());
+        let xml = crate::render::render_theme(&crate::config::ThemeConfig::default(), &std::collections::HashMap::new());
         assert!(xml.contains("data-block-id='Label1'"));
         assert!(xml.contains("data-block-id='Blog1'"));
         assert!(xml.contains("data-field-path='site.site_title'"));

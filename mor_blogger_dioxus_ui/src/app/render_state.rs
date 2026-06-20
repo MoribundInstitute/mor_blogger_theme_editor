@@ -5,6 +5,7 @@ use mor_blogger_core::render::{render_preview_html, render_theme};
 
 use super::layout_state::AppLayoutState;
 use super::state::ThemeAppState;
+use crate::ui::workspace::css_editor::VfsDictionary;
 
 #[derive(Clone, Copy)]
 pub struct AppRenderState {
@@ -15,10 +16,11 @@ pub struct AppRenderState {
 
 pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> AppRenderState {
     let current_config_for_xml = theme.current_config;
+    let vfs = use_context::<VfsDictionary>().0;
 
     let generated_xml = use_memo(move || {
         let config = current_config_for_xml();
-        let rendered_xml = render_theme(&config);
+        let rendered_xml = render_theme(&config, &*vfs.read());
         match mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config) {
             Ok(xml) => xml,
             Err(err) => {
@@ -37,6 +39,7 @@ pub fn use_app_render_state(theme: ThemeAppState, layout: AppLayoutState) -> App
             &current_config_for_preview(),
             preview_template_mode(),
             is_dark_mode(),
+            &*vfs.read(),
         )
     });
 

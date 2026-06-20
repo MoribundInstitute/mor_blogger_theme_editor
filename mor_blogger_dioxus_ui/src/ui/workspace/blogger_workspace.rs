@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use crate::app::layout_state::CenterView;
+use crate::ui::workspace::css_editor::VfsDictionary;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
 };
@@ -70,11 +73,11 @@ fn set_icon_slot(config: &mut ThemeConfig, slot: &str, mask: String) {
     }
 }
 
-fn build_fresh_export_xml(config_toml: &str) -> Result<String, String> {
+fn build_fresh_export_xml(config_toml: &str, vfs: &HashMap<String, String>) -> Result<String, String> {
     let config = toml::from_str::<ThemeConfig>(config_toml)
         .map_err(|err| format!("could not parse TOML: {}", err))?;
 
-    let rendered_xml = mor_blogger_core::render::render_theme(&config);
+    let rendered_xml = mor_blogger_core::render::render_theme(&config, vfs);
     mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config)
 }
 
@@ -103,8 +106,9 @@ pub fn BloggerWorkspace(
     let is_xray_active = use_signal(|| false);
 
     let mut is_fullscreen = use_signal(|| false);
+    let vfs = use_context::<VfsDictionary>().0;
 
-    let export_xml = use_memo(move || match build_fresh_export_xml(&config_toml()) {
+    let export_xml = use_memo(move || match build_fresh_export_xml(&config_toml(), &*vfs.read()) {
         Ok(xml) => xml,
         Err(err) => {
             log::error!("Render failed: {}", err);
@@ -239,6 +243,7 @@ pub fn BloggerWorkspace(
                     PreviewCanvas {
                         preview_viewport,
                         preview_width,
+                        xray_active: Some(is_xray_active),
                         preview_html: preview_html(),
                         on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                         on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
@@ -269,6 +274,7 @@ pub fn BloggerWorkspace(
                             PreviewCanvas {
                                 preview_viewport,
                                 preview_width,
+                                xray_active: Some(is_xray_active),
                                 preview_html: preview_html(),
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
@@ -353,13 +359,8 @@ fn ViewportToolbar(
             style: "margin: 0;",
             button {
                 class: if is_xray_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                title: "Toggle Layout X-Ray",
-                onclick: move |_| {
-                    let active = !is_xray_active();
-                    is_xray_active.set(active);
-                    let js = format!("const f = document.getElementById('mor-preview-frame'); if(f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({{action: 'TOGGLE_LAYOUT_MODE', active: {}}}), '*');", active);
-                    let _ = dioxus::document::eval(&js);
-                },
+                title: "Widget map and editable overlay",
+                onclick: move |_| is_xray_active.set(!is_xray_active()),
                 "X-Ray"
             }
         }

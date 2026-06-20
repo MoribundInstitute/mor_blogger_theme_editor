@@ -2,6 +2,7 @@
 //! right-panel preview iframe. Distinct from `theme::render_theme`, which
 //! produces uploadable Blogger XML.
 
+use std::collections::HashMap;
 use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 use crate::config::prefs::RenderPrefs;
@@ -31,6 +32,7 @@ pub fn render_preview_html(
     config: &ThemeConfig,
     _preview_mode: PreviewTemplateMode,
     is_dark: bool,
+    vfs: &HashMap<String, String>,
 ) -> String {
     let data_theme = if is_dark { "dark" } else { "light" };
     let background_tile_css = match &config.background.mode {
@@ -86,7 +88,7 @@ pub fn render_preview_html(
     );
 
     // Fetch the TRUE CSS that will be injected into the final Blogger XML
-    let mut parts = crate::render::template_resolver::resolve_template_parts(config);
+    let mut parts = crate::render::template_resolver::resolve_template_parts(config, vfs);
     let true_css = crate::render::xml_parts::css_generator::render_css_sockets(parts.css, config);
 
     // Wire up the Plugin Pipeline for the Preview

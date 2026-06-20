@@ -62,6 +62,7 @@ pub fn PreviewCanvas(
     preview_viewport: Signal<PreviewViewport>,
     preview_width: Signal<u32>,
     preview_html: String,
+    #[props(default)] xray_active: Option<Signal<bool>>,
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_select: Option<EventHandler<String>>,
     #[props(default)] on_icon_edit: Option<EventHandler<String>>,
@@ -70,6 +71,19 @@ pub fn PreviewCanvas(
     #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
     #[props(default)] on_drop_svg: Option<EventHandler<(String, String)>>,
 ) -> Element {
+    if let Some(xray_signal) = xray_active {
+        use_effect(move || {
+            let active = xray_signal();
+            spawn(async move {
+                let js = format!(
+                    "window.__morXrayActive={active};if(window.morApplyXray)window.morApplyXray({active});"
+                );
+                let _ = dioxus::document::eval(&js);
+            });
+        });
+    }
+
+    let xray_on = xray_active.map(|s| s()).unwrap_or(false);
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
     let viewport_meta = if current_viewport == PreviewViewport::Fit {
@@ -93,6 +107,18 @@ pub fn PreviewCanvas(
     rsx! {
         div {
             class: "preview-canvas",
+
+            if xray_on {
+                div {
+                    class: "preview-xray-legend",
+                    span { class: "preview-xray-legend-title", "X-Ray" }
+                    span { class: "preview-xray-chip preview-xray-chip-layout", "Layout" }
+                    span { class: "preview-xray-chip preview-xray-chip-widget", "Widget · drag" }
+                    span { class: "preview-xray-chip preview-xray-chip-text", "Text · dbl-click" }
+                    span { class: "preview-xray-chip preview-xray-chip-token", "Theme token" }
+                    span { class: "preview-xray-chip preview-xray-chip-icon", "Icon · shift-click" }
+                }
+            }
 
             div {
                 class: "preview-ruler",
@@ -194,10 +220,99 @@ pub fn PreviewCanvas(
                                                 if (el.hasAttribute('data-block-id')) el.draggable = true;
                                             });
                                         }
+                                        const XRAY_CSS = `
+html.mor-xray-on .main-header{outline:2px solid #f59e0b;outline-offset:-2px;background:rgba(245,158,11,.07)!important}
+html.mor-xray-on .mor-workspace{outline:2px solid #6366f1;outline-offset:-2px;background:rgba(99,102,241,.05)!important}
+html.mor-xray-on .mor-panel.panel-left{outline:2px solid #10b981;outline-offset:-2px;background:rgba(16,185,129,.07)!important}
+html.mor-xray-on .mor-panel.panel-right{outline:2px solid #14b8a6;outline-offset:-2px;background:rgba(20,184,166,.07)!important}
+html.mor-xray-on .canvas-core{outline:2px solid #8b5cf6;outline-offset:-2px;background:rgba(139,92,246,.06)!important}
+html.mor-xray-on .mor-footer{outline:2px solid #eab308;outline-offset:-2px;background:rgba(234,179,8,.06)!important}
+html.mor-xray-on .main-header::before,html.mor-xray-on .mor-workspace::before,html.mor-xray-on .mor-panel.panel-left::before,html.mor-xray-on .mor-panel.panel-right::before,html.mor-xray-on .canvas-core::before,html.mor-xray-on .mor-footer::before{position:absolute;top:4px;left:4px;z-index:10000;padding:2px 6px;border-radius:3px;font:600 10px/1.3 ui-monospace,monospace;letter-spacing:.03em;text-transform:uppercase;pointer-events:none}
+html.mor-xray-on .main-header::before{content:"Header";background:#f59e0b;color:#451a03}
+html.mor-xray-on .mor-workspace::before{content:"Workspace";background:#6366f1;color:#1e1b4b}
+html.mor-xray-on .mor-panel.panel-left::before{content:"Left sidebar";background:#10b981;color:#052e16}
+html.mor-xray-on .mor-panel.panel-right::before{content:"Right sidebar";background:#14b8a6;color:#042f2e}
+html.mor-xray-on .canvas-core::before{content:"Main content";background:#8b5cf6;color:#2e1065}
+html.mor-xray-on .mor-footer::before{content:"Footer";background:#eab308;color:#422006}
+html.mor-xray-on .main-header,html.mor-xray-on .mor-workspace,html.mor-xray-on .mor-panel,html.mor-xray-on .canvas-core,html.mor-xray-on .mor-footer{position:relative}
+html.mor-xray-on [data-block-id]{outline:2px solid #22c55e!important;outline-offset:2px;background:rgba(34,197,94,.09)!important;position:relative;cursor:grab}
+html.mor-xray-on [data-block-id]::before{content:attr(data-xray-widget);position:absolute;top:0;right:0;z-index:10001;padding:2px 6px;font:600 10px/1.3 ui-monospace,monospace;background:#22c55e;color:#052e16;pointer-events:none;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+html.mor-xray-on [data-field-path]{outline:2px dashed #3b82f6!important;outline-offset:2px;background:rgba(59,130,246,.08)!important;position:relative;cursor:text}
+html.mor-xray-on [data-field-path]::after{content:attr(data-xray-hint);position:absolute;bottom:calc(100% + 4px);left:0;z-index:10002;padding:2px 6px;border-radius:3px;font:10px/1.3 ui-monospace,monospace;background:#1d4ed8;color:#eff6ff;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .12s ease}
+html.mor-xray-on [data-field-path]:hover::after{opacity:1}
+html.mor-xray-on [data-edit-target^="icons."]{outline:2px solid #f97316!important;outline-offset:2px;box-shadow:0 0 0 3px rgba(249,115,22,.18)!important;position:relative}
+html.mor-xray-on [data-edit-target^="icons."]::after{content:attr(data-xray-hint);position:absolute;bottom:calc(100% + 4px);left:0;z-index:10002;padding:2px 6px;border-radius:3px;font:10px/1.3 ui-monospace,monospace;background:#c2410c;color:#fff7ed;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .12s ease}
+html.mor-xray-on [data-edit-target^="icons."]:hover::after{opacity:1}
+html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):not([data-edit-target^="icons."]){outline:2px dotted #a855f7!important;outline-offset:2px;background:rgba(168,85,247,.06)!important;position:relative}
+html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):not([data-edit-target^="icons."])::after{content:attr(data-xray-hint);position:absolute;bottom:calc(100% + 4px);left:0;z-index:10002;padding:2px 6px;border-radius:3px;font:10px/1.3 ui-monospace,monospace;background:#7e22ce;color:#faf5ff;pointer-events:none;white-space:nowrap;max-width:min(280px,90vw);overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .12s ease}
+html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):not([data-edit-target^="icons."]):hover::after{opacity:1}`;
+
+                                        function widgetRegion(el) {
+                                            if (el.closest('.panel-left')) return 'Left';
+                                            if (el.closest('.panel-right')) return 'Right';
+                                            if (el.closest('.canvas-core')) return 'Main';
+                                            return 'Layout';
+                                        }
+
+                                        function widgetType(el) {
+                                            return [...el.classList].filter(c => c !== 'widget').join(' ') || 'Widget';
+                                        }
+
+                                        function clearXrayAnnotations(doc) {
+                                            doc.querySelectorAll('[data-xray-widget],[data-xray-hint]').forEach(el => {
+                                                el.removeAttribute('data-xray-widget');
+                                                el.removeAttribute('data-xray-hint');
+                                            });
+                                        }
+
+                                        function annotateXray(doc) {
+                                            clearXrayAnnotations(doc);
+                                            doc.querySelectorAll('[data-block-id]').forEach(el => {
+                                                const id = el.getAttribute('data-block-id') || 'widget';
+                                                el.setAttribute('data-xray-widget', widgetRegion(el) + ' · ' + id + ' (' + widgetType(el) + ')');
+                                            });
+                                            doc.querySelectorAll('[data-field-path]').forEach(el => {
+                                                el.setAttribute('data-xray-hint', 'Dbl-click text · ' + el.getAttribute('data-field-path'));
+                                            });
+                                            doc.querySelectorAll('[data-edit-target^="icons."]').forEach(el => {
+                                                el.setAttribute('data-xray-hint', 'Shift-click icon · ' + el.getAttribute('data-edit-target'));
+                                            });
+                                            doc.querySelectorAll('[data-edit-target]:not([data-field-path]):not([data-block-id])').forEach(el => {
+                                                const target = el.getAttribute('data-edit-target') || '';
+                                                if (target.startsWith('icons.')) return;
+                                                el.setAttribute('data-xray-hint', 'Theme token · ' + target);
+                                            });
+                                        }
+
+                                        function ensureXrayStyle(doc) {
+                                            let style = doc.getElementById('mor-xray-style');
+                                            if (!style) {
+                                                style = doc.createElement('style');
+                                                style.id = 'mor-xray-style';
+                                                style.textContent = XRAY_CSS;
+                                                doc.head.appendChild(style);
+                                            }
+                                        }
+
+                                        function applyXray(doc, active) {
+                                            ensureXrayStyle(doc);
+                                            doc.documentElement.classList.toggle('mor-xray-on', !!active);
+                                            if (active) annotateXray(doc);
+                                            else clearXrayAnnotations(doc);
+                                        }
+
+                                        window.morApplyXray = function(active) {
+                                            window.__morXrayActive = !!active;
+                                            const frm = document.getElementById(FID);
+                                            const doc = frm && (frm.contentDocument || frm.contentWindow.document);
+                                            if (doc && doc.body) applyXray(doc, active);
+                                        };
+
                                         function setup(doc) {
                                             if (doc._inst) return; doc._inst = true;
                                             const s = doc.createElement('style');
-                                            s.textContent = `[data-field-path]:hover{outline:2px dashed #3b82f6;cursor:text} [data-block-id]{cursor:grab;position:relative} .dragging{opacity:0.5} .drag-over{border-top:4px solid #3b82f6}`;
+                                            s.id = 'mor-edit-style';
+                                            s.textContent = `html:not(.mor-xray-on) [data-field-path]:hover{outline:2px dashed #3b82f6;cursor:text} [data-block-id]{cursor:grab;position:relative} .dragging{opacity:0.5} .drag-over{border-top:4px solid #3b82f6}`;
                                             doc.head.appendChild(s);
                                             doc.querySelectorAll('[data-block-id]').forEach(el => el.draggable = true);
                                             doc.addEventListener('dblclick', e => {
@@ -259,6 +374,7 @@ pub fn PreviewCanvas(
                                                     e.preventDefault(); dioxus.send({action: "NAVIGATE", target: a.getAttribute('href')});
                                                 }
                                             });
+                                            applyXray(doc, window.__morXrayActive);
                                         }
                                         function install() {
                                             const src = document.getElementById(SID), frm = document.getElementById(FID);

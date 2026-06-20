@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 /// Stores the metadata needed to dynamically generate the UI cheat sheet
 #[derive(Clone)]
+#[allow(dead_code)] // category/action/keys consumed once shortcut modal binds to ShortcutRegistry
 pub struct ShortcutMeta {
     pub category: String,
     pub action: String,

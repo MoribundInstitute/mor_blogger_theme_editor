@@ -90,15 +90,7 @@ pub fn RightDataPanel(
     on_apply_theme: EventHandler<ThemeConfig>,
 ) -> Element {
     if layout() == PanelLayout::Hidden {
-        return rsx! {
-            div { class: "editor-right-panel-collapsed",
-                button {
-                    class: "editor-collapse-button",
-                    onclick: move |_| layout.set(PanelLayout::Split),
-                    "« Site Data"
-                }
-            }
-        };
+        return rsx! {};
     }
 
     rsx! {

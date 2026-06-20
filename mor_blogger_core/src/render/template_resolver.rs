@@ -1,7 +1,8 @@
 //! src/render/template_resolver.rs
 use crate::config::ThemeConfig;
 use crate::render::css_builder::build_master_css;
-use std::collections::HashSet;
+use std::borrow::Cow;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ComponentCategory {
@@ -191,7 +192,7 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
 // ASSET FETCHERS
 // =====================================================================
 
-fn fetch_css(filename: &str) -> &'static str {
+pub fn fetch_default_css(filename: &str) -> &'static str {
     match filename {
         // Core
         "00-Root-Section.css" => include_str!("../template_parts/css/core/00-Root-Section.css"),
@@ -364,7 +365,10 @@ pub struct TemplateParts {
     pub javascript: String,
 }
 
-pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
+pub fn resolve_template_parts(
+    config: &ThemeConfig,
+    vfs: &HashMap<String, String>,
+) -> TemplateParts {
     let pack = &config.template_pack;
 
     let get_comp = |registry: &[ComponentManifest], id: &str| -> ComponentManifest {
@@ -445,7 +449,19 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
     }
 
     let aggregated_js = js_sections.join("\n\n");
-    let css_contents: Vec<&str> = sorted_css.iter().map(|f| fetch_css(f)).collect();
+
+    let css_contents: Vec<Cow<str>> = sorted_css
+        .iter()
+        .map(|f| {
+            if let Some(custom) = vfs.get(*f) {
+                Cow::Owned(custom.clone())
+            } else {
+                Cow::Borrowed(fetch_default_css(f))
+            }
+        })
+        .collect();
+
+    let css_refs: Vec<&str> = css_contents.iter().map(|c| c.as_ref()).collect();
 
     let header_raw = get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content;
     let main_raw = get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content;
@@ -457,7 +473,7 @@ pub fn resolve_template_parts(config: &ThemeConfig) -> TemplateParts {
 
     TemplateParts {
         meta: include_str!("../template_parts/meta/meta.xml"),
-        css: build_master_css(&css_contents, config),
+        css: build_master_css(&css_refs, config),
         javascript: aggregated_js,
         header: inject_widgets(header_raw, "header", pack),
         main: inject_widgets(main_raw, "main", pack),

@@ -45,8 +45,11 @@ fn assemble_template(
     )
 }
 
-pub(super) fn render_template(config: &ThemeConfig) -> String {
-    let mut parts = resolve_template_parts(config);
+pub(super) fn render_template(
+    config: &ThemeConfig, 
+    vfs: &std::collections::HashMap<String, String>
+) -> String {
+    let mut parts = resolve_template_parts(config, vfs);
 
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
     if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {

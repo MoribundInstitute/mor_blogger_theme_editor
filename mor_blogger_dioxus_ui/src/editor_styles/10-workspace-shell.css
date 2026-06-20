@@ -12,13 +12,93 @@
 }
 
 .editor-main {
-  display: flex;
+  display: grid;
+  /* LeftDock | LeftPanel | Workspace | RightPanel | RightDock */
+  grid-template-columns: 48px auto 1fr auto 48px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  --left-panel-width: 360px;
-  --right-panel-width: 360px;
   position: relative;
+}
+
+.cinnamon-dock {
+  width: 48px;
+  background: var(--editor-bg-deep);
+  border-right: 1px solid var(--editor-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  z-index: 100;
+}
+
+.cinnamon-dock.right {
+  border-right: none;
+  border-left: 1px solid var(--editor-border);
+}
+
+.dock-btn {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--editor-text);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.dock-btn:hover {
+  background: var(--editor-bg-hover);
+}
+
+.panel-container {
+  position: relative;
+  background: var(--editor-bg);
+  overflow: hidden;
+  transition: width 0.2s ease;
+  z-index: 90;
+}
+
+.panel-container.left {
+  border-right: 1px solid var(--editor-border);
+}
+
+.panel-container.right {
+  border-left: 1px solid var(--editor-border);
+}
+
+/* Visibility Control */
+.editor-main[data-left-layout="hidden"] .panel-container.left,
+.editor-main[data-right-layout="hidden"] .panel-container.right {
+  width: 0px;
+  border: none;
+  display: none;
+}
+
+/* Pinned logic - Standard Grid placement */
+.editor-main[data-left-pinned="true"] .panel-container.left { width: 360px; }
+.editor-main[data-right-pinned="true"] .panel-container.right { width: 360px; }
+
+/* Floating logic - Grid auto-collapses to 0px, Absolute takes over */
+.editor-main[data-left-pinned="false"] .panel-container.left {
+  width: 360px;
+  position: absolute;
+  left: 48px;
+  height: 100%;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+}
+
+.editor-main[data-right-pinned="false"] .panel-container.right {
+  width: 360px;
+  position: absolute;
+  right: 48px;
+  height: 100%;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.5);
 }
 
 .editor-footer {

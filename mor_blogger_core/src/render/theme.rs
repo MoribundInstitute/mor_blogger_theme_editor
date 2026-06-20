@@ -1,5 +1,6 @@
 //! Public Blogger theme export API.
 
+use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
@@ -13,13 +14,13 @@ use crate::render::pages::{
     generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
 };
 
-pub fn render_theme(config: &ThemeConfig) -> String {
+pub fn render_theme(config: &ThemeConfig, vfs: &HashMap<String, String>) -> String {
     eprintln!(
         "[render_theme] preset_css bytes = {}",
         config.preset_css.len()
     );
 
-    xml_generator::render_template(config)
+    xml_generator::render_template(config, vfs)
 }
 
 pub fn save_xml_to_disk(xml_content: &str, file_path: &Path) -> Result<String, String> {

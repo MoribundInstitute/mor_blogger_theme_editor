@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+
 // 1. IMPORT THE LOCAL UI KIT PIECES
 use crate::ui::components::modal::Modal;
 use crate::ui::shell::css_builder_modal::CssBuilderModal;
@@ -11,13 +12,13 @@ use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 // 2. IMPORT THE EDITOR PANELS
 use super::config_bridge::panel_layout_class;
 use super::hotswap::apply_hotswap_json;
-use super::layout_state::{AppLayoutState, CenterView, DockPosition};
+use super::layout_state::{AppLayoutState, CenterView, DockPosition, use_app_layout_state};
 use super::render_state::AppRenderState;
 use super::state::ThemeAppState;
-use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
+use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
 use crate::ui::panels::diagnostics_panel::DiagnosticsPanel;
 use crate::ui::panels::plugin_manager_panel::PluginManagerPanel;
-use crate::ui::panels::theme_palette::presets::PresetFloatingWindow;
+use crate::ui::panels::theme_palette::presets::{PresetFloatingWindow, PresetsPanel};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
@@ -30,6 +31,128 @@ use mor_blogger_core::config::ThemeConfig;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
 
+#[derive(Clone, Copy)]
+struct DockLocalSignals {
+    show_preview: Signal<bool>,
+    show_undocked_pages: Signal<bool>,
+    show_undocked_modules: Signal<bool>,
+    tv_monitor: Signal<String>,
+    launch_plugins: Signal<Vec<PluginState>>,
+    current_plugins: Signal<Vec<PluginState>>,
+    compendium_registry: Signal<Vec<CompendiumManifest>>,
+}
+
+fn fallback_compendium() -> Vec<CompendiumManifest> {
+    vec![CompendiumManifest {
+        id: "os_chameleon".to_string(),
+        display_name: "OS Chameleon (Dark Mode)".to_string(),
+        version: "1.0.0".to_string(),
+        description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
+        payload_url: "".to_string(),
+    }]
+}
+
+#[component]
+fn DockZone(position: DockPosition) -> Element {
+    let layout = use_context::<AppLayoutState>();
+    let theme = use_context::<ThemeAppState>();
+    let render = use_context::<AppRenderState>();
+    let local = use_context::<DockLocalSignals>();
+    let show_plugin_panel = use_signal(|| true);
+
+    let active_tab = match position {
+        DockPosition::Left => layout.active_left_tab,
+        _ => layout.active_right_tab,
+    };
+    let current_layout = match position {
+        DockPosition::Left => layout.left_layout,
+        _ => layout.right_layout,
+    };
+
+    let show_theme_palette = (layout.theme_palette_pos)() == position;
+    let show_site_data = (layout.site_data_pos)() == position;
+    let show_diagnostics = (layout.diagnostics_pos)() == position;
+    let show_plugin_manager = (layout.plugin_manager_pos)() == position;
+    let show_presets = (layout.presets_pos)() == position;
+
+    let _ = use_app_layout_state;
+
+    if show_theme_palette {
+        return rsx! {
+            LeftVisualsPanel {
+                active_tab,
+                layout: current_layout,
+                active_preset: theme.active_preset,
+                signals: theme.signals,
+                show_preview: local.show_preview,
+                current_config: (theme.current_config)(),
+                on_apply_theme: move |new_config: ThemeConfig| {
+                    let mut theme = theme;
+                    theme.signals.apply_config(&new_config);
+                    theme.active_preset.set(None);
+                    theme.commit();
+                },
+                show_undocked_presets: theme.show_undocked_presets,
+                show_undocked_pages: local.show_undocked_pages,
+                show_undocked_modules: local.show_undocked_modules,
+                show_advanced_glow: theme.show_advanced_glow,
+                preview_html: local.tv_monitor,
+                base_preview_html: render.preview_html,
+            }
+        };
+    }
+
+    if show_site_data {
+        return rsx! {
+            RightDataPanel {
+                active_tab,
+                layout: current_layout,
+                signals: theme.signals,
+                current_config: (theme.current_config)(),
+                on_apply_theme: move |new_config: ThemeConfig| {
+                    theme.signals.apply_config(&new_config);
+                },
+            }
+        };
+    }
+
+    if show_diagnostics {
+        return rsx! {
+            DiagnosticsPanel { result: render.diag }
+        };
+    }
+
+    if show_plugin_manager {
+        return rsx! {
+            PluginManagerPanel {
+                show_panel: show_plugin_panel,
+                launch_state: local.launch_plugins,
+                current_state: local.current_plugins,
+                compendium_registry: local.compendium_registry,
+            }
+        };
+    }
+
+    if show_presets {
+        return rsx! {
+            PresetsPanel {
+                active_preset: theme.active_preset,
+                signals: theme.signals,
+                current_config: (theme.current_config)(),
+                on_apply_theme: move |new_config: ThemeConfig| {
+                    let mut theme = theme;
+                    theme.signals.apply_config(&new_config);
+                    theme.active_preset.set(None);
+                    theme.commit();
+                },
+                show_undocked_presets: theme.show_undocked_presets,
+            }
+        };
+    }
+
+    rsx! {}
+}
+
 pub fn render_app_shell(
     theme: ThemeAppState,
     mut layout: AppLayoutState,
@@ -40,26 +163,14 @@ pub fn render_app_shell(
     let mut active_preset = theme.active_preset;
     let mut center_view = theme.center_view;
 
+    provide_context(render);
+
     use_effect(move || {
         let view = center_view();
-        match view {
-            CenterView::CodeEditor | CenterView::Export | CenterView::ModuleWorkbench => {
-                if (layout.left_layout)() == PanelLayout::Split
-                    || (layout.left_layout)() == PanelLayout::Wide
-                {
-                    layout.left_layout.set(PanelLayout::Hidden);
-                }
-                if (layout.right_layout)() == PanelLayout::Split
-                    || (layout.right_layout)() == PanelLayout::Wide
-                {
-                    layout.right_layout.set(PanelLayout::Hidden);
-                }
-            }
-            CenterView::Preview | CenterView::Split => {
-                if (layout.left_layout)() == PanelLayout::Hidden {
-                    layout.left_layout.set(PanelLayout::Split);
-                }
-            }
+
+        if let CenterView::CodeEditor | CenterView::Export | CenterView::ModuleWorkbench = view {
+            layout.left_layout.set(PanelLayout::Hidden);
+            layout.right_layout.set(PanelLayout::Hidden);
         }
     });
 
@@ -70,14 +181,11 @@ pub fn render_app_shell(
     let show_undocked_modules = use_signal(|| false);
     let show_advanced_glow = theme.show_advanced_glow;
 
-    // Dialog Signals
     let mut show_about = use_signal(|| false);
     let show_prefs = use_signal(|| false);
     let show_editor_settings = use_signal(|| false);
     let show_shortcuts = use_signal(|| false);
-    let show_plugins = use_signal(|| false); // Removed dead 'mut' warning
     let show_css_builder = use_signal(|| false);
-    let mut show_diagnostics = use_signal(|| false);
     let mut show_docs = use_signal(|| false);
 
     let prefs = use_signal(|| EditorPrefs::load());
@@ -103,43 +211,24 @@ pub fn render_app_shell(
     use_effect(move || {
         spawn(async move {
             let target_url = "https://raw.githubusercontent.com/MoribundInstitute/mor-blogger-theme-editor-plugin-compendium/main/registry.json";
-            match reqwest::get(target_url).await {
-                Ok(response) => {
-                    if response.status().is_success() {
-                        if let Ok(remote_registry) =
-                            response.json::<Vec<CompendiumManifest>>().await
-                        {
-                            compendium_registry.set(remote_registry);
-                        }
-                    } else {
-                        log::warn!(
-                            "GitHub returned a {} status. Triggering fallback.",
-                            response.status()
-                        );
-                        compendium_registry.set(vec![
-                            CompendiumManifest { 
-                                id: "os_chameleon".to_string(), 
-                                display_name: "OS Chameleon (Dark Mode)".to_string(), 
-                                version: "1.0.0".to_string(),
-                                description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
-                                payload_url: "".to_string(),
-                            }
-                        ]);
-                    }
-                }
-                Err(_) => {
-                    log::warn!("Network request completely failed. Triggering fallback.");
-                    compendium_registry.set(vec![
-                        CompendiumManifest { 
-                            id: "os_chameleon".to_string(), 
-                            display_name: "OS Chameleon (Dark Mode)".to_string(), 
-                            version: "1.0.0".to_string(),
-                            description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
-                            payload_url: "".to_string(),
-                        }
-                    ]);
-                }
+            let Ok(res) = reqwest::get(target_url).await else {
+                log::warn!("Network request completely failed. Triggering fallback.");
+                compendium_registry.set(fallback_compendium());
+                return;
+            };
+
+            if !res.status().is_success() {
+                log::warn!("GitHub returned a {} status. Triggering fallback.", res.status());
+                compendium_registry.set(fallback_compendium());
+                return;
             }
+
+            let Ok(remote_registry) = res.json::<Vec<CompendiumManifest>>().await else {
+                compendium_registry.set(fallback_compendium());
+                return;
+            };
+
+            compendium_registry.set(remote_registry);
         });
     });
 
@@ -168,6 +257,16 @@ pub fn render_app_shell(
         tv_monitor.set((render.preview_html)());
     });
 
+    provide_context(DockLocalSignals {
+        show_preview,
+        show_undocked_pages,
+        show_undocked_modules,
+        tv_monitor,
+        launch_plugins,
+        current_plugins,
+        compendium_registry,
+    });
+
     rsx! {
         MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
@@ -188,8 +287,6 @@ pub fn render_app_shell(
                     end: rsx! { div { style: "width: 16px;" } }
                 }
             }
-
-            // --- ALL DIALOGS (MODALS) LIVE HERE AT THE TOP LEVEL ---
 
             Modal {
                 title: "About MorBlogger".to_string(), open: show_about, on_close: move |_| show_about.set(false),
@@ -215,25 +312,12 @@ pub fn render_app_shell(
             CssBuilderModal { open: show_css_builder }
 
             Modal {
-                title: "Diagnostics Log".to_string(), open: show_diagnostics, on_close: move |_| show_diagnostics.set(false),
-                div { class: "editor-field-group",
-                    if (render.diag)().errors.is_empty() && (render.diag)().warnings.is_empty() {
-                        div { class: "editor-note", p { class: "editor-note-body", "No structural issues found. Theme is clean." } }
-                    } else {
-                        DiagnosticsPanel { result: render.diag }
-                    }
-                }
-            }
-
-            Modal {
                 title: "Documentation".to_string(), open: show_docs, on_close: move |_| show_docs.set(false),
                 div { class: "editor-note",
                     p { class: "editor-note-title", "Online Resources" }
                     p { class: "editor-note-body", "Read the architecture and integration guides in the MOR_PLAN.md at the repository root." }
                 }
             }
-
-            // --- END DIALOGS ---
 
             div { class: "editor-shell", style: "height: 100%;",
 
@@ -242,9 +326,9 @@ pub fn render_app_shell(
                     show_editor_settings,
                     show_about,
                     show_shortcuts,
-                    show_plugins,
+                    plugin_manager_pos: layout.plugin_manager_pos,
                     show_css_builder,
-                    show_diagnostics,
+                    diagnostics_pos: layout.diagnostics_pos,
                     show_docs,
                     left_layout: layout.left_layout,
                     right_layout: layout.right_layout,
@@ -273,18 +357,15 @@ pub fn render_app_shell(
                         move |_| {
                             let sigs = sigs.clone();
                             spawn(async move {
-                                if let Some(file) = rfd::AsyncFileDialog::new()
+                                let Some(file) = rfd::AsyncFileDialog::new()
                                     .set_title("Import Blogger XML")
                                     .add_filter("XML", &["xml"])
                                     .pick_file()
-                                    .await
-                                {
-                                    if let Ok(xml_str) = std::fs::read_to_string(file.path()) {
-                                        match mor_blogger_core::utils::rehydration::extract_and_decode(&xml_str) {
-                                            Ok(restored_config) => sigs.apply_config(&restored_config),
-                                            Err(e) => log::error!("Failed to import XML: {}", e),
-                                        }
-                                    }
+                                    .await else { return; };
+                                let Ok(xml_str) = std::fs::read_to_string(file.path()) else { return; };
+                                match mor_blogger_core::utils::rehydration::extract_and_decode(&xml_str) {
+                                    Ok(restored_config) => sigs.apply_config(&restored_config),
+                                    Err(e) => log::error!("Failed to import XML: {}", e),
                                 }
                             });
                         }
@@ -296,14 +377,11 @@ pub fn render_app_shell(
                             let mut current_cfg = current.clone();
                             let sigs = sigs.clone();
                             spawn(async move {
-                                if let Some(file) = rfd::AsyncFileDialog::new().set_title("Load Site Data").add_filter("JSON", &["json"]).pick_file().await {
-                                    if let Ok(json) = std::fs::read_to_string(file.path()) {
-                                        if let Ok(loaded_data) = serde_json::from_str::<ThemeConfig>(&json) {
-                                            current_cfg.apply_site_data(&loaded_data);
-                                            sigs.apply_config(&current_cfg);
-                                        }
-                                    }
-                                }
+                                let Some(file) = rfd::AsyncFileDialog::new().set_title("Load Site Data").add_filter("JSON", &["json"]).pick_file().await else { return; };
+                                let Ok(json) = std::fs::read_to_string(file.path()) else { return; };
+                                let Ok(loaded_data) = serde_json::from_str::<ThemeConfig>(&json) else { return; };
+                                current_cfg.apply_site_data(&loaded_data);
+                                sigs.apply_config(&current_cfg);
                             });
                         }
                     },
@@ -312,11 +390,9 @@ pub fn render_app_shell(
                         move |_| {
                             let current_cfg = current.clone();
                             spawn(async move {
-                                if let Some(file) = rfd::AsyncFileDialog::new().set_file_name("my_site_data.json").add_filter("JSON", &["json"]).save_file().await {
-                                    if let Ok(json) = serde_json::to_string_pretty(&current_cfg) {
-                                        let _ = std::fs::write(file.path(), json);
-                                    }
-                                }
+                                let Some(file) = rfd::AsyncFileDialog::new().set_file_name("my_site_data.json").add_filter("JSON", &["json"]).save_file().await else { return; };
+                                let Ok(json) = serde_json::to_string_pretty(&current_cfg) else { return; };
+                                let _ = std::fs::write(file.path(), json);
                             });
                         }
                     },
@@ -340,44 +416,46 @@ pub fn render_app_shell(
                     class: "editor-main",
                     "data-left-layout": panel_layout_class((layout.left_layout)()),
                     "data-right-layout": panel_layout_class((layout.right_layout)()),
+                    // Read Grid Pinned state directly from the Panel Layout to kill split-brain logic
+                    "data-left-pinned": "{(layout.left_layout)() != PanelLayout::Floating}",
+                    "data-right-pinned": "{(layout.right_layout)() != PanelLayout::Floating}",
 
-                    // Left slot — render whichever tool is docked Left
-                    if (layout.theme_palette_pos)() == DockPosition::Left {
-                        LeftVisualsPanel {
-                            active_tab: layout.active_left_tab,
-                            layout: layout.left_layout,
-                            active_preset,
-                            signals,
-                            show_preview,
-                            current_config: current_config(),
-                            on_apply_theme: move |new_config: ThemeConfig| {
-                                signals.apply_config(&new_config);
-                                active_preset.set(None);
-                                theme.commit();
+                    // Left Dock Strip - Enforcing Flex Column natively
+                    div { 
+                        class: "cinnamon-dock left",
+                        style: "display: flex; flex-direction: column; align-items: center; gap: 8px; width: 48px; padding-top: 12px;",
+                        
+                        button { class: "dock-btn", title: "Theme Palette",
+                            onclick: move |_| {
+                                if (layout.theme_palette_pos)() == DockPosition::Left {
+                                    let mut current = layout.left_layout;
+                                    current.set(if current() == PanelLayout::Hidden { PanelLayout::Split } else { PanelLayout::Hidden });
+                                } else {
+                                    layout.theme_palette_pos.set(DockPosition::Left);
+                                    layout.css_editor_pos.set(DockPosition::Hidden);
+                                    layout.left_layout.set(PanelLayout::Split);
+                                }
                             },
-                            show_undocked_presets,
-                            show_undocked_pages,
-                            show_undocked_modules,
-                            show_advanced_glow: theme.show_advanced_glow,
-                            preview_html: tv_monitor,
-                            base_preview_html: render.preview_html,
+                            IconPalette {}
+                        }
+                        button { class: "dock-btn", title: "CSS Editor",
+                            onclick: move |_| {
+                                if (layout.css_editor_pos)() == DockPosition::Hidden {
+                                    layout.css_editor_pos.set(DockPosition::Floating);
+                                } else {
+                                    layout.css_editor_pos.set(DockPosition::Hidden);
+                                }
+                            },
+                            IconCode {}
                         }
                     }
-                    if (layout.site_data_pos)() == DockPosition::Left {
-                        RightDataPanel {
-                            active_tab: layout.active_left_tab,
-                            layout: layout.left_layout,
-                            signals,
-                            current_config: current_config(),
-                            on_apply_theme: move |new_config: ThemeConfig| {
-                                signals.apply_config(&new_config);
-                            },
-                        }
-                    }
-                    if (layout.css_editor_pos)() == DockPosition::Left {
-                        CssEditorPanel { }
+
+                    // Left Panel Data
+                    div { class: "panel-container left",
+                        DockZone { position: DockPosition::Left }
                     }
 
+                    // Workspace Center
                     BloggerWorkspace {
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
@@ -423,7 +501,6 @@ pub fn render_app_shell(
                             );
                         },
                         on_toggle_dark_mode: {
-                            // Use centralized logic in ThemeAppState which invokes ColorConfig fallback when needed
                             let theme_state = theme;
                             move |_| {
                                 theme_state.perform_dark_mode_toggle();
@@ -431,42 +508,32 @@ pub fn render_app_shell(
                         },
                     }
 
-                    // Right slot — render whichever tool is docked Right
-                    if (layout.theme_palette_pos)() == DockPosition::Right {
-                        LeftVisualsPanel {
-                            active_tab: layout.active_right_tab,
-                            layout: layout.right_layout,
-                            active_preset,
-                            signals,
-                            show_preview,
-                            current_config: current_config(),
-                            on_apply_theme: move |new_config: ThemeConfig| {
-                                signals.apply_config(&new_config);
-                                active_preset.set(None);
-                                theme.commit();
+                    // Right Panel Data
+                    div { class: "panel-container right",
+                        DockZone { position: DockPosition::Right }
+                    }
+
+                    // Right Dock Strip - Enforcing Flex Column natively
+                    div { 
+                        class: "cinnamon-dock right",
+                        style: "display: flex; flex-direction: column; align-items: center; gap: 8px; width: 48px; padding-top: 12px;",
+                        
+                        button { class: "dock-btn", title: "Site Data",
+                            onclick: move |_| {
+                                let mut current = layout.right_layout;
+                                if current() == PanelLayout::Hidden {
+                                    current.set(PanelLayout::Split);
+                                } else {
+                                    current.set(PanelLayout::Hidden);
+                                }
                             },
-                            show_undocked_presets,
-                            show_undocked_pages,
-                            show_undocked_modules,
-                            show_advanced_glow: theme.show_advanced_glow,
-                            preview_html: tv_monitor,
-                            base_preview_html: render.preview_html,
+                            IconSiteData {}
                         }
                     }
-                    if (layout.site_data_pos)() == DockPosition::Right {
-                        RightDataPanel {
-                            active_tab: layout.active_right_tab,
-                            layout: layout.right_layout,
-                            signals,
-                            current_config: current_config(),
-                            on_apply_theme: move |new_config: ThemeConfig| {
-                                signals.apply_config(&new_config);
-                            },
-                        }
-                    }
-                    if (layout.css_editor_pos)() == DockPosition::Right {
-                        CssEditorPanel { }
-                    }
+                }
+
+                if (layout.css_editor_pos)() != DockPosition::Hidden {
+                    CssEditorPanel {}
                 }
 
                 if show_undocked_presets() {
@@ -484,20 +551,42 @@ pub fn render_app_shell(
                 if show_undocked_modules() {
                     TemplateModulesFloatingWindow { current_config: current_config(), show_undocked_modules, on_apply_theme: move |new_config: ThemeConfig| { signals.apply_config(&new_config); } }
                 }
-
-                PluginManagerPanel {
-                    show_panel: show_plugins,
-                    launch_state: launch_plugins,
-                    current_state: current_plugins,
-                    compendium_registry,
-                }
-
-                if !(render.diag)().errors.is_empty() || !(render.diag)().warnings.is_empty() {
-                    footer { class: "editor-footer",
-                        DiagnosticsPanel { result: render.diag }
-                    }
-                }
             }
+        }
+    }
+}
+
+// Icons
+#[component]
+fn IconPalette() -> Element {
+    rsx! {
+        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
+            circle { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }
+            circle { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }
+            circle { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }
+            circle { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }
+            path { d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" }
+        }
+    }
+}
+
+#[component]
+fn IconCode() -> Element {
+    rsx! {
+        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
+            polyline { points: "16 18 22 12 16 6" }
+            polyline { points: "8 6 2 12 8 18" }
+        }
+    }
+}
+
+#[component]
+fn IconSiteData() -> Element {
+    rsx! {
+        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
+            ellipse { cx: "12", cy: "5", rx: "9", ry: "3" }
+            path { d: "M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" }
+            path { d: "M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" }
         }
     }
 }

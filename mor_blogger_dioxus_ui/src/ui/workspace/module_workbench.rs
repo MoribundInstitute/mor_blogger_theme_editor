@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::render::template_resolver::{
@@ -8,6 +10,8 @@ use mor_blogger_core::render::xml_parts::css_generator::render_css_sockets;
 
 use mor_blogger_core::utils::fs_bridge;
 
+use crate::app::layout_state::AppLayoutState;
+use crate::ui::workspace::css_editor::VfsDictionary;
 use crate::ui::workspace::layout::{apply_preview_viewport, clamp_preview_width, PreviewViewport};
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 
@@ -58,8 +62,8 @@ fn resolve_module_xml(module_key: &str, config: &ThemeConfig) -> String {
     }
 }
 
-fn render_module_preview(module_key: &str, config: &ThemeConfig) -> String {
-    let parts = mor_blogger_core::render::template_resolver::resolve_template_parts(config);
+fn render_module_preview(module_key: &str, config: &ThemeConfig, vfs: &HashMap<String, String>) -> String {
+    let parts = mor_blogger_core::render::template_resolver::resolve_template_parts(config, vfs);
     let true_css = render_css_sockets(parts.css, config);
 
     let site_title = esc(&config.site.site_title);
@@ -270,13 +274,14 @@ pub fn ModuleWorkbench(
     config_toml: ReadSignal<String>,
     on_load_theme: EventHandler<String>,
 ) -> Element {
-    let mut active_module: Signal<Option<&'static str>> = use_signal(|| None);
+    let mut layout = use_context::<AppLayoutState>();
     let mut edited_xml: Signal<String> = use_signal(String::new);
     let mut is_takeover_active = use_signal(|| false);
     let mut workbench_status: Signal<String> = use_signal(String::new);
+    let vfs = use_context::<VfsDictionary>().0;
 
     // Reactively resolve the active module's XML fragment from the live config.
-    let module_xml = use_memo(move || match active_module() {
+    let module_xml = use_memo(move || match (layout.active_workbench_module)() {
         Some(key) => {
             let config = toml::from_str::<ThemeConfig>(&config_toml()).unwrap_or_default();
             resolve_module_xml(key, &config)
@@ -295,10 +300,10 @@ pub fn ModuleWorkbench(
     });
 
     // Generate the isolated module preview HTML from the live config.
-    let module_preview_html = use_memo(move || match active_module() {
+    let module_preview_html = use_memo(move || match (layout.active_workbench_module)() {
         Some(key) => {
             let config = toml::from_str::<ThemeConfig>(&config_toml()).unwrap_or_default();
-            render_module_preview(key, &config)
+            render_module_preview(key, &config, &*vfs.read())
         }
         None => String::new(),
     });
@@ -424,12 +429,12 @@ pub fn ModuleWorkbench(
                         style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1;",
                         for (label, key) in TEMPLATE_LAYOUTS {
                             button {
-                                class: if active_module() == Some(key) { "editor-button editor-button-active" } else { "editor-button" },
+                                class: if (layout.active_workbench_module)() == Some(key) { "editor-button editor-button-active" } else { "editor-button" },
                                 style: "text-align: left; font-size: 0.85rem;",
                                 onclick: {
                                     let key = *key;
                                     move |_| {
-                                        active_module.set(Some(key));
+                                        layout.active_workbench_module.set(Some(key));
                                         edited_xml.set(String::new());
                                     }
                                 },
@@ -465,17 +470,17 @@ pub fn ModuleWorkbench(
                         span {
                             style: "font-size: 0.8rem; color: var(--editor-accent-warm); font-family: var(--font-mono); flex: 1;",
                             {
-                                active_module()
+                                (layout.active_workbench_module)()
                                     .map(|k| format!("{k}.xml"))
                                     .unwrap_or_else(|| "module_fragment.xml".to_string())
                             }
                         }
                         // Save the active text buffer to the user-space templates directory
                         button {
-                            class: if active_module().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                            class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
                             title: "Save current XML buffer to the user templates folder",
                             onclick: move |_| {
-                                let Some(key) = active_module() else { return; };
+                                let Some(key) = (layout.active_workbench_module)() else { return; };
                                 let category = module_key_to_category(key);
                                 let name = format!("custom_{}", key);
                                 let content = display_xml();

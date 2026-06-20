@@ -81,7 +81,7 @@ fn main() -> Result<()> {
             let config = load_config(input)?;
 
             println!("{} Rendering template to XML in memory...", "➔".cyan());
-            let xml = render_theme(&config);
+            let xml = render_theme(&config, &std::collections::HashMap::new());
 
             println!("{} Running strict XML well-formedness check...", "➔".cyan());
 
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
             let config = load_config(input)?;
 
             println!("{} Resolving theme components...", "➔".cyan());
-            let xml = render_theme(&config);
+            let xml = render_theme(&config, &std::collections::HashMap::new());
 
             save_xml_to_disk(&xml, output).map_err(|e| anyhow::anyhow!(e))?;
 
@@ -136,7 +136,7 @@ fn main() -> Result<()> {
             let config = load_config(input)?;
 
             println!("{} Resolving theme components...", "➔".cyan());
-            let xml = render_theme(&config);
+            let xml = render_theme(&config, &std::collections::HashMap::new());
 
             println!(
                 "{} Generating static HTML stencils and archiving...",

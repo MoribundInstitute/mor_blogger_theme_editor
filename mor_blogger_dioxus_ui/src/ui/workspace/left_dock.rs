@@ -7,7 +7,7 @@ use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
 use crate::ui::panels::theme_palette::cursor_panel::CursorPanel;
 use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
 use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
-use crate::ui::panels::theme_palette::presets::{PresetsPanel, ThemeSignals};
+use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
 use crate::ui::panels::theme_palette::scrollbar_panel::ScrollbarPanel;
@@ -109,17 +109,7 @@ pub fn LeftVisualsPanel(
     });
 
     if layout() == PanelLayout::Hidden {
-        return rsx! {
-            div { class: "editor-left-panel-collapsed",
-                button {
-                    class: "editor-collapse-button",
-                    style: "display: flex; align-items: center; gap: 6px;",
-                    onclick: move |_| layout.set(PanelLayout::Split),
-                    IconSidebarLeft {}
-                    "Theme Palette"
-                }
-            }
-        };
+        return rsx! {};
     }
 
     rsx! {
@@ -200,18 +190,6 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
-                EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,
-                    PresetsPanel {
-                        active_preset,
-                        signals,
-                        current_config: current_config.clone(),
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            on_apply_theme.call(new_config);
-                        },
-                        show_undocked_presets,
-                    }
-                }
-
                 EditorAccordion { id: "Colors", title: "Color Palette", active: active_tab,
                     ColorsPanel {
                         bg_base: signals.bg_base,
@@ -224,7 +202,6 @@ pub fn LeftVisualsPanel(
                     }
                 }
 
-                // FIX: Removed `cursor_style` prop here. Component consumes context.
                 EditorAccordion { id: "Cursors", title: "Cursors", active: active_tab,
                     CursorPanel {}
                 }

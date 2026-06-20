@@ -12,13 +12,6 @@ pub enum CenterView {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DockTool {
-    ThemePalette,
-    SiteData,
-    CssEditor,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DockPosition {
     Left,
     Right,
@@ -38,6 +31,11 @@ pub struct AppLayoutState {
     pub theme_palette_pos: Signal<DockPosition>,
     pub site_data_pos: Signal<DockPosition>,
     pub css_editor_pos: Signal<DockPosition>,
+    pub diagnostics_pos: Signal<DockPosition>,
+    pub plugin_manager_pos: Signal<DockPosition>,
+    pub presets_pos: Signal<DockPosition>,
+    // LIFTED BLOAT KILLER: Global tracking for the CSS Editor to read
+    pub active_workbench_module: Signal<Option<&'static str>>,
 }
 
 pub fn use_app_layout_state() -> AppLayoutState {
@@ -52,5 +50,9 @@ pub fn use_app_layout_state() -> AppLayoutState {
         theme_palette_pos: use_signal(|| DockPosition::Left),
         site_data_pos: use_signal(|| DockPosition::Right),
         css_editor_pos: use_signal(|| DockPosition::Hidden),
+        diagnostics_pos: use_signal(|| DockPosition::Hidden),
+        plugin_manager_pos: use_signal(|| DockPosition::Hidden),
+        presets_pos: use_signal(|| DockPosition::Hidden),
+        active_workbench_module: use_signal(|| None),
     }
 }

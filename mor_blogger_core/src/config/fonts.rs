@@ -355,7 +355,7 @@ mod tests {
     fn exported_theme_injects_font_link_in_head() {
         let mut config = ThemeConfig::default();
         config.typography.body_font_stack = "Inter".to_string();
-        let xml = crate::render::render_theme(&config);
+        let xml = crate::render::render_theme(&config, &std::collections::HashMap::new());
         assert!(xml.contains("fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700"));
     }
 

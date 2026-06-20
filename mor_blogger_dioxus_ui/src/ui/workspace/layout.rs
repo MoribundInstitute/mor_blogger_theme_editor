@@ -19,10 +19,6 @@ pub enum PanelLayout {
     Hidden,
 }
 
-pub fn set_panel_layout(signal: &mut Signal<PanelLayout>, layout: PanelLayout) {
-    signal.set(layout);
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PreviewViewport {
     Desktop,

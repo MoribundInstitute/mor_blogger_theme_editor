@@ -1,17 +1,19 @@
 use dioxus::prelude::*;
 
-use crate::app::layout_state::{AppLayoutState, DockPosition};
+use crate::app::state::{ContextMenuPayload, DockPosition, LayoutState};
+use crate::app::theme_signals::ThemeSignals;
 use crate::ui::components::accordion::EditorAccordion;
+use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat};
 use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
 use crate::ui::panels::theme_palette::cursor_panel::CursorPanel;
 use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
 use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::ui::panels::theme_palette::presets;
+use crate::ui::panels::theme_palette::scrollbar_panel::ScrollbarPanel;
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
-use crate::ui::panels::theme_palette::scrollbar_panel::ScrollbarPanel;
 use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use mor_blogger_core::config::ThemeConfig;
 
@@ -142,13 +144,12 @@ pub fn ThemePaletteDock(
     on_apply_theme: EventHandler<ThemeConfig>,
     show_undocked_presets: Signal<bool>,
     show_undocked_pages: Signal<bool>,
-    mut show_undocked_modules: Signal<bool>,
     show_advanced_glow: Signal<bool>,
     mut preview_html: Signal<String>,
     base_preview_html: ReadSignal<String>,
 ) -> Element {
     let _ = show_preview;
-    let mut layout = use_context::<AppLayoutState>();
+    let mut layout = use_context::<LayoutState>();
     let pos = (layout.theme_palette_pos)();
 
     use_effect(move || {
@@ -226,16 +227,41 @@ pub fn ThemePaletteDock(
             }
         } else {
             div { class: "editor-panel-header",
-                h2 { class: "editor-panel-title", "Theme Palette" }
+                h2 {
+                    class: "editor-panel-title",
+                    oncontextmenu: move |evt| {
+                        evt.prevent_default();
+                        evt.stop_propagation();
+                        let coords = evt.client_coordinates();
+                        layout.active_context_menu.set(Some(ContextMenuPayload {
+                            x: coords.x,
+                            y: coords.y,
+                            kind: "ui_typography".to_string(),
+                            target_id: "ui-header".to_string(),
+                        }));
+                    },
+                    "Theme Palette"
+                }
                 {header_actions}
             }
         }
 
         div { class: "editor-panel-tabs",
+            EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,
+                presets::PresetsPanel {
+                    active_preset,
+                    signals,
+                    current_config: current_config.clone(),
+                    on_apply_theme: move |new_config: ThemeConfig| {
+                        on_apply_theme.call(new_config);
+                    },
+                    show_undocked_presets,
+                }
+            }
+
             EditorAccordion { id: "Modules", title: "Template Modules", active: active_tab,
                 TemplateModulesPanel {
                     current_config: current_config.clone(),
-                    show_undocked_modules,
                     on_apply_theme: move |new_config: ThemeConfig| {
                         on_apply_theme.call(new_config);
                     }
@@ -283,11 +309,7 @@ pub fn ThemePaletteDock(
                 TypographyPanel {
                     body_font_stack: signals.body_font_stack,
                     heading_font_stack: signals.heading_font_stack,
-                    mono_font_stack: signals.mono_font_stack,
                     base_size: signals.base_size,
-                    scale_ratio: signals.scale_ratio,
-                    line_height: signals.line_height,
-                    heading_weight: signals.heading_weight,
                 }
             }
 
@@ -332,46 +354,7 @@ pub fn ThemePaletteDock(
                 {inner_content}
             }
         },
-        DockPosition::Hidden => rsx! {}
-    }
-}
-
-#[component]
-fn IconClose() -> Element {
-    rsx! {
-        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            path { d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }
-        }
-    }
-}
-
-#[component]
-fn IconFloat() -> Element {
-    rsx! {
-        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "1.5", width: "10", height: "8", rx: "1.5" }
-            rect { x: "4.5", y: "6.5", width: "10", height: "8", rx: "1.5" }
-        }
-    }
-}
-
-#[component]
-fn IconDockLeft() -> Element {
-    rsx! {
-        svg { width: "14", height: "14", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
-            path { d: "M5.5 2.5v11" }
-        }
-    }
-}
-
-#[component]
-fn IconDockRight() -> Element {
-    rsx! {
-        svg { width: "14", height: "14", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
-            path { d: "M10.5 2.5v11" }
-        }
+        DockPosition::Hidden => rsx! {},
     }
 }
 

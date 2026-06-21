@@ -2,29 +2,32 @@ use dioxus::prelude::*;
 
 // 1. IMPORT THE LOCAL UI KIT PIECES
 
-use crate::ui::shell::menu_bar::AppMenuBar;
-use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
-use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 use super::hotswap::apply_hotswap_json;
-use super::layout_state::{AppLayoutState, CenterView, DockPosition, use_app_layout_state};
-use super::render_state::AppRenderState;
-use super::state::ThemeAppState;
+use super::state::{CenterView, DockPosition, LayoutState, RenderState, ThemeState};
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs, PluginState};
+use crate::ui::components::icon_context_menu::IconContextMenu;
+use crate::ui::components::icons::{IconCode, IconPalette, IconSiteData};
 use crate::ui::dialogs::about_dialog::AboutDialog;
+use crate::ui::dialogs::advanced_colors_dialog::AdvancedColorsDialog;
+use crate::ui::dialogs::advanced_presets_dialog::AdvancedPresetsDialog;
+use crate::ui::dialogs::advanced_typography_dialog::AdvancedTypographyDialog;
 use crate::ui::dialogs::css_token_builder_dialog::CssTokenBuilderDialog;
 use crate::ui::dialogs::diagnostics_dialog::DiagnosticsDialog;
 use crate::ui::dialogs::documentation_dialog::DocumentationDialog;
+use crate::ui::dialogs::js_behavior_builder_dialog::JsBehaviorBuilderDialog;
 use crate::ui::dialogs::plugin_manager_dialog::PluginManagerDialog;
 use crate::ui::dialogs::shortcuts_dialog::ShortcutsDialog;
+use crate::ui::dialogs::template_grid_dialog::TemplateGridDialog;
 use crate::ui::dialogs::user_preferences_dialog::UserPreferencesDialog;
 use crate::ui::dialogs::workspace_settings_dialog::WorkspaceSettingsDialog;
+use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
 use crate::ui::panels::theme_palette::presets::{PresetFloatingWindow, PresetsPanel};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
-use crate::ui::panels::theme_palette::template_modules::TemplateModulesFloatingWindow;
-use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
+use crate::ui::shell::docks::{CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock};
+use crate::ui::shell::menu_bar::AppMenuBar;
+use crate::ui::shell::theme::{get_native_os_theme, MorStyleProvider};
+use crate::ui::shell::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
-use crate::ui::shell::docks::{ThemePaletteDock, SiteDataDock};
-use crate::ui::docks::CssEditorPanel;
 use mor_blogger_core::config::ThemeConfig;
 
 const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
@@ -33,7 +36,6 @@ const EDITOR_UI_CSS: &str = include_str!("../editor_ui.css");
 struct DockLocalSignals {
     show_preview: Signal<bool>,
     show_undocked_pages: Signal<bool>,
-    show_undocked_modules: Signal<bool>,
     tv_monitor: Signal<String>,
     launch_plugins: Signal<Vec<PluginState>>,
     current_plugins: Signal<Vec<PluginState>>,
@@ -45,16 +47,18 @@ fn fallback_compendium() -> Vec<CompendiumManifest> {
         id: "os_chameleon".to_string(),
         display_name: "OS Chameleon (Dark Mode)".to_string(),
         version: "1.0.0".to_string(),
-        description: "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)".to_string(),
+        description:
+            "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)"
+                .to_string(),
         payload_url: "".to_string(),
     }]
 }
 
 #[component]
 fn DockZone(position: DockPosition) -> Element {
-    let layout = use_context::<AppLayoutState>();
-    let theme = use_context::<ThemeAppState>();
-    let render = use_context::<AppRenderState>();
+    let layout = use_context::<LayoutState>();
+    let theme = use_context::<ThemeState>();
+    let render = use_context::<RenderState>();
     let local = use_context::<DockLocalSignals>();
 
     let active_tab = match position {
@@ -67,11 +71,17 @@ fn DockZone(position: DockPosition) -> Element {
     let show_presets = (layout.presets_pos)() == position;
     let show_css_editor = (layout.css_editor_pos)() == position;
 
-    let _ = use_app_layout_state;
+    let show_js_editor = (layout.js_editor_pos)() == position;
 
     if show_css_editor {
         return rsx! {
             CssEditorPanel {}
+        };
+    }
+
+    if show_js_editor {
+        return rsx! {
+            JsEditorPanel {}
         };
     }
 
@@ -82,7 +92,7 @@ fn DockZone(position: DockPosition) -> Element {
                 active_preset: theme.active_preset,
                 signals: theme.signals,
                 show_preview: local.show_preview,
-                current_config: (theme.current_config)(),
+                current_config: (render.current_config)(),
                 on_apply_theme: move |new_config: ThemeConfig| {
                     let mut theme = theme;
                     theme.signals.apply_config(&new_config);
@@ -91,7 +101,6 @@ fn DockZone(position: DockPosition) -> Element {
                 },
                 show_undocked_presets: theme.show_undocked_presets,
                 show_undocked_pages: local.show_undocked_pages,
-                show_undocked_modules: local.show_undocked_modules,
                 show_advanced_glow: theme.show_advanced_glow,
                 preview_html: local.tv_monitor,
                 base_preview_html: render.preview_html,
@@ -104,7 +113,7 @@ fn DockZone(position: DockPosition) -> Element {
             SiteDataDock {
                 active_tab,
                 signals: theme.signals,
-                current_config: (theme.current_config)(),
+                current_config: (render.current_config)(),
                 on_apply_theme: move |new_config: ThemeConfig| {
                     theme.signals.apply_config(&new_config);
                 },
@@ -117,7 +126,7 @@ fn DockZone(position: DockPosition) -> Element {
             PresetsPanel {
                 active_preset: theme.active_preset,
                 signals: theme.signals,
-                current_config: (theme.current_config)(),
+                current_config: (render.current_config)(),
                 on_apply_theme: move |new_config: ThemeConfig| {
                     let mut theme = theme;
                     theme.signals.apply_config(&new_config);
@@ -133,14 +142,14 @@ fn DockZone(position: DockPosition) -> Element {
 }
 
 pub fn render_app_shell(
-    theme: ThemeAppState,
-    mut layout: AppLayoutState,
-    render: AppRenderState,
+    theme: ThemeState,
+    mut layout: LayoutState,
+    render: RenderState,
 ) -> Element {
     let signals = theme.signals;
-    let current_config = theme.current_config;
+    let current_config = render.current_config;
     let mut active_preset = theme.active_preset;
-    let mut center_view = theme.center_view;
+    let mut center_view = layout.center_view;
 
     provide_context(render);
 
@@ -150,7 +159,6 @@ pub fn render_app_shell(
 
     let show_undocked_presets = theme.show_undocked_presets;
     let show_undocked_pages = use_signal(|| false);
-    let show_undocked_modules = use_signal(|| false);
     let show_advanced_glow = theme.show_advanced_glow;
 
     let show_about = use_signal(|| false);
@@ -158,6 +166,7 @@ pub fn render_app_shell(
     let show_editor_settings = use_signal(|| false);
     let show_shortcuts = use_signal(|| false);
     let show_css_builder = use_signal(|| false);
+    let show_js_builder = use_signal(|| false);
     let show_docs = use_signal(|| false);
     let show_diagnostics = use_signal(|| false);
     let show_plugin_manager = use_signal(|| false);
@@ -192,7 +201,10 @@ pub fn render_app_shell(
             };
 
             if !res.status().is_success() {
-                log::warn!("GitHub returned a {} status. Triggering fallback.", res.status());
+                log::warn!(
+                    "GitHub returned a {} status. Triggering fallback.",
+                    res.status()
+                );
                 compendium_registry.set(fallback_compendium());
                 return;
             }
@@ -223,7 +235,8 @@ pub fn render_app_shell(
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
 
-    let mut original_toml = use_signal(|| toml::to_string_pretty(&current_config()).unwrap_or_default());
+    let mut original_toml =
+        use_signal(|| toml::to_string_pretty(&current_config()).unwrap_or_default());
     let config_toml_signal = use_memo(move || {
         let updated = current_config();
         mor_blogger_core::config::update_toml_preserve_comments(&original_toml(), &updated)
@@ -237,14 +250,12 @@ pub fn render_app_shell(
     provide_context(DockLocalSignals {
         show_preview,
         show_undocked_pages,
-        show_undocked_modules,
         tv_monitor,
         launch_plugins,
         current_plugins,
         compendium_registry,
     });
 
-    let show_panels = matches!(center_view(), CenterView::Preview | CenterView::Split);
     let has_left_dock = (layout.theme_palette_pos)() == DockPosition::Left
         || (layout.site_data_pos)() == DockPosition::Left
         || (layout.css_editor_pos)() == DockPosition::Left;
@@ -253,13 +264,22 @@ pub fn render_app_shell(
         || (layout.site_data_pos)() == DockPosition::Right
         || (layout.css_editor_pos)() == DockPosition::Right;
 
-    let left_active = show_panels && has_left_dock;
-    let right_active = show_panels && has_right_dock;
+    let left_active = has_left_dock;
+    let right_active = has_right_dock;
 
-    let left_width = if left_active { "var(--left-pane-width, 360px)" } else { "0px" };
-    let right_width = if right_active { "var(--right-pane-width, 360px)" } else { "0px" };
+    let left_width = if left_active {
+        "var(--left-pane-width, 360px)"
+    } else {
+        "0px"
+    };
+    let right_width = if right_active {
+        "var(--right-pane-width, 360px)"
+    } else {
+        "0px"
+    };
 
     rsx! {
+        script { dangerous_inner_html: "document.addEventListener('contextmenu', event => event.preventDefault());" }
         MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
 
@@ -296,6 +316,7 @@ pub fn render_app_shell(
             ShortcutsDialog { open: show_shortcuts }
 
             CssTokenBuilderDialog { open: show_css_builder }
+            JsBehaviorBuilderDialog { open: show_js_builder }
 
             DocumentationDialog { open: show_docs }
 
@@ -320,6 +341,7 @@ pub fn render_app_shell(
                     show_shortcuts,
                     show_plugin_manager,
                     show_css_builder,
+                    show_js_builder,
                     show_diagnostics,
                     show_docs,
 
@@ -420,10 +442,10 @@ pub fn render_app_shell(
                     "data-right-pinned": "{right_active}",
 
                     // Left Dock Strip - Enforcing Flex Column natively
-                    div { 
+                    div {
                         class: "cinnamon-dock left",
                         style: "display: flex; flex-direction: column; align-items: center; gap: 8px; width: 48px; padding-top: 12px;",
-                        
+
                         button { class: "dock-btn", title: "Theme Palette",
                             onclick: move |_| {
                                 if (layout.theme_palette_pos)() == DockPosition::Left {
@@ -510,10 +532,10 @@ pub fn render_app_shell(
                     }
 
                     // Right Dock Strip - Enforcing Flex Column natively
-                    div { 
+                    div {
                         class: "cinnamon-dock right",
                         style: "display: flex; flex-direction: column; align-items: center; gap: 8px; width: 48px; padding-top: 12px;",
-                        
+
                         button { class: "dock-btn", title: "Site Data",
                             onclick: move |_| {
                                 if (layout.site_data_pos)() == DockPosition::Right {
@@ -526,95 +548,79 @@ pub fn render_app_shell(
                         }
                     }
                 }
+            }
 
-                if (layout.theme_palette_pos)() == DockPosition::Floating {
-                    ThemePaletteDock {
-                        active_tab: layout.active_left_tab,
-                        active_preset: theme.active_preset,
-                        signals: theme.signals,
-                        show_preview: show_preview,
-                        current_config: (theme.current_config)(),
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            let mut theme = theme;
-                            theme.signals.apply_config(&new_config);
-                            theme.active_preset.set(None);
-                            theme.commit();
-                        },
-                        show_undocked_presets: theme.show_undocked_presets,
-                        show_undocked_pages: show_undocked_pages,
-                        show_undocked_modules: show_undocked_modules,
-                        show_advanced_glow: theme.show_advanced_glow,
-                        preview_html: tv_monitor,
-                        base_preview_html: render.preview_html,
-                    }
-                }
-
-                if (layout.site_data_pos)() == DockPosition::Floating {
-                    SiteDataDock {
-                        active_tab: layout.active_right_tab,
-                        signals: theme.signals,
-                        current_config: (theme.current_config)(),
-                        on_apply_theme: move |new_config: ThemeConfig| {
-                            theme.signals.apply_config(&new_config);
-                        },
-                    }
-                }
-
-                if (layout.css_editor_pos)() == DockPosition::Floating {
-                    CssEditorPanel {}
-                }
-
-                if show_undocked_presets() {
-                    PresetFloatingWindow { signals, active_preset, show_undocked_presets }
-                }
-
-                if show_advanced_glow() {
-                    AdvancedGlowWindow { show_advanced_glow, signals: signals.clone() }
-                }
-
-                if show_undocked_pages() {
-                    StaticPagesFloatingWindow { signals, show_undocked_pages, preview_html: tv_monitor, base_preview_html: render.preview_html }
-                }
-
-                if show_undocked_modules() {
-                    TemplateModulesFloatingWindow { current_config: current_config(), show_undocked_modules, on_apply_theme: move |new_config: ThemeConfig| { signals.apply_config(&new_config); } }
+            if (layout.theme_palette_pos)() == DockPosition::Floating {
+                ThemePaletteDock {
+                    active_tab: layout.active_left_tab,
+                    active_preset: theme.active_preset,
+                    signals: theme.signals,
+                    show_preview: show_preview,
+                    current_config: (render.current_config)(),
+                    on_apply_theme: move |new_config: ThemeConfig| {
+                        let mut theme = theme;
+                        theme.signals.apply_config(&new_config);
+                        theme.active_preset.set(None);
+                        theme.commit();
+                    },
+                    show_undocked_presets: theme.show_undocked_presets,
+                    show_undocked_pages: show_undocked_pages,
+                    show_advanced_glow: theme.show_advanced_glow,
+                    preview_html: tv_monitor,
+                    base_preview_html: render.preview_html,
                 }
             }
-        }
-    }
-}
 
-// Icons
-#[component]
-fn IconPalette() -> Element {
-    rsx! {
-        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
-            circle { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }
-            circle { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }
-            circle { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }
-            circle { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }
-            path { d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" }
-        }
-    }
-}
+            if (layout.site_data_pos)() == DockPosition::Floating {
+                SiteDataDock {
+                    active_tab: layout.active_right_tab,
+                    signals: theme.signals,
+                    current_config: (render.current_config)(),
+                    on_apply_theme: move |new_config: ThemeConfig| {
+                        theme.signals.apply_config(&new_config);
+                    },
+                }
+            }
 
-#[component]
-fn IconCode() -> Element {
-    rsx! {
-        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
-            polyline { points: "16 18 22 12 16 6" }
-            polyline { points: "8 6 2 12 8 18" }
-        }
-    }
-}
+            if (layout.css_editor_pos)() == DockPosition::Floating {
+                CssEditorPanel {}
+            }
 
-#[component]
-fn IconSiteData() -> Element {
-    rsx! {
-        svg { width: "20", height: "20", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round",
-            ellipse { cx: "12", cy: "5", rx: "9", ry: "3" }
-            path { d: "M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" }
-            path { d: "M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" }
+            if (layout.js_editor_pos)() == DockPosition::Floating {
+                JsEditorPanel {}
+            }
+
+            if show_undocked_presets() {
+                PresetFloatingWindow { signals, active_preset, show_undocked_presets }
+            }
+
+            if show_advanced_glow() {
+                AdvancedGlowWindow { show_advanced_glow, signals: signals.clone() }
+            }
+
+            if show_undocked_pages() {
+                StaticPagesFloatingWindow { signals, show_undocked_pages, preview_html: tv_monitor, base_preview_html: render.preview_html }
+            }
+
+            if let Some(payload) = (layout.active_context_menu)() {
+                IconContextMenu { payload }
+            }
+
+            AdvancedPresetsDialog {
+                open: theme.show_advanced_presets,
+            }
+
+            TemplateGridDialog {
+                open: layout.show_advanced_modules,
+            }
+
+            AdvancedColorsDialog {
+                open_signal: theme.show_advanced_colors,
+            }
+
+            AdvancedTypographyDialog {
+                open_signal: theme.show_advanced_typography,
+            }
         }
     }
 }

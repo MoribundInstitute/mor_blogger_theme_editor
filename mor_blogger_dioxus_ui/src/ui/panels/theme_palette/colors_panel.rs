@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 
+use crate::app::state::ThemeState;
 use crate::ui::components::inputs::{EditorCard, EditorInput};
-use mor_blogger_core::config::{SurfaceFill, SurfaceMode};
+use mor_blogger_core::config::SurfaceFill;
 
 #[component]
 pub fn ColorsPanel(
@@ -13,9 +14,18 @@ pub fn ColorsPanel(
     accent: Signal<String>,
     border: Signal<String>,
 ) -> Element {
+    let mut app_state = use_context::<ThemeState>();
+
     rsx! {
         EditorCard {
             title: "Global Theme Palette".to_string(),
+
+            button {
+                class: "mor-btn-secondary",
+                style: "width: 100%; margin-bottom: 12px;",
+                onclick: move |_| app_state.show_advanced_colors.set(true),
+                "⚙ Advanced Color Routing"
+            }
 
             EditorInput {
                 label: "Base Background".to_string(),
@@ -68,51 +78,18 @@ pub fn ColorsPanel(
 }
 
 // ---------------------------------------------------------------------------
-// SurfaceFillEditor — mode dropdown + conditional inputs
+// SurfaceFillEditor — simplified solid color editor (gradient edits moved to Advanced dialog)
 // ---------------------------------------------------------------------------
 
 #[component]
 fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>, default_color: String) -> Element {
     let mut value = value;
     let current = value.read().clone();
-    let mode_str = match current.mode {
-        SurfaceMode::Solid => "solid",
-        SurfaceMode::Gradient => "gradient",
-    };
-
-    let on_mode_change = move |e: Event<FormData>| {
-        let mut next = value.read().clone();
-        next.mode = match e.value().as_str() {
-            "gradient" => SurfaceMode::Gradient,
-            _ => SurfaceMode::Solid,
-        };
-        value.set(next);
-    };
 
     let on_solid_color = move |e: Event<FormData>| {
         let mut next = value.read().clone();
         next.color = e.value();
         value.set(next);
-    };
-
-    let on_grad_from = move |e: Event<FormData>| {
-        let mut next = value.read().clone();
-        next.gradient_from = e.value();
-        value.set(next);
-    };
-
-    let on_grad_to = move |e: Event<FormData>| {
-        let mut next = value.read().clone();
-        next.gradient_to = e.value();
-        value.set(next);
-    };
-
-    let on_angle = move |e: Event<FormData>| {
-        let mut next = value.read().clone();
-        if let Ok(parsed) = e.value().parse::<u16>() {
-            next.gradient_angle_deg = parsed.min(360);
-            value.set(next);
-        }
     };
 
     rsx! {
@@ -124,74 +101,12 @@ fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>, default_color: S
                 "{label}"
             }
 
-            select {
-                class: "editor-select",
-                value: "{mode_str}",
-                onchange: on_mode_change,
-
-                option { value: "solid", selected: mode_str == "solid", "Solid" }
-                option { value: "gradient", selected: mode_str == "gradient", "Gradient" }
-            }
-
-            match current.mode {
-                SurfaceMode::Solid => rsx! {
-                    input {
-                        r#type: "color",
-                        value: "{current.color}",
-                        placeholder: "{default_color}",
-                        class: "editor-field editor-color-field",
-                        oninput: on_solid_color,
-                    }
-                },
-                SurfaceMode::Gradient => rsx! {
-                    div {
-                        class: "editor-row-stretch",
-
-                        div {
-                            class: "editor-flex-1 editor-stack",
-                            label {
-                                class: "editor-mini-label",
-                                "From"
-                            }
-                            input {
-                                r#type: "color",
-                                value: "{current.gradient_from}",
-                                class: "editor-field editor-color-field",
-                                oninput: on_grad_from,
-                            }
-                        }
-
-                        div {
-                            class: "editor-flex-1 editor-stack",
-                            label {
-                                class: "editor-mini-label",
-                                "To"
-                            }
-                            input {
-                                r#type: "color",
-                                value: "{current.gradient_to}",
-                                class: "editor-field editor-color-field",
-                                oninput: on_grad_to,
-                            }
-                        }
-
-                        div {
-                            class: "editor-w-70 editor-stack",
-                            label {
-                                class: "editor-mini-label",
-                                "Angle°"
-                            }
-                            input {
-                                r#type: "number",
-                                min: "0",
-                                max: "360",
-                                value: "{current.gradient_angle_deg}",
-                                class: "editor-field",
-                                oninput: on_angle,
-                            }
-                        }
-                    }
-                },
+            input {
+                r#type: "color",
+                value: "{current.color}",
+                placeholder: "{default_color}",
+                class: "editor-field editor-color-field",
+                oninput: on_solid_color,
             }
         }
     }

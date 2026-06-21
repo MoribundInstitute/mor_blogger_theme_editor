@@ -38,4 +38,48 @@ mod tests {
             "Workspace gradient colors from background struct not propagated"
         );
     }
+
+
+#[test]
+fn test_mor_magazine_integrity() {
+    use crate::config::defaults::default_theme_config;
+    use crate::diagnostics::check_integrity;
+    use crate::render::theme::render_theme;
+    let mut config = default_theme_config();
+    config.template_pack.content_variant = "mor_magazine".to_string();
+    let rendered_xml = render_theme(&config, &std::collections::HashMap::new());
+    let result = check_integrity(&rendered_xml, &config.template_pack);
+    assert!(result.is_valid, "Integrity check failed: {:?}", result.errors);
+    for cls in ["mor-magazine-feed", "hero-post", "grid-post", "mor-pager", "pager-btn"] {
+        assert!(rendered_xml.contains(cls), "missing {}", cls);
+    }
+}
+
+    #[test]
+    fn test_script_behavior_config_propagation() {
+        let mut config = default_theme_config();
+        config.scripts.mobile_breakpoint = 1234.0;
+        config.scripts.panels_collapsed_mobile = false;
+        config.scripts.enable_theme_toggle = false;
+        config.scripts.enable_share_actions = false;
+
+        let rendered_xml = render_theme(&config, &std::collections::HashMap::new());
+
+        assert!(
+            rendered_xml.contains("MOBILE_BREAKPOINT: 1234"),
+            "Mobile breakpoint config not propagated to scripts"
+        );
+        assert!(
+            rendered_xml.contains("PANELS_COLLAPSED_MOBILE: false"),
+            "Panels collapsed config not propagated to scripts"
+        );
+        assert!(
+            rendered_xml.contains("THEME_TOGGLE: false"),
+            "Theme toggle config not propagated to scripts"
+        );
+        assert!(
+            rendered_xml.contains("SHARE_ACTIONS: false"),
+            "Share actions config not propagated to scripts"
+        );
+    }
 }

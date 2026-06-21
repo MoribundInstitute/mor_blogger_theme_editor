@@ -1,25 +1,21 @@
-use dioxus::prelude::*;
+use crate::app::state::{LayoutState, RenderState, ThemeState};
 use crate::ui::components::code_editor::CodeEditor;
-use mor_blogger_core::utils::fs_bridge;
-use crate::app::layout_state::AppLayoutState;
-use crate::app::state::ThemeAppState;
-use crate::app::render_state::AppRenderState;
-use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use crate::ui::panels::theme_palette::static_pages_panel::inject_static_page;
+use crate::ui::workspace::preview_canvas::PreviewCanvas;
+use dioxus::prelude::*;
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
     generate_course_catalog_html, generate_portfolio_html,
 };
+use mor_blogger_core::utils::fs_bridge;
 
 #[component]
-pub fn StaticPageEditor(
-    preview_html: Signal<String>,
-) -> Element {
-    let theme = use_context::<ThemeAppState>();
-    let render = use_context::<AppRenderState>();
-    let layout = use_context::<AppLayoutState>();
-    
-    let active_page = theme.active_static_page;
+pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
+    let theme = use_context::<ThemeState>();
+    let render = use_context::<RenderState>();
+    let layout = use_context::<LayoutState>();
+
+    let active_page = layout.active_static_page;
     let mut raw_html_signal = use_signal(String::new);
     let mut save_status = use_signal(String::new);
 

@@ -46,8 +46,8 @@ fn assemble_template(
 }
 
 pub(super) fn render_template(
-    config: &ThemeConfig, 
-    vfs: &std::collections::HashMap<String, String>
+    config: &ThemeConfig,
+    vfs: &std::collections::HashMap<String, String>,
 ) -> String {
     let mut parts = resolve_template_parts(config, vfs);
 

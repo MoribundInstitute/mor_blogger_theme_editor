@@ -1,18 +1,16 @@
 use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 
-use mor_blogger_core::config::gtk_theme::ImportedGtkPreset;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::presets::{all_presets, Preset};
 use mor_blogger_core::utils::rehydration::extract_and_decode;
 
 use super::importers::{
-    choose_gtk_theme, fetch_remote_theme, normalize_preset_url, parse_theme_text,
-    save_imported_gtk_preset,
+    fetch_remote_theme, normalize_preset_url, parse_theme_text, save_imported_gtk_preset,
 };
 use super::morph_preview_from_preset;
-use super::signals::ThemeSignals;
-use crate::app::state::ThemeAppState;
+use crate::app::state::ThemeState;
+use crate::app::theme_signals::ThemeSignals;
 
 const PRESET_FLOATING_DRAG_JS: &str = r#"
 (function () {
@@ -74,7 +72,7 @@ pub struct PresetsPanelProps {
 
 #[component]
 pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
-    let theme = use_context::<ThemeAppState>();
+    let mut theme = use_context::<ThemeState>();
     let presets = all_presets();
     let mut active = props.active_preset;
 
@@ -82,12 +80,6 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut show_undocked_presets = props.show_undocked_presets;
     let mut remote_url = use_signal(String::new);
     let mut pasted_theme = use_signal(String::new);
-    let mut import_status = use_signal(String::new);
-    let mut last_imported_gtk = use_signal(|| None::<ImportedGtkPreset>);
-    let mut show_advanced = use_signal(|| false);
-    let mut modal_pos = use_signal(|| (100.0f64, 100.0f64));
-    let mut is_dragging = use_signal(|| false);
-    let mut drag_offset = use_signal(|| (0.0f64, 0.0f64));
 
     let active_label = active()
         .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
@@ -95,10 +87,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
         .unwrap_or("Default Base Theme");
 
     let preset_css_bytes = props.signals.preset_css.read().len();
-    let current_config_for_gtk = props.current_config.clone();
-    let on_apply_gtk_theme = props.on_apply_theme;
 
-    let last_gtk_summary = last_imported_gtk().map(|imported| {
+    let last_gtk_summary = (theme.last_imported_gtk)().map(|imported| {
         format!(
             "Last GTK import: {} — {}",
             imported.name,
@@ -131,8 +121,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     }
 
                     button {
-                        class: if show_advanced() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
-                        onclick: move |_| show_advanced.set(!show_advanced()),
+                        class: if (theme.show_advanced_presets)() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        onclick: move |_| theme.show_advanced_presets.set(true),
                         "⚙ Advanced"
                     }
 
@@ -144,71 +134,6 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                 }
             }
 
-            if show_advanced() {
-                div {
-                    style: "position: fixed; left: {modal_pos().0}px; top: {modal_pos().1}px; z-index: 100; background-color: var(--bg-panel); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; gap: 8px; min-width: 200px;",
-                    onmousedown: move |e| {
-                        is_dragging.set(true);
-                        let coords = e.client_coordinates();
-                        drag_offset.set((coords.x - modal_pos().0, coords.y - modal_pos().1));
-                    },
-                    onmousemove: move |e| {
-                        if is_dragging() {
-                            let coords = e.client_coordinates();
-                            modal_pos.set((coords.x - drag_offset().0, coords.y - drag_offset().1));
-                        }
-                    },
-                    onmouseup: move |_| is_dragging.set(false),
-                    onmouseleave: move |_| is_dragging.set(false),
-                    div {
-                        style: "background: var(--bg-elevated); padding: 8px; cursor: grab; font-weight: bold; border-bottom: 1px solid var(--border-color); user-select: none;",
-                        "⚙ Advanced Options"
-                    }
-                    div { style: "padding: 10px; display: flex; flex-direction: column; gap: 8px;",
-                        button {
-                            class: "editor-button editor-button-small",
-                            onclick: move |_| {
-                                match choose_gtk_theme(&current_config_for_gtk) {
-                                    Ok(Some(imported)) => {
-                                        let status = format!("Imported GTK theme '{}' from {}. {}", imported.name, imported.source_dir.display(), imported.report.short_status());
-                                        on_apply_gtk_theme.call(imported.config.clone());
-                                        active.set(None);
-                                        last_imported_gtk.set(Some(imported));
-                                        import_status.set(status);
-                                    }
-                                    Ok(None) => {}
-                                    Err(err) => import_status.set(format!("GTK import failed: {}", err)),
-                                }
-                            },
-                            "Import GTK4"
-                        }
-                        a {
-                            class: "editor-button editor-button-small",
-                            href: "https://www.gnome-look.org/browse/",
-                            target: "_blank",
-                            "Get GTK4"
-                        }
-                        button {
-                            class: "editor-button editor-button-small",
-                            onclick: move |_| {
-                                let _ = std::process::Command::new("xdg-open").arg("theme_presets").spawn();
-                            },
-                            "Edit Presets (.toml)"
-                        }
-                        a {
-                            class: "editor-button editor-button-small",
-                            href: "https://mor-theme-compendium.blogspot.com/",
-                            target: "_blank",
-                            "Theme Compendium"
-                        }
-                        button {
-                            class: "editor-button editor-button-small",
-                            onclick: move |_| show_advanced.set(false),
-                            "Close"
-                        }
-                    }
-                }
-            }
 
             p { class: "preset-panel-copy", "One click to swap the entire theme. Edit any field afterward to customize." }
 
@@ -218,7 +143,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                 if let Some(summary) = last_gtk_summary { div { class: "editor-note-body", "{summary}" } }
             }
 
-            if last_imported_gtk().is_some() {
+            if (theme.last_imported_gtk)().is_some() {
                 div { class: "editor-note", style: "margin-bottom: 12px;",
                     h4 { class: "editor-note-title", "Imported GTK Theme" }
                     p { class: "editor-note-body", "This GTK import is currently applied as Custom / Imported. Save it to make it a reusable user preset on disk." }
@@ -226,11 +151,11 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                         button {
                             class: "editor-button",
                             onclick: move |_| {
-                                let Some(imported) = last_imported_gtk() else { return };
+                                let Some(imported) = (theme.last_imported_gtk)() else { return };
                                 match save_imported_gtk_preset(&imported) {
                                     // We now receive a simple string message from the importer
-                                    Ok(success_msg) => import_status.set(success_msg),
-                                    Err(err) => import_status.set(format!("Could not save GTK preset: {}", err)),
+                                    Ok(success_msg) => theme.import_status.set(success_msg),
+                                    Err(err) => theme.import_status.set(format!("Could not save GTK preset: {}", err)),
                                 }
                             },
                             "Save Imported Theme as Preset"
@@ -239,7 +164,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                 }
             }
 
-            if !import_status().is_empty() { div { class: "restore-status", style: "margin-bottom: 12px;", "{import_status}" } }
+            if !(theme.import_status)().is_empty() { div { class: "restore-status", style: "margin-bottom: 12px;", "{theme.import_status}" } }
 
             if show_import() {
                 div { class: "editor-note",
@@ -251,7 +176,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                         div { class: "editor-row-stretch",
                             input {
                                 class: "editor-field editor-flex-1", r#type: "text", placeholder: "https://github.com/...", value: "{remote_url}",
-                                oninput: move |evt| { remote_url.set(evt.value()); import_status.set(String::new()); }
+                                oninput: move |evt| { remote_url.set(evt.value()); theme.import_status.set(String::new()); }
                             }
                             button {
                                 class: "editor-button",
@@ -259,10 +184,10 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     let url = normalize_preset_url(&remote_url());
                                     let signals = props.signals;
                                     async move {
-                                        if url.trim().is_empty() { import_status.set("Paste URL first.".to_string()); return; }
+                                        if url.trim().is_empty() { theme.import_status.set("Paste URL first.".to_string()); return; }
                                         match fetch_remote_theme(&url).await {
-                                            Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported remote theme.".to_string()); }
-                                            Err(err) => import_status.set(format!("Import failed: {}", err)),
+                                            Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported remote theme.".to_string()); }
+                                            Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                         }
                                     }
                                 },
@@ -282,8 +207,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                         if let Some(file) = evt.files().first() {
                                             if let Ok(bytes) = file.read_bytes().await {
                                                 match parse_theme_text(&String::from_utf8_lossy(&bytes)) {
-                                                    Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported local theme file.".to_string()); }
-                                                    Err(err) => import_status.set(format!("Import failed: {}", err)),
+                                                    Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported local theme file.".to_string()); }
+                                                    Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                                 }
                                             }
                                         }
@@ -297,20 +222,20 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                         label { class: "editor-field-label", "Paste JSON or TOML" }
                         textarea {
                             class: "editor-textarea", style: "min-height: 90px; resize: vertical;", placeholder: "Paste JSON/TOML here...", value: "{pasted_theme}",
-                            oninput: move |evt| { pasted_theme.set(evt.value()); import_status.set(String::new()); }
+                            oninput: move |evt| { pasted_theme.set(evt.value()); theme.import_status.set(String::new()); }
                         }
                         div { class: "editor-row",
                             button {
                                 class: "editor-button",
                                 onclick: move |_| {
                                     match parse_theme_text(&pasted_theme()) {
-                                        Ok(config) => { props.signals.apply_config(&config); active.set(None); theme.commit(); last_imported_gtk.set(None); import_status.set("Imported pasted theme.".to_string()); }
-                                        Err(err) => import_status.set(format!("Import failed: {}", err)),
+                                        Ok(config) => { props.signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported pasted theme.".to_string()); }
+                                        Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                     }
                                 },
                                 "Import Pasted Theme"
                             }
-                            button { class: "editor-button editor-button-small", onclick: move |_| { pasted_theme.set(String::new()); import_status.set(String::new()); }, "Clear" }
+                            button { class: "editor-button editor-button-small", onclick: move |_| { pasted_theme.set(String::new()); theme.import_status.set(String::new()); }, "Clear" }
                         }
                     }
                 }
@@ -340,7 +265,7 @@ pub(crate) struct PresetCardProps {
 
 #[component]
 pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
-    let theme = use_context::<ThemeAppState>();
+    let theme = use_context::<ThemeState>();
     let preset = &props.preset;
     let mut active = props.active_preset;
     let preset_for_click = preset.clone();

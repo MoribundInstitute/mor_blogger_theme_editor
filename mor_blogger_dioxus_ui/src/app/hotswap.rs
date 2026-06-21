@@ -1,4 +1,4 @@
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::app::theme_signals::ThemeSignals;
 use mor_blogger_core::config::ThemeConfig;
 
 pub fn apply_hotswap_json(signals: ThemeSignals, json_text: String) {

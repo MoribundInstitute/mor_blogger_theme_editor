@@ -99,4 +99,3 @@ pub fn DiagnosticsDialog(mut props: DiagnosticsPanelProps) -> Element {
         }
     }
 }
-

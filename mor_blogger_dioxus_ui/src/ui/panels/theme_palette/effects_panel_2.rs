@@ -1,5 +1,5 @@
+use crate::app::theme_signals::ThemeSignals;
 use dioxus::prelude::*;
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct AdvancedGlowWindowProps {
@@ -53,7 +53,7 @@ pub fn AdvancedGlowWindow(props: AdvancedGlowWindowProps) -> Element {
                 class: "window-body",
                 style: "padding: 0 16px 16px 16px; display: flex; flex-direction: column; gap: 10px;",
 
-                div { 
+                div {
                     style: "font-size: 11px; color: #8E8E93; margin-bottom: 8px; line-height: 1.4;",
                     "Target specific UI elements. Override global glow color or disable entirely."
                 }
@@ -108,7 +108,11 @@ pub fn AdvancedGlowWindow(props: AdvancedGlowWindowProps) -> Element {
 }
 
 #[component]
-pub fn EffectsPanel(glow_spread: Signal<String>, hover_scale: Signal<String>, mut show_advanced_glow: Signal<bool>) -> Element {
+pub fn EffectsPanel(
+    glow_spread: Signal<String>,
+    hover_scale: Signal<String>,
+    mut show_advanced_glow: Signal<bool>,
+) -> Element {
     rsx! {
         div { class: "editor-panel",
 

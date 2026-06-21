@@ -38,8 +38,7 @@ pub fn save_bundle_to_disk(
     let mut zip = ZipWriter::new(file);
 
     // Use SimpleFileOptions for newer `zip` crate versions, or FileOptions for older ones.
-    let options = SimpleFileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated);
+    let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
     // 1. Write the compiled Blogger XML payload
     zip.start_file("theme.xml", options)?;

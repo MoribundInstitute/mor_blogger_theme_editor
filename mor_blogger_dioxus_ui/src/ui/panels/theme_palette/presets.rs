@@ -1,12 +1,10 @@
-mod importers;
+pub(crate) mod importers;
 mod panel;
-mod signals;
 
 use dioxus::prelude::*;
 
 pub use mor_blogger_core::presets::Preset as ThemePreset;
 pub use panel::{PresetFloatingWindow, PresetsPanel};
-pub use signals::ThemeSignals;
 
 use mor_blogger_core::config::BackgroundMode;
 
@@ -29,27 +27,35 @@ pub fn build_css_vars(preset: &ThemePreset, is_light: bool) -> String {
     let bg_panel = colors.bg_panel.to_css();
     let bg_elevated = colors.bg_elevated.to_css();
 
-    let active_glow_color = if colors.glow_color.is_empty() { &colors.accent } else { &colors.glow_color };
+    let active_glow_color = if colors.glow_color.is_empty() {
+        &colors.accent
+    } else {
+        &colors.glow_color
+    };
 
-    let cursor_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
+    let cursor_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeState>()
         .map(|state| state.signals.cursor_style.read().to_string())
         .unwrap_or_else(|| "default".to_string());
 
-    let scrollbar_width_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
-        .map(|state| state.signals.scrollbar_width.read().to_string())
-        .unwrap_or_else(|| preset.base_config.scrollbar_width.clone());
+    let scrollbar_width_val =
+        dioxus::prelude::try_consume_context::<crate::app::state::ThemeState>()
+            .map(|state| state.signals.scrollbar_width.read().to_string())
+            .unwrap_or_else(|| preset.base_config.scrollbar_width.clone());
 
-    let scrollbar_track_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
-        .map(|state| state.signals.scrollbar_track_color.read().to_string())
-        .unwrap_or_else(|| preset.base_config.scrollbar_track_color.clone());
+    let scrollbar_track_val =
+        dioxus::prelude::try_consume_context::<crate::app::state::ThemeState>()
+            .map(|state| state.signals.scrollbar_track_color.read().to_string())
+            .unwrap_or_else(|| preset.base_config.scrollbar_track_color.clone());
 
-    let scrollbar_thumb_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
-        .map(|state| state.signals.scrollbar_thumb_color.read().to_string())
-        .unwrap_or_else(|| preset.base_config.scrollbar_thumb_color.clone());
+    let scrollbar_thumb_val =
+        dioxus::prelude::try_consume_context::<crate::app::state::ThemeState>()
+            .map(|state| state.signals.scrollbar_thumb_color.read().to_string())
+            .unwrap_or_else(|| preset.base_config.scrollbar_thumb_color.clone());
 
-    let scrollbar_thumb_hover_val = dioxus::prelude::try_consume_context::<crate::app::state::ThemeAppState>()
-        .map(|state| state.signals.scrollbar_thumb_hover_color.read().to_string())
-        .unwrap_or_else(|| preset.base_config.scrollbar_thumb_hover_color.clone());
+    let scrollbar_thumb_hover_val =
+        dioxus::prelude::try_consume_context::<crate::app::state::ThemeState>()
+            .map(|state| state.signals.scrollbar_thumb_hover_color.read().to_string())
+            .unwrap_or_else(|| preset.base_config.scrollbar_thumb_hover_color.clone());
 
     format!(
         "--bg-base: {bg}; --bg-panel: {panel}; --bg-highlight: {elevated}; --bg-soft: {panel}; --bg-elevated: {elevated}; --bg-workspace: {bg}; --fg-base: {fg}; --fg-dim: {muted}; --fg-muted: {muted}; --accent: {acc}; --border-color: {border}; --border-soft: {border}; --theme-border-color: {border}; --panel-border-width: {border_w}; --bg-gradient-from: {g_from}; --bg-gradient-to: {g_to}; --glow: 0 0 {glow} {acc}; --glow-strong: 0 0 calc({glow} * 2) {acc}; --theme-cursor: {cursor}; --theme-scrollbar-width: {scrollbar_width}; --theme-scrollbar-track: {scrollbar_track}; --theme-scrollbar-thumb: {scrollbar_thumb}; --theme-scrollbar-thumb-hover: {scrollbar_thumb_hover};",

@@ -103,17 +103,23 @@ impl TomlPreset {
     }
 }
 
+pub fn get_canonical_presets_dir() -> std::path::PathBuf {
+    let local = Path::new("theme_presets");
+    let parent = Path::new("../theme_presets");
+
+    if parent.exists() && !local.exists() {
+        parent.to_path_buf()
+    } else {
+        local.to_path_buf()
+    }
+}
+
 pub fn all_presets() -> Vec<Preset> {
     LOADED_PRESETS
         .get_or_init(|| {
             let mut presets = Vec::new();
 
-            // Resilient path resolution: Check if we are running from the workspace root
-            // or from inside the mor_blogger_dioxus_ui crate.
-            let mut preset_dir = Path::new("theme_presets").to_path_buf();
-            if !preset_dir.exists() && Path::new("../theme_presets").exists() {
-                preset_dir = Path::new("../theme_presets").to_path_buf();
-            }
+            let preset_dir = get_canonical_presets_dir();
 
             if !preset_dir.exists() {
                 let _ = fs::create_dir_all(&preset_dir);

@@ -1,4 +1,4 @@
-use crate::config::ThemeConfig;
+use crate::config::{ScriptBehaviorConfig, ThemeConfig};
 
 const CUSTOM_BEFORE_BODY_JS_TOKEN: &str = "{{CUSTOM_BEFORE_BODY_JS}}";
 
@@ -31,6 +31,19 @@ fn escape_javascript_cdata(javascript: &str) -> String {
     escape_script_end_tags(javascript).replace("]]>", "]]]]><![CDATA[>")
 }
 
+pub fn build_master_js(base_scripts: &str, config: &ScriptBehaviorConfig) -> String {
+    let preamble = format!(
+        "const _MOR_CONFIG = {{\n  MOBILE_BREAKPOINT: {},\n  PANELS_COLLAPSED_MOBILE: {},\n  THEME_TOGGLE: {},\n  SHARE_ACTIONS: {}\n}};\n\n",
+        config.mobile_breakpoint,
+        config.panels_collapsed_mobile,
+        config.enable_theme_toggle,
+        config.enable_share_actions
+    );
+
+    // Concatenate the preamble with the rest of your Javascript modules
+    format!("{}{}", preamble, base_scripts)
+}
+
 pub fn render_javascript_sockets(mut js_payload: String, config: &ThemeConfig) -> String {
     let custom_javascript = config.plugins.custom_js.trim();
 
@@ -44,12 +57,10 @@ pub fn render_javascript_sockets(mut js_payload: String, config: &ThemeConfig) -
     }
 
     let trimmed = js_payload.trim();
-    if trimmed.is_empty() {
-        return String::new();
-    }
+    let combined_js = build_master_js(trimmed, &config.scripts);
 
     format!(
         "<script type='text/javascript'>\n//<![CDATA[\n{}\n//]]>\n</script>",
-        escape_javascript_cdata(trimmed)
+        escape_javascript_cdata(&combined_js)
     )
 }

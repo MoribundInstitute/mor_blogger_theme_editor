@@ -102,6 +102,29 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                             }
                         }
                     }
+                    div { class: "mor-shortcut-group",
+                        h4 { class: "mor-shortcut-group-title", "Asset Editors" }
+
+                        div { class: "mor-shortcut-row",
+                            input {
+                                class: "mor-input",
+                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
+                                readonly: true,
+                                value: "Alt+Left / J",
+                            }
+                            div { class: "mor-action-label", "Previous File Tab" }
+                        }
+
+                        div { class: "mor-shortcut-row",
+                            input {
+                                class: "mor-input",
+                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
+                                readonly: true,
+                                value: "Alt+Right / K",
+                            }
+                            div { class: "mor-action-label", "Next File Tab" }
+                        }
+                    }
                 }
 
                 div {

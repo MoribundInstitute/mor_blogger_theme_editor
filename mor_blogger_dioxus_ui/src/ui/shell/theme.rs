@@ -357,12 +357,52 @@ pub const MOR_CSS: &str = r#"
 .mor-btn:hover { background-color: var(--mor-btn-hover); }
 .mor-btn:active { background-color: var(--mor-bg); }
 
-.mor-btn.primary {
+.mor-btn.primary, .mor-btn-primary {
+  padding: 6px calc(var(--mor-padding) * 2);
+  font-size: var(--mor-font-size);
+  border-radius: var(--mor-radius);
+  border: 1px solid var(--mor-accent-hover);
   background-color: var(--mor-accent-hover);
   color: white;
+  font-family: var(--mor-font);
+  cursor: pointer;
+  transition: background-color 80ms ease;
+}
+.mor-btn.primary:hover, .mor-btn-primary:hover { background-color: var(--mor-accent); }
+.mor-btn.primary:active, .mor-btn-primary:active { background-color: var(--mor-bg); }
+
+.mor-btn-secondary {
+  padding: 6px calc(var(--mor-padding) * 2);
+  font-size: var(--mor-font-size);
+  border-radius: var(--mor-radius);
+  border: 1px solid var(--mor-border-light);
+  background-color: var(--mor-bg);
+  color: var(--mor-text-muted);
+  font-family: var(--mor-font);
+  cursor: pointer;
+  transition: all 80ms ease;
+}
+.mor-btn-secondary:hover {
+  background-color: var(--mor-btn);
+  color: var(--mor-text);
+}
+
+.mor-btn-outline {
+  padding: 6px calc(var(--mor-padding) * 2);
+  font-size: var(--mor-font-size);
+  border-radius: var(--mor-radius);
+  border: 1px solid var(--mor-border);
+  background-color: transparent;
+  color: var(--mor-text);
+  font-family: var(--mor-font);
+  cursor: pointer;
+  transition: all 80ms ease;
+}
+.mor-btn-outline:hover {
+  background-color: var(--mor-btn-hover);
   border-color: var(--mor-accent-hover);
 }
-.mor-btn.primary:hover { background-color: var(--mor-accent); }
+
 
 /* ── Forms ── */
 .mor-checkbox-wrapper {

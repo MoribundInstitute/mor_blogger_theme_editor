@@ -42,7 +42,7 @@ pub(crate) fn save_imported_gtk_preset(imported: &ImportedGtkPreset) -> Result<S
 
     let toml_str = toml::to_string_pretty(&export).map_err(|e| e.to_string())?;
 
-    let preset_dir = std::path::PathBuf::from("theme_presets");
+    let preset_dir = mor_blogger_core::presets::get_canonical_presets_dir();
     if !preset_dir.exists() {
         std::fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
     }

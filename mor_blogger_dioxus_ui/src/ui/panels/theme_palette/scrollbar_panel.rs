@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::app::state::ThemeAppState;
+use crate::app::state::ThemeState;
 use crate::ui::components::inputs::EditorCard;
 
 #[component]
 pub fn ScrollbarPanel() -> Element {
-    let mut state = consume_context::<ThemeAppState>();
+    let mut state = consume_context::<ThemeState>();
 
     let raw = state.signals.scrollbar_width.read().clone();
     // ponytail: strip "px" to get numeric value for the range input

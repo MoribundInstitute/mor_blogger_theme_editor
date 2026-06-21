@@ -240,8 +240,6 @@ pub fn menu_url(config: &ThemeConfig, index: usize) -> String {
         .unwrap_or_default()
 }
 
-
-
 #[cfg(not(target_arch = "wasm32"))]
 mod theme_reload_watcher {
     use std::path::PathBuf;
@@ -281,43 +279,44 @@ mod theme_reload_watcher {
 
             let target_path = prefs_path.clone();
             let watched_file_name = prefs_file_name.clone();
-            let mut watcher = match recommended_watcher(move |result: Result<Event, notify::Error>| {
-                let Ok(event) = result else {
-                    return;
-                };
+            let mut watcher =
+                match recommended_watcher(move |result: Result<Event, notify::Error>| {
+                    let Ok(event) = result else {
+                        return;
+                    };
 
-                if !matches!(event.kind, EventKind::Modify(_)) {
-                    return;
-                }
-
-                let is_target = event.paths.iter().any(|path| {
-                    path.file_name()
-                        .map(|name| name == watched_file_name.as_str())
-                        .unwrap_or(false)
-                });
-                if !is_target {
-                    return;
-                }
-
-                thread::sleep(Duration::from_millis(50));
-
-                let Ok(toml_str) = std::fs::read_to_string(&target_path) else {
-                    log::warn!("editor_prefs.toml changed but could not be read");
-                    return;
-                };
-
-                if let Some(tx) = THEME_RELOAD_TX.get() {
-                    if tx.unbounded_send(toml_str).is_err() {
-                        log::warn!("Theme hot-reload channel closed");
+                    if !matches!(event.kind, EventKind::Modify(_)) {
+                        return;
                     }
-                }
-            }) {
-                Ok(watcher) => watcher,
-                Err(err) => {
-                    log::error!("Failed to create editor_prefs.toml watcher: {}", err);
-                    return;
-                }
-            };
+
+                    let is_target = event.paths.iter().any(|path| {
+                        path.file_name()
+                            .map(|name| name == watched_file_name.as_str())
+                            .unwrap_or(false)
+                    });
+                    if !is_target {
+                        return;
+                    }
+
+                    thread::sleep(Duration::from_millis(50));
+
+                    let Ok(toml_str) = std::fs::read_to_string(&target_path) else {
+                        log::warn!("editor_prefs.toml changed but could not be read");
+                        return;
+                    };
+
+                    if let Some(tx) = THEME_RELOAD_TX.get() {
+                        if tx.unbounded_send(toml_str).is_err() {
+                            log::warn!("Theme hot-reload channel closed");
+                        }
+                    }
+                }) {
+                    Ok(watcher) => watcher,
+                    Err(err) => {
+                        log::error!("Failed to create editor_prefs.toml watcher: {}", err);
+                        return;
+                    }
+                };
 
             if let Err(err) = watcher.watch(&watch_dir, RecursiveMode::NonRecursive) {
                 log::error!(

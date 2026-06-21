@@ -9,42 +9,49 @@ use dioxus::prelude::*;
 pub mod config_bridge;
 pub mod hotswap;
 mod keyboard;
-pub mod layout_state;
-pub mod render_state;
 mod restore_drop;
+pub mod services;
 mod shell;
 pub mod state;
 #[cfg(not(target_arch = "wasm32"))]
 mod theme_hot_reload;
+pub mod theme_signals;
+pub mod vfs;
 
+use crate::app::vfs::VfsDictionary;
 use keyboard::use_keyboard_shortcuts;
-use layout_state::use_app_layout_state;
-use render_state::use_app_render_state;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
-use state::use_theme_app_state;
-use crate::ui::docks::css_dock::VfsDictionary;
+use state::{LayoutState, RenderState, SiteState, ThemeState};
 #[cfg(not(target_arch = "wasm32"))]
 use theme_hot_reload::use_theme_config_hot_reload;
 
 #[allow(non_snake_case)]
 pub fn App() -> Element {
     // VFS must be provided before any hook that calls use_context::<VfsDictionary>()
-    let vfs_map = use_signal(|| mor_blogger_core::utils::fs_bridge::load_all_custom_css().unwrap_or_default());
+    let vfs_map = use_signal(|| {
+        let mut map = mor_blogger_core::utils::fs_bridge::load_all_custom_css().unwrap_or_default();
+        if let Ok(js_map) = mor_blogger_core::utils::fs_bridge::load_all_custom_js() {
+            map.extend(js_map);
+        }
+        map
+    });
     provide_context(VfsDictionary(vfs_map));
 
-    let theme = use_theme_app_state();
-    let layout = use_app_layout_state();
+    let theme = ThemeState::new();
+    let layout = LayoutState::new();
+    let site = SiteState::new(theme.signals);
+    let render = RenderState::new(theme, layout);
 
     provide_context(theme);
     provide_context(layout);
+    provide_context(site);
+    provide_context(render);
 
     use_keyboard_shortcuts(layout);
     use_restore_drop_bridge(theme);
     #[cfg(not(target_arch = "wasm32"))]
     use_theme_config_hot_reload(theme);
-
-    let render = use_app_render_state(theme, layout);
 
     render_app_shell(theme, layout, render)
 }

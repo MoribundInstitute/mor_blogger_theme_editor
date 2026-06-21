@@ -3,6 +3,12 @@
     /* =========================================================
     08. Share Menu Toggler & Actions
     ========================================================= */
+    const enableShare = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.SHARE_ACTIONS : true;
+    if (!enableShare) {
+      document.querySelectorAll('.sharing-button, .post-share-buttons').forEach(el => el.style.display = 'none');
+      return;
+    }
+
     const shareButtons = document.querySelectorAll('.sharing-button');
 
     // 1. Handle opening/closing the dropdown

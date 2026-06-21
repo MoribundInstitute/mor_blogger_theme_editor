@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
-use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
 use syntect::html::highlighted_html_for_string;
+use syntect::parsing::SyntaxSet;
 
 const SCROLL_LOCK_JS: &str = r#"
     setTimeout(() => {
@@ -33,13 +33,19 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
     let theme = &ts.themes["base16-ocean.dark"];
-    
-    let effective_mode = if props.mode == "toml" { "ini" } else { &props.mode };
-    let syntax = ss.find_syntax_by_extension(effective_mode).unwrap_or_else(|| ss.find_syntax_plain_text());
+
+    let effective_mode = if props.mode == "toml" {
+        "ini"
+    } else {
+        &props.mode
+    };
+    let syntax = ss
+        .find_syntax_by_extension(effective_mode)
+        .unwrap_or_else(|| ss.find_syntax_plain_text());
 
     // Local mutable state initialized from the read-only prop value
     let mut local_val = use_signal(|| props.value.read().clone());
-    
+
     // Sync external changes (like switching tabs or hot-reloading) to the local state
     let external_val = props.value.cloned();
     let mut last_external_val = use_signal(|| external_val.clone());
@@ -55,7 +61,8 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
         val_str
     };
 
-    let highlighted_html = highlighted_html_for_string(&display_val, &ss, syntax, theme).unwrap_or_else(|_| display_val.clone());
+    let highlighted_html = highlighted_html_for_string(&display_val, &ss, syntax, theme)
+        .unwrap_or_else(|_| display_val.clone());
 
     let on_change = props.on_change;
     let text_id = props.id.unwrap_or_default();
@@ -64,11 +71,11 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
         div {
             class: "pure-rust-editor-container",
             style: "position: relative; width: 100%; height: 100%; overflow: hidden; background: #2b303b; font-family: monospace; font-size: 14px; line-height: 1.5;",
-            
+
             // The Paint Layer (Output)
             div {
                 class: "pure-rust-editor-paint",
-                style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; box-sizing: border-box; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; pointer-events: none;",
+                style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; box-sizing: border-box; white-space: pre-wrap; word-break: break-all; overflow-wrap: break-word; overflow-y: auto; pointer-events: none;",
                 dangerous_inner_html: highlighted_html
             }
 
@@ -76,7 +83,7 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
             textarea {
                 id: "{text_id}",
                 class: "pure-rust-editor-ghost",
-                style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; box-sizing: border-box; background: transparent; color: transparent; caret-color: #c0c5ce; border: none; outline: none; resize: none; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;",
+                style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; box-sizing: border-box; background: transparent; color: transparent; caret-color: #c0c5ce; border: none; outline: none; resize: none; overflow-y: auto; white-space: pre-wrap; word-break: break-all; overflow-wrap: break-word; cursor: text;",
                 value: "{local_val}",
                 oninput: move |evt| {
                     let val = evt.value();
@@ -84,9 +91,25 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
                     on_change.call(val);
                 },
                 onscroll: move |_evt| {
-                    // In a real implementation, you will need a tiny JS bridge OR Dioxus node refs 
+                    // In a real implementation, you will need a tiny JS bridge OR Dioxus node refs
                     // to sync the scroll position of the textarea with the background div.
                 }
+            }
+
+            style {
+                dangerous_inner_html: r#"
+                    .pure-rust-editor-paint pre {{
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: transparent !important;
+                        white-space: pre-wrap !important;
+                        word-break: break-all !important;
+                        overflow-wrap: break-word !important;
+                    }}
+                    .pure-rust-editor-paint code {{
+                        font-family: inherit !important;
+                    }}
+                "#
             }
 
             script {

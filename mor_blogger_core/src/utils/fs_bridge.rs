@@ -135,6 +135,12 @@ pub fn css_root() -> Option<PathBuf> {
     workspace_root().map(|r| r.join("css"))
 }
 
+/// Returns the app-scoped js root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/js/` on Linux.
+pub fn js_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("js"))
+}
+
 /// Returns the app-scoped plugins root, e.g.
 /// `~/.local/share/morbloggerthemeeditor/plugins/` on Linux.
 pub fn plugins_root() -> Option<PathBuf> {
@@ -185,6 +191,15 @@ pub fn init_template_dirs() -> std::io::Result<()> {
     })?;
     std::fs::create_dir_all(&css)?;
     log::info!("[fs_bridge] CSS dir ready at: {}", css.display());
+
+    let js = js_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&js)?;
+    log::info!("[fs_bridge] JS dir ready at: {}", js.display());
 
     let plugins = plugins_root().ok_or_else(|| {
         std::io::Error::new(
@@ -366,10 +381,7 @@ pub fn save_custom_css(filename: &str, content: &str) -> std::io::Result<PathBuf
     let safe_name = sanitize_css_filename(filename);
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
-    log::info!(
-        "[fs_bridge] Saved custom CSS: {}",
-        safe_name
-    );
+    log::info!("[fs_bridge] Saved custom CSS: {}", safe_name);
     Ok(dest)
 }
 
@@ -399,6 +411,77 @@ pub fn load_all_custom_css() -> std::io::Result<std::collections::HashMap<String
         }
     }
     Ok(css_files)
+}
+
+/// Strip path-traversal characters and ensure a `.js` extension.
+fn sanitize_js_filename(name: &str) -> String {
+    let cleaned: String = name
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => '_',
+            c => c,
+        })
+        .collect();
+
+    let cleaned = cleaned.trim_start_matches('.').to_string();
+    let cleaned = if cleaned.is_empty() {
+        "custom_js".to_string()
+    } else {
+        cleaned
+    };
+
+    if cleaned.to_lowercase().ends_with(".js") {
+        cleaned
+    } else {
+        format!("{}.js", cleaned)
+    }
+}
+
+/// Write a JS buffer (e.g. from the VFS) into the js folder.
+/// Creates the folder if absent.
+/// Returns the path the file was written to.
+pub fn save_custom_js(filename: &str, content: &str) -> std::io::Result<PathBuf> {
+    let dir = js_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    std::fs::create_dir_all(&dir)?;
+
+    let safe_name = sanitize_js_filename(filename);
+    let dest = dir.join(&safe_name);
+    std::fs::write(&dest, content)?;
+    log::info!("[fs_bridge] Saved custom JS: {}", safe_name);
+    Ok(dest)
+}
+
+/// Load all custom JS files from the js directory.
+/// If the directory doesn't exist, returns an empty HashMap.
+pub fn load_all_custom_js() -> std::io::Result<std::collections::HashMap<String, String>> {
+    let mut js_files = std::collections::HashMap::new();
+    let dir = match js_root() {
+        Some(d) => d,
+        None => return Ok(js_files),
+    };
+    if !dir.exists() {
+        return Ok(js_files);
+    }
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(ext) = path.extension() {
+                if ext == "js" {
+                    if let Some(filename) = path.file_name().and_then(|f| f.to_str()) {
+                        let content = std::fs::read_to_string(&path)?;
+                        js_files.insert(filename.to_string(), content);
+                    }
+                }
+            }
+        }
+    }
+    Ok(js_files)
 }
 
 /// Copies the given plugin file into the plugins directory.
@@ -440,10 +523,6 @@ pub fn save_custom_page(name: &str, content: &str) -> std::io::Result<PathBuf> {
     let safe_name = format!("{}.html", name.to_lowercase());
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
-    log::info!(
-        "[fs_bridge] Saved custom static page HTML: {}",
-        safe_name
-    );
+    log::info!("[fs_bridge] Saved custom static page HTML: {}", safe_name);
     Ok(dest)
 }
-

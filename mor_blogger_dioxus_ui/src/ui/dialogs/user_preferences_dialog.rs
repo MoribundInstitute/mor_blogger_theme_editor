@@ -1,5 +1,7 @@
 use crate::app::config_bridge::EditorPrefs;
 use crate::ui::components::modal::Modal;
+use crate::ui::components::form::MorCheckbox;
+use crate::app::state::SiteState;
 use dioxus::prelude::*;
 
 #[component]
@@ -8,6 +10,9 @@ pub fn UserPreferencesDialog(
     mut ui_mode_pref: Signal<String>,
     active_ui_mode: String,
 ) -> Element {
+    let site_state = use_context::<SiteState>();
+    let mut enable_ai_bridge = site_state.enable_ai_bridge;
+
     rsx! {
         Modal {
             open: show_prefs,
@@ -33,6 +38,17 @@ pub fn UserPreferencesDialog(
                     div { class: "editor-note", style: "margin-top:12px;border-color:var(--editor-warning);background:rgba(210,153,34,0.05);",
                         p { class: "editor-note-title", style: "color:var(--editor-warning);", "Restart Required" }
                         p { class: "editor-note-body", "Restart to apply the new window border setting." }
+                    }
+                }
+            }
+
+            div { class: "editor-field-group",
+                label { class: "editor-field-label", "AI Live State Bridge" }
+                MorCheckbox {
+                    label: "Enable AI Bridge (writes live state to /tmp)".to_string(),
+                    checked: enable_ai_bridge(),
+                    onchange: move |val| {
+                        enable_ai_bridge.set(val);
                     }
                 }
             }

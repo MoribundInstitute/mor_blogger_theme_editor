@@ -70,6 +70,7 @@ pub struct ThemeSignals {
     pub ads: Signal<AdsConfig>,
     pub icons: Signal<IconConfig>,
     pub template_pack: Signal<TemplatePackConfig>,
+    pub scripts: Signal<mor_blogger_core::config::ScriptBehaviorConfig>,
     pub enable_image_borders: Signal<bool>,
     pub custom_border_url: Signal<Option<String>>,
     pub svg_border_slice: Signal<String>,
@@ -137,27 +138,15 @@ impl ThemeSignals {
         self.glow_sidebar_color
             .clone()
             .set(palette.colors.glow_sidebar_color.clone());
-        self.glow_logo
-            .clone()
-            .set(palette.colors.glow_logo);
-        self.glow_title
-            .clone()
-            .set(palette.colors.glow_title);
-        self.glow_toc
-            .clone()
-            .set(palette.colors.glow_toc);
-        self.glow_sidebar
-            .clone()
-            .set(palette.colors.glow_sidebar);
-        self.glow_text
-            .clone()
-            .set(palette.colors.glow_text);
+        self.glow_logo.clone().set(palette.colors.glow_logo);
+        self.glow_title.clone().set(palette.colors.glow_title);
+        self.glow_toc.clone().set(palette.colors.glow_toc);
+        self.glow_sidebar.clone().set(palette.colors.glow_sidebar);
+        self.glow_text.clone().set(palette.colors.glow_text);
         self.glow_containers
             .clone()
             .set(palette.colors.glow_containers);
-        self.glow_icons
-            .clone()
-            .set(palette.colors.glow_icons);
+        self.glow_icons.clone().set(palette.colors.glow_icons);
         self.glow_text_color
             .clone()
             .set(palette.colors.glow_text_color.clone());
@@ -278,27 +267,15 @@ impl ThemeSignals {
         self.glow_sidebar_color
             .clone()
             .set(config.colors.glow_sidebar_color.clone());
-        self.glow_logo
-            .clone()
-            .set(config.colors.glow_logo);
-        self.glow_title
-            .clone()
-            .set(config.colors.glow_title);
-        self.glow_toc
-            .clone()
-            .set(config.colors.glow_toc);
-        self.glow_sidebar
-            .clone()
-            .set(config.colors.glow_sidebar);
-        self.glow_text
-            .clone()
-            .set(config.colors.glow_text);
+        self.glow_logo.clone().set(config.colors.glow_logo);
+        self.glow_title.clone().set(config.colors.glow_title);
+        self.glow_toc.clone().set(config.colors.glow_toc);
+        self.glow_sidebar.clone().set(config.colors.glow_sidebar);
+        self.glow_text.clone().set(config.colors.glow_text);
         self.glow_containers
             .clone()
             .set(config.colors.glow_containers);
-        self.glow_icons
-            .clone()
-            .set(config.colors.glow_icons);
+        self.glow_icons.clone().set(config.colors.glow_icons);
         self.glow_text_color
             .clone()
             .set(config.colors.glow_text_color.clone());
@@ -418,6 +395,7 @@ impl ThemeSignals {
         self.custom_js.clone().set(config.plugins.custom_js.clone());
         self.static_pages.clone().set(config.static_pages.clone());
         self.ads.clone().set(config.ads.clone());
+        self.scripts.clone().set(config.scripts.clone());
         self.enable_image_borders
             .clone()
             .set(config.enable_image_borders);
@@ -472,15 +450,11 @@ impl ThemeSignals {
         self.glow_sidebar_color
             .clone()
             .set(palette.colors.glow_sidebar_color.clone());
-        self.glow_text
-            .clone()
-            .set(palette.colors.glow_text);
+        self.glow_text.clone().set(palette.colors.glow_text);
         self.glow_containers
             .clone()
             .set(palette.colors.glow_containers);
-        self.glow_icons
-            .clone()
-            .set(palette.colors.glow_icons);
+        self.glow_icons.clone().set(palette.colors.glow_icons);
         self.glow_text_color
             .clone()
             .set(palette.colors.glow_text_color.clone());

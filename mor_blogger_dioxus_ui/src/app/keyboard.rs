@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
 
-use super::layout_state::{AppLayoutState, DockPosition};
+use super::state::{DockPosition, LayoutState};
 
-pub fn use_keyboard_shortcuts(layout: AppLayoutState) {
+pub fn use_keyboard_shortcuts(layout: LayoutState) {
     let mut theme_palette_pos = layout.theme_palette_pos;
     let mut site_data_pos = layout.site_data_pos;
 

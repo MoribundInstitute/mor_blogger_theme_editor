@@ -1,18 +1,14 @@
 use std::collections::HashMap;
 
-use dioxus::prelude::*;
 use crate::ui::components::code_editor::CodeEditor;
+use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
-use mor_blogger_core::render::template_resolver::{
-    ComponentManifest, CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY, LAYOUT_REGISTRY,
-    SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
-};
 use mor_blogger_core::render::xml_parts::css_generator::render_css_sockets;
 
 use mor_blogger_core::utils::fs_bridge;
 
-use crate::app::layout_state::AppLayoutState;
-use crate::ui::docks::css_dock::VfsDictionary;
+use crate::app::state::{LayoutState, RenderState};
+use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{apply_preview_viewport, clamp_preview_width, PreviewViewport};
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 
@@ -38,32 +34,43 @@ fn esc_attr(s: &str) -> String {
         .replace('\'', "&#39;")
 }
 
-fn pick_xml<'a>(registry: &'a [ComponentManifest], id: &str) -> &'a str {
-    registry
-        .iter()
-        .find(|c| c.id == id)
-        .unwrap_or(&registry[0])
-        .xml_content
+fn pick_xml(render: &RenderState, registry_type: &str, id: &str) -> String {
+    render
+        .get_manifest(registry_type, id)
+        .or_else(|| {
+            let fallback_id = match registry_type {
+                "header" => "mor",
+                "layout" => "sidebars",
+                "content" => "blog_standard",
+                "sidebar_left" => "blogger_left",
+                "sidebar_right" => "toc_right",
+                "footer" => "mega",
+                _ => "",
+            };
+            render.get_manifest(registry_type, fallback_id)
+        })
+        .map(|c| c.xml_content.to_string())
+        .unwrap_or_default()
 }
 
-fn resolve_module_xml(module_key: &str, config: &ThemeConfig) -> String {
+fn resolve_module_xml(render: &RenderState, module_key: &str, config: &ThemeConfig) -> String {
     let pack = &config.template_pack;
     match module_key {
-        "header_variant" => pick_xml(HEADER_REGISTRY, &pack.header_variant).to_string(),
-        "main_variant" => pick_xml(LAYOUT_REGISTRY, &pack.main_variant).to_string(),
-        "content_variant" => pick_xml(CONTENT_REGISTRY, &pack.content_variant).to_string(),
-        "left_sidebar_variant" => {
-            pick_xml(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).to_string()
-        }
-        "right_sidebar_variant" => {
-            pick_xml(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).to_string()
-        }
-        "footer_variant" => pick_xml(FOOTER_REGISTRY, &pack.footer_variant).to_string(),
+        "header_variant" => pick_xml(render, "header", &pack.header_variant),
+        "main_variant" => pick_xml(render, "layout", &pack.main_variant),
+        "content_variant" => pick_xml(render, "content", &pack.content_variant),
+        "left_sidebar_variant" => pick_xml(render, "sidebar_left", &pack.left_sidebar_variant),
+        "right_sidebar_variant" => pick_xml(render, "sidebar_right", &pack.right_sidebar_variant),
+        "footer_variant" => pick_xml(render, "footer", &pack.footer_variant),
         _ => String::new(),
     }
 }
 
-fn render_module_preview(module_key: &str, config: &ThemeConfig, vfs: &HashMap<String, String>) -> String {
+fn render_module_preview(
+    module_key: &str,
+    config: &ThemeConfig,
+    vfs: &HashMap<String, String>,
+) -> String {
     let parts = mor_blogger_core::render::template_resolver::resolve_template_parts(config, vfs);
     let true_css = render_css_sockets(parts.css, config);
 
@@ -275,7 +282,8 @@ pub fn ModuleWorkbench(
     config_toml: ReadSignal<String>,
     on_load_theme: EventHandler<String>,
 ) -> Element {
-    let mut layout = use_context::<AppLayoutState>();
+    let mut layout = use_context::<LayoutState>();
+    let render = use_context::<RenderState>();
     let mut edited_xml: Signal<String> = use_signal(String::new);
     let mut is_takeover_active = use_signal(|| false);
     let mut workbench_status: Signal<String> = use_signal(String::new);
@@ -285,7 +293,7 @@ pub fn ModuleWorkbench(
     let module_xml = use_memo(move || match (layout.active_workbench_module)() {
         Some(key) => {
             let config = toml::from_str::<ThemeConfig>(&config_toml()).unwrap_or_default();
-            resolve_module_xml(key, &config)
+            resolve_module_xml(&render, key, &config)
         }
         None => String::new(),
     });

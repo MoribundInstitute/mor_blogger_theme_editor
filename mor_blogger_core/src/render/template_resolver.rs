@@ -298,7 +298,13 @@ pub fn fetch_default_css(filename: &str) -> &'static str {
     }
 }
 
-fn fetch_js(filename: &str) -> &'static str {
+pub const CORE_JS_FILES: &[&str] = &[
+    "01-Core-Helpers.js",
+    "07-Theme-Toggler.js",
+    "08-Share-Actions.js",
+];
+
+pub fn fetch_js(filename: &str) -> &'static str {
     match filename {
         "01-Core-Helpers.js" => include_str!("../template_parts/scripts/01-Core-Helpers.js"),
         "07-Theme-Toggler.js" => include_str!("../template_parts/scripts/07-Theme-Toggler.js"),
@@ -439,9 +445,9 @@ pub fn resolve_template_parts(
     }
 
     if pack.script_variant == "mor_panels" {
-        unique_js.insert("01-Core-Helpers.js");
-        unique_js.insert("07-Theme-Toggler.js");
-        unique_js.insert("08-Share-Actions.js");
+        for file in CORE_JS_FILES {
+            unique_js.insert(*file);
+        }
     }
 
     for comp in &active_components {
@@ -461,7 +467,11 @@ pub fn resolve_template_parts(
     sorted_js.sort();
 
     for filename in &sorted_js {
-        let src = fetch_js(filename);
+        let src = if let Some(custom) = vfs.get(*filename) {
+            custom.as_str()
+        } else {
+            fetch_js(filename)
+        };
         if !src.is_empty() {
             js_sections.push(format!("/* --- {} --- */\n{}", filename, src));
         }

@@ -149,8 +149,7 @@ fn main() -> Result<()> {
                 "{} Generating static HTML stencils and archiving...",
                 "➔".cyan()
             );
-            save_bundle_to_disk(&xml, &toml_str, output)
-                .map_err(|e| anyhow::anyhow!(e))?;
+            save_bundle_to_disk(&xml, &toml_str, output).map_err(|e| anyhow::anyhow!(e))?;
 
             println!(
                 "{} Bundle successfully compiled to {} in {:?}",

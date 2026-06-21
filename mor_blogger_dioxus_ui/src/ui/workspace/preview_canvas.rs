@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+use crate::app::state::ContextMenuPayload;
 use crate::ui::workspace::layout::PreviewViewport;
 
 const SCALER_JS: &str = r#"
@@ -66,6 +67,7 @@ pub fn PreviewCanvas(
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_select: Option<EventHandler<String>>,
     #[props(default)] on_icon_edit: Option<EventHandler<String>>,
+    #[props(default)] on_icon_context_menu: Option<EventHandler<ContextMenuPayload>>,
     #[props(default)] on_update_value: Option<EventHandler<(String, String)>>,
     #[props(default)] on_move_widget: Option<EventHandler<(String, String)>>,
     #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
@@ -319,6 +321,37 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                                 const el = e.target.closest('[data-field-path]');
                                                 if (el) { el.contentEditable = true; el.focus(); }
                                             });
+                                            doc.addEventListener('contextmenu', e => {
+                                                const targetEl = e.target.closest("[data-edit-target^='icons.']");
+                                                const textTarget = e.target.closest('h1, h2, h3, h4, h5, h6, p, span, a');
+                                                if (targetEl || textTarget) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const frm = document.getElementById(FID);
+                                                    const rect = frm ? frm.getBoundingClientRect() : { left: 0, top: 0 };
+                                                    const wrapper = document.querySelector('.preview-scale-wrapper');
+                                                    const scale = wrapper ? parseFloat(getComputedStyle(wrapper).getPropertyValue('--preview-scale')) || 1 : 1;
+                                                    const x = rect.left + e.clientX * scale;
+                                                    const y = rect.top + e.clientY * scale;
+                                                    if (targetEl) {
+                                                        dioxus.send({
+                                                            action: "svg_context_menu",
+                                                            kind: "svg",
+                                                            target_id: targetEl.getAttribute("data-edit-target"),
+                                                            x: x,
+                                                            y: y
+                                                        });
+                                                    } else if (textTarget) {
+                                                        dioxus.send({
+                                                            action: "svg_context_menu",
+                                                            kind: "preview_typography",
+                                                            target_id: textTarget.tagName.toLowerCase(),
+                                                            x: x,
+                                                            y: y
+                                                        });
+                                                    }
+                                                }
+                                            });
                                             doc.addEventListener('blur', e => {
                                                 const el = e.target.closest('[data-field-path]');
                                                 if (el && el.contentEditable === "true") {
@@ -450,6 +483,23 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                             "DROP_SVG" => {
                                                 if let (Some(target), Some(content)) = (json.get("target").and_then(|t| t.as_str()), json.get("content").and_then(|c| c.as_str())) {
                                                     if let Some(handler) = on_drop_svg.as_ref() { handler.call((target.to_string(), content.to_string())); }
+                                                }
+                                            }
+                                            "svg_context_menu" | "ICON_CONTEXT_MENU" => {
+                                                if let (Some(target), Some(x_val), Some(y_val)) = (
+                                                    json.get("target_id").or_else(|| json.get("target")).and_then(|t| t.as_str()),
+                                                    json.get("x").and_then(|x| x.as_f64()),
+                                                    json.get("y").and_then(|y| y.as_f64()),
+                                                ) {
+                                                    let kind_str = json.get("kind").and_then(|k| k.as_str()).unwrap_or("svg").to_string();
+                                                    if let Some(handler) = on_icon_context_menu.as_ref() {
+                                                        handler.call(ContextMenuPayload {
+                                                            x: x_val,
+                                                            y: y_val,
+                                                            kind: kind_str,
+                                                            target_id: target.to_string(),
+                                                        });
+                                                    }
                                                 }
                                             }
                                             _ => {}

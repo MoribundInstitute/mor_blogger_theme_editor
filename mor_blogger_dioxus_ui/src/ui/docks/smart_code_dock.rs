@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::ui::components::code_editor::CodeEditor;
+use dioxus::prelude::*;
 
 // 1. Data-Driven Definitions. Zero repetitive DOM slop.
 const TEMPLATE_LAYOUTS: &[(&str, &str)] = &[
@@ -25,7 +25,6 @@ pub fn SmartCodeDock(
 ) -> Element {
     // 2. Memory cell tracks current selection
     let mut active_target = use_signal(|| None::<String>);
-
 
     let mut jump_to = move |target: &str| {
         let target_str = target.to_string();

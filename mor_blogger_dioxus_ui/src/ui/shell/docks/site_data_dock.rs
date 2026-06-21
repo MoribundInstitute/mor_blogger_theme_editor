@@ -1,14 +1,15 @@
 use dioxus::prelude::*;
 
-use crate::app::layout_state::{AppLayoutState, DockPosition};
+use crate::app::state::{DockPosition, LayoutState};
+use crate::app::theme_signals::ThemeSignals;
 use crate::ui::components::accordion::EditorAccordion;
+use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat};
 use crate::ui::panels::site_data::ads_panel::AdsPanel;
 use crate::ui::panels::site_data::assets_panel::AssetsPanel;
 use crate::ui::panels::site_data::menu_panel::MenuPanel;
 use crate::ui::panels::site_data::plugins_panel::PluginsPanel;
 use crate::ui::panels::site_data::seo_panel::{FooterPanel, SeoPanel};
 use crate::ui::panels::site_data::site_panel::SitePanel;
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
 use mor_blogger_core::config::ThemeConfig;
 
 const RIGHT_PANE_CSS: &str = r#"
@@ -135,7 +136,7 @@ pub fn SiteDataDock(
     current_config: ThemeConfig,
     on_apply_theme: EventHandler<ThemeConfig>,
 ) -> Element {
-    let mut layout = use_context::<AppLayoutState>();
+    let mut layout = use_context::<LayoutState>();
     let pos = (layout.site_data_pos)();
 
     if pos == DockPosition::Hidden {
@@ -214,12 +215,7 @@ pub fn SiteDataDock(
 
         div { class: "editor-panel-tabs",
             EditorAccordion { id: "Site", title: "Site Identity", active: active_tab,
-                SitePanel {
-                    site_title: signals.site_title,
-                    site_subtitle: signals.site_subtitle,
-                    header_logo_url: signals.header_logo_url,
-                    home_url: signals.home_url,
-                }
+                SitePanel {}
             }
 
             EditorAccordion { id: "Assets", title: "Images & Assets", active: active_tab,
@@ -245,13 +241,7 @@ pub fn SiteDataDock(
             }
 
             EditorAccordion { id: "SEO", title: "SEO & Footer", active: active_tab,
-                SeoPanel {
-                    meta_description: signals.meta_description,
-                    meta_keywords: signals.meta_keywords,
-                    custom_robots: signals.custom_robots,
-                    author_name: signals.author_name,
-                    license_url: signals.license_url,
-                }
+                SeoPanel {}
                 FooterPanel {
                     footer_text: signals.footer_text,
                     footer_license_label: signals.footer_license_label,
@@ -287,46 +277,7 @@ pub fn SiteDataDock(
                 {inner_content}
             }
         },
-        DockPosition::Hidden => rsx! {}
-    }
-}
-
-#[component]
-fn IconClose() -> Element {
-    rsx! {
-        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            path { d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }
-        }
-    }
-}
-
-#[component]
-fn IconFloat() -> Element {
-    rsx! {
-        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "1.5", width: "10", height: "8", rx: "1.5" }
-            rect { x: "4.5", y: "6.5", width: "10", height: "8", rx: "1.5" }
-        }
-    }
-}
-
-#[component]
-fn IconDockLeft() -> Element {
-    rsx! {
-        svg { width: "14", height: "14", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
-            path { d: "M5.5 2.5v11" }
-        }
-    }
-}
-
-#[component]
-fn IconDockRight() -> Element {
-    rsx! {
-        svg { width: "14", height: "14", view_box: "0 0 16 16", fill: "none", stroke: "currentColor", stroke_width: "1.5", stroke_linecap: "round", stroke_linejoin: "round",
-            rect { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2" }
-            path { d: "M10.5 2.5v11" }
-        }
+        DockPosition::Hidden => rsx! {},
     }
 }
 

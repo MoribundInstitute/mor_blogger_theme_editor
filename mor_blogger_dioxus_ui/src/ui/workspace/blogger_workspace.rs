@@ -1,22 +1,19 @@
-use std::collections::HashMap;
-
-use crate::app::layout_state::CenterView;
-use crate::ui::docks::css_dock::VfsDictionary;
+use crate::app::state::{CenterView, ContextMenuPayload, LayoutState, RenderState};
+use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
-use crate::utils::clipboard::copy_to_clipboard;
 use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::diagnostics::DiagnosticResult;
 use mor_blogger_core::render::PreviewTemplateMode;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
-use crate::ui::shell::main_pane::MainPane;
 use super::module_workbench::ModuleWorkbench;
-use crate::ui::docks::smart_code_dock::SmartCodeDock;
 use super::static_page_editor::StaticPageEditor;
+use crate::ui::docks::smart_code_dock::SmartCodeDock;
+use crate::ui::shell::main_pane::MainPane;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
@@ -56,32 +53,6 @@ fn encode_path_to_mask(path_d: &str) -> String {
     svg_to_data_uri(&raw)
 }
 
-fn set_icon_slot(config: &mut ThemeConfig, slot: &str, mask: String) {
-    match slot {
-        "icons.panel_close" => config.icons.panel_close = mask,
-        "icons.search" => config.icons.search = mask,
-        "icons.menu" => config.icons.menu = mask,
-        "icons.sidebar_left" => config.icons.sidebar_left = mask,
-        "icons.sidebar_right" => config.icons.sidebar_right = mask,
-        "icons.archive" => config.icons.archive = mask,
-        "icons.label" => config.icons.label = mask,
-        "icons.share" => config.icons.share = mask,
-        "icons.user" => config.icons.user = mask,
-        "icons.comment" => config.icons.comment = mask,
-        "icons.arrow_up" => config.icons.arrow_up = mask,
-        "icons.external_link" => config.icons.external_link = mask,
-        _ => {}
-    }
-}
-
-fn build_fresh_export_xml(config_toml: &str, vfs: &HashMap<String, String>) -> Result<String, String> {
-    let config = toml::from_str::<ThemeConfig>(config_toml)
-        .map_err(|err| format!("could not parse TOML: {}", err))?;
-
-    let rendered_xml = mor_blogger_core::render::render_theme(&config, vfs);
-    mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config)
-}
-
 #[component]
 pub fn BloggerWorkspace(
     preview_viewport: Signal<PreviewViewport>,
@@ -101,75 +72,63 @@ pub fn BloggerWorkspace(
     #[props(default)] on_navigate: Option<EventHandler<String>>,
     #[props(default)] on_toggle_dark_mode: Option<EventHandler<()>>,
 ) -> Element {
-    let is_valid = diag.read().is_valid;
-    let error_count = diag.read().errors.len();
-    let mut active_icon_picker = use_signal(|| None::<String>);
+    let _ = show_preview;
+    let _ = active_preset;
+    let _ = on_load_hotswap;
+    let mut layout = use_context::<LayoutState>();
+    let render = use_context::<RenderState>();
+    let is_valid = render.diag.read().is_valid;
+    let error_count = render.diag.read().errors.len();
+    let mut active_icon_picker = layout.active_icon_picker;
     let is_xray_active = use_signal(|| false);
     let mut active_xray_target = use_signal(|| None::<String>);
 
     let mut is_fullscreen = use_signal(|| false);
     let vfs = use_context::<VfsDictionary>().0;
 
-    let export_xml = use_memo(move || match build_fresh_export_xml(&config_toml(), &*vfs.read()) {
-        Ok(xml) => xml,
-        Err(err) => {
-            log::error!("Render failed: {}", err);
-            format!("Render failed: {}", err)
+    let export_xml = use_memo(move || {
+        match crate::app::services::workspace_service::build_fresh_export_xml(
+            &config_toml(),
+            &*vfs.read(),
+        ) {
+            Ok(xml) => xml,
+            Err(err) => {
+                log::error!("Render failed: {}", err);
+                format!("Render failed: {}", err)
+            }
         }
     });
 
     let apply_text_edit = {
         let restore = on_restore.clone();
         move |target: String, val: String, cfg: String| {
-            if target.is_empty() {
-                return;
-            }
-            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
-            if let Some(widget_id) = target
-                .strip_prefix("widget.")
-                .and_then(|s| s.strip_suffix(".title"))
+            if let Some(config) =
+                crate::app::services::workspace_service::handle_text_edit(&target, val, &cfg)
             {
-                config
-                    .template_pack
-                    .widget_titles
-                    .insert(widget_id.to_string(), val);
-            } else {
-                match target.as_str() {
-                    "site.site_title" => config.site.site_title = val,
-                    "site.site_subtitle" => config.site.site_subtitle = val,
-                    "footer.footer_text" => config.footer.footer_text = val,
-                    "typography.body_font_stack" => config.typography.body_font_stack = val,
-                    "typography.heading_font_stack" => config.typography.heading_font_stack = val,
-                    "typography.mono_font_stack" => config.typography.mono_font_stack = val,
-                    _ => return,
-                }
+                restore.call(config);
             }
-            restore.call(config);
         }
     };
 
     let apply_widget_move = {
         let restore = on_restore.clone();
         move |id: String, dest: String, cfg: String| {
-            if id.is_empty() || dest.is_empty() {
-                return;
+            if let Some(config) =
+                crate::app::services::workspace_service::handle_widget_move(&id, &dest, &cfg)
+            {
+                restore.call(config);
             }
-            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
-            config.template_pack.move_widget(&id, &dest);
-            restore.call(config);
         }
     };
 
     let apply_drop_svg = {
         let restore = on_restore.clone();
         move |(target, content): (String, String), cfg: String| {
-            if target.is_empty() || !is_svg(&content) {
-                return;
+            if let Some(config) =
+                crate::app::services::workspace_service::handle_drop_svg(&target, &content, &cfg)
+            {
+                restore.call(config);
             }
-            let mask = svg_to_data_uri(&content);
-            let mut config = toml::from_str::<ThemeConfig>(&cfg).unwrap_or_default();
-            set_icon_slot(&mut config, &target, mask);
-            restore.call(config);
         }
     };
 
@@ -250,6 +209,7 @@ pub fn BloggerWorkspace(
                         on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                         on_select: move |target: String| { active_xray_target.set(Some(target)); },
                         on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                        on_icon_context_menu: move |payload: ContextMenuPayload| { layout.active_context_menu.set(Some(payload)); },
                         on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                         on_update_value: {
                             let mutator = apply_text_edit.clone();
@@ -283,6 +243,7 @@ pub fn BloggerWorkspace(
                                 on_navigate: move |href: String| { if let Some(handler) = on_navigate.as_ref() { handler.call(href); } },
                                 on_select: move |target: String| { active_xray_target.set(Some(target)); },
                                 on_icon_edit: move |target: String| { active_icon_picker.set(Some(target)); },
+                                on_icon_context_menu: move |payload: ContextMenuPayload| { layout.active_context_menu.set(Some(payload)); },
                                 on_toggle_dark_mode: move |_| { if let Some(handler) = on_toggle_dark_mode.as_ref() { handler.call(()); } },
                                 on_update_value: {
                                     let mutator = apply_text_edit.clone();
@@ -500,7 +461,7 @@ fn IconPickerModal(
                                 }
                                 let mask = svg_to_data_uri(&raw_svg);
                                 let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                set_icon_slot(&mut config, &icon_target, mask);
+                                crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask);
                                 restore.call(config);
                                 status_msg.set("SVG applied!".to_string());
                                 raw_svg_input.set(String::new());
@@ -529,7 +490,7 @@ fn IconPickerModal(
                                         }
                                         let mask = svg_to_data_uri(&raw_svg);
                                         let mut config = toml::from_str::<ThemeConfig>(&cfg_str).unwrap_or_default();
-                                        set_icon_slot(&mut config, &slot, mask);
+                                        crate::app::services::workspace_service::set_icon_slot(&mut config, &slot, mask);
                                         apply.call(config);
                                         status_msg.set(format!("SVG applied from {}", file.file_name()));
                                     }
@@ -563,7 +524,7 @@ fn IconPickerModal(
                                         let toml_str = config_toml.clone();
                                         move |_| {
                                             let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                            set_icon_slot(&mut config, &icon_target, mask_uri.clone());
+                                            crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask_uri.clone());
                                             on_restore.call(config);
                                             status_msg.set(format!("Applied {} icon.", label));
                                         }
@@ -587,7 +548,7 @@ fn IconPickerModal(
                                 let toml_str = config_toml.clone();
                                 move |_| {
                                     let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                    set_icon_slot(&mut config, &icon_target, mask.clone());
+                                    crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask.clone());
                                     on_restore.call(config);
                                     status_msg.set(format!("Applied {} icon.", label));
                                 }
@@ -608,7 +569,8 @@ fn ExportResultView(
     error_count: usize,
     config_toml: ReadSignal<String>,
 ) -> Element {
-    let mut status_msg = use_signal(String::new);
+    let status_msg = use_signal(String::new);
+    let render = use_context::<RenderState>();
 
     rsx! {
         div {
@@ -635,43 +597,21 @@ fn ExportResultView(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                copy_to_clipboard(export_xml());
-                                status_msg.set("Theme XML copied to clipboard!".to_string());
+                                crate::app::services::workspace_service::handle_copy_xml(export_xml(), status_msg);
                             },
                             "Copy XML"
                         }
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                let xml = export_xml();
-                                spawn(async move {
-                                    if let Some(handle) = rfd::AsyncFileDialog::new().set_file_name("theme.xml").add_filter("XML", &["xml"]).save_file().await {
-                                        match mor_blogger_core::render::save_xml_to_disk(&xml, handle.path()) {
-                                            Ok(_) => status_msg.set("Exported to disk.".to_string()),
-                                            Err(err) => status_msg.set(format!("Export failed: {}", err)),
-                                        }
-                                    }
-                                });
+                                crate::app::services::workspace_service::handle_xml_export_state(&render, status_msg);
                             },
                             "Export XML to Disk"
                         }
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                let xml = export_xml();
-                                let cfg_str = config_toml();
-                                spawn(async move {
-                                    if let Err(err) = toml::from_str::<ThemeConfig>(&cfg_str) {
-                                        status_msg.set(format!("Config error: {}", err));
-                                        return;
-                                    }
-                                    if let Some(handle) = rfd::AsyncFileDialog::new().set_file_name("theme_bundle.zip").add_filter("ZIP", &["zip"]).save_file().await {
-                                        match mor_blogger_core::render::save_bundle_to_disk(&xml, &cfg_str, handle.path()) {
-                                            Ok(_) => status_msg.set("Bundle exported.".to_string()),
-                                            Err(err) => status_msg.set(format!("Bundle failed: {}", err)),
-                                        }
-                                    }
-                                });
+                                crate::app::services::workspace_service::handle_zip_export(export_xml(), config_toml(), status_msg);
                             },
                             "Export Theme Bundle (.zip)"
                         }

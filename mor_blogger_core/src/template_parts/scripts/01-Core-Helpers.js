@@ -3,7 +3,7 @@
     /* =========================================================
     01. Shared Helpers
     ========================================================= */
-    const MOBILE_BREAKPOINT = 900;
+    const MOBILE_BREAKPOINT = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.MOBILE_BREAKPOINT : 900;
     const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
 
     function isTypingInField() {
@@ -36,7 +36,8 @@
 
     function setInitialPanelState() {
       if (!panelLeft || !panelRight) return;
-      if (isMobile()) {
+      const collapseOnMobile = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.PANELS_COLLAPSED_MOBILE : true;
+      if (isMobile() && collapseOnMobile) {
         panelLeft.classList.add('is-collapsed');
         panelRight.classList.add('is-collapsed');
       } else {

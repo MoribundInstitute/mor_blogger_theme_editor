@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::app::state::ThemeAppState;
+use crate::app::state::ThemeState;
 use mor_blogger_core::utils::rehydration::extract_and_decode;
 
-pub fn use_restore_drop_bridge(theme: ThemeAppState) {
+pub fn use_restore_drop_bridge(theme: ThemeState) {
     let signals = theme.signals;
     let active_preset = theme.active_preset;
     use_effect(move || {

@@ -1,5 +1,5 @@
+use crate::app::state::ThemeState;
 use dioxus::prelude::*;
-use crate::app::state::ThemeAppState; 
 
 pub fn get_cursor_css(cursor_type: &str) -> &'static str {
     match cursor_type {
@@ -11,8 +11,8 @@ pub fn get_cursor_css(cursor_type: &str) -> &'static str {
 
 #[component]
 pub fn CursorPanel() -> Element {
-    let mut state = consume_context::<ThemeAppState>();
-    
+    let mut state = consume_context::<ThemeState>();
+
     // Read current value from signal to keep UI in sync
     let current_cursor = state.signals.cursor_style.read().clone();
 
@@ -26,8 +26,8 @@ pub fn CursorPanel() -> Element {
                     onchange: move |evt| {
                         let selected = evt.value();
                         let css_value = get_cursor_css(&selected);
-                        
-                        // Update signal. Memory safe mutation. 
+
+                        // Update signal. Memory safe mutation.
                         *state.signals.cursor_style.write() = css_value.to_string();
                     },
                     option { value: "Default", "System Default" }

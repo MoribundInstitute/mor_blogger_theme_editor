@@ -3,8 +3,8 @@ use crate::render::ads::render_ads_widget_sidebar;
 use crate::render::css_builder::{icon_or_default, DEFAULT_ICON_PANEL_CLOSE};
 
 pub fn render_sidebar_sockets(mut xml: String, config: &ThemeConfig, side: &str) -> String {
-    let close_icon = icon_or_default(&config.icons.panel_close, DEFAULT_ICON_PANEL_CLOSE)
-        .replace('"', "'");
+    let close_icon =
+        icon_or_default(&config.icons.panel_close, DEFAULT_ICON_PANEL_CLOSE).replace('"', "'");
     xml = xml.replace("{{ICON_PANEL_CLOSE}}", &close_icon);
 
     if side == "LEFT" {

@@ -2,11 +2,11 @@
 //! right-panel preview iframe. Distinct from `theme::render_theme`, which
 //! produces uploadable Blogger XML.
 
-use std::collections::HashMap;
 use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 use crate::config::prefs::RenderPrefs;
 use crate::config::{BackgroundMode, ThemeConfig};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PreviewTemplateMode {

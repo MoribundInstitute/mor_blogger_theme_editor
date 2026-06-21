@@ -100,6 +100,8 @@ pub struct ThemeConfig {
     pub target_sidebars: bool,
     #[serde(default)]
     pub target_canvas: bool,
+    #[serde(default)]
+    pub scripts: ScriptBehaviorConfig,
 }
 
 impl Default for ThemeConfig {
@@ -142,6 +144,7 @@ impl Default for ThemeConfig {
             image_border_width: default_image_width(),
             target_sidebars: default_true(),
             target_canvas: false,
+            scripts: ScriptBehaviorConfig::default(),
         }
     }
 }
@@ -336,6 +339,26 @@ pub struct PluginConfig {
     pub custom_js: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct ScriptBehaviorConfig {
+    pub mobile_breakpoint: f64,        // e.g., 900.0
+    pub panels_collapsed_mobile: bool, // e.g., true
+    pub enable_theme_toggle: bool,     // e.g., true
+    pub enable_share_actions: bool,    // e.g., true
+}
+
+impl Default for ScriptBehaviorConfig {
+    fn default() -> Self {
+        Self {
+            mobile_breakpoint: 900.0,
+            panels_collapsed_mobile: true,
+            enable_theme_toggle: true,
+            enable_share_actions: true,
+        }
+    }
+}
+
 pub fn update_toml_preserve_comments(original_toml: &str, updated_config: &ThemeConfig) -> String {
     let mut doc = match original_toml.parse::<toml_edit::DocumentMut>() {
         Ok(d) => d,
@@ -409,7 +432,8 @@ fn merge_items(original: &mut toml_edit::Item, updated: &toml_edit::Item) {
             }
         }
         (orig_item, upd_item) => {
-            if let (Some(orig_val), Some(upd_val)) = (orig_item.as_value_mut(), upd_item.as_value()) {
+            if let (Some(orig_val), Some(upd_val)) = (orig_item.as_value_mut(), upd_item.as_value())
+            {
                 let decor = orig_val.decor().clone();
                 *orig_val = upd_val.clone();
                 *orig_val.decor_mut() = decor;
@@ -452,4 +476,3 @@ accent = "#ff0000"
         assert!(updated.contains("accent = \"#00ff00\""));
     }
 }
-

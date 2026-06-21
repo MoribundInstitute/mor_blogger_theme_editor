@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::ui::panels::theme_palette::presets::ThemeSignals;
+use crate::app::theme_signals::ThemeSignals;
 use crate::utils::clipboard::copy_to_clipboard;
 use mor_blogger_core::config::pages::StaticPagesConfig;
 use mor_blogger_core::render::pages::{
@@ -74,7 +74,7 @@ pub fn StaticPagesPanel(
     mut preview_html: Signal<String>,
     base_preview_html: ReadSignal<String>,
 ) -> Element {
-    let theme_state = use_context::<crate::app::state::ThemeAppState>();
+    let layout_state = use_context::<crate::app::state::LayoutState>();
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
     let mut active_tab = use_signal(|| "Archive");
@@ -89,7 +89,7 @@ pub fn StaticPagesPanel(
         if active_tab() == "Community" {
             return;
         }
-        if *theme_state.center_view.read() == crate::app::layout_state::CenterView::StaticPageEditor {
+        if *layout_state.center_view.read() == crate::app::state::CenterView::StaticPageEditor {
             return;
         }
 
@@ -142,10 +142,10 @@ pub fn StaticPagesPanel(
                                 let id = id;
                                 move |_| {
                                     active_tab.set(id);
-                                    let mut ts = theme_state;
-                                    ts.center_view.set(crate::app::layout_state::CenterView::StaticPageEditor);
-                                    ts.active_static_page.set(Some(id.to_string()));
-                                    
+                                    let mut ls = layout_state;
+                                    ls.center_view.set(crate::app::state::CenterView::StaticPageEditor);
+                                    ls.active_static_page.set(Some(id.to_string()));
+
                                     let base = base_preview_html();
                                     let pages_snapshot = pages();
                                     let new_html = preview_html_for_tab(id, &pages_snapshot);

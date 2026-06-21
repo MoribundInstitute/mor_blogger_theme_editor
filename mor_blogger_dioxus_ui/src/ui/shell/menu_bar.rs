@@ -1,5 +1,4 @@
-use crate::app::layout_state::{AppLayoutState, DockPosition};
-use crate::app::state::ThemeAppState;
+use crate::app::state::{DockPosition, LayoutState, ThemeState};
 use crate::ui::shell::shortcut::use_shortcut;
 
 use dioxus::prelude::*;
@@ -78,6 +77,7 @@ pub fn AppMenuBar(
     mut show_shortcuts: Signal<bool>,
     mut show_plugin_manager: Signal<bool>,
     mut show_css_builder: Signal<bool>,
+    mut show_js_builder: Signal<bool>,
     mut show_diagnostics: Signal<bool>,
     mut show_docs: Signal<bool>,
     on_new_workspace: EventHandler<()>,
@@ -93,8 +93,8 @@ pub fn AppMenuBar(
     on_toggle_split: EventHandler<()>,
     on_reset_viewport: EventHandler<()>,
 ) -> Element {
-    let theme = use_context::<ThemeAppState>();
-    let mut layout = use_context::<AppLayoutState>();
+    let theme = use_context::<ThemeState>();
+    let mut layout = use_context::<LayoutState>();
 
     rsx! {
         MorMenuBar {
@@ -207,12 +207,15 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "Toggle CSS Editor".to_string(),
                     on_action: move |_| {
-                        let current = (layout.css_editor_pos)();
-                        let next = match current {
-                            DockPosition::Hidden => DockPosition::Right,
-                            _ => DockPosition::Hidden,
-                        };
-                        layout.css_editor_pos.set(next);
+                        let mut layout = layout;
+                        layout.toggle_editor_smartly("css");
+                    }
+                }
+                MenuItem {
+                    label: "Toggle JS Editor".to_string(),
+                    on_action: move |_| {
+                        let mut layout = layout;
+                        layout.toggle_editor_smartly("js");
                     }
                 }
             }
@@ -245,6 +248,10 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "CSS Token Builder".to_string(),
                     on_action: move |_| show_css_builder.set(true)
+                }
+                MenuItem {
+                    label: "JS Behavior Builder".to_string(),
+                    on_action: move |_| show_js_builder.set(true)
                 }
                 MenuSeparator {}
                 MenuItem {

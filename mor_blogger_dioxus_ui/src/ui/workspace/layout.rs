@@ -11,7 +11,6 @@
 
 use dioxus::prelude::*;
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PreviewViewport {
     Desktop,

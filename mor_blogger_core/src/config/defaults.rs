@@ -2,8 +2,8 @@ use crate::config::ads::AdsConfig;
 use crate::config::pages::StaticPagesConfig;
 use crate::config::{
     AssetConfig, BackgroundConfig, BackgroundMode, ButtonConfig, ColorConfig, FooterConfig,
-    PluginConfig, SeoConfig, SiteConfig, SurfaceFill, TemplatePackConfig, ThemeConfig,
-    TypographyConfig,
+    PluginConfig, ScriptBehaviorConfig, SeoConfig, SiteConfig, SurfaceFill, TemplatePackConfig,
+    ThemeConfig, TypographyConfig,
 };
 use std::collections::HashMap;
 
@@ -163,6 +163,7 @@ pub fn default_theme_config() -> ThemeConfig {
         image_border_width: "20px".to_string(),
         target_sidebars: true,
         target_canvas: false,
+        scripts: ScriptBehaviorConfig::default(),
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).
         icons: {

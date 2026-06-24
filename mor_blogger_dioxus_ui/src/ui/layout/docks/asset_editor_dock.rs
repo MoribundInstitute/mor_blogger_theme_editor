@@ -1,6 +1,6 @@
-use crate::app::state::{DockPosition, LayoutState, RenderState, ThemeState};
+use crate::app::state::{DockPosition, RenderState, ThemeState};
 use crate::ui::components::code_editor::CodeEditor;
-use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
+use crate::ui::components::dock_chrome::DockChrome;
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -69,7 +69,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         }),
     });
     let is_sub_window = try_use_context::<SubWindowMarker>().is_some();
-    let mut layout = use_context::<LayoutState>();
     let theme = use_context::<ThemeState>();
     let mut vfs = props.vfs_signal;
     let mut active_tab = use_signal(|| props.default_file.to_string());
@@ -169,7 +168,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         return rsx! {};
     }
 
-    let is_floating = pos == DockPosition::Floating;
 
     let current_file = if props.available_files.contains(&active_tab()) {
         active_tab()
@@ -197,26 +195,34 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         })
     };
 
-    let val = if props.mode == "css" {
-        crate::utils::formatters::beautify_css(&raw_val)
-    } else {
-        raw_val
-    };
+    // ponytail: store raw CSS only. `val` flows into content_signal/preset_css and
+    // round-trips through on_change, so beautify must never touch it (it also shreds
+    // {{TEMPLATE_TOKENS}}). Display raw; no separate display/state split needed.
+    let val = raw_val;
 
-    let mut last_file = use_signal(|| current_file.clone());
+    let last_file = use_signal(|| current_file.clone());
     let mut last_external_val = use_signal(|| val.clone());
+    let sig = props.content_signal;
 
-    let mut sig = props.content_signal;
-    if last_file() != current_file {
-        last_file.set(current_file.clone());
-        sig.set(val.clone());
-        last_external_val.set(val.clone());
-    } else if last_external_val() != val {
-        last_external_val.set(val.clone());
-        sig.set(val.clone());
-    } else if sig.read().is_empty() && !val.is_empty() {
-        sig.set(val.clone());
-    }
+    // Reconcile external content into content_signal from an effect (never during render),
+    // keyed on the loaded file + its source value. peek() the bookkeeping signals: sig.read()
+    // here would subscribe the effect to its own writes and loop, so the only reactive triggers
+    // are current_file/val. on_change owns the buffer between loads.
+    use_effect(use_reactive!(|current_file, val| {
+        let mut last_file = last_file;
+        let mut last_external_val = last_external_val;
+        let mut sig = sig;
+        if *last_file.peek() != current_file {
+            last_file.set(current_file.clone());
+            sig.set(val.clone());
+            last_external_val.set(val.clone());
+        } else if *last_external_val.peek() != val {
+            last_external_val.set(val.clone());
+            sig.set(val.clone());
+        } else if sig.peek().is_empty() && !val.is_empty() {
+            sig.set(val.clone());
+        }
+    }));
 
     {
         let active_file_signal = active_tab;
@@ -438,72 +444,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let target_id = if props.mode == "css" { "css" } else if props.mode == "xml" { "xml" } else { "js" };
 
     let tx_opt_clone = tx_opt.clone();
-    let header_actions = rsx! {
-        div { class: "floating-editor-window-actions",
-            button {
-                class: "editor-mini-button",
-                style: "padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; font-weight: 600;",
-                onclick: move |e| {
-                    e.stop_propagation();
-                    if let Some(tx) = &tx_opt_clone {
-                        let _ = tx.send(EditorEvent::Save);
-                    } else {
-                        props.on_save.call(());
-                    }
-                },
-                "Save"
-            }
-            if !props.is_native_window {
-                if pos != DockPosition::mor_panel_left {
-                    button {
-                        class: "editor-mini-button",
-                        style: "display: flex; align-items: center; padding: 4px;",
-                        title: "Dock Left",
-                        onclick: move |e| {
-                            e.stop_propagation();
-                            layout.request_exclusive_dock(target_id, DockPosition::mor_panel_left);
-                        },
-                        IconDockLeft {}
-                    }
-                }
-                if pos != DockPosition::mor_panel_right {
-                    button {
-                        class: "editor-mini-button",
-                        style: "display: flex; align-items: center; padding: 4px;",
-                        title: "Dock Right",
-                        onclick: move |e| {
-                            e.stop_propagation();
-                            layout.request_exclusive_dock(target_id, DockPosition::mor_panel_right);
-                        },
-                        IconDockRight {}
-                    }
-                }
-                if pos != DockPosition::Floating {
-                    button {
-                        class: "editor-mini-button",
-                        style: "display: flex; align-items: center; padding: 4px;",
-                        title: "Float Window",
-                        onclick: move |e| {
-                            e.stop_propagation();
-                            let mut dp = props.dock_position;
-                            dp.set(DockPosition::Floating);
-                        },
-                        IconFloat {}
-                    }
-                }
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Close",
-                    onclick: move |e| {
-                        e.stop_propagation();
-                        props.on_close.call(());
-                    },
-                    IconClose {}
-                }
-            }
-        }
-    };
 
     let editor_body = rsx! {
         script { dangerous_inner_html: "{drag_js}" }
@@ -513,22 +453,10 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         div {
             style: "display: flex; flex-direction: column; height: 100%; width: 100%; flex-grow: 1; min-height: 0;",
             
-            // UNIFIED HEADER ROW: Grip -> Tabs -> Actions
+            // UNIFIED HEADER ROW: Tabs -> Actions
             div {
                 class: "floating-editor-window-bar",
-                style: if is_floating {
-                    "display: flex; align-items: center; justify-content: flex-start !important; gap: 0; flex-shrink: 0; background: var(--bg-elevated);"
-                } else {
-                    "display: flex; align-items: center; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border-soft); flex-shrink: 0; min-height: 44px; gap: 0;"
-                },
-
-                if is_floating && !props.is_native_window {
-                    span {
-                        class: "floating-editor-grip",
-                        style: "display: flex; align-items: center; padding-right: 8px; flex-shrink: 0;",
-                        IconGrip {}
-                    }
-                }
+                style: "display: flex; align-items: center; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border-soft); flex-shrink: 0; min-height: 36px; gap: 8px; padding: 0 8px;",
 
                 div {
                     class: "{props.mode}-tab-bar",
@@ -545,7 +473,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                                 button {
                                     id: "tab-{file}",
                                     class: if is_active { "{props.mode}-tab active" } else { "{props.mode}-tab" },
-                                    style: "{tab_style} padding: 8px 16px; cursor: pointer; transition: all 0.2s ease;",
+                                    style: "{tab_style} padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; border: none;",
                                     onclick: {
                                         let f = file.to_string();
                                         move |_| active_tab.set(f.clone())
@@ -557,9 +485,18 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     }
                 }
 
-                div {
-                    style: "display: flex; align-items: center; padding-left: 8px; gap: 8px; flex-shrink: 0;",
-                    {header_actions}
+                button {
+                    class: "editor-mini-button",
+                    style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; font-weight: 600; background: var(--accent); color: #111; border: none; cursor: pointer;",
+                    onclick: move |e| {
+                        e.stop_propagation();
+                        if let Some(tx) = &tx_opt_clone {
+                            let _ = tx.send(EditorEvent::Save);
+                        } else {
+                            props.on_save.call(());
+                        }
+                    },
+                    "Save"
                 }
             }
 
@@ -600,7 +537,15 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     tabindex: "0",
                     autofocus: true,
                     onkeydown: onkeydown_handler.clone(),
-                    {editor_body}
+                    DockChrome {
+                        title: props.title.to_string(),
+                        dock_id: target_id.to_string(),
+                        position: pos,
+                        on_close: move |_| {
+                            props.on_close.call(());
+                        },
+                        {editor_body}
+                    }
                     div { class: "{props.mode}-pane-resizer pane-resizer-right" }
                 }
             }
@@ -612,23 +557,31 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     tabindex: "0",
                     autofocus: true,
                     onkeydown: onkeydown_handler.clone(),
-                    {editor_body}
+                    DockChrome {
+                        title: props.title.to_string(),
+                        dock_id: target_id.to_string(),
+                        position: pos,
+                        on_close: move |_| {
+                            props.on_close.call(());
+                        },
+                        {editor_body}
+                    }
                     div { class: "{props.mode}-pane-resizer pane-resizer-left" }
                 }
             }
         }
         DockPosition::Floating => {
-            let title = format!("MorBlogger - {}", props.title);
             rsx! {
                 if props.is_native_window {
                     {editor_body}
                 } else {
-                    crate::ui_kit::StandardNativeWindow {
-                        title: title,
+                    DockChrome {
+                        title: props.title.to_string(),
+                        dock_id: target_id.to_string(),
+                        position: pos,
                         on_close: move |_| {
                             props.on_close.call(());
                         },
-                        is_native_window: props.is_native_window,
                         {editor_body}
                     }
                 }

@@ -36,12 +36,14 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
 
     let mut local_val = use_signal(|| props.value.clone());
 
+    // Reconcile external content into the local buffer from an effect (never during render),
+    // and only when props.value actually changes (a load) — use_reactive is the change-gate,
+    // so typing via on_change is never clobbered mid-keystroke. on_change owns the buffer
+    // between loads.
     let external_val = props.value.clone();
-    let mut last_external_val = use_signal(|| external_val.clone());
-    if last_external_val() != external_val {
-        last_external_val.set(external_val.clone());
-        local_val.set(external_val.clone());
-    }
+    use_effect(use_reactive!(|external_val| {
+        local_val.set(external_val);
+    }));
 
     // FIX: Replace breaking space hack with a strict newline boundary
     let mut text_to_highlight = local_val().clone();

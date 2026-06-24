@@ -385,7 +385,14 @@ pub fn update_toml_preserve_comments(original_toml: &str, updated_config: &Theme
         *doc.as_table_mut() = merged_tbl;
     }
 
-    doc.to_string()
+    let merged = doc.to_string();
+    // Round-trip guard: a parseable-but-broken original (or a merge that emits broken
+    // TOML from clean inputs) slips past the parse guard above. If the merged output
+    // doesn't deserialize back to a ThemeConfig, discard it and emit clean TOML.
+    if toml::from_str::<ThemeConfig>(&merged).is_err() {
+        return toml::to_string_pretty(updated_config).unwrap_or_default();
+    }
+    merged
 }
 
 fn merge_items(original: &mut toml_edit::Item, updated: &toml_edit::Item) {
@@ -474,6 +481,28 @@ accent = "#ff0000"
         assert!(updated.contains("# Accent color"));
         assert!(updated.contains("site_title = \"New Title\""));
         assert!(updated.contains("accent = \"#00ff00\""));
+    }
+
+    // The round-trip guard backstops the merge: whatever the original looks like
+    // (parseable-but-type-broken, wrong container shape, junk keys), the output must
+    // always deserialize to a ThemeConfig. Today's merge self-heals these by letting
+    // updated_config drive the schema; the guard catches it if that ever stops holding.
+    #[test]
+    fn merge_output_always_parses_to_config() {
+        let broken_originals = [
+            "[colors]\n# accent note\naccent = 42",          // field as int, schema wants string
+            "[[site]]\nsite_title = \"x\"",                  // table delivered as array-of-tables
+            "colors = \"red\"\n[site]\nsite_title = \"x\"",  // table delivered as scalar
+            "garbage_key = true\n[site]\nsite_title = \"x\"",// unknown junk key
+        ];
+        let cfg = ThemeConfig::default();
+        for orig in broken_originals {
+            let out = update_toml_preserve_comments(orig, &cfg);
+            assert!(
+                toml::from_str::<ThemeConfig>(&out).is_ok(),
+                "output failed to round-trip to ThemeConfig for original:\n{orig}\n---\n{out}"
+            );
+        }
     }
 }
 

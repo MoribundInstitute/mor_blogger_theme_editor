@@ -476,3 +476,15 @@ accent = "#ff0000"
         assert!(updated.contains("accent = \"#00ff00\""));
     }
 }
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct BlogPost {
+    pub title: String,
+    pub date: String,
+    pub tags: Vec<String>,
+    pub snippet: String,
+    pub featured_image: Option<String>,
+    pub body: String,
+    pub url: String,
+    pub author_name: String,
+}

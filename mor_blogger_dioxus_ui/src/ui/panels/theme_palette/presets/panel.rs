@@ -9,7 +9,8 @@ use super::importers::{
     fetch_remote_theme, normalize_preset_url, parse_theme_text, save_imported_gtk_preset,
 };
 use super::morph_preview_from_preset;
-use crate::app::state::ThemeState;
+use crate::app::state::{DockPosition, LayoutState, ThemeState};
+use crate::ui_kit::MorPanelWrapper;
 use crate::app::theme_signals::ThemeSignals;
 
 const PRESET_FLOATING_DRAG_JS: &str = r#"
@@ -68,16 +69,18 @@ pub struct PresetsPanelProps {
     pub current_config: ThemeConfig,
     pub on_apply_theme: EventHandler<ThemeConfig>,
     pub show_undocked_presets: Signal<bool>,
+    #[props(default = false)]
+    pub is_embedded: bool,
 }
 
 #[component]
 pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut theme = use_context::<ThemeState>();
+    let mut layout = use_context::<LayoutState>();
     let presets = all_presets();
     let mut active = props.active_preset;
 
     let mut show_import = use_signal(|| false);
-    let mut show_undocked_presets = props.show_undocked_presets;
     let mut remote_url = use_signal(String::new);
     let mut pasted_theme = use_signal(String::new);
 
@@ -96,7 +99,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
         )
     });
 
-    rsx! {
+    let inner_content = rsx! {
         script { dangerous_inner_html: "{PRESET_FLOATING_DRAG_JS}" }
 
         section {
@@ -127,9 +130,11 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     }
 
                     button {
-                        class: if show_undocked_presets() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
-                        onclick: move |_| show_undocked_presets.set(!show_undocked_presets()),
-                        if show_undocked_presets() { "Dock Presets" } else { "Undock Presets" }
+                        class: "editor-button editor-button-small",
+                        onclick: move |_| {
+                            layout.presets_pos.set(DockPosition::Hidden);
+                        },
+                        "Close"
                     }
                 }
             }
@@ -250,6 +255,24 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                     }
                 }
                 button { class: "editor-mini-button", style: "padding: 16px 4px; font-size: 10px;", title: "Scroll Right", onclick: move |_| { let _ = dioxus::document::eval("document.getElementById('presets-scroll-rail').scrollBy({ left: 220, behavior: 'smooth' });"); }, "▶" }
+            }
+        }
+    };
+
+    if props.is_embedded {
+        rsx! { {inner_content} }
+    } else {
+        let pos = (layout.presets_pos)();
+        if pos == DockPosition::Hidden {
+            return rsx! {};
+        }
+
+        rsx! {
+            MorPanelWrapper {
+                position: pos,
+                default_position: DockPosition::mor_panel_left,
+                title: "Presets",
+                {inner_content}
             }
         }
     }

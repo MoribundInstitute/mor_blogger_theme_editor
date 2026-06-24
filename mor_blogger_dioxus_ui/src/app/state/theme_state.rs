@@ -23,6 +23,7 @@ pub struct ThemeState {
     pub history: Signal<ThemeHistory>,
     pub last_imported_gtk: Signal<Option<mor_blogger_core::config::gtk_theme::ImportedGtkPreset>>,
     pub import_status: Signal<String>,
+    pub enable_ai_bridge: Signal<bool>,
 }
 
 impl ThemeState {
@@ -221,6 +222,7 @@ impl ThemeState {
         let last_imported_gtk =
             use_signal(|| None::<mor_blogger_core::config::gtk_theme::ImportedGtkPreset>);
         let import_status = use_signal(String::new);
+        let enable_ai_bridge = use_signal(|| false);
 
         ThemeState {
             signals,
@@ -233,6 +235,7 @@ impl ThemeState {
             history,
             last_imported_gtk,
             import_status,
+            enable_ai_bridge,
         }
     }
 

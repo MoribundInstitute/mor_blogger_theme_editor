@@ -1,0 +1,768 @@
+use crate::app::state::{DockPosition, LayoutState, RenderState, ThemeState};
+use crate::ui::components::code_editor::CodeEditor;
+use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
+use dioxus::prelude::*;
+
+#[derive(Clone, Copy, PartialEq)]
+pub struct SubWindowMarker;
+
+#[derive(Props, Clone, PartialEq)]
+pub struct AssetEditorProps {
+    pub title: &'static str,          
+    pub mode: &'static str,           
+    pub default_file: &'static str,   
+    pub available_files: Vec<String>, 
+    pub dock_position: Signal<DockPosition>,
+    pub content_signal: Signal<String>, 
+    pub on_save: EventHandler<()>,      
+    pub on_close: EventHandler<()>,
+    pub vfs_signal: Signal<std::collections::HashMap<String, String>>,
+    pub is_native_window: bool,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+static OPEN_WINDOWS: std::sync::Mutex<Option<std::collections::HashSet<String>>> =
+    std::sync::Mutex::new(None);
+
+#[cfg(not(target_arch = "wasm32"))]
+fn is_window_already_open(title: &str) -> bool {
+    let mut guard = OPEN_WINDOWS.lock().unwrap();
+    let set = guard.get_or_insert_with(std::collections::HashSet::new);
+    if set.contains(title) {
+        true
+    } else {
+        set.insert(title.to_string());
+        false
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn mark_window_closed(title: &str) {
+    let mut guard = OPEN_WINDOWS.lock().unwrap();
+    if let Some(set) = guard.as_mut() {
+        set.remove(title);
+    }
+}
+
+#[derive(Clone)]
+#[allow(dead_code)]
+struct WindowCleanup {
+    inner: std::sync::Arc<WindowCleanupInner>,
+}
+
+struct WindowCleanupInner {
+    title: String,
+}
+
+impl Drop for WindowCleanupInner {
+    fn drop(&mut self) {
+        #[cfg(not(target_arch = "wasm32"))]
+        mark_window_closed(&self.title);
+    }
+}
+
+#[component]
+pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
+    let _cleanup = use_hook(|| WindowCleanup {
+        inner: std::sync::Arc::new(WindowCleanupInner {
+            title: props.title.to_string(),
+        }),
+    });
+    let is_sub_window = try_use_context::<SubWindowMarker>().is_some();
+    let mut layout = use_context::<LayoutState>();
+    let theme = use_context::<ThemeState>();
+    let mut vfs = props.vfs_signal;
+    let mut active_tab = use_signal(|| props.default_file.to_string());
+    let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
+    let theme_state_opt = try_use_context::<ThemeState>();
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut is_window_open = use_signal(|| false);
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut child_window_ref = use_signal(|| Option::<dioxus::desktop::WeakDesktopContext>::None);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let dock_position = props.dock_position;
+    #[cfg(not(target_arch = "wasm32"))]
+    let on_save = props.on_save.clone();
+    #[cfg(not(target_arch = "wasm32"))]
+    let title_str = props.title.to_string();
+    #[cfg(not(target_arch = "wasm32"))]
+    let child_window_props = props.clone();
+
+    #[cfg(not(target_arch = "wasm32"))]
+    use_effect(move || {
+        if is_sub_window {
+            return;
+        }
+        let current_pos = (dock_position)();
+        if current_pos == DockPosition::Floating {
+            if !*is_window_open.peek() && !is_window_already_open(&title_str) {
+                is_window_open.set(true);
+
+                let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<EditorEvent>();
+                let on_save_cb = on_save.clone();
+                let title = title_str.clone();
+
+                let child_props = EditorWindowProps {
+                    dock_props: child_window_props.clone(),
+                    render_state: use_context::<crate::app::state::RenderState>(),
+                    layout_state: use_context::<crate::app::state::LayoutState>(),
+                    theme_state: use_context::<crate::app::state::ThemeState>(),
+                    vfs: use_context::<crate::app::vfs::VfsDictionary>(),
+                    tx: tx.clone(),
+                };
+
+                let dom = VirtualDom::new_with_props(IsolatedEditorWindow, child_props);
+                let cfg = dioxus::desktop::Config::new().with_window(
+                    dioxus::desktop::WindowBuilder::new()
+                        .with_title(format!("MorBlogger - {}", title))
+                        .with_inner_size(dioxus::desktop::LogicalSize::new(800.0, 600.0)),
+                );
+                let pending_ctx = dioxus::desktop::window().new_window(dom, cfg);
+
+                spawn(async move {
+                    let desktop_context = pending_ctx.await;
+                    let weak_ref = std::rc::Rc::downgrade(&desktop_context);
+                    child_window_ref.set(Some(weak_ref));
+
+                    while let Some(evt) = rx.recv().await {
+                        if evt == EditorEvent::Save {
+                            on_save_cb.call(());
+                        }
+                    }
+                    is_window_open.set(false);
+                    mark_window_closed(&title);
+                    if dock_position() == DockPosition::Floating {
+                        let mut dp = dock_position;
+                        dp.set(DockPosition::Hidden);
+                    }
+                });
+            }
+        } else {
+            if let Some(weak) = child_window_ref.write().take() {
+                if let Some(desktop_context) = weak.upgrade() {
+                    desktop_context.close();
+                }
+            }
+            is_window_open.set(false);
+            mark_window_closed(&title_str);
+        }
+    });
+
+    use_effect(move || {
+        let active = active_tab();
+        let js = format!(
+            "setTimeout(() => {{ let el = document.getElementById('tab-{}'); if (el) el.scrollIntoView({{ behavior: 'smooth', block: 'nearest', inline: 'center' }}); }}, 20);",
+            active
+        );
+        let _ = dioxus::document::eval(&js);
+    });
+
+    let pos = (props.dock_position)();
+    if pos == DockPosition::Hidden {
+        return rsx! {};
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    if pos == DockPosition::Floating && !is_sub_window {
+        return rsx! {};
+    }
+
+    let is_floating = pos == DockPosition::Floating;
+
+    let current_file = if props.available_files.contains(&active_tab()) {
+        active_tab()
+    } else {
+        props.available_files.first().cloned().unwrap_or_else(|| props.default_file.to_string())
+    };
+
+    let raw_val = if current_file == props.default_file {
+        if props.mode == "css" {
+            theme.signals.preset_css.read().clone()
+        } else if props.mode == "xml" {
+            props.content_signal.read().clone()
+        } else {
+            theme.signals.custom_js.read().clone()
+        }
+    } else {
+        vfs.read().get(&current_file).cloned().unwrap_or_else(|| {
+            if props.mode == "css" {
+                mor_blogger_core::render::template_resolver::fetch_default_css(&current_file).to_string()
+            } else if props.mode == "xml" {
+                props.content_signal.read().clone()
+            } else {
+                mor_blogger_core::render::template_resolver::fetch_js(&current_file).to_string()
+            }
+        })
+    };
+
+    let val = if props.mode == "css" {
+        crate::utils::formatters::beautify_css(&raw_val)
+    } else {
+        raw_val
+    };
+
+    let mut last_file = use_signal(|| current_file.clone());
+    let mut last_external_val = use_signal(|| val.clone());
+
+    let mut sig = props.content_signal;
+    if last_file() != current_file {
+        last_file.set(current_file.clone());
+        sig.set(val.clone());
+        last_external_val.set(val.clone());
+    } else if last_external_val() != val {
+        last_external_val.set(val.clone());
+        sig.set(val.clone());
+    } else if sig.read().is_empty() && !val.is_empty() {
+        sig.set(val.clone());
+    }
+
+    {
+        let active_file_signal = active_tab;
+        let content_signal = props.content_signal;
+        use_effect(move || {
+            if let Some(theme_state) = theme_state_opt {
+                if *theme_state.enable_ai_bridge.read() {
+                    let active_file = active_file_signal.read().clone();
+                    let current_content = content_signal.read().clone();
+                    let timestamp = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map(|d| d.as_secs().to_string())
+                        .unwrap_or_default();
+
+                    let payload = serde_json::json!({
+                        "active_file": active_file,
+                        "unsaved_content": current_content,
+                        "timestamp": timestamp
+                    });
+                    let _ = std::fs::write("/tmp/mor_blogger_live_state.json", payload.to_string());
+                } else {
+                    let _ = std::fs::remove_file("/tmp/mor_blogger_live_state.json");
+                }
+            }
+        });
+    }
+
+    let available_files_clone = props.available_files.clone();
+    let default_file_clone = props.default_file;
+    let onkeydown_handler = move |evt: Event<KeyboardData>| {
+        let files = &available_files_clone;
+        if files.is_empty() { return; }
+        let current_file = if files.contains(&active_tab()) {
+            active_tab()
+        } else {
+            files.first().cloned().unwrap_or_else(|| default_file_clone.to_string())
+        };
+        let current_idx = files.iter().position(|f| f == &current_file).unwrap_or(0);
+
+        if evt.modifiers().alt() {
+            let key_str = evt.key().to_string();
+            match key_str.as_str() {
+                "ArrowRight" | "k" | "K" => {
+                    evt.prevent_default();
+                    let next_idx = (current_idx + 1) % files.len();
+                    active_tab.set(files[next_idx].clone());
+                }
+                "ArrowLeft" | "j" | "J" => {
+                    evt.prevent_default();
+                    let prev_idx = if current_idx == 0 { files.len() - 1 } else { current_idx - 1 };
+                    active_tab.set(files[prev_idx].clone());
+                }
+                _ => {}
+            }
+        }
+    };
+
+    let drag_js = format!(
+        r#"
+(function () {{
+    if (window.__mor{mode_cap}DragInstalled) return;
+    window.__mor{mode_cap}DragInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {{
+        const bar = e.target.closest('.floating-editor-window-bar');
+        if (!bar) return;
+        const panel = bar.closest('.floating-{mode}-editor');
+        if (!panel) return;
+        
+        e.preventDefault();
+        
+        const rect = panel.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = rect.left;
+        const startTop = rect.top;
+
+        document.documentElement.style.setProperty('--{mode}-dock-x', startLeft + 'px');
+        document.documentElement.style.setProperty('--{mode}-dock-y', startTop + 'px');
+
+        const onMove = function (moveEvt) {{
+            const dx = moveEvt.clientX - startX;
+            const dy = moveEvt.clientY - startY;
+            document.documentElement.style.setProperty('--{mode}-dock-x', Math.max(0, startLeft + dx) + 'px');
+            document.documentElement.style.setProperty('--{mode}-dock-y', Math.max(0, startTop + dy) + 'px');
+        }};
+
+        const onUp = function () {{
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        }};
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    }});
+}})();
+"#,
+        mode = props.mode,
+        mode_cap = if props.mode == "css" { "Css" } else if props.mode == "xml" { "Xml" } else { "Js" }
+    );
+
+    let resize_js = format!(
+        r#"
+(function() {{
+    if (window.__mor{mode_cap}PaneResizeInstalled) return;
+    window.__mor{mode_cap}PaneResizeInstalled = true;
+    document.addEventListener('pointerdown', function(e) {{
+        const resizer = e.target.closest('.{mode}-pane-resizer');
+        if (!resizer) return;
+        e.preventDefault();
+        const isLeft = resizer.classList.contains('pane-resizer-right');
+        const startX = e.clientX;
+        const panel = resizer.closest('.mor_panel_left, .mor_panel_right');
+        const startWidth = panel.getBoundingClientRect().width;
+        
+        const onMove = function(moveEvt) {{
+            const dx = moveEvt.clientX - startX;
+            const newWidth = isLeft ? startWidth + dx : startWidth - dx;
+            const clamped = Math.max(200, Math.min(newWidth, window.innerWidth / 2.5));
+            const varName = isLeft ? '--left-pane-width' : '--right-pane-width';
+            document.documentElement.style.setProperty(varName, clamped + 'px');
+        }};
+        const onUp = function() {{
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+        }};
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    }});
+}})();
+"#,
+        mode = props.mode,
+        mode_cap = if props.mode == "css" { "Css" } else if props.mode == "xml" { "Xml" } else { "Js" }
+    );
+
+    let editor_css = format!(
+        r#"
+    .mor_panel_left.{mode}-editor-mode,
+    .mor_panel_right.{mode}-editor-mode {{
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+    }}
+    .floating-{mode}-editor {{
+        position: fixed;
+        left: var(--{mode}-dock-x, {default_x}px);
+        top: var(--{mode}-dock-y, {default_y}px);
+        width: 600px;
+        height: 450px;
+        background: var(--editor-bg, #1e1e1e);
+        border: 1px solid var(--editor-border);
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        z-index: 4000;
+        display: flex;
+        flex-direction: column;
+        resize: both;
+        overflow: hidden;
+        min-width: 400px;
+        min-height: 300px;
+        max-width: 95vw;
+        max-height: 95vh;
+    }}
+    .{mode}-tab-bar {{
+        display: flex;
+        overflow-x: auto;
+        background: transparent;
+    }}
+    .{mode}-tab {{
+        padding: 8px 16px;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        background: transparent;
+        border: none;
+        border-right: 1px solid var(--editor-border-soft);
+        color: var(--editor-text-muted);
+        cursor: pointer;
+        transition: background 0.1s;
+    }}
+    .{mode}-tab:hover {{ background: rgba(255,255,255,0.05); }}
+    .{mode}-tab.active {{
+        background: var(--editor-bg, #1e1e1e);
+        color: var(--editor-accent);
+        border-bottom: 2px solid var(--editor-accent);
+    }}
+    .{mode}-editor-textarea {{
+        flex-grow: 1;
+        width: 100%;
+        background: var(--bg-panel);
+        color: var(--fg-base);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.5;
+        border: none;
+        padding: 16px;
+        resize: none;
+    }}
+    .mor_panel_left:not(.is-floating) {{ width: var(--left-pane-width, 320px) !important; position: relative; }}
+    .mor_panel_right:not(.is-floating) {{ width: var(--right-pane-width, 320px) !important; position: relative; }}
+    .{mode}-pane-resizer {{ position: absolute; top: 0; bottom: 0; width: 6px; z-index: 999; cursor: ew-resize; background: transparent; transition: background 0.1s; }}
+    .{mode}-pane-resizer:hover, .{mode}-pane-resizer:active {{ background: var(--editor-accent, rgba(255,255,255,0.2)); }}
+    .pane-resizer-right {{ right: 0; }}
+    .pane-resizer-left {{ left: 0; }}
+    .floating-editor-window-actions {{
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }}
+"#,
+        mode = props.mode,
+        default_x = if props.mode == "css" { 100 } else { 150 },
+        default_y = if props.mode == "css" { 100 } else { 150 }
+    );
+
+    let target_id = if props.mode == "css" { "css" } else if props.mode == "xml" { "xml" } else { "js" };
+
+    let tx_opt_clone = tx_opt.clone();
+    let header_actions = rsx! {
+        div { class: "floating-editor-window-actions",
+            button {
+                class: "editor-mini-button",
+                style: "padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; font-weight: 600;",
+                onclick: move |e| {
+                    e.stop_propagation();
+                    if let Some(tx) = &tx_opt_clone {
+                        let _ = tx.send(EditorEvent::Save);
+                    } else {
+                        props.on_save.call(());
+                    }
+                },
+                "Save"
+            }
+            if !props.is_native_window {
+                if pos != DockPosition::mor_panel_left {
+                    button {
+                        class: "editor-mini-button",
+                        style: "display: flex; align-items: center; padding: 4px;",
+                        title: "Dock Left",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            layout.request_exclusive_dock(target_id, DockPosition::mor_panel_left);
+                        },
+                        IconDockLeft {}
+                    }
+                }
+                if pos != DockPosition::mor_panel_right {
+                    button {
+                        class: "editor-mini-button",
+                        style: "display: flex; align-items: center; padding: 4px;",
+                        title: "Dock Right",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            layout.request_exclusive_dock(target_id, DockPosition::mor_panel_right);
+                        },
+                        IconDockRight {}
+                    }
+                }
+                if pos != DockPosition::Floating {
+                    button {
+                        class: "editor-mini-button",
+                        style: "display: flex; align-items: center; padding: 4px;",
+                        title: "Float Window",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            let mut dp = props.dock_position;
+                            dp.set(DockPosition::Floating);
+                        },
+                        IconFloat {}
+                    }
+                }
+                button {
+                    class: "editor-mini-button",
+                    style: "display: flex; align-items: center; padding: 4px;",
+                    title: "Close",
+                    onclick: move |e| {
+                        e.stop_propagation();
+                        props.on_close.call(());
+                    },
+                    IconClose {}
+                }
+            }
+        }
+    };
+
+    let editor_body = rsx! {
+        script { dangerous_inner_html: "{drag_js}" }
+        script { dangerous_inner_html: "{resize_js}" }
+        style { dangerous_inner_html: "{editor_css}" }
+
+        div {
+            style: "display: flex; flex-direction: column; height: 100%; width: 100%; flex-grow: 1; min-height: 0;",
+            
+            // UNIFIED HEADER ROW: Grip -> Tabs -> Actions
+            div {
+                class: "floating-editor-window-bar",
+                style: if is_floating {
+                    "display: flex; align-items: center; justify-content: flex-start !important; gap: 0; flex-shrink: 0; background: var(--bg-elevated);"
+                } else {
+                    "display: flex; align-items: center; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border-soft); flex-shrink: 0; min-height: 44px; gap: 0;"
+                },
+
+                if is_floating && !props.is_native_window {
+                    span {
+                        class: "floating-editor-grip",
+                        style: "display: flex; align-items: center; padding-right: 8px; flex-shrink: 0;",
+                        IconGrip {}
+                    }
+                }
+
+                div {
+                    class: "{props.mode}-tab-bar",
+                    style: "display: flex; overflow-x: auto; scroll-behavior: smooth; white-space: nowrap; flex-grow: 1; min-width: 0;",
+                    for file in props.available_files {
+                        {
+                            let is_active = file == current_file;
+                            let tab_style = if is_active {
+                                "color: var(--fg-base); background: var(--bg-panel); border-bottom: 2px solid var(--accent); opacity: 1.0;"
+                            } else {
+                                "color: var(--fg-muted); background: transparent; border-bottom: 2px solid transparent; opacity: 0.7;"
+                            };
+                            rsx! {
+                                button {
+                                    id: "tab-{file}",
+                                    class: if is_active { "{props.mode}-tab active" } else { "{props.mode}-tab" },
+                                    style: "{tab_style} padding: 8px 16px; cursor: pointer; transition: all 0.2s ease;",
+                                    onclick: {
+                                        let f = file.to_string();
+                                        move |_| active_tab.set(f.clone())
+                                    },
+                                    "{file}"
+                                }
+                            }
+                        }
+                    }
+                }
+
+                div {
+                    style: "display: flex; align-items: center; padding-left: 8px; gap: 8px; flex-shrink: 0;",
+                    {header_actions}
+                }
+            }
+
+            div {
+                style: "display: flex; flex-direction: column; flex-grow: 1; width: 100%; min-height: 0;",
+                CodeEditor {
+                    value: (props.content_signal)(),
+                    mode: props.mode.to_string(),
+                    on_change: move |new_val: String| {
+                        let file = current_file.clone();
+                        if file == props.default_file {
+                            if props.mode == "css" {
+                                let mut sig = theme.signals.preset_css;
+                                sig.set(new_val.clone());
+                            } else if props.mode == "xml" {
+                                // XML mode writes directly to its own content_signal below
+                            } else {
+                                let mut sig = theme.signals.custom_js;
+                                sig.set(new_val.clone());
+                            }
+                        } else {
+                            vfs.write().insert(file, new_val.clone());
+                        }
+                        let mut sig = props.content_signal;
+                        sig.set(new_val.clone());
+                        last_external_val.set(new_val);
+                    }
+                }
+            }
+        }
+    };
+
+    match pos {
+        DockPosition::mor_panel_left => {
+            rsx! {
+                aside {
+                    class: "mor_panel_left {props.mode}-editor-mode",
+                    tabindex: "0",
+                    autofocus: true,
+                    onkeydown: onkeydown_handler.clone(),
+                    {editor_body}
+                    div { class: "{props.mode}-pane-resizer pane-resizer-right" }
+                }
+            }
+        }
+        DockPosition::mor_panel_right => {
+            rsx! {
+                aside {
+                    class: "mor_panel_right {props.mode}-editor-mode",
+                    tabindex: "0",
+                    autofocus: true,
+                    onkeydown: onkeydown_handler.clone(),
+                    {editor_body}
+                    div { class: "{props.mode}-pane-resizer pane-resizer-left" }
+                }
+            }
+        }
+        DockPosition::Floating => {
+            let title = format!("MorBlogger - {}", props.title);
+            rsx! {
+                if props.is_native_window {
+                    {editor_body}
+                } else {
+                    crate::ui_kit::StandardNativeWindow {
+                        title: title,
+                        on_close: move |_| {
+                            props.on_close.call(());
+                        },
+                        is_native_window: props.is_native_window,
+                        {editor_body}
+                    }
+                }
+            }
+        }
+        DockPosition::Hidden => {
+            rsx! {}
+        }
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EditorEvent {
+    Save,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Props, Clone)]
+pub struct EditorWindowProps {
+    pub dock_props: AssetEditorProps,
+    pub render_state: crate::app::state::RenderState,
+    pub layout_state: crate::app::state::LayoutState,
+    pub theme_state: crate::app::state::ThemeState,
+    pub vfs: crate::app::vfs::VfsDictionary,
+    pub tx: tokio::sync::mpsc::UnboundedSender<EditorEvent>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl PartialEq for EditorWindowProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.dock_props == other.dock_props
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[component]
+pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
+    provide_context(props.render_state);
+    provide_context(props.layout_state);
+    provide_context(props.theme_state);
+    provide_context(props.vfs);
+    provide_context(SubWindowMarker);
+    provide_context(props.tx.clone());
+
+    let _tx = use_signal(|| props.tx.clone());
+
+    rsx! {
+        style { "body {{ margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
+        AssetEditorDock {
+            is_native_window: true,
+            ..props.dock_props
+        }
+    }
+}
+
+pub fn resolve_workbench_dependencies(
+    render: &RenderState,
+    module_key: &str,
+    ext: &str, 
+) -> Vec<String> {
+    let config = (render.current_config)();
+    let pack = &config.template_pack;
+
+    let registry_type = match module_key {
+        "header_variant" => "header",
+        "main_variant" => "layout",
+        "content_variant" => "content",
+        "left_sidebar_variant" => "sidebar_left",
+        "right_sidebar_variant" => "sidebar_right",
+        "footer_variant" => "footer",
+        _ => return vec![],
+    };
+
+    let target_id = match module_key {
+        "header_variant" => &pack.header_variant,
+        "main_variant" => &pack.main_variant,
+        "content_variant" => &pack.content_variant,
+        "left_sidebar_variant" => &pack.left_sidebar_variant,
+        "right_sidebar_variant" => &pack.right_sidebar_variant,
+        "footer_variant" => &pack.footer_variant,
+        _ => return vec![],
+    };
+
+    let mut deps: Vec<String> = render
+        .get_manifest(registry_type, target_id)
+        .map(|c| {
+            if ext == "css" {
+                c.css_deps.iter().map(|s| s.to_string()).collect()
+            } else {
+                c.js_deps.iter().map(|s| s.to_string()).collect()
+            }
+        })
+        .unwrap_or_default();
+
+    if deps.is_empty() {
+        let fallback = match module_key {
+            "header_variant" => "header",
+            "main_variant" => "layout",
+            "content_variant" => "content",
+            "left_sidebar_variant" | "right_sidebar_variant" => "sidebar",
+            "footer_variant" => "footer",
+            _ => "",
+        };
+        if !fallback.is_empty() {
+            deps.push(format!("{}.{}", fallback, ext));
+        }
+    }
+
+    deps
+}
+
+pub fn resolve_theme_dependencies(
+    render: &RenderState,
+    ext: &str, 
+) -> Vec<String> {
+    let config = (render.current_config)();
+    let pack = &config.template_pack;
+
+    let targets = [
+        ("header", &pack.header_variant),
+        ("layout", &pack.main_variant),
+        ("content", &pack.content_variant),
+        ("sidebar_left", &pack.left_sidebar_variant),
+        ("sidebar_right", &pack.right_sidebar_variant),
+        ("footer", &pack.footer_variant),
+    ];
+
+    let mut all_deps = Vec::new();
+    for (registry_type, target_id) in targets {
+        if let Some(c) = render.get_manifest(registry_type, target_id) {
+            let deps = if ext == "css" { c.css_deps } else { c.js_deps };
+            all_deps.extend(deps.iter().map(|s| s.to_string()));
+        }
+    }
+    all_deps
+}

@@ -1,6 +1,7 @@
 use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 
+use crate::ui::components::code_editor::CodeEditor;
 use crate::ui::components::inputs::EditorCard;
 
 #[component]
@@ -52,13 +53,14 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
                 "Custom JavaScript"
             }
 
-            textarea {
-                value: "{custom_js}",
-                placeholder: "// Optional custom JavaScript",
-                class: "editor-textarea",
-                style: "min-height: 180px; resize: vertical; margin-top: 6px; font-family: 'Courier New', Courier, monospace;",
-                oninput: move |event| {
-                    custom_js.set(event.value());
+            div {
+                style: "min-height: 180px; margin-top: 6px; border: 1px solid var(--editor-border-soft); border-radius: 4px; overflow: hidden;",
+                CodeEditor {
+                    value: (custom_js)(),
+                    mode: "javascript".to_string(),
+                    on_change: move |new_val| {
+                        custom_js.set(new_val);
+                    }
                 }
             }
 

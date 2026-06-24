@@ -23,6 +23,13 @@ pub fn shortcuts_path() -> std::path::PathBuf {
         .join("shortcuts.toml")
 }
 
+pub fn layout_prefs_path() -> std::path::PathBuf {
+    ProjectDirs::from("io", "Moribund", "MorBloggerThemeEditor")
+        .unwrap()
+        .config_dir()
+        .join("layout_prefs.toml")
+}
+
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct RenderPrefs {
     #[serde(default)]

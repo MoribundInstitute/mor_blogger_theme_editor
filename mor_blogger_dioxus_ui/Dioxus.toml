@@ -28,3 +28,13 @@ icon = [
 category = "DeveloperTool"
 short_description = "A visual Blogger theme editor."
 long_description = "MorBlogger Theme Editor is a Dioxus desktop app for visually building, previewing, and exporting Blogger themes."
+
+[watcher]
+ignore = [
+    "editor_prefs.json",
+    "editor_prefs.toml",
+    "layout_prefs.toml",
+    "*.txt",
+    "*.md",
+    "sys"
+]

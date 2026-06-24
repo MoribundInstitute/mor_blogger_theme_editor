@@ -1,7 +1,6 @@
 use crate::ui::components::code_editor::CodeEditor;
 use dioxus::prelude::*;
 
-// 1. Data-Driven Definitions. Zero repetitive DOM slop.
 const TEMPLATE_LAYOUTS: &[(&str, &str)] = &[
     ("Header Variant", "header_variant"),
     ("Main Canvas Variant", "main_variant"),
@@ -23,12 +22,11 @@ pub fn SmartCodeDock(
     on_load_theme: EventHandler<String>,
     #[props(default)] active_xray_target: Option<Signal<Option<String>>>,
 ) -> Element {
-    // 2. Memory cell tracks current selection
     let mut active_target = use_signal(|| None::<String>);
 
     let mut jump_to = move |target: &str| {
         let target_str = target.to_string();
-        active_target.set(Some(target_str.clone())); // Store active state
+        active_target.set(Some(target_str.clone()));
 
         spawn(async move {
             let eval = dioxus::document::eval(
@@ -40,12 +38,9 @@ pub fn SmartCodeDock(
                     if (idx !== -1) {
                         el.focus();
                         el.setSelectionRange(idx, idx + target.length);
-                        
-                        // Calculate lines to scroll
+
                         const linesBefore = el.value.substring(0, idx).split('\n').length;
                         const lineHeight = parseFloat(window.getComputedStyle(el).lineHeight) || 19;
-                        
-                        // Vertically center the highlighted term
                         el.scrollTop = Math.max(0, (linesBefore * lineHeight) - (el.clientHeight / 2));
                     }
                 }
@@ -80,7 +75,6 @@ pub fn SmartCodeDock(
                     style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;",
                     for (label, search_key) in TEMPLATE_LAYOUTS {
                         button {
-                            // Paint active class if memory cell matches this button
                             class: if active_target() == Some(search_key.to_string()) { "editor-button editor-button-active" } else { "editor-button" },
                             style: "text-align: left; font-size: 0.85rem;",
                             onclick: move |_| jump_to(search_key),
@@ -97,7 +91,6 @@ pub fn SmartCodeDock(
                     style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;",
                     for (label, search_key) in CORE_IDENTITY {
                         button {
-                            // Paint active class if memory cell matches this button
                             class: if active_target() == Some(search_key.to_string()) { "editor-button editor-button-active" } else { "editor-button" },
                             style: "text-align: left; font-size: 0.85rem;",
                             onclick: move |_| jump_to(search_key),
@@ -108,18 +101,28 @@ pub fn SmartCodeDock(
             }
 
             div {
-                style: "flex: 1; display: flex; flex-direction: column; min-width: 0;",
+                style: "flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
                 div {
-                    style: "padding: 8px 12px; border-bottom: 1px solid var(--editor-border-soft); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;",
-                    span { style: "font-size: 0.8rem; color: var(--editor-accent-warm); font-family: var(--font-mono);", "theme_config.toml" }
-                    span { style: "font-size: 0.75rem; color: var(--fg-muted);", "Live Reload Active" }
+                    class: "editor-pane-header",
+                    style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
+                    div {
+                        style: "display: flex; align-items: center; gap: 8px;",
+                        span { style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);", "theme_config.toml" }
+                        span {
+                            style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
+                            "Live Reload Active"
+                        }
+                    }
                 }
-                CodeEditor {
-                    id: "toml-editor-textarea".to_string(), // CRITICAL for jump_to logic to still work
-                    value: config_toml,
-                    mode: "toml".to_string(),
-                    on_change: move |new_val| {
-                        on_load_theme.call(new_val);
+                div {
+                    style: "display: flex; flex-direction: column; flex: 1; min-height: 0;",
+                    CodeEditor {
+                        id: Some("toml-editor-textarea".to_string()),
+                        value: (config_toml)(),
+                        mode: "toml".to_string(),
+                        on_change: move |new_val| {
+                            on_load_theme.call(new_val);
+                        }
                     }
                 }
             }

@@ -138,11 +138,11 @@ pub fn default_theme_config() -> ThemeConfig {
         template_pack: TemplatePackConfig {
             header_variant: "mor_header_baseline".to_string(),
             main_variant: "sidebars".to_string(),
-            content_variant: "blog_standard".to_string(),
+            content_variant: "standard_feed".to_string(),
             left_sidebar_variant: "blogger_left".to_string(),
             right_sidebar_variant: "toc_right".to_string(),
             footer_variant: "mega".to_string(),
-            script_variant: "mor_panels".to_string(),
+            script_variant: "mor_collapsible_sidebars".to_string(),
             icon_pack: "default".to_string(),
             widget_map: HashMap::from([
                 (

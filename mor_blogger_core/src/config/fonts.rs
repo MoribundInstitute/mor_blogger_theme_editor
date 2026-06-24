@@ -186,30 +186,36 @@ pub fn is_system_safe_font(name: &str) -> bool {
         return true;
     }
 
-    if name.eq_ignore_ascii_case("serif")
-        || name.eq_ignore_ascii_case("sans-serif")
-        || name.eq_ignore_ascii_case("monospace")
-        || name.eq_ignore_ascii_case("cursive")
-        || name.eq_ignore_ascii_case("fantasy")
-        || name.eq_ignore_ascii_case("system-ui")
-        || name.eq_ignore_ascii_case("-apple-system")
-        || name.eq_ignore_ascii_case("blinkmacsystemfont")
-        || name.eq_ignore_ascii_case("segoe ui")
-        || name.eq_ignore_ascii_case("helvetica")
-        || name.eq_ignore_ascii_case("helvetica neue")
-        || name.eq_ignore_ascii_case("arial")
-        || name.eq_ignore_ascii_case("verdana")
-        || name.eq_ignore_ascii_case("tahoma")
-        || name.eq_ignore_ascii_case("trebuchet ms")
-        || name.eq_ignore_ascii_case("georgia")
-        || name.eq_ignore_ascii_case("times")
-        || name.eq_ignore_ascii_case("times new roman")
-        || name.eq_ignore_ascii_case("courier")
-        || name.eq_ignore_ascii_case("courier new")
-        || name.eq_ignore_ascii_case("lucida console")
-        || name.eq_ignore_ascii_case("lucida sans unicode")
-        || name.eq_ignore_ascii_case("comic sans ms")
-        || name.eq_ignore_ascii_case("impact")
+    const SYSTEM_SAFE_FONTS: &[&str] = &[
+        "serif",
+        "sans-serif",
+        "monospace",
+        "cursive",
+        "fantasy",
+        "system-ui",
+        "-apple-system",
+        "blinkmacsystemfont",
+        "segoe ui",
+        "helvetica",
+        "helvetica neue",
+        "arial",
+        "verdana",
+        "tahoma",
+        "trebuchet ms",
+        "georgia",
+        "times",
+        "times new roman",
+        "courier",
+        "courier new",
+        "lucida console",
+        "lucida sans unicode",
+        "comic sans ms",
+        "impact",
+    ];
+
+    if SYSTEM_SAFE_FONTS
+        .iter()
+        .any(|&f| f.eq_ignore_ascii_case(name))
     {
         return true;
     }

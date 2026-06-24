@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::app::state::ThemeState;
-use mor_blogger_core::utils::rehydration::extract_and_decode;
+use crate::app::vfs::VfsDictionary;
+use mor_blogger_core::utils::rehydration::{extract_workspace_state, persist_vfs_overrides};
 
 pub fn use_restore_drop_bridge(theme: ThemeState) {
     let signals = theme.signals;
@@ -109,6 +110,7 @@ pub fn use_restore_drop_bridge(theme: ThemeState) {
 
         let restore_signals = signals;
         let mut restored_active_preset = active_preset;
+        let mut vfs = use_context::<VfsDictionary>().0;
 
         spawn(async move {
             while let Ok(value) = eval.recv::<serde_json::Value>().await {
@@ -130,10 +132,14 @@ pub fn use_restore_drop_bridge(theme: ThemeState) {
                             continue;
                         };
 
-                        match extract_and_decode(xml_text) {
-                            Ok(config) => {
-                                // FIXED: Using apply_config
-                                restore_signals.apply_config(&config);
+                        match extract_workspace_state(xml_text) {
+                            Ok(payload) => {
+                                restore_signals.apply_config(&payload.config);
+                                vfs.write().clear();
+                                vfs.write().extend(payload.vfs.clone());
+                                if let Err(err) = persist_vfs_overrides(&payload.vfs) {
+                                    log::error!("Failed to persist restored VFS overrides: {}", err);
+                                }
                                 restored_active_preset.set(None);
                                 theme.commit();
                                 log::info!("Workspace restored from dropped XML file: {}", name);

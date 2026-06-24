@@ -1,7 +1,7 @@
 use crate::app::config_bridge::EditorPrefs;
-use crate::ui::components::modal::Modal;
+use crate::app::state::ThemeState;
 use crate::ui::components::form::MorCheckbox;
-use crate::app::state::SiteState;
+use crate::ui::dialogs::modal::Modal;
 use dioxus::prelude::*;
 
 #[component]
@@ -10,8 +10,8 @@ pub fn UserPreferencesDialog(
     mut ui_mode_pref: Signal<String>,
     active_ui_mode: String,
 ) -> Element {
-    let site_state = use_context::<SiteState>();
-    let mut enable_ai_bridge = site_state.enable_ai_bridge;
+    let theme_state = use_context::<ThemeState>();
+    let mut enable_ai_bridge = theme_state.enable_ai_bridge;
 
     rsx! {
         Modal {

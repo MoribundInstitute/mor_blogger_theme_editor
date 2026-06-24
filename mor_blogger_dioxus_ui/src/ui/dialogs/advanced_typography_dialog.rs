@@ -1,6 +1,6 @@
 use crate::app::state::ThemeState;
 use crate::ui::components::inputs::EditorInput;
-use crate::ui::components::modal::Modal;
+use crate::ui::dialogs::modal::Modal;
 use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 use mor_blogger_core::config::fonts::{FontPreset, MONO_FONT_REGISTRY};

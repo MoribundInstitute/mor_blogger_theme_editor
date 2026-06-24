@@ -16,6 +16,7 @@ zip.workspace = true
 roxmltree = "0.20"
 base64 = "0.22"
 directories = "5"
+dirs = "5.0"
 tokio = { version = "1", features = ["time"] }
 
 # Binary/Compressed Rehydration

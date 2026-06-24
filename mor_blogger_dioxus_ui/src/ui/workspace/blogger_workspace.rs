@@ -1,4 +1,6 @@
-use crate::app::state::{CenterView, ContextMenuPayload, LayoutState, RenderState};
+use crate::app::state::{
+    CenterView, ContextMenuPayload, LayoutState, RenderState, WindowManager,
+};
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
     apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
@@ -12,8 +14,9 @@ use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 use super::module_workbench::ModuleWorkbench;
 use super::static_page_editor::StaticPageEditor;
+use crate::ui::components::code_editor::CodeEditor;
 use crate::ui::docks::smart_code_dock::SmartCodeDock;
-use crate::ui::shell::main_pane::MainPane;
+use crate::ui::layout::main_pane::MainPane;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
@@ -195,7 +198,30 @@ pub fn BloggerWorkspace(
                     target: icon_target.clone(),
                     config_toml: config_toml(),
                     on_close: move |_| active_icon_picker.set(None),
-                    on_restore: on_restore.clone(),
+                    on_select_mask: {
+                        let toml_str = config_toml.clone();
+                        let restore = on_restore.clone();
+                        let target = icon_target.clone();
+                        move |mask: String| {
+                            let mut config = toml::from_str::<ThemeConfig>(&toml_str()).unwrap_or_default();
+                            match target.as_str() {
+                                "icons.panel_close" => config.icons.panel_close = mask,
+                                "icons.search" => config.icons.search = mask,
+                                "icons.menu" => config.icons.menu = mask,
+                                "icons.sidebar_left" => config.icons.sidebar_left = mask,
+                                "icons.sidebar_right" => config.icons.sidebar_right = mask,
+                                "icons.archive" => config.icons.archive = mask,
+                                "icons.label" => config.icons.label = mask,
+                                "icons.share" => config.icons.share = mask,
+                                "icons.user" => config.icons.user = mask,
+                                "icons.comment" => config.icons.comment = mask,
+                                "icons.arrow_up" => config.icons.arrow_up = mask,
+                                "icons.external_link" => config.icons.external_link = mask,
+                                _ => {}
+                            }
+                            restore.call(config);
+                        }
+                    },
                 }
             }
 
@@ -294,6 +320,7 @@ pub fn BloggerWorkspace(
 
 #[component]
 fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
+    let mut wm = use_context::<Signal<WindowManager>>();
     rsx! {
         button {
             class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
@@ -311,8 +338,19 @@ fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
             "Export XML"
         }
         button {
-            class: if center_view() == CenterView::ModuleWorkbench { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| center_view.set(CenterView::ModuleWorkbench),
+            class: if center_view() == CenterView::ModuleWorkbench {
+                "editor-mini-button editor-mini-button-active"
+            } else {
+                "editor-mini-button"
+            },
+            onclick: move |e| {
+                e.stop_propagation();
+
+                center_view.set(CenterView::ModuleWorkbench);
+
+                let mut state = wm.write();
+                state.show_template_modules = true;
+            },
             "Module Workbench"
         }
         button {
@@ -413,7 +451,7 @@ fn IconPickerModal(
     target: String,
     config_toml: String,
     on_close: EventHandler<()>,
-    on_restore: EventHandler<ThemeConfig>,
+    on_select_mask: EventHandler<String>,
 ) -> Element {
     let mut status_msg = use_signal(String::new);
     let mut raw_svg_input = use_signal(String::new);
@@ -449,53 +487,37 @@ fn IconPickerModal(
                     button {
                         class: "editor-button",
                         style: "justify-content: center;",
-                        onclick: {
-                            let icon_target = target.clone();
-                            let toml_str = config_toml.clone();
-                            let restore = on_restore.clone();
-                            move |_| {
-                                let raw_svg = raw_svg_input().trim().to_string();
-                                if raw_svg.is_empty() || !is_svg(&raw_svg) {
-                                    status_msg.set("Error: Invalid or empty SVG.".to_string());
-                                    return;
-                                }
-                                let mask = svg_to_data_uri(&raw_svg);
-                                let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask);
-                                restore.call(config);
-                                status_msg.set("SVG applied!".to_string());
-                                raw_svg_input.set(String::new());
+                        onclick: move |_| {
+                            let raw_svg = raw_svg_input().trim().to_string();
+                            if raw_svg.is_empty() || !is_svg(&raw_svg) {
+                                status_msg.set("Error: Invalid or empty SVG.".to_string());
+                                return;
                             }
+                            let mask = svg_to_data_uri(&raw_svg);
+                            on_select_mask.call(mask);
+                            status_msg.set("SVG applied!".to_string());
+                            raw_svg_input.set(String::new());
                         },
                         "Apply Pasted SVG"
                     }
                     button {
                         class: "editor-button",
                         style: "justify-content: center;",
-                        onclick: {
-                            let icon_target = target.clone();
-                            let toml_str = config_toml.clone();
-                            let restore = on_restore.clone();
-                            move |_| {
-                                let slot = icon_target.clone();
-                                let cfg_str = toml_str.clone();
-                                let apply = restore.clone();
-                                spawn(async move {
-                                    if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
-                                        let bytes = file.read().await;
-                                        let raw_svg = String::from_utf8_lossy(&bytes).into_owned();
-                                        if !is_svg(&raw_svg) {
-                                            status_msg.set("Error: File is not a valid SVG.".to_string());
-                                            return;
-                                        }
-                                        let mask = svg_to_data_uri(&raw_svg);
-                                        let mut config = toml::from_str::<ThemeConfig>(&cfg_str).unwrap_or_default();
-                                        crate::app::services::workspace_service::set_icon_slot(&mut config, &slot, mask);
-                                        apply.call(config);
-                                        status_msg.set(format!("SVG applied from {}", file.file_name()));
+                        onclick: move |_| {
+                            let apply = on_select_mask.clone();
+                            spawn(async move {
+                                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
+                                    let bytes = file.read().await;
+                                    let raw_svg = String::from_utf8_lossy(&bytes).into_owned();
+                                    if !is_svg(&raw_svg) {
+                                        status_msg.set("Error: File is not a valid SVG.".to_string());
+                                        return;
                                     }
-                                });
-                            }
+                                    let mask = svg_to_data_uri(&raw_svg);
+                                    apply.call(mask);
+                                    status_msg.set(format!("SVG applied from {}", file.file_name()));
+                                }
+                            });
                         },
                         "Browse OS for .svg..."
                     }
@@ -519,13 +541,10 @@ fn IconPickerModal(
                                 button {
                                     class: "editor-button", style: "aspect-ratio: 1; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-elevated); border-color: var(--border-color);", title: "{label}",
                                     onclick: {
-                                        let icon_target = target.clone();
                                         let mask_uri = mask_uri.clone();
-                                        let toml_str = config_toml.clone();
+                                        let apply = on_select_mask.clone();
                                         move |_| {
-                                            let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                            crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask_uri.clone());
-                                            on_restore.call(config);
+                                            apply.call(mask_uri.clone());
                                             status_msg.set(format!("Applied {} icon.", label));
                                         }
                                     },
@@ -543,13 +562,10 @@ fn IconPickerModal(
                         button {
                             class: "editor-button", style: "aspect-ratio: 1; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-elevated); border-color: var(--border-color);", title: "{label}",
                             onclick: {
-                                let icon_target = target.clone();
                                 let mask = encode_path_to_mask(path_d);
-                                let toml_str = config_toml.clone();
+                                let apply = on_select_mask.clone();
                                 move |_| {
-                                    let mut config = toml::from_str::<ThemeConfig>(&toml_str).unwrap_or_default();
-                                    crate::app::services::workspace_service::set_icon_slot(&mut config, &icon_target, mask.clone());
-                                    on_restore.call(config);
+                                    apply.call(mask.clone());
                                     status_msg.set(format!("Applied {} icon.", label));
                                 }
                             },
@@ -570,7 +586,6 @@ fn ExportResultView(
     config_toml: ReadSignal<String>,
 ) -> Element {
     let status_msg = use_signal(String::new);
-    let render = use_context::<RenderState>();
 
     rsx! {
         div {
@@ -587,8 +602,30 @@ fn ExportResultView(
                 }
             }
 
-            div { class: "export-viewport", style: "flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 0;",
-                textarea { class: "export-xml-textarea", style: "flex: 1;", readonly: true, value: "{export_xml()}" }
+            div {
+                class: "export-viewport",
+                style: "flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 0; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-base);",
+                div {
+                    class: "editor-pane-header",
+                    style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
+                    div {
+                        style: "display: flex; align-items: center; gap: 8px;",
+                        span { style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);", "exported_theme.xml" }
+                        span {
+                            style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
+                            "Read-only export preview"
+                        }
+                    }
+                }
+                div {
+                    style: "flex: 1; min-height: 0; display: flex; flex-direction: column;",
+                    CodeEditor {
+                        value: export_xml(),
+                        mode: "xml".to_string(),
+                        read_only: true,
+                        on_change: |_| {},
+                    }
+                }
             }
 
             div { class: "export-action-bar", style: "margin-top: 15px; border-top: 1px solid var(--editor-border-soft); padding-top: 15px;",
@@ -604,7 +641,7 @@ fn ExportResultView(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                crate::app::services::workspace_service::handle_xml_export_state(&render, status_msg);
+                                crate::app::services::workspace_service::handle_xml_export(export_xml(), status_msg);
                             },
                             "Export XML to Disk"
                         }

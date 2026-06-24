@@ -1,4 +1,4 @@
-use crate::ui::components::modal::Modal;
+use crate::ui::dialogs::modal::Modal;
 use dioxus::prelude::*;
 
 #[component]

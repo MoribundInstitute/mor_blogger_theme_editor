@@ -308,22 +308,6 @@ pub fn ModuleWorkbench(
         }
     });
 
-    let mut module_xml_signal = use_signal(String::new);
-    let current_xml = display_xml();
-    let mut last_base = use_signal(|| current_xml.clone());
-    if last_base() != current_xml {
-        last_base.set(current_xml.clone());
-        module_xml_signal.set(current_xml);
-    }
-
-    use_effect(move || {
-        let val = module_xml_signal();
-        if !val.is_empty() && val != display_xml.read().as_str() {
-            edited_xml.set(val);
-            on_load_theme.call(config_toml());
-        }
-    });
-
     // Generate the isolated module preview HTML from the live config.
     let module_preview_html = use_memo(move || match (layout.active_workbench_module)() {
         Some(key) => {
@@ -489,55 +473,63 @@ pub fn ModuleWorkbench(
                 // ── Middle Pane ─ XML Fragment Editor ────────────────────
                 div {
                     style: "flex: 1; display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--editor-border);",
-
                     div {
-                        style: "padding: 8px 12px; border-bottom: 1px solid var(--editor-border-soft); background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px;",
-                        span {
-                            style: "font-size: 0.8rem; color: var(--editor-accent-warm); font-family: var(--font-mono); flex: 1;",
-                            {
-                                (layout.active_workbench_module)()
-                                    .map(|k| format!("{k}.xml"))
-                                    .unwrap_or_else(|| "module_fragment.xml".to_string())
-                            }
-                        }
-                        // Save the active text buffer to the user-space templates directory
-                        button {
-                            class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                            title: "Save current XML buffer to the user templates folder",
-                            onclick: move |_| {
-                                let Some(key) = (layout.active_workbench_module)() else { return; };
-                                let category = module_key_to_category(key);
-                                let name = format!("custom_{}", key);
-                                let content = display_xml();
-                                match fs_bridge::save_custom_module(category, &name, &content) {
-                                    Ok(path) => workbench_status.set(
-                                        format!("Saved → {}", path.display())
-                                    ),
-                                    Err(e) => workbench_status.set(format!("Save failed: {}", e)),
-                                }
-                            },
-                            "Save Module"
-                        }
-                        span { style: "font-size: 0.75rem; color: var(--fg-muted);", "Blogger XML · Live" }
-                    }
-
-                    if !workbench_status().is_empty() {
+                        class: "editor-pane",
+                        style: "display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
+                        
                         div {
-                            style: "padding: 4px 12px; font-size: 0.75rem; color: var(--editor-accent-warm); background: rgba(0,0,0,0.15); font-family: var(--font-mono); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center;",
-                            span { "{workbench_status}" }
+                            class: "editor-pane-header",
+                            style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
+                            div {
+                                style: "display: flex; align-items: center; gap: 8px;",
+                                span {
+                                    style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);",
+                                    {(layout.active_workbench_module)().map(|k| format!("{k}.xml")).unwrap_or_else(|| "module_fragment.xml".to_string())}
+                                }
+                                span {
+                                    style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
+                                    "Blogger XML · Live"
+                                }
+                            }
                             button {
-                                style: "background: none; border: none; color: var(--fg-muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px;",
-                                onclick: move |_| workbench_status.set(String::new()),
-                                "×"
+                                class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                                title: "Save current XML buffer to the user templates folder",
+                                onclick: move |_| {
+                                    let Some(key) = (layout.active_workbench_module)() else { return; };
+                                    let category = module_key_to_category(key);
+                                    let name = format!("custom_{}", key);
+                                    let content = display_xml();
+                                    match fs_bridge::save_custom_module(category, &name, &content) {
+                                        Ok(path) => workbench_status.set(format!("Saved → {}", path.display())),
+                                        Err(e) => workbench_status.set(format!("Save failed: {}", e)),
+                                    }
+                                },
+                                "Save Module"
                             }
                         }
-                    }
 
-                    CodeEditor {
-                        value: module_xml_signal,
-                        mode: "xml".to_string(),
-                        on_change: move |new_val| {
-                            module_xml_signal.set(new_val);
+                        if !workbench_status().is_empty() {
+                            div {
+                                style: "padding: 4px 12px; font-size: 0.75rem; color: var(--editor-accent-warm); background: rgba(0,0,0,0.15); font-family: var(--font-mono); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;",
+                                span { "{workbench_status()}" }
+                                button {
+                                    style: "background: none; border: none; color: var(--fg-muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px;",
+                                    onclick: move |_| workbench_status.set(String::new()),
+                                    "×"
+                                }
+                            }
+                        }
+
+                        div {
+                            style: "display: flex; flex-direction: column; flex: 1; min-height: 0;",
+                            CodeEditor {
+                                value: display_xml(),
+                                mode: "xml".to_string(),
+                                on_change: move |new_val| {
+                                    edited_xml.set(new_val);
+                                    on_load_theme.call(config_toml());
+                                }
+                            }
                         }
                     }
                 }

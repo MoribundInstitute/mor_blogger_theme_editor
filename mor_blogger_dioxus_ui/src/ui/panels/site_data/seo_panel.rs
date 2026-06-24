@@ -4,41 +4,41 @@ use crate::ui::components::inputs::{EditorInput, PanelNote, SectionTitle};
 
 #[component]
 pub fn SeoPanel() -> Element {
-    let site_state = use_context::<crate::app::state::SiteState>();
+    let theme_state = use_context::<crate::app::state::ThemeState>();
     rsx! {
         SectionTitle { title: "SEO & Site Identity".to_string() }
 
         EditorInput {
             label: "Meta Description".to_string(),
-            value: site_state.meta_description,
+            value: theme_state.signals.meta_description,
             input_type: "text".to_string(),
             placeholder: "Short site description".to_string()
         }
 
         EditorInput {
             label: "Keywords (Comma separated)".to_string(),
-            value: site_state.meta_keywords,
+            value: theme_state.signals.meta_keywords,
             input_type: "text".to_string(),
             placeholder: "blog, writing, technology".to_string()
         }
 
         EditorInput {
             label: "Robots (Search Engine Rules)".to_string(),
-            value: site_state.custom_robots,
+            value: theme_state.signals.custom_robots,
             input_type: "text".to_string(),
             placeholder: "index, follow".to_string()
         }
 
         EditorInput {
             label: "Author Name".to_string(),
-            value: site_state.author_name,
+            value: theme_state.signals.author_name,
             input_type: "text".to_string(),
             placeholder: "Author name".to_string()
         }
 
         EditorInput {
             label: "License URL".to_string(),
-            value: site_state.license_url,
+            value: theme_state.signals.license_url,
             input_type: "text".to_string(),
             placeholder: "https://example.com/license".to_string()
         }

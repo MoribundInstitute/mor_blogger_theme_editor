@@ -121,7 +121,7 @@ pub const LAYOUT_REGISTRY: &[ComponentManifest] = &[
 
 pub const CONTENT_REGISTRY: &[ComponentManifest] = &[
     ComponentManifest {
-        id: "blog_standard",
+        id: "standard_feed",
         category: ComponentCategory::Content,
         xml_content: include_str!("../template_parts/content/blog_standard.xml"),
         css_deps: &[],
@@ -304,11 +304,16 @@ pub const CORE_JS_FILES: &[&str] = &[
     "08-Share-Actions.js",
 ];
 
+pub const MAGAZINE_GRID_JS: &str = "09-Magazine-Grid-Logic.js";
+
 pub fn fetch_js(filename: &str) -> &'static str {
     match filename {
         "01-Core-Helpers.js" => include_str!("../template_parts/scripts/01-Core-Helpers.js"),
         "07-Theme-Toggler.js" => include_str!("../template_parts/scripts/07-Theme-Toggler.js"),
         "08-Share-Actions.js" => include_str!("../template_parts/scripts/08-Share-Actions.js"),
+        "09-Magazine-Grid-Logic.js" => {
+            include_str!("../template_parts/scripts/09-Magazine-Grid-Logic.js")
+        }
         _ => "",
     }
 }
@@ -444,10 +449,17 @@ pub fn resolve_template_parts(
         unique_css.insert(css);
     }
 
-    if pack.script_variant == "mor_panels" {
+    if pack.script_variant == "mor_panels"
+        || pack.script_variant == "mor_collapsible_sidebars"
+        || pack.script_variant == "magazine_grid_logic"
+    {
         for file in CORE_JS_FILES {
             unique_js.insert(*file);
         }
+    }
+
+    if pack.script_variant == "magazine_grid_logic" {
+        unique_js.insert(MAGAZINE_GRID_JS);
     }
 
     for comp in &active_components {

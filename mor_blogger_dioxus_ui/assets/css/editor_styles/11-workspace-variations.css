@@ -1,8 +1,8 @@
 /* Independent panel layout variations utilizing HTML5 data-* attributes. */
 
 /* Base Panel Styles */
-.editor-left-panel,
-.editor-right-panel {
+.mor_panel_left,
+.mor_panel_right {
   min-width: 0;
   min-height: 0;
   height: 100%;
@@ -14,14 +14,14 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-.editor-left-panel {
+.mor_panel_left {
   width: var(--left-panel-width, 360px);
   flex: 0 0 var(--left-panel-width, 360px);
   border-right: 1px solid var(--editor-border);
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), flex-basis 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.editor-right-panel {
+.mor_panel_right {
   width: var(--right-panel-width, 360px);
   flex: 0 0 var(--right-panel-width, 360px);
   border-left: 1px solid var(--editor-border);
@@ -37,14 +37,14 @@
 .editor-main[data-right-layout="wide"]  { --right-panel-width: 520px; }
 
 /* Hidden panels */
-.editor-main[data-left-layout="hidden"] .editor-left-panel,
-.editor-main[data-right-layout="hidden"] .editor-right-panel {
+.editor-main[data-left-layout="hidden"] .mor_panel_left,
+.editor-main[data-right-layout="hidden"] .mor_panel_right {
   display: none;
 }
 
 /* Collapsed Strips */
-.editor-left-panel-collapsed,
-.editor-right-panel-collapsed {
+.mor_panel_left-collapsed,
+.mor_panel_right-collapsed {
   width: 40px;
   flex: 0 0 40px;
   min-height: 0;
@@ -56,8 +56,8 @@
   padding-top: 16px;
 }
 
-.editor-left-panel-collapsed { border-right: 1px solid var(--editor-border); }
-.editor-right-panel-collapsed { border-left: 1px solid var(--editor-border); }
+.mor_panel_left-collapsed { border-right: 1px solid var(--editor-border); }
+.mor_panel_right-collapsed { border-left: 1px solid var(--editor-border); }
 
 .editor-collapse-button {
   background: transparent;

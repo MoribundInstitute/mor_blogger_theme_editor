@@ -32,21 +32,21 @@ pub fn use_keyboard_shortcuts(layout: LayoutState) {
                     match cmd {
                         "toggle_left" => {
                             if theme_palette_pos() == DockPosition::Hidden {
-                                theme_palette_pos.set(DockPosition::Left);
+                                theme_palette_pos.set(DockPosition::mor_panel_left);
                             } else {
                                 theme_palette_pos.set(DockPosition::Hidden);
                             }
                         }
                         "toggle_right" => {
                             if site_data_pos() == DockPosition::Hidden {
-                                site_data_pos.set(DockPosition::Right);
+                                site_data_pos.set(DockPosition::mor_panel_right);
                             } else {
                                 site_data_pos.set(DockPosition::Hidden);
                             }
                         }
                         "layout_split" | "layout_wide" => {
-                            theme_palette_pos.set(DockPosition::Left);
-                            site_data_pos.set(DockPosition::Right);
+                            theme_palette_pos.set(DockPosition::mor_panel_left);
+                            site_data_pos.set(DockPosition::mor_panel_right);
                         }
                         "layout_float" => {
                             theme_palette_pos.set(DockPosition::Floating);

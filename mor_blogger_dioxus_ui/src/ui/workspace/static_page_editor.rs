@@ -71,54 +71,63 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                 }
             } else {
                 // Split Editor View
-                // Left Pane - XML/HTML Text Area (40% width)
+                // Left Pane - HTML editor (40% width)
                 div {
                     style: "width: 40%; flex-shrink: 0; border-right: 1px solid var(--editor-border); display: flex; flex-direction: column; min-width: 0;",
-
-                    // Top header row with Save Button & Status
                     div {
-                        style: "padding: 8px 12px; border-bottom: 1px solid var(--editor-border-soft); background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; justify-content: space-between;",
-                        span {
-                            style: "font-size: 0.8rem; color: var(--editor-accent-warm); font-family: var(--font-mono); font-weight: bold;",
-                            "{page_name} Page Content"
-                        }
+                        class: "editor-pane",
+                        style: "display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
+                        
                         div {
-                            style: "display: flex; align-items: center; gap: 8px;",
+                            class: "editor-pane-header",
+                            style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
+                            div {
+                                style: "display: flex; align-items: center; gap: 8px;",
+                                span { style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);", "{page_name} Page Content" }
+                                span {
+                                    style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
+                                    "Live Preview"
+                                }
+                            }
                             button {
                                 class: "editor-mini-button",
-                                title: "Save customized HTML back to system pages directory",
+                                style: "color: var(--editor-accent);",
                                 onclick: move |_| {
                                     let name = page_name.clone();
                                     let content = raw_html_signal();
                                     match fs_bridge::save_custom_page(&name, &content) {
-                                        Ok(path) => save_status.set(format!("Saved to {}", path.file_name().and_then(|f| f.to_str()).unwrap_or("file"))),
+                                        Ok(path) => save_status.set(format!(
+                                            "Saved to {}",
+                                            path.file_name().and_then(|f| f.to_str()).unwrap_or("file")
+                                        )),
                                         Err(e) => save_status.set(format!("Save failed: {}", e)),
                                     }
                                 },
-                                "Save Page"
+                                "Save"
                             }
                         }
-                    }
 
-                    // Success / Error status banner
-                    if !save_status().is_empty() {
+                        if !save_status().is_empty() {
+                            div {
+                                style: "padding: 4px 12px; font-size: 0.75rem; color: var(--editor-accent-warm); background: rgba(0,0,0,0.15); font-family: var(--font-mono); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;",
+                                span { "{save_status()}" }
+                                button {
+                                    style: "background: none; border: none; color: var(--fg-muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px;",
+                                    onclick: move |_| save_status.set(String::new()),
+                                    "×"
+                                }
+                            }
+                        }
+
                         div {
-                            style: "padding: 6px 12px; font-size: 0.75rem; color: var(--editor-accent-warm); background: rgba(0,0,0,0.15); font-family: var(--font-mono); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center;",
-                            span { "{save_status}" }
-                            button {
-                                style: "background: none; border: none; color: var(--fg-muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px;",
-                                onclick: move |_| save_status.set(String::new()),
-                                "×"
+                            style: "display: flex; flex-direction: column; flex: 1; min-height: 0;",
+                            CodeEditor {
+                                value: (raw_html_signal)(),
+                                mode: "html".to_string(),
+                                on_change: move |new_val| {
+                                    raw_html_signal.set(new_val);
+                                }
                             }
-                        }
-                    }
-
-                    // Text Area Editor
-                    CodeEditor {
-                        value: raw_html_signal,
-                        mode: "html".to_string(),
-                        on_change: move |new_val| {
-                            raw_html_signal.set(new_val);
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 use crate::app::state::ThemeState;
-use crate::ui::components::modal::Modal;
+use crate::ui::dialogs::modal::Modal;
 use crate::ui::panels::theme_palette::presets::importers::parse_theme_text;
 use dioxus::prelude::*;
 use mor_blogger_core::config::{SurfaceFill, SurfaceMode};

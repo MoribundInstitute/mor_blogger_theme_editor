@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::app::state::{DockPosition, LayoutState};
 use crate::app::theme_signals::ThemeSignals;
 use crate::ui::components::accordion::EditorAccordion;
-use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat};
+use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
 use crate::ui::panels::site_data::ads_panel::AdsPanel;
 use crate::ui::panels::site_data::assets_panel::AssetsPanel;
 use crate::ui::panels::site_data::menu_panel::MenuPanel;
@@ -13,7 +13,7 @@ use crate::ui::panels::site_data::site_panel::SitePanel;
 use mor_blogger_core::config::ThemeConfig;
 
 const RIGHT_PANE_CSS: &str = r#"
-.editor-left-panel.is-floating {
+.mor_panel_left.is-floating {
     position: fixed !important;
     left: var(--left-pane-x, 20px) !important;
     top: var(--left-pane-y, 80px) !important;
@@ -25,7 +25,7 @@ const RIGHT_PANE_CSS: &str = r#"
     max-height: 85vh !important;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
 }
-.editor-right-panel.is-floating {
+.mor_panel_right.is-floating {
     position: fixed !important;
     left: var(--right-pane-x, calc(100vw - 340px)) !important;
     top: var(--right-pane-y, 80px) !important;
@@ -37,8 +37,8 @@ const RIGHT_PANE_CSS: &str = r#"
     max-height: 85vh !important;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
 }
-.editor-left-panel:not(.is-floating) { width: var(--left-pane-width, 320px) !important; position: relative; }
-.editor-right-panel:not(.is-floating) { width: var(--right-pane-width, 320px) !important; position: relative; }
+.mor_panel_left:not(.is-floating) { width: var(--left-pane-width, 320px) !important; position: relative; }
+.mor_panel_right:not(.is-floating) { width: var(--right-pane-width, 320px) !important; position: relative; }
 .pane-resizer { position: absolute; top: 0; bottom: 0; width: 6px; z-index: 999; cursor: ew-resize; background: transparent; transition: background 0.1s; }
 .pane-resizer:hover, .pane-resizer:active { background: var(--editor-accent, rgba(255,255,255,0.2)); }
 .pane-resizer-right { right: 0; }
@@ -55,14 +55,14 @@ const PANE_DRAG_JS: &str = r#"
         if (!bar) return;
         if (e.target.closest('button, input, a, select, textarea')) return;
 
-        const panel = bar.closest('.editor-left-panel, .editor-right-panel');
+        const panel = bar.closest('.mor_panel_left, .mor_panel_right');
         if (!panel) return;
         
         if (window.getComputedStyle(panel).position !== 'fixed' && window.getComputedStyle(panel).position !== 'absolute') return;
 
         e.preventDefault();
         
-        const isLeft = panel.classList.contains('editor-left-panel');
+        const isLeft = panel.classList.contains('mor_panel_left');
         const varX = isLeft ? '--left-pane-x' : '--right-pane-x';
         const varY = isLeft ? '--left-pane-y' : '--right-pane-y';
 
@@ -109,7 +109,7 @@ const PANE_RESIZE_JS: &str = r#"
         e.preventDefault();
         const isLeft = resizer.classList.contains('pane-resizer-right');
         const startX = e.clientX;
-        const panel = resizer.closest('.editor-left-panel, .editor-right-panel');
+        const panel = resizer.closest('.mor_panel_left, .mor_panel_right');
         const startWidth = panel.getBoundingClientRect().width;
         
         const onMove = function(moveEvt) {
@@ -140,29 +140,29 @@ pub fn SiteDataDock(
     let pos = (layout.site_data_pos)();
 
     if pos == DockPosition::Hidden {
-        return rsx! {};
+        return rsx! { div { style: "display: none;" } };
     }
 
     let header_actions = rsx! {
         div { class: "floating-editor-window-actions",
-            if pos != DockPosition::Left {
+            if pos != DockPosition::mor_panel_left {
                 button {
                     class: "editor-mini-button",
                     style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Left",
                     onclick: move |_| {
-                        layout.request_exclusive_dock("site", DockPosition::Left);
+                        layout.request_exclusive_dock("site", DockPosition::mor_panel_left);
                     },
                     IconDockLeft {}
                 }
             }
-            if pos != DockPosition::Right {
+            if pos != DockPosition::mor_panel_right {
                 button {
                     class: "editor-mini-button",
                     style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Right",
                     onclick: move |_| {
-                        layout.request_exclusive_dock("site", DockPosition::Right);
+                        layout.request_exclusive_dock("site", DockPosition::mor_panel_right);
                     },
                     IconDockRight {}
                 }
@@ -259,38 +259,11 @@ pub fn SiteDataDock(
         }
     };
 
-    match pos {
-        DockPosition::Left => rsx! {
-            aside { class: "editor-left-panel",
-                {inner_content}
-                div { class: "pane-resizer pane-resizer-right" }
-            }
-        },
-        DockPosition::Right => rsx! {
-            aside { class: "editor-right-panel",
-                {inner_content}
-                div { class: "pane-resizer pane-resizer-left" }
-            }
-        },
-        DockPosition::Floating => rsx! {
-            aside { class: "editor-right-panel is-floating",
-                {inner_content}
-            }
-        },
-        DockPosition::Hidden => rsx! {},
-    }
-}
-
-#[component]
-fn IconGrip() -> Element {
     rsx! {
-        svg { width: "16", height: "16", view_box: "0 0 16 16", fill: "currentColor",
-            circle { cx: "6", cy: "4", r: "1" }
-            circle { cx: "10", cy: "4", r: "1" }
-            circle { cx: "6", cy: "8", r: "1" }
-            circle { cx: "10", cy: "8", r: "1" }
-            circle { cx: "6", cy: "12", r: "1" }
-            circle { cx: "10", cy: "12", r: "1" }
+        crate::ui_kit::MorPanelWrapper {
+            position: pos,
+            default_position: DockPosition::mor_panel_right,
+            {inner_content}
         }
     }
 }

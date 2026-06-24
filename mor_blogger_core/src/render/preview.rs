@@ -5,7 +5,7 @@
 use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{build_google_fonts_link, escape_attr, escape_html};
 use crate::config::prefs::RenderPrefs;
-use crate::config::{BackgroundMode, ThemeConfig};
+use crate::config::{BackgroundMode, BlogPost, ThemeConfig};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -28,8 +28,191 @@ impl PreviewTemplateMode {
     }
 }
 
+fn get_default_posts() -> Vec<BlogPost> {
+    vec![
+        BlogPost {
+            title: "WYSIWYG: The Tier 3 Architecture".to_string(),
+            date: "24 Oct, 2026".to_string(),
+            tags: vec!["Preview".to_string(), "Architecture".to_string()],
+            snippet: "This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.".to_string(),
+            featured_image: None,
+            body: "<p>This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.</p>\n<p>Furthermore, Dioxus now runs a <strong>Two-Way DOM Morpher</strong> inside the iframe. Modifying colors, fonts, and text fields in the left/right docks will update the preview instantly without causing destructive iframe reloads or scroll-jumping.</p>\n<blockquote>\"WYSIWYG means What You See Is What You Get. No more making up shite.\"</blockquote>\n<p>Shift+Click on any text, background, or <code data-edit-target=\"typography.mono_font_stack\">code block</code> to instantly jump to the relevant editor panel via the JS interop bridge.</p>".to_string(),
+            url: "#".to_string(),
+            author_name: "Moribund Engine".to_string(),
+        }
+    ]
+}
+
+fn format_posts_for_preview(posts: &[BlogPost], content_variant: &str) -> String {
+    let default_posts = get_default_posts();
+    let posts_to_render = if posts.is_empty() {
+        &default_posts
+    } else {
+        posts
+    };
+
+    match content_variant {
+        "mor_magazine" => {
+            let mut html = String::new();
+            html.push_str("<div class=\"mor-magazine-feed\">");
+            for (i, post) in posts_to_render.iter().enumerate() {
+                let class_name = if i == 0 {
+                    "mor-post hero-post"
+                } else {
+                    "mor-post grid-post"
+                };
+                let img_html = match &post.featured_image {
+                    Some(img) if !img.is_empty() => format!(
+                        "<img class=\"post-thumbnail\" alt=\"{}\" src=\"{}\"/>",
+                        escape_attr(&post.title),
+                        escape_attr(img)
+                    ),
+                    _ => String::new(),
+                };
+                html.push_str(&format!(
+                    r##"<article class="{class_name}" data-edit-target="colors.bg_panel">
+                        {img_html}
+                        <h2 class="post-title" data-edit-target="typography.heading_font_stack"><a href="{url}">{title}</a></h2>
+                        <div class="post-meta" data-edit-target="typography.mono_font_stack">
+                            <span class="sys-date">{date}</span>
+                            {author_span}
+                        </div>
+                        <div class="post-body" data-edit-target="typography.body_font_stack">
+                            {snippet}
+                        </div>
+                    </article>"##,
+                    class_name = class_name,
+                    img_html = img_html,
+                    url = escape_attr(&post.url),
+                    title = escape_html(&post.title),
+                    date = escape_html(&post.date),
+                    author_span = if i == 0 { format!(" | <span class=\"post-author\">{}</span>", escape_html(&post.author_name)) } else { String::new() },
+                    snippet = if i == 0 { &post.body } else { &post.snippet }
+                ));
+            }
+            html.push_str("</div>");
+            html
+        }
+        "mor_masonry" => {
+            let mut html = String::new();
+            html.push_str("<div class=\"mor-masonry-feed\">");
+            for post in posts_to_render {
+                let img_html = match &post.featured_image {
+                    Some(img) if !img.is_empty() => format!(
+                        "<img class=\"post-thumbnail\" alt=\"{}\" src=\"{}\"/>",
+                        escape_attr(&post.title),
+                        escape_attr(img)
+                    ),
+                    _ => String::new(),
+                };
+                html.push_str(&format!(
+                    r##"<article class="mor-post masonry-card" data-edit-target="colors.bg_panel">
+                        {img_html}
+                        <h2 class="post-title" data-edit-target="typography.heading_font_stack"><a href="{url}">{title}</a></h2>
+                        <div class="post-meta" data-edit-target="typography.mono_font_stack">
+                            {date}
+                        </div>
+                        <div class="post-body" data-edit-target="typography.body_font_stack">
+                            {snippet}
+                        </div>
+                    </article>"##,
+                    img_html = img_html,
+                    url = escape_attr(&post.url),
+                    title = escape_html(&post.title),
+                    date = escape_html(&post.date),
+                    snippet = escape_html(&post.snippet)
+                ));
+            }
+            html.push_str("</div>");
+            html
+        }
+        "mor_minimal" => {
+            let mut html = String::new();
+            html.push_str("<div class=\"mor-minimal-feed\">");
+            for post in posts_to_render {
+                let tags_html = if post.tags.is_empty() {
+                    String::new()
+                } else {
+                    let mut links = String::new();
+                    links.push_str("<div class=\"post-tags\">");
+                    for tag in &post.tags {
+                        links.push_str(&format!(
+                            "<a class=\"minimal-tag\" href=\"#\">#{}</a> ",
+                            escape_html(tag)
+                        ));
+                    }
+                    links.push_str("</div>");
+                    links
+                };
+                html.push_str(&format!(
+                    r##"<article class="mor-post minimal-row" data-edit-target="colors.bg_panel">
+                        <div class="post-date">{date}</div>
+                        <h2 class="post-title" data-edit-target="typography.heading_font_stack"><a href="{url}">{title}</a></h2>
+                        {tags_html}
+                    </article>"##,
+                    date = escape_html(&post.date),
+                    url = escape_attr(&post.url),
+                    title = escape_html(&post.title),
+                    tags_html = tags_html
+                ));
+            }
+            html.push_str("</div>");
+            html
+        }
+        _ => {
+            // Standard feed layout (blog_standard)
+            let mut html = String::new();
+            for post in posts_to_render {
+                let tags_html = if post.tags.is_empty() {
+                    String::new()
+                } else {
+                    let links = post
+                        .tags
+                        .iter()
+                        .map(|t| format!("<a href='#'>{}</a>", escape_html(t)))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    format!(" <span class=\"sys-tags\">Tags: {}</span>", links)
+                };
+                let img_html = match &post.featured_image {
+                    Some(img) if !img.is_empty() => format!(
+                        "<img class=\"post-thumbnail\" alt=\"{}\" src=\"{}\"/>",
+                        escape_attr(&post.title),
+                        escape_attr(img)
+                    ),
+                    _ => String::new(),
+                };
+                html.push_str(&format!(
+                    r##"<article class="mor-post" data-edit-target="colors.bg_panel">
+                        {img_html}
+                        <h2 class="post-title" data-edit-target="typography.heading_font_stack"><a href="{url}">{title}</a></h2>
+                        <div class="post-meta" data-edit-target="typography.mono_font_stack">
+                            <span class="sys-date">[{date}]</span>
+                            {tags_html}
+                        </div>
+                        <div class="post-body" data-edit-target="typography.body_font_stack">
+                            {body}
+                        </div>
+                        <div class="mor-pager" style="margin-top: 20px;">
+                            <button class="pager-btn" data-edit-target="buttons.radius">Read More</button>
+                        </div>
+                    </article>"##,
+                    img_html = img_html,
+                    url = escape_attr(&post.url),
+                    title = escape_html(&post.title),
+                    date = escape_html(&post.date),
+                    tags_html = tags_html,
+                    body = post.body
+                ));
+            }
+            html
+        }
+    }
+}
+
 pub fn render_preview_html(
     config: &ThemeConfig,
+    posts: &[BlogPost],
     _preview_mode: PreviewTemplateMode,
     is_dark: bool,
     vfs: &HashMap<String, String>,
@@ -129,6 +312,8 @@ pub fn render_preview_html(
         config,
     );
 
+    let posts_html = format_posts_for_preview(posts, &config.template_pack.content_variant);
+
     let body_markup = format!(
         r##"
 <header class="main-header" data-edit-target="colors.bg_elevated">
@@ -154,7 +339,7 @@ pub fn render_preview_html(
         </div>
     </div>
 </header>
-
+ 
 <div class="mor-workspace" data-edit-target="colors.bg_base">
     <aside class="mor-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
         <div class="panel-header">
@@ -166,26 +351,10 @@ pub fn render_preview_html(
             <div class="widget BlogArchive" id="BlogArchive1" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
         </div>
     </aside>
-
+ 
     <main class="canvas-core">
         <div class="canvas-content">
-            <article class="mor-post" data-edit-target="colors.bg_panel">
-                <h2 class="post-title" data-edit-target="typography.heading_font_stack"><a href="#">WYSIWYG: The Tier 3 Architecture</a></h2>
-                <div class="post-meta" data-edit-target="typography.mono_font_stack">
-                    <span class="sys-date">[24 Oct, 2026]</span>
-                    <span class="sys-tags">Tags: <a href="#">Preview</a>, <a href="#">Architecture</a></span>
-                </div>
-                <div class="post-body" data-edit-target="typography.body_font_stack">
-                    <p>This is a 100% accurate representation of your exported Blogger XML. It maps the <strong>exact CSS class hooks, variables, and DOM structures</strong> used by the Blogger engine, completely eliminating visual guesswork.</p>
-                    <p>Furthermore, Dioxus now runs a <strong>Two-Way DOM Morpher</strong> inside the iframe. Modifying colors, fonts, and text fields in the left/right docks will update the preview instantly without causing destructive iframe reloads or scroll-jumping.</p>
-                    <blockquote>"WYSIWYG means What You See Is What You Get. No more making up shite."</blockquote>
-                    <p>Shift+Click on any text, background, or <code data-edit-target="typography.mono_font_stack">code block</code> to instantly jump to the relevant editor panel via the JS interop bridge.</p>
-                </div>
-                <div class="mor-pager" style="margin-top: 20px;">
-                    <button class="pager-btn" data-edit-target="buttons.radius">Read More</button>
-                    <button class="pager-btn" data-edit-target="buttons.border_width">Share</button>
-                </div>
-            </article>
+            {posts_html}
         </div>
         <footer class="mor-footer" data-edit-target="colors.bg_elevated">
             <div class="footer-sys-info">
@@ -197,7 +366,7 @@ pub fn render_preview_html(
             </div>
         </footer>
     </main>
-
+ 
     <aside class="mor-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
         <div class="panel-header">
             <span data-edit-target="colors.accent">Contents</span>
@@ -215,6 +384,7 @@ pub fn render_preview_html(
         label_title = label_title,
         archive_title = archive_title,
         toc_title = toc_title,
+        posts_html = posts_html
     );
 
     format!(

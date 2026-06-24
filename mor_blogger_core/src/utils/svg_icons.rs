@@ -71,3 +71,23 @@ pub fn is_svg(xml: &str) -> bool {
         None => false,
     }
 }
+
+pub const ICON_JS: &str = "🪠";
+pub const ICON_CSS: &str = "🎨";
+pub const ICON_XML: &str = "🖼️";
+pub const ICON_SETTINGS: &str = "⚙️";
+pub const ICON_PAGE: &str = "📄";
+pub const ICON_CLOSE: &str = "✕";
+
+/// Returns character reference directly. No heap allocation.
+pub fn get_icon_str(tool_type: &str) -> &'static str {
+    match tool_type {
+        "javascript" | "js" => ICON_JS,
+        "css" | "styling" => ICON_CSS,
+        "xml" | "structure" => ICON_XML,
+        "settings" | "workbench" => ICON_SETTINGS,
+        "pages" => ICON_PAGE,
+        _ => "🔧",
+    }
+}
+

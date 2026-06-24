@@ -1,6 +1,6 @@
 // src/shell.rs
 // Modular CSD HeaderBar and Shell container. Zero layout lock-in.
-use crate::ui::shell::shortcut::MorShortcutRoot;
+use crate::ui::layout::shortcut::MorShortcutRoot;
 use dioxus::desktop::tao::window::ResizeDirection;
 use dioxus::desktop::window;
 use dioxus::prelude::*;

@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 use crate::app::state::layout_state::LayoutState;
 use crate::app::state::theme_state::ThemeState;
+use crate::app::state::SiteData;
 use crate::app::vfs::VfsDictionary;
 use mor_blogger_core::config::{MenuLink, ThemeConfig};
 use mor_blogger_core::diagnostics::{check_integrity, DiagnosticResult};
@@ -20,7 +21,7 @@ pub struct RenderState {
 }
 
 impl RenderState {
-    pub fn new(theme: ThemeState, layout: LayoutState) -> Self {
+    pub fn new(theme: ThemeState, layout: LayoutState, site_data: Signal<SiteData>) -> Self {
         let signals = theme.signals;
         let active_preset = theme.active_preset;
 
@@ -142,7 +143,14 @@ impl RenderState {
         let generated_xml = use_memo(move || {
             let config = current_config_for_xml();
             let rendered_xml = render_theme(&config, &*vfs.read());
-            match mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config) {
+            let payload = mor_blogger_core::utils::rehydration::RehydrationPayload::from_config(
+                config.clone(),
+            )
+            .with_vfs(vfs.read().clone());
+            match mor_blogger_core::utils::rehydration::inject_workspace_state(
+                &rendered_xml,
+                &payload,
+            ) {
                 Ok(xml) => xml,
                 Err(err) => {
                     log::error!("Failed to inject rehydration state: {}", err);
@@ -158,6 +166,7 @@ impl RenderState {
         let preview_html = use_memo(move || {
             render_preview_html(
                 &current_config_for_preview(),
+                &site_data.read().posts,
                 preview_template_mode(),
                 is_dark_mode(),
                 &*vfs.read(),

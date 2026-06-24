@@ -1,9 +1,25 @@
+use dioxus::desktop::tao::window::Icon;
 use dioxus::desktop::{Config, LogicalSize, WindowBuilder};
 use dioxus::prelude::*;
 
 mod app;
 mod ui;
+pub mod ui_kit;
 pub mod utils;
+
+/// Caveman pixel extraction.
+/// OS wants raw bytes, not encoded files.
+fn load_app_icon() -> Icon {
+    let img = image::load_from_memory(include_bytes!("../assets/icon.png"))
+        .expect("Failed to load icon from memory")
+        .into_rgba8();
+
+    let (width, height) = img.dimensions();
+    let raw_pixels = img.into_raw();
+
+    Icon::from_rgba(raw_pixels, width, height)
+        .expect("Failed to construct window icon from pixel matrix")
+}
 
 fn main() {
     dioxus_logger::init(dioxus_logger::tracing::Level::INFO).expect("failed to init logger");
@@ -29,7 +45,8 @@ fn main() {
                 .with_title("MorBlogger Theme Editor")
                 .with_inner_size(LogicalSize::new(1280.0, 800.0))
                 .with_decorations(is_native)
-                .with_transparent(!is_native),
+                .with_transparent(!is_native)
+                .with_window_icon(Some(load_app_icon())),
         )
         .with_disable_drag_drop_handler(true);
 
@@ -38,3 +55,5 @@ fn main() {
     // THE FIX: Modern Dioxus 0.7 LaunchBuilder
     LaunchBuilder::new().with_cfg(cfg).launch(app::App);
 }
+// watcher probe 1782216799
+

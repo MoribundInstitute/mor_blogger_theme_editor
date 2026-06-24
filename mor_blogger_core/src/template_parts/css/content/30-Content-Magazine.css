@@ -51,6 +51,17 @@
   margin-bottom: 15px;
 }
 
+.grid-post.mor-grid-pending {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.grid-post.mor-grid-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .mor-magazine-feed { grid-template-columns: 1fr; }

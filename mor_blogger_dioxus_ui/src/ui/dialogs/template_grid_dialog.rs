@@ -1,5 +1,5 @@
 use crate::app::state::ThemeState;
-use crate::ui::components::modal::Modal;
+use crate::ui::dialogs::modal::Modal;
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -58,7 +58,7 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
     ];
     let contents = vec![
         ModuleDef {
-            id: "blog_standard",
+            id: "standard_feed",
             name: "Standard Feed",
             desc: "Chronological vertical list of full posts.",
         },
@@ -107,13 +107,18 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
     ];
     let scripts = vec![
         ModuleDef {
-            id: "mor_panels",
-            name: "Mor Sidebars",
+            id: "mor_collapsible_sidebars",
+            name: "Mor Collapsible Sidebars",
             desc: "Includes the core framework for mobile collapsible sidebars.",
         },
         ModuleDef {
-            id: "minimal",
-            name: "Static Layout",
+            id: "magazine_grid_logic",
+            name: "Magazine Grid Logic",
+            desc: "Adds responsive grid adjustment scripts for magazine layouts.",
+        },
+        ModuleDef {
+            id: "vanilla_base",
+            name: "Vanilla Base",
             desc: "No panel toggle behaviors. Purely static CSS grids.",
         },
     ];

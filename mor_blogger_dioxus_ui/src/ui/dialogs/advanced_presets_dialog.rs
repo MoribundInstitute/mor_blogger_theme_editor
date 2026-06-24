@@ -1,5 +1,5 @@
 use crate::app::state::{RenderState, ThemeState};
-use crate::ui::components::modal::Modal;
+use crate::ui::dialogs::modal::Modal;
 use crate::ui::panels::theme_palette::presets::importers::choose_gtk_theme;
 use dioxus::prelude::*;
 

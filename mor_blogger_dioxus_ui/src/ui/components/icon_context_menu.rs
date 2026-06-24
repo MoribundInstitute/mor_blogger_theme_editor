@@ -1,10 +1,15 @@
 use crate::app::state::{ContextMenuPayload, LayoutState};
 use dioxus::prelude::*;
 
+#[derive(Props, Clone, PartialEq)]
+pub struct IconContextMenuProps {
+    pub payload: ContextMenuPayload,
+}
+
 #[component]
-pub fn IconContextMenu(payload: ContextMenuPayload) -> Element {
+pub fn IconContextMenu(props: IconContextMenuProps) -> Element {
     let mut layout = use_context::<LayoutState>();
-    let target_id = payload.target_id.clone();
+    let target_id = props.payload.target_id.clone();
 
     let friendly_name = target_id
         .strip_prefix("icons.")
@@ -26,7 +31,7 @@ pub fn IconContextMenu(payload: ContextMenuPayload) -> Element {
 
         // Custom context menu container
         div {
-            style: "position: fixed; left: {payload.x}px; top: {payload.y}px; z-index: 9999; background: #16140f; border: 1px solid #3c382f; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); padding: 12px; width: 220px; display: flex; flex-direction: column; gap: 8px; user-select: none;",
+            style: "position: fixed; left: {props.payload.x}px; top: {props.payload.y}px; z-index: 9999; background: #16140f; border: 1px solid #3c382f; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); padding: 12px; width: 220px; display: flex; flex-direction: column; gap: 8px; user-select: none;",
             onclick: move |e| { e.stop_propagation(); },
             oncontextmenu: move |e| { e.prevent_default(); e.stop_propagation(); },
 
@@ -34,7 +39,7 @@ pub fn IconContextMenu(payload: ContextMenuPayload) -> Element {
                 style: "display: flex; flex-direction: column; gap: 2px;",
                 span {
                     style: "font-size: 10px; font-weight: bold; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;",
-                    match payload.kind.as_str() {
+                    match props.payload.kind.as_str() {
                         "svg" => "Icon Context Menu",
                         "ui_typography" => "UI Context Menu",
                         "preview_typography" => "Preview Context Menu",
@@ -49,17 +54,40 @@ pub fn IconContextMenu(payload: ContextMenuPayload) -> Element {
 
             hr { style: "border: 0; border-top: 1px solid var(--border-color); margin: 2px 0 4px 0;" }
 
-            match payload.kind.as_str() {
-                "svg" => rsx! {
-                    button {
-                        class: "editor-mini-button",
-                        style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease;",
-                        onclick: move |_| {
-                            layout.active_icon_picker.set(Some(target_id.clone()));
-                            active_context_menu.set(None);
-                        },
-                        span { style: "font-size: 12px;", "✨" }
-                        span { "Swap Icon..." }
+            match props.payload.kind.as_str() {
+                "svg" => {
+                    let is_dock = target_id == "Theme Palette"
+                        || target_id == "CSS Editor"
+                        || target_id == "JS Editor"
+                        || target_id == "XML Editor"
+                        || target_id == "Site Data";
+                    let is_pinned = layout.is_dock_pinned(&target_id);
+                    rsx! {
+                        if is_dock {
+                            button {
+                                class: "editor-mini-button",
+                                style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease; margin-bottom: 8px;",
+                                onclick: {
+                                    let target_id = target_id.clone();
+                                    move |_| {
+                                        layout.toggle_pinned_dock(&target_id);
+                                        active_context_menu.set(None);
+                                    }
+                                },
+                                span { style: "font-size: 12px;", if is_pinned { "📌" } else { "📍" } }
+                                span { if is_pinned { "Unpin" } else { "Pin to Activity Bar" } }
+                            }
+                        }
+                        button {
+                            class: "editor-mini-button",
+                            style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease;",
+                            onclick: move |_| {
+                                layout.active_icon_picker.set(Some(target_id.clone()));
+                                active_context_menu.set(None);
+                            },
+                            span { style: "font-size: 12px;", "✨" }
+                            span { "Swap Icon..." }
+                        }
                     }
                 },
                 "ui_typography" => rsx! {
@@ -84,6 +112,21 @@ pub fn IconContextMenu(payload: ContextMenuPayload) -> Element {
                         },
                         span { style: "font-size: 12px;", "✍️" }
                         span { "Edit Theme Typography" }
+                    }
+                },
+                "dock" => {
+                    let is_pinned = layout.is_dock_pinned(&target_id);
+                    rsx! {
+                        button {
+                            class: "editor-mini-button",
+                            style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease;",
+                            onclick: move |_| {
+                                layout.toggle_pinned_dock(&target_id);
+                                active_context_menu.set(None);
+                            },
+                            span { style: "font-size: 12px;", "📌" }
+                            span { if is_pinned { "Unpin from Activity Bar" } else { "Pin to Activity Bar" } }
+                        }
                     }
                 },
                 _ => rsx! {

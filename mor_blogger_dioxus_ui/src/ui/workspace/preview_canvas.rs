@@ -146,6 +146,7 @@ pub fn PreviewCanvas(
                     }
 
                     iframe {
+                        key: "mor-preview-frame-stable",
                         id: "mor-preview-frame",
                         class: "preview-iframe",
                         src: "about:blank",

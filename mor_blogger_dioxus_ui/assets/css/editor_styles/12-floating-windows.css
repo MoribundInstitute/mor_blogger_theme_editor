@@ -47,8 +47,8 @@
 }
 
 /* Floating behavior (Triggered via data attributes) */
-.editor-main[data-left-layout="floating"] .editor-left-panel,
-.editor-main[data-right-layout="floating"] .editor-right-panel {
+.editor-main[data-left-layout="floating"] .mor_panel_left,
+.editor-main[data-right-layout="floating"] .mor_panel_right {
   position: absolute;
   z-index: 150;
   width: 440px;
@@ -60,12 +60,12 @@
   will-change: top, left;
 }
 
-.editor-main[data-left-layout="floating"] .editor-left-panel {
+.editor-main[data-left-layout="floating"] .mor_panel_left {
   top: var(--floating-left-y, 20px);
   left: var(--floating-left-x, 20px);
 }
 
-.editor-main[data-right-layout="floating"] .editor-right-panel {
+.editor-main[data-right-layout="floating"] .mor_panel_right {
   top: var(--floating-right-y, 20px);
   right: var(--floating-right-x, 20px);
   left: auto;

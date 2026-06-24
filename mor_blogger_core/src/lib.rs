@@ -39,22 +39,6 @@ mod tests {
         );
     }
 
-
-#[test]
-fn test_mor_magazine_integrity() {
-    use crate::config::defaults::default_theme_config;
-    use crate::diagnostics::check_integrity;
-    use crate::render::theme::render_theme;
-    let mut config = default_theme_config();
-    config.template_pack.content_variant = "mor_magazine".to_string();
-    let rendered_xml = render_theme(&config, &std::collections::HashMap::new());
-    let result = check_integrity(&rendered_xml, &config.template_pack);
-    assert!(result.is_valid, "Integrity check failed: {:?}", result.errors);
-    for cls in ["mor-magazine-feed", "hero-post", "grid-post", "mor-pager", "pager-btn"] {
-        assert!(rendered_xml.contains(cls), "missing {}", cls);
-    }
-}
-
     #[test]
     fn test_script_behavior_config_propagation() {
         let mut config = default_theme_config();

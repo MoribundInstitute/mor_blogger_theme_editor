@@ -3,24 +3,6 @@ use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 use std::collections::HashMap;
 
-pub fn set_icon_slot(config: &mut ThemeConfig, slot: &str, mask: String) {
-    match slot {
-        "icons.panel_close" => config.icons.panel_close = mask,
-        "icons.search" => config.icons.search = mask,
-        "icons.menu" => config.icons.menu = mask,
-        "icons.sidebar_left" => config.icons.sidebar_left = mask,
-        "icons.sidebar_right" => config.icons.sidebar_right = mask,
-        "icons.archive" => config.icons.archive = mask,
-        "icons.label" => config.icons.label = mask,
-        "icons.share" => config.icons.share = mask,
-        "icons.user" => config.icons.user = mask,
-        "icons.comment" => config.icons.comment = mask,
-        "icons.arrow_up" => config.icons.arrow_up = mask,
-        "icons.external_link" => config.icons.external_link = mask,
-        _ => {}
-    }
-}
-
 pub fn build_fresh_export_xml(
     config_toml: &str,
     vfs: &HashMap<String, String>,
@@ -29,7 +11,10 @@ pub fn build_fresh_export_xml(
         .map_err(|err| format!("could not parse TOML: {}", err))?;
 
     let rendered_xml = mor_blogger_core::render::render_theme(&config, vfs);
-    mor_blogger_core::utils::rehydration::inject_state(&rendered_xml, &config)
+    let payload = mor_blogger_core::utils::rehydration::RehydrationPayload::from_config(config)
+        .with_vfs(vfs.clone())
+        .with_config_toml(config_toml);
+    mor_blogger_core::utils::rehydration::inject_workspace_state(&rendered_xml, &payload)
 }
 
 pub fn handle_text_edit(target: &str, val: String, cfg: &str) -> Option<ThemeConfig> {
@@ -74,7 +59,21 @@ pub fn handle_drop_svg(target: &str, content: &str, cfg: &str) -> Option<ThemeCo
     }
     let mask = svg_to_data_uri(content);
     let mut config = toml::from_str::<ThemeConfig>(cfg).unwrap_or_default();
-    set_icon_slot(&mut config, target, mask);
+    match target {
+        "icons.panel_close" => config.icons.panel_close = mask,
+        "icons.search" => config.icons.search = mask,
+        "icons.menu" => config.icons.menu = mask,
+        "icons.sidebar_left" => config.icons.sidebar_left = mask,
+        "icons.sidebar_right" => config.icons.sidebar_right = mask,
+        "icons.archive" => config.icons.archive = mask,
+        "icons.label" => config.icons.label = mask,
+        "icons.share" => config.icons.share = mask,
+        "icons.user" => config.icons.user = mask,
+        "icons.comment" => config.icons.comment = mask,
+        "icons.arrow_up" => config.icons.arrow_up = mask,
+        "icons.external_link" => config.icons.external_link = mask,
+        _ => {}
+    }
     Some(config)
 }
 
@@ -113,25 +112,7 @@ pub fn handle_copy_xml(xml: String, mut status_msg: Signal<String>) {
     status_msg.set("Theme XML copied to clipboard!".to_string());
 }
 
-#[allow(dead_code)]
 pub fn handle_xml_export(xml: String, mut status_msg: Signal<String>) {
-    spawn(async move {
-        match handle_xml_export_to_disk(xml).await {
-            Ok(msg) => status_msg.set(msg),
-            Err(err) => {
-                if err != "Cancelled" {
-                    status_msg.set(err);
-                }
-            }
-        }
-    });
-}
-
-pub fn handle_xml_export_state(
-    render: &crate::app::state::RenderState,
-    mut status_msg: Signal<String>,
-) {
-    let xml = (render.generated_xml)();
     spawn(async move {
         match handle_xml_export_to_disk(xml).await {
             Ok(msg) => status_msg.set(msg),
@@ -156,3 +137,35 @@ pub fn handle_zip_export(xml: String, cfg_str: String, mut status_msg: Signal<St
         }
     });
 }
+
+pub fn persist_asset_editor(
+    theme: crate::app::state::ThemeState,
+    vfs: &HashMap<String, String>,
+    ext: &str,
+) {
+    sync_vfs_to_disk(vfs, ext);
+    theme.commit();
+}
+
+pub fn sync_vfs_to_disk(vfs: &HashMap<String, String>, ext: &str) {
+    for (filename, content) in vfs {
+        if ext == "css" {
+            if filename == "preset_css.css" || !filename.ends_with(".css") {
+                continue;
+            }
+            match mor_blogger_core::utils::fs_bridge::save_custom_css(filename, content) {
+                Ok(path) => log::info!("Successfully synced {} to OS at {}", filename, path.display()),
+                Err(e) => log::error!("Failed to sync {} to OS: {}", filename, e),
+            }
+        } else if ext == "js" {
+            if filename == "custom_js.js" || !filename.ends_with(".js") {
+                continue;
+            }
+            match mor_blogger_core::utils::fs_bridge::save_custom_js(filename, content) {
+                Ok(path) => log::info!("Successfully synced {} to OS at {}", filename, path.display()),
+                Err(e) => log::error!("Failed to sync {} to OS: {}", filename, e),
+            }
+        }
+    }
+}
+

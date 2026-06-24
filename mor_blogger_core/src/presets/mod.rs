@@ -6,7 +6,7 @@
 use crate::config::{BackgroundConfig, ColorConfig, ThemeConfig, TypographyConfig};
 use serde::Deserialize;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
 // Ensure UI compatibility by leaking strings safely only once at boot
@@ -103,11 +103,51 @@ impl TomlPreset {
     }
 }
 
-pub fn get_canonical_presets_dir() -> std::path::PathBuf {
+/// Load a workspace `ThemeConfig` or aesthetic preset TOML (e.g. `theme_presets/mor_retro_mmorpg.toml`)
+/// into a render-ready [`ThemeConfig`].
+pub fn theme_config_from_path(path: &Path) -> Result<ThemeConfig, String> {
+    let contents = fs::read_to_string(path)
+        .map_err(|e| format!("Failed to read '{}': {}", path.display(), e))?;
+
+    if let Ok(config) = toml::from_str::<ThemeConfig>(&contents) {
+        return Ok(config);
+    }
+
+    let toml_preset: TomlPreset = toml::from_str(&contents).map_err(|e| {
+        format!(
+            "Failed to parse '{}' as workspace or preset TOML: {}",
+            path.display(),
+            e
+        )
+    })?;
+
+    let id = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("preset")
+        .to_string();
+
+    let preset = toml_preset.into_preset(id);
+    let mut config = preset.base_config.clone();
+    config.preset_css = preset.preset_css.to_string();
+    config.active_preset_id = Some(preset.id.to_string());
+    Ok(config)
+}
+
+pub fn get_canonical_presets_dir() -> PathBuf {
     let local = Path::new("theme_presets");
     let parent = Path::new("../theme_presets");
 
-    if parent.exists() && !local.exists() {
+    // Antigravity check: Does the local directory actually contain matter?
+    let local_has_files = fs::read_dir(local)
+        .map(|mut iter| iter.any(|entry| {
+            entry.ok()
+                .map(|e| e.path().extension() == Some(std::ffi::OsStr::new("toml")))
+                .unwrap_or(false)
+        }))
+        .unwrap_or(false);
+
+    if !local_has_files && parent.exists() {
         parent.to_path_buf()
     } else {
         local.to_path_buf()

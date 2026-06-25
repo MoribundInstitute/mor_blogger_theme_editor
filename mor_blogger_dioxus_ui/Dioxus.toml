@@ -27,7 +27,6 @@ long_description = "MorBlogger Theme Editor is a Dioxus desktop app for visually
 
 [watcher]
 ignore = [
-    "editor_prefs.json",
     "editor_prefs.toml",
     "layout_prefs.toml",
     "*.txt",

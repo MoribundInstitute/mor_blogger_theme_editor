@@ -51,10 +51,10 @@ The theming is also hype because we have Rust code that converts GTK4 SVGs into 
 
 ## 🚀 Core Capabilities
 
-### 🧩 Modular XML Assembly
-- **No More Monoliths:** Build themes from discrete, manageable template parts (`meta.xml`, `header.xml`, `sidebars.xml`).
-- **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
-- **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
+### 🧩 Building with Blocks (Modular XML Assembly)
+* **No More Giant Files:** Instead of wrestling with one massive 3,000-line template file, you build your theme using small, easy-to-manage blocks like a header, a sidebar, and a footer. 
+* **Clean Code Assembly:** Behind the scenes, the engine takes all your individual style rules and stitches them together perfectly. It keeps the final code lean and prevents messy errors.
+* **Automatic Wiring:** The software handles the boring stuff for you. It automatically connects search engine (SEO) settings, text sizes, and widget spaces without you having to write the code.
 
 ![Theme compile and export pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/theme_compile_pipeline.drawio.png)
 
@@ -62,15 +62,15 @@ The theming is also hype because we have Rust code that converts GTK4 SVGs into 
 
 See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 
-### 🎨 GTK Desktop Integration
-- **Native-Feeling Themes:** Import visual variables directly from legendary Linux themes like Adwaita, Nord, and WhiteSur.
-- **Asset Compilation:** Automatically converts external SVG assets into lightweight, embedded CSS data URIs to eliminate external HTTP requests.
+### 🎨 Stealing Colors from Linux (GTK Desktop Integration)
+* **Match Your Desktop:** If you use Linux, you can import color schemes and visual styles directly from popular desktop themes like Adwaita, Nord, or WhiteSur.
+* **Built-in Graphics:** When you add icons or vector graphics (SVGs), the software converts them into text and embeds them directly into your theme code. This makes your blog load much faster because it doesn't have to ask another website to provide the images.
 
-### 🖥️ Fluid Workspace UI
-- **Modular UI Kit:** Powered by our custom `mor_rust_dioxus_ui_kit` running on Dioxus 0.7.
-- **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
-- **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
-- **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
+### 🖥️ The Visual Workspace (Fluid UI)
+* **Lightweight Interface:** The app's interface is built on a fast, modern toolkit called Dioxus 0.7.
+* **Flexible Window Borders:** The app's window borders magically adapt to look perfect whether you are on Windows, a Mac, or using a specialized, keyboard-only Linux setup.
+* **Smart Code Locator:** When you click on a visual part of your theme (like the header), the code editor instantly scrolls to and highlights the exact line of code you need to change. 
+* **Instant Updates:** The program runs on Rust, meaning your live previews and edits update instantaneously without any annoying loading screens.
 
 ![Workspace UI layout](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/workspace_ui_layout.drawio.png)
 
@@ -279,22 +279,94 @@ before importing generated XML into Blogger.
 
 https://github.com/MoribundInstitute/mor_blogger_theme_editor
 
+# 🧩 BYOF Socket & Plug UI Pattern – Plain English Breakdown
+
+This diagram describes a smart way to build software called the **"BYOF" (Bring Your Own Functionality) pattern**. 
+
+Instead of building one big, messy program, the developers split the app into two main parts: a **Socket** (the skeleton) and a **Plug** (the brains). 
+
+Here is what all the technical terms in the diagram actually mean:
+
+---
+
+## 1. The Socket (Left Side - Blue Box)
+**Tagline:** *"The generic, reusable skeleton."*
+
+This is the core engine of the program. It doesn't care *what* you are building; it just knows *how* to manage windows, tabs, and panels. 
+
+**Jargon Breakdown:**
+
+- **`MorLayoutChrome`** → **"The Main Window"** 
+  - *Plain English:* This is the base application window that opens on your screen. It holds everything else together.
+
+- **`DockZone + dock_chrome`** → **"The Docking System"** 
+  - *Plain English:* This is the software that lets you organize panels, tabs, and sidebars. It decides how borders are drawn, how tabs stack up, and where grids sit on the page. 
+
+- **`ActivityBar + FloatingWindowManager`** → **"The Navigation & Popup System"** 
+  - *Plain English:* The ActivityBar is the skinny sidebar with buttons (like "Save" or "Settings"). The FloatingWindowManager handles windows that can be dragged anywhere on the screen (like a floating preview pane).
+
+---
+
+## 2. The Plug (Right Side - Green Box)
+**Tagline:** *"The domain-specific brains."*
+
+This is where the actual *content* lives. The Socket provides the empty rooms; the Plug decides what furniture goes inside them.
+
+**Jargon Breakdown:**
+
+- **`BloggerWorkspace (current)`** → **"The Blogger Editor"** 
+  - *Plain English:* This is the currently installed plug. It contains all the specific code needed to edit Google Blogger themes.
+
+- **`Preview · export · site data`** → **"Blogger-specific logic"** 
+  - *Plain English:* These are the actual tools you use: generating live previews of your theme, exporting the final code, and pulling data from Blogger. 
+
+- **`NeocitiesWorkspace (fork example)`** → **"A Future Use Case"** 
+  - *Plain English:* The dotted outline shows a potential future plan. Someone could take the exact same **Socket** (blue box), swap out the Blogger logic, and create a theme editor for **Neocities** (a different website platform) without having to re-write the whole app.
+
+---
+
+## 3. The Yellow Box (Bottom Center)
+**Tagline:** *"The core promise of this architecture."*
+
+**Text:** *"Swap the plug, keep the socket — zero structural friction for forks."*
+
+- **What "Structural Friction" means:** In regular programming, if you want to fork (copy and modify) an app, you usually have to dig through thousands of lines of messy code to change even a tiny thing. That is a painful, error-prone process (friction).
+- **What this diagram promises:** Because the app is split into a "Socket" and a "Plug", a developer can copy the project, delete the green "Blogger" box, and write a brand-new green box for a different platform. The blue "Socket" doesn't change at all, meaning the new app gets a polished, fully-working interface for free. No friction!
+
+---
+
+## 4. The Connector: `"slots into"`
+
+- **What it means:** The arrow shows that the right side (Plug) physically "plugs in" to the left side (Socket).
+- **How it works:** The Socket leaves empty holes in its interface. The Plug provides specific tools to fill those holes. When you click a button on the Socket's activity bar, it triggers an action inside the Plug.
+
+---
+
+## 🚀 Why Build Software This Way?
+
+1. **Less work for developers:** You only build the complex window engine (Socket) once.
+2. **Easy to fork:** Anyone can copy this project to build a similar app for a different website (like Neocities or WordPress) without breaking the app.
+3. **Bug-free updates:** Since the UI engine and the content logic are separate, fixing a bug in the Blogger code won't break the drag-and-drop window system.
+
+---
 
 ---
 
 ## Architecture: Bring Your Own Frontend (BYOF)
 
-This project adheres to a strict "Bring Your Own Frontend" (BYOF) modular architecture. We believe the logic that generates a theme should not be permanently bolted to the interface used to design it.
+This project uses a "Bring Your Own Frontend" (BYOF) design. This simply means we split the software into two main parts: a **Socket** (the skeleton) and a **Plug** (the brains). 
+
+We do this so the logic that builds a blog theme isn't permanently glued to the interface you use to design it.
 
 ![BYOF crate boundaries](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/byof_crates.drawio.png)
 
-The workspace is divided into distinct crates with hard compile-time boundaries:
+### The Three Main Pieces
 
-* **`mor_blogger_core` (The Headless Engine):** The pure logic heart of the compiler. It handles TOML parsing, XML template resolution, CSS generation, and strict structural validation. It has zero GUI, OS, or filesystem-dialog dependencies.
-* **`mor_blogger_dioxus_ui` (The Visual Workspace):** A Dioxus-powered graphical interface. It features a true "Socket and Plug" design:
-  * **The Socket (`MorLayoutChrome`):** A generic window shell that draws borders, dock zones, tabs, and layout boundaries.
-  * **The Plug (`BloggerWorkspace`):** The Blogger-specific logic module that slots into the center workspace. If a developer forks this project for Neocities, they simply rip out the Blogger plug and insert their own. Zero structural friction.
-* **`mor_blogger_cli` (`mbt`):** A lightweight, native terminal interface. Built for power users, it wraps the core engine in a fast, standard Unix command surface. Use it to scaffold projects, validate XML syntax, or integrate theme builds into automated CI/CD pipelines without ever opening a window.
+* **1. The Engine (`mor_blogger_core`):** This is the pure logic heart of the software. It reads your settings, writes the CSS, and checks for errors. It has no buttons, no windows, and no interface at all.
+* **2. The Visual Workspace (`mor_blogger_dioxus_ui`):** This is the graphical interface you actually click on and use. It uses a "Socket and Plug" design:
+  * **The Socket (`MorLayoutChrome`):** The generic skeleton. It manages the main window, organizes your tabs, and draws the sidebars.
+  * **The Plug (`BloggerWorkspace`):** The specific brains for Blogger. It contains the tools to preview and export Blogger themes. Because of this design, someone could easily copy this project, remove the Blogger plug, and insert a new plug to make a theme editor for a different website like Neocities—without having to rebuild the whole app from scratch.
+* **3. The Command Line (`mor_blogger_cli` / `mbt`):** A lightweight terminal tool. For power users who prefer typing commands over clicking buttons, this lets you validate code or build themes directly from your computer's terminal.
 
 ![Socket and plug UI pattern](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/socket_plug_ui.drawio.png)
 
@@ -384,17 +456,19 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
 
 ### The Blogger Limitation
 
-Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font files. You cannot upload `.ttf`, `.woff`, or `.woff2` to Blogger and reference them with a local path. Any custom typeface must arrive via an external URL—either a CDN `@import` or a remote `@font-face` `src`.
+Google Blogger only allows you to upload CSS code to your theme file. It does not allow you to upload raw font files (like `.ttf` or `.woff2`) directly to their servers. 
+
+Because of this, if you want to use a custom font, your theme has to load it from an external website link.
 
 ![Blogger font constraints](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/blogger_font_constraints.drawio.png)
 
 ### The Privacy Alternative
 
-[fonts.bunny.net](https://fonts.bunny.net) mirrors the Google Fonts catalog without tracking pixels, referrer logging, or IP retention. It is a drop-in, GDPR-compliant substitute for `fonts.googleapis.com`.
+Many people use Google Fonts, but those can track your readers. Instead, we recommend using [fonts.bunny.net](https://fonts.bunny.net). It has the exact same font catalog as Google, but it strips out the tracking pixels and IP logging, keeping your readers' privacy safe.
 
 ![Privacy-friendly font path via fonts.bunny.net](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/fonts_bunny_privacy_path.drawio.png)
 
-1. Pick your family at [fonts.bunny.net](https://fonts.bunny.net).
+1. Pick your font family at [fonts.bunny.net](https://fonts.bunny.net).
 2. Copy the generated `@import` rule.
 3. Paste it into the **MorBlogger Custom CSS** panel.
 
@@ -406,15 +480,17 @@ Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font f
 }
 ```
 
-The MorBlogger export pipeline injects this block into the compiled `<b:skin>` stylesheet. No Google Fonts request hits your readers' browsers.
+When you export your theme, the app automatically drops this code into the final file. No Google tracking requests will ever hit your readers' browsers.
 
-![Font normalization funnel](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/font_normalization_funnel.drawio.png)
+All fonts you put into the app automatically pass through our internal engine to ensure they are formatted correctly — see DECISIONS.md.
 
-All UI font inputs (typed names, drag-drop files, CDN rules) coerce to a font name string and pass through `resolve_font_stack()` in `mor_blogger_core` — see [DECISIONS.md](../DECISIONS.md).
+### Hosting Your Own Fonts
 
-### Self-Hosting
+If you bought a specific font or are using a rare one not found on Bunny Fonts, you have to upload the actual font file (like `.ttf`) to a web host yourself.
 
-For fonts not on Bunny or Google—proprietary brand typefaces, niche libre fonts, or files you have licensed—you must host the `.ttf` (or `.woff2`) on a **CORS-enabled** static server. [GitHub Pages](https://pages.github.com/), Cloudflare R2, or any bucket with `Access-Control-Allow-Origin: *` works.
+**The Security Padlock Problem:** Some web hosts put a "security padlock" (called CORS) on their files to stop other websites from stealing their bandwidth. If you upload your font file to a strict host, it will silently fail to load on your blog, and your browser will just show a boring default font instead.
+
+To avoid this, we recommend uploading your font files to a free GitHub Pages account, as they leave the padlock open by default.
 
 ```css
 @font-face {
@@ -430,7 +506,7 @@ For fonts not on Bunny or Google—proprietary brand typefaces, niche libre font
 }
 ```
 
-Paste the `@font-face` block and your `--font-*` overrides into the **MorBlogger Custom CSS** panel. Verify the URL returns `200` and the correct `Content-Type` (`font/ttf` or `font/woff2`) before exporting. A missing CORS header or wrong MIME type silently falls back to the system font stack in most browsers.
+Just paste the `@font-face` block and your typography overrides into the MorBlogger Custom CSS panel, and the app will handle the rest.
 
 ---
 

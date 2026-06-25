@@ -8,6 +8,8 @@ pub mod diagnostics_dock;
 pub mod plugin_manager_dock;
 pub mod css_builder_dock;
 pub mod js_builder_dock;
+pub mod smart_code_dock;
+pub mod template_editor_dock;
 
 pub use asset_editor_dock::{
     resolve_theme_dependencies, resolve_workbench_dependencies, AssetEditorDock,
@@ -21,3 +23,4 @@ pub use diagnostics_dock::DiagnosticsDock;
 pub use plugin_manager_dock::PluginManagerDock;
 pub use css_builder_dock::CssBuilderDock;
 pub use js_builder_dock::JsBuilderDock;
+pub use template_editor_dock::TemplateModulesDock;

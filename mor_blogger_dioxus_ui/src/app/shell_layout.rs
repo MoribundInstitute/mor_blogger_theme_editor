@@ -4,10 +4,9 @@ use crate::app::state::{
 };
 use crate::ui::components::icon_context_menu::IconContextMenu;
 use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, IconPreset, IconSiteData, IconXml};
-use crate::ui::docks::TemplateModulesDock;
 use crate::ui::layout::docks::{
     CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock, XmlEditorDock,
-    DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock,
+    DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock, TemplateModulesDock,
 };
 use crate::ui::panels::quick_launch_bar::LaunchButton;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;

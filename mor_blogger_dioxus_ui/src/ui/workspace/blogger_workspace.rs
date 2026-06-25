@@ -15,7 +15,7 @@ use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 use super::module_workbench::ModuleWorkbench;
 use super::static_page_editor::StaticPageEditor;
 use crate::ui::components::code_editor::CodeEditor;
-use crate::ui::docks::smart_code_dock::SmartCodeDock;
+use crate::ui::layout::docks::smart_code_dock::SmartCodeDock;
 use crate::ui::layout::main_pane::MainPane;
 
 const PICKER_ICONS: [(&str, &str); 15] = [

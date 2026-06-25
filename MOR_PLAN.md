@@ -21,7 +21,7 @@
 * **Task 2: Menu Bar Finalization:** Ensure all global actions (Open Project, Save Project, Export XML) strictly fire from `src/ui/shell/menu_bar.rs` using the newly defined keyboard shortcuts.
 
 ### Phase 13: Persistent User Preferences
-* **Task 1: Disk I/O for Keybinds:** Expand `editor_prefs.json` serialization to capture user-customized keybinds.
+* **Task 1: Disk I/O for Keybinds:** Expand `editor_prefs.toml` serialization to capture user-customized keybinds.
 * **Task 2: The Interceptor:** Create a listener UI within the Shortcuts Modal that allows a user to click a shortcut row, press a new combination, and overwrite the default `ShortcutMeta.keys` string.
 
 ---

@@ -20,3 +20,19 @@ target
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 /target
+
+# Local editor preferences (runtime-generated)
+editor_prefs.json
+mor_blogger_dioxus_ui/editor_prefs.json
+
+# Dev scratch: grep output, CSS dumps, accidental files
+grep_*.txt
+css_native_matches.txt
+combined.css
+sys
+ROUTE:*
+
+# Build outputs (test fixtures under build/fixtures/ stay tracked)
+build/proof/
+build/*.xml
+build/restored_vfs/

@@ -1,7 +1,7 @@
 ## 🤝 Contributing
 The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium or feature it on the [Theme Gallery](https://mor-theme-compendium.blogspot.com/).
 
-![Contributing a theme preset](docs/diagrams/contributing_preset_flow.drawio.png)
+![Contributing a theme preset](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/contributing_preset_flow.drawio.png)
 
 To leave naming space open for the community (so we don't hog generic names like "Modern Editorial" or "Web 2.0"), the Moribund Institute reserves the `mor-` prefix for our official theme releases. 
 

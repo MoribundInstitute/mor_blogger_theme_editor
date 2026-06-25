@@ -2,7 +2,7 @@
 
 Moribund Architect can steal colors, borders, and UI icons directly from native Linux GTK Desktop themes and convert them into Blogger templates.
 
-![GTK theme import flow](docs/diagrams/gtk_import_flow.drawio.png)
+![GTK theme import flow](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/gtk_import_flow.drawio.png)
 
 See also: [GTK Theme Parsing](docs/GTK_PARSER.md)
 

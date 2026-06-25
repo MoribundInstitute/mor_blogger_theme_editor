@@ -5,9 +5,9 @@
 - **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
 - **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
 
-![Theme compile and export pipeline](docs/diagrams/theme_compile_pipeline.drawio.png)
+![Theme compile and export pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/theme_compile_pipeline.drawio.png)
 
-![CSS assembly pipeline](docs/diagrams/css_assembly_pipeline.drawio.png)
+![CSS assembly pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/css_assembly_pipeline.drawio.png)
 
 See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 
@@ -21,6 +21,6 @@ See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 - **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
-![Workspace UI layout](docs/diagrams/workspace_ui_layout.drawio.png)
+![Workspace UI layout](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/workspace_ui_layout.drawio.png)
 
-![Dioxus state, docks, and ThemeSignals](docs/diagrams/dioxus_app_architecture.drawio.png)
+![Dioxus state, docks, and ThemeSignals](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/dioxus_app_architecture.drawio.png)

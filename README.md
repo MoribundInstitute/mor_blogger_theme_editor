@@ -43,7 +43,7 @@ Editing a custom Blogger theme means wrestling with a monolithic, 3,000-line `te
 
 The MorBlogger GUI Theme Builder replaces the monolith with a component-driven pipeline. You work visually with structured modules in a desktop UI. When you are ready, the Rust engine safely compiles your palettes, typography, and modular CSS into a single bulletproof XML file, matching HTML pages, or a ZIP archive containing the whole lot, ready for upload.
 
-![Monolith vs modular pipeline](docs/diagrams/monolith_vs_modular.drawio.png)
+![Monolith vs modular pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/monolith_vs_modular.drawio.png)
 
 The theming is also hype because we have Rust code that converts GTK4 SVGs into Data URIs. Then, with a bit of behind-the-scenes CSS magic, we can make all sorts of SVG whatnot appear on your blog. I think we could get it to work for these later too: [GNOME-Look SVG Themes](https://www.gnome-look.org/browse?cat=277&ord=rating).
 
@@ -56,9 +56,9 @@ The theming is also hype because we have Rust code that converts GTK4 SVGs into 
 - **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
 - **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
 
-![Theme compile and export pipeline](docs/diagrams/theme_compile_pipeline.drawio.png)
+![Theme compile and export pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/theme_compile_pipeline.drawio.png)
 
-![CSS assembly pipeline](docs/diagrams/css_assembly_pipeline.drawio.png)
+![CSS assembly pipeline](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/css_assembly_pipeline.drawio.png)
 
 See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 
@@ -72,9 +72,9 @@ See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 - **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
-![Workspace UI layout](docs/diagrams/workspace_ui_layout.drawio.png)
+![Workspace UI layout](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/workspace_ui_layout.drawio.png)
 
-![Dioxus state, docks, and ThemeSignals](docs/diagrams/dioxus_app_architecture.drawio.png)
+![Dioxus state, docks, and ThemeSignals](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/dioxus_app_architecture.drawio.png)
 
 ---
 
@@ -82,7 +82,7 @@ See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
 
 Moribund Architect can steal colors, borders, and UI icons directly from native Linux GTK Desktop themes and convert them into Blogger templates.
 
-![GTK theme import flow](docs/diagrams/gtk_import_flow.drawio.png)
+![GTK theme import flow](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/gtk_import_flow.drawio.png)
 
 See also: [GTK Theme Parsing](docs/GTK_PARSER.md)
 
@@ -220,7 +220,7 @@ mbt build
 mbt bundle
 ```
 
-![GUI and CLI development workflow](docs/diagrams/dev_workflow.drawio.png)
+![GUI and CLI development workflow](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/dev_workflow.drawio.png)
 
 ---
 
@@ -286,7 +286,7 @@ https://github.com/MoribundInstitute/mor_blogger_theme_editor
 
 This project adheres to a strict "Bring Your Own Frontend" (BYOF) modular architecture. We believe the logic that generates a theme should not be permanently bolted to the interface used to design it.
 
-![BYOF crate boundaries](docs/diagrams/byof_crates.drawio.png)
+![BYOF crate boundaries](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/byof_crates.drawio.png)
 
 The workspace is divided into distinct crates with hard compile-time boundaries:
 
@@ -296,7 +296,7 @@ The workspace is divided into distinct crates with hard compile-time boundaries:
   * **The Plug (`BloggerWorkspace`):** The Blogger-specific logic module that slots into the center workspace. If a developer forks this project for Neocities, they simply rip out the Blogger plug and insert their own. Zero structural friction.
 * **`mor_blogger_cli` (`mbt`):** A lightweight, native terminal interface. Built for power users, it wraps the core engine in a fast, standard Unix command surface. Use it to scaffold projects, validate XML syntax, or integrate theme builds into automated CI/CD pipelines without ever opening a window.
 
-![Socket and plug UI pattern](docs/diagrams/socket_plug_ui.drawio.png)
+![Socket and plug UI pattern](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/socket_plug_ui.drawio.png)
 
 Deep dive: [Architecture Overview](docs/ARCHITECTURE.md)
 
@@ -305,13 +305,13 @@ Deep dive: [Architecture Overview](docs/ARCHITECTURE.md)
 ## 🌐 Ecosystem & Live Demos
 The Architect is part of a larger ecosystem of tools and live examples:
 
-![MorBlogger ecosystem map](docs/diagrams/ecosystem_map.drawio.png)
+![MorBlogger ecosystem map](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/ecosystem_map.drawio.png)
 
 ### Core Libraries
 - [MOR UI Kit](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
 - [Theme Compendium](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
 
-![Compendium and plugin hub](docs/diagrams/compendium_plugin_hub.drawio.png)
+![Compendium and plugin hub](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/compendium_plugin_hub.drawio.png)
 
 ### Live Production Sites
 See the exported themes running live on Blogger's infrastructure:
@@ -324,7 +324,7 @@ See the exported themes running live on Blogger's infrastructure:
 - **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
 - **Export Safety:** Prevents broken XML from ever reaching your clipboard.
 
-![Real-time diagnostics and export safety](docs/diagrams/diagnostics_flow.drawio.png)
+![Real-time diagnostics and export safety](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/diagnostics_flow.drawio.png)
 
 
 ---
@@ -337,7 +337,7 @@ The Architect is designed to be extensible. Whether you want to understand the r
 - [Creating a Theme Preset](docs/THEME_CREATION.md) — Tokens, palettes, and compendium submission.
 - [GTK Theme Parsing](docs/GTK_PARSER.md) — How Linux desktop themes become Blogger variables.
 
-Editable diagram sources live in [`docs/diagrams/`](docs/diagrams/).
+Editable diagram sources live in the atlas [`diagrams/shared/`](https://github.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/tree/main/diagrams/shared) folder (canonical copy).
 
 ### Codebase atlas (contributors)
 
@@ -361,7 +361,7 @@ Need assets or reference material for your theme? Use these external tools:
 ## 🤝 Contributing
 The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium or feature it on the [Theme Gallery](https://mor-theme-compendium.blogspot.com/).
 
-![Contributing a theme preset](docs/diagrams/contributing_preset_flow.drawio.png)
+![Contributing a theme preset](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/contributing_preset_flow.drawio.png)
 
 To leave naming space open for the community (so we don't hog generic names like "Modern Editorial" or "Web 2.0"), the Moribund Institute reserves the `mor-` prefix for our official theme releases. 
 
@@ -386,13 +386,13 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
 
 Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font files. You cannot upload `.ttf`, `.woff`, or `.woff2` to Blogger and reference them with a local path. Any custom typeface must arrive via an external URL—either a CDN `@import` or a remote `@font-face` `src`.
 
-![Blogger font constraints](docs/diagrams/blogger_font_constraints.drawio.png)
+![Blogger font constraints](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/blogger_font_constraints.drawio.png)
 
 ### The Privacy Alternative
 
 [fonts.bunny.net](https://fonts.bunny.net) mirrors the Google Fonts catalog without tracking pixels, referrer logging, or IP retention. It is a drop-in, GDPR-compliant substitute for `fonts.googleapis.com`.
 
-![Privacy-friendly font path via fonts.bunny.net](docs/diagrams/fonts_bunny_privacy_path.drawio.png)
+![Privacy-friendly font path via fonts.bunny.net](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/fonts_bunny_privacy_path.drawio.png)
 
 1. Pick your family at [fonts.bunny.net](https://fonts.bunny.net).
 2. Copy the generated `@import` rule.
@@ -408,7 +408,7 @@ Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font f
 
 The MorBlogger export pipeline injects this block into the compiled `<b:skin>` stylesheet. No Google Fonts request hits your readers' browsers.
 
-![Font normalization funnel](docs/diagrams/font_normalization_funnel.drawio.png)
+![Font normalization funnel](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/font_normalization_funnel.drawio.png)
 
 All UI font inputs (typed names, drag-drop files, CDN rules) coerce to a font name string and pass through `resolve_font_stack()` in `mor_blogger_core` — see [DECISIONS.md](../DECISIONS.md).
 
@@ -436,7 +436,7 @@ Paste the `@font-face` block and your `--font-*` overrides into the **MorBlogger
 
 ## 🤖 AI & LLM Integration (Strictly Opt-In)
 
-![MCP integration architecture](docs/diagrams/mcp_integration.drawio.png)
+![MCP integration architecture](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/mcp_integration.drawio.png)
 
 For developers and power users who want AI assistance without adding bloated Electron apps or embedded runtimes to the GUI, we maintain a standalone, headless MCP (Model Context Protocol) server.
 

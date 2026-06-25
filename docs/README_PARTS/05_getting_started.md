@@ -123,7 +123,7 @@ mbt build
 mbt bundle
 ```
 
-![GUI and CLI development workflow](docs/diagrams/dev_workflow.drawio.png)
+![GUI and CLI development workflow](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/dev_workflow.drawio.png)
 
 ---
 

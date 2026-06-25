@@ -6,7 +6,7 @@ The Architect is designed to be extensible. Whether you want to understand the r
 - [Creating a Theme Preset](docs/THEME_CREATION.md) — Tokens, palettes, and compendium submission.
 - [GTK Theme Parsing](docs/GTK_PARSER.md) — How Linux desktop themes become Blogger variables.
 
-Editable diagram sources live in [`docs/diagrams/`](docs/diagrams/).
+Editable diagram sources live in the atlas [`diagrams/shared/`](https://github.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/tree/main/diagrams/shared) folder (canonical copy).
 
 ### Codebase atlas (contributors)
 

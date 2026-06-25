@@ -1,6 +1,6 @@
 ## 🤖 AI & LLM Integration (Strictly Opt-In)
 
-![MCP integration architecture](docs/diagrams/mcp_integration.drawio.png)
+![MCP integration architecture](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/mcp_integration.drawio.png)
 
 For developers and power users who want AI assistance without adding bloated Electron apps or embedded runtimes to the GUI, we maintain a standalone, headless MCP (Model Context Protocol) server.
 

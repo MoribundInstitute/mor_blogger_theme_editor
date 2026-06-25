@@ -1,5 +1,7 @@
 ## 🤖 AI & LLM Integration (Strictly Opt-In)
 
+![MCP integration architecture](docs/diagrams/mcp_integration.drawio.png)
+
 For developers and power users who want AI assistance without adding bloated Electron apps or embedded runtimes to the GUI, we maintain a standalone, headless MCP (Model Context Protocol) server.
 
 By running the **MorBlogger MCP Engine**, you can connect your CLI agent (like Antigravity or Grok) or desktop IDE directly to the MorBlogger core. The AI can read your theme manifests, respect your structural constraints, and hot-reload your active UI workspace. 

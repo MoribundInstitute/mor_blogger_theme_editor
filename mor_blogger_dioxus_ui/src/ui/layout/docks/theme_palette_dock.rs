@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::app::state::{ContextMenuPayload, DockPosition, LayoutState};
 use crate::app::theme_signals::ThemeSignals;
 use crate::ui::components::accordion::EditorAccordion;
-use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
+use crate::ui::components::dock_chrome::DockChrome;
 use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
@@ -105,49 +105,71 @@ const PANE_DRAG_JS: &str = r#"
 "#;
 
 const PANE_RESIZE_JS: &str = r#"
-(function() {
-    if (window.__morPaneResizeInstalled) return;
-    window.__morPaneResizeInstalled = true;
-    document.addEventListener('pointerdown', function(e) {
+(function () {
+    if (window.__morCorePaneResizeInstalled) return;
+    window.__morCorePaneResizeInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
         const resizer = e.target.closest('.pane-resizer');
         if (!resizer) return;
-        e.preventDefault();
-        const isLeft = resizer.classList.contains('pane-resizer-right');
-        const startX = e.clientX;
+
         const panel = resizer.closest('.mor_panel_left, .mor_panel_right');
+        if (!panel) return;
+
+        e.preventDefault();
+
+        const isLeft = panel.classList.contains('mor_panel_left');
+        const varWidth = isLeft ? '--left-pane-width' : '--right-pane-width';
+        const startX = e.clientX;
         const startWidth = panel.getBoundingClientRect().width;
-        
-        const onMove = function(moveEvt) {
+
+        const onMove = function (moveEvt) {
             const dx = moveEvt.clientX - startX;
-            const newWidth = isLeft ? startWidth + dx : startWidth - dx;
-            const clamped = Math.max(200, Math.min(newWidth, window.innerWidth / 2.5));
-            const varName = isLeft ? '--left-pane-width' : '--right-pane-width';
-            document.documentElement.style.setProperty(varName, clamped + 'px');
+            const newWidth = isLeft ? (startWidth + dx) : (startWidth - dx);
+            const clamped = Math.max(220, Math.min(newWidth, 600));
+            document.documentElement.style.setProperty(varWidth, clamped + 'px');
         };
-        const onUp = function() {
+
+        const onUp = function () {
             document.removeEventListener('pointermove', onMove);
             document.removeEventListener('pointerup', onUp);
         };
+
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
     });
 })();
 "#;
 
+#[derive(Props, Clone, PartialEq)]
+pub struct ThemePaletteDockProps {
+    pub active_tab: Signal<&'static str>,
+    pub signals: ThemeSignals,
+    pub active_preset: Signal<Option<&'static str>>,
+    pub show_preview: Signal<bool>,
+    pub current_config: ThemeConfig,
+    pub on_apply_theme: EventHandler<ThemeConfig>,
+    pub show_undocked_presets: Signal<bool>,
+    pub show_undocked_pages: Signal<bool>,
+    pub show_advanced_glow: Signal<bool>,
+    pub preview_html: Signal<String>,
+    pub base_preview_html: ReadSignal<String>,
+}
+
 #[component]
-pub fn ThemePaletteDock(
-    active_tab: Signal<&'static str>,
-    signals: ThemeSignals,
-    active_preset: Signal<Option<&'static str>>,
-    show_preview: Signal<bool>,
-    current_config: ThemeConfig,
-    on_apply_theme: EventHandler<ThemeConfig>,
-    show_undocked_presets: Signal<bool>,
-    show_undocked_pages: Signal<bool>,
-    show_advanced_glow: Signal<bool>,
-    mut preview_html: Signal<String>,
-    base_preview_html: ReadSignal<String>,
-) -> Element {
+pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
+    let active_tab = props.active_tab;
+    let signals = props.signals;
+    let active_preset = props.active_preset;
+    let show_preview = props.show_preview;
+    let current_config = props.current_config;
+    let on_apply_theme = props.on_apply_theme;
+    let show_undocked_presets = props.show_undocked_presets;
+    let show_undocked_pages = props.show_undocked_pages;
+    let show_advanced_glow = props.show_advanced_glow;
+    let mut preview_html = props.preview_html;
+    let base_preview_html = props.base_preview_html;
+
     let _ = show_preview;
     let mut layout = use_context::<LayoutState>();
     let pos = (layout.theme_palette_pos)();
@@ -162,73 +184,22 @@ pub fn ThemePaletteDock(
         return rsx! { div { style: "display: none;" } };
     }
 
-    let header_actions = rsx! {
-        div { class: "floating-editor-window-actions",
-            if pos != DockPosition::mor_panel_left {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Dock Left",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("theme", DockPosition::mor_panel_left);
-                    },
-                    IconDockLeft {}
-                }
-            }
-            if pos != DockPosition::mor_panel_right {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Dock Right",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("theme", DockPosition::mor_panel_right);
-                    },
-                    IconDockRight {}
-                }
-            }
-            if pos != DockPosition::Floating {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Float Window",
-                    onclick: move |_| {
-                        layout.theme_palette_pos.set(DockPosition::Floating);
-                    },
-                    IconFloat {}
-                }
-            }
-            button {
-                class: "editor-mini-button",
-                style: "display: flex; align-items: center; padding: 4px;",
-                title: "Close",
-                onclick: move |_| layout.theme_palette_pos.set(DockPosition::Hidden),
-                IconClose {}
-            }
-        }
-    };
+    rsx! {
+        crate::ui_kit::MorPanelWrapper {
+            position: pos,
+            default_position: DockPosition::mor_panel_left,
+            script { dangerous_inner_html: "{PANE_DRAG_JS}" }
+            script { dangerous_inner_html: "{PANE_RESIZE_JS}" }
+            style { "{LEFT_PANE_CSS}" }
 
-    let inner_content = rsx! {
-        script { dangerous_inner_html: "{PANE_DRAG_JS}" }
-        script { dangerous_inner_html: "{PANE_RESIZE_JS}" }
-        style { "{LEFT_PANE_CSS}" }
-
-        if pos == DockPosition::Floating {
-            div {
-                class: "floating-editor-window-bar",
-                div {
-                    class: "floating-editor-grip-group",
-                    span { class: "floating-editor-grip", style: "display: flex; align-items: center;", IconGrip {} }
-                    span {
-                        class: "floating-editor-title",
-                        "Theme Palette"
-                    }
-                }
-                {header_actions}
-            }
-        } else {
-            div { class: "editor-panel-header",
-                h2 {
-                    class: "editor-panel-title",
+            DockChrome {
+                title: "Theme Palette".to_string(),
+                dock_id: "theme".to_string(),
+                position: pos,
+                on_close: move |_| {
+                    layout.theme_palette_pos.set(DockPosition::Hidden);
+                },
+                div { class: "editor-panel-tabs",
                     oncontextmenu: move |evt| {
                         evt.prevent_default();
                         evt.stop_propagation();
@@ -240,108 +211,95 @@ pub fn ThemePaletteDock(
                             target_id: "ui-header".to_string(),
                         }));
                     },
-                    "Theme Palette"
-                }
-                {header_actions}
-            }
-        }
+                    EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,
+                        presets::PresetsPanel {
+                            is_embedded: true,
+                            active_preset,
+                            signals,
+                            current_config: current_config.clone(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                on_apply_theme.call(new_config);
+                            },
+                            show_undocked_presets,
+                        }
+                    }
 
-        div { class: "editor-panel-tabs",
-            EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,
-                presets::PresetsPanel {
-                    is_embedded: true,
-                    active_preset,
-                    signals,
-                    current_config: current_config.clone(),
-                    on_apply_theme: move |new_config: ThemeConfig| {
-                        on_apply_theme.call(new_config);
-                    },
-                    show_undocked_presets,
-                }
-            }
+                    EditorAccordion { id: "Modules", title: "Template Modules", active: active_tab,
+                        TemplateModulesPanel {
+                            current_config: current_config.clone(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                on_apply_theme.call(new_config);
+                            }
+                        }
+                    }
 
-            EditorAccordion { id: "Modules", title: "Template Modules", active: active_tab,
-                TemplateModulesPanel {
-                    current_config: current_config.clone(),
-                    on_apply_theme: move |new_config: ThemeConfig| {
-                        on_apply_theme.call(new_config);
+                    EditorAccordion { id: "Colors", title: "Color Palette", active: active_tab,
+                        ColorsPanel {
+                            bg_base: signals.bg_base,
+                            bg_panel: signals.bg_panel,
+                            bg_elevated: signals.bg_elevated,
+                            fg_base: signals.fg_base,
+                            fg_muted: signals.fg_muted,
+                            accent: signals.accent,
+                            border: signals.border,
+                        }
+                    }
+
+                    EditorAccordion { id: "Cursors", title: "Cursors", active: active_tab,
+                        CursorPanel {}
+                    }
+
+                    EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
+                        EffectsPanel {
+                            glow_spread: signals.glow_spread,
+                            hover_scale: signals.hover_scale,
+                            show_advanced_glow,
+                        }
+                    }
+
+                    EditorAccordion { id: "SvgFrames", title: "Borders & Frames", active: active_tab,
+                        SvgFramesPanel {
+                            current_config: current_config.clone(),
+                            on_apply_theme: move |new_config: ThemeConfig| {
+                                on_apply_theme.call(new_config);
+                            }
+                        }
+                    }
+
+                    EditorAccordion { id: "Background", title: "Background", active: active_tab,
+                        BackgroundPanel { background: signals.background }
+                    }
+
+                    EditorAccordion { id: "Typography", title: "Typography", active: active_tab,
+                        TypographyPanel {
+                            body_font_stack: signals.body_font_stack,
+                            heading_font_stack: signals.heading_font_stack,
+                            base_size: signals.base_size,
+                        }
+                    }
+
+                    EditorAccordion { id: "Scrollbars", title: "Scrollbars", active: active_tab,
+                        ScrollbarPanel {}
+                    }
+
+                    EditorAccordion { id: "Buttons", title: "Button Styles", active: active_tab,
+                        ButtonsPanel {
+                            btn_radius: signals.btn_radius,
+                            btn_border_width: signals.btn_border_width,
+                            btn_text_transform: signals.btn_text_transform,
+                        }
+                    }
+
+                    EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
+                        StaticPagesPanel {
+                            signals,
+                            show_undocked_pages,
+                            preview_html,
+                            base_preview_html,
+                        }
                     }
                 }
             }
-
-            EditorAccordion { id: "Colors", title: "Color Palette", active: active_tab,
-                ColorsPanel {
-                    bg_base: signals.bg_base,
-                    bg_panel: signals.bg_panel,
-                    bg_elevated: signals.bg_elevated,
-                    fg_base: signals.fg_base,
-                    fg_muted: signals.fg_muted,
-                    accent: signals.accent,
-                    border: signals.border,
-                }
-            }
-
-            EditorAccordion { id: "Cursors", title: "Cursors", active: active_tab,
-                CursorPanel {}
-            }
-
-            EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
-                EffectsPanel {
-                    glow_spread: signals.glow_spread,
-                    hover_scale: signals.hover_scale,
-                    show_advanced_glow,
-                }
-            }
-
-            EditorAccordion { id: "SvgFrames", title: "Borders & Frames", active: active_tab,
-                SvgFramesPanel {
-                    current_config: current_config.clone(),
-                    on_apply_theme: move |new_config: ThemeConfig| {
-                        on_apply_theme.call(new_config);
-                    }
-                }
-            }
-
-            EditorAccordion { id: "Background", title: "Background", active: active_tab,
-                BackgroundPanel { background: signals.background }
-            }
-
-            EditorAccordion { id: "Typography", title: "Typography", active: active_tab,
-                TypographyPanel {
-                    body_font_stack: signals.body_font_stack,
-                    heading_font_stack: signals.heading_font_stack,
-                    base_size: signals.base_size,
-                }
-            }
-
-            EditorAccordion { id: "Scrollbars", title: "Scrollbars", active: active_tab,
-                ScrollbarPanel {}
-            }
-
-            EditorAccordion { id: "Buttons", title: "Button Styles", active: active_tab,
-                ButtonsPanel {
-                    btn_radius: signals.btn_radius,
-                    btn_border_width: signals.btn_border_width,
-                    btn_text_transform: signals.btn_text_transform,
-                }
-            }
-
-            EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
-                StaticPagesPanel {
-                    signals,
-                    show_undocked_pages,
-                    preview_html,
-                    base_preview_html,
-                }
-            }
-        }
-    };
-
-    rsx! {
-        crate::ui_kit::MorPanelWrapper {
-            position: pos,
-            default_position: DockPosition::mor_panel_left,
-            {inner_content}
         }
     }
 }

@@ -1,0 +1,1 @@
+window.__MOR_ROUNDTRIP__ = 'byte-perfect\n';

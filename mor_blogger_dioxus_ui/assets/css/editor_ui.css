@@ -1685,3 +1685,31 @@ body.editor-floating-dragging * {
     border-color: var(--border-light);
     color: var(--accent);
 }
+
+/* Template Modules dock (ModuleWorkbench left pane) */
+.template-modules .template-module-btn {
+  width: 100%;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.template-modules .template-modules-folder-btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* Reset syntect's wrapper <pre> so the highlight paint layer aligns
+   byte-for-byte with the transparent textarea (no UA 1em margin drift). */
+.pure-rust-editor-paint pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent !important;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre;
+  tab-size: 4;
+}
+.pure-rust-editor-ghost { tab-size: 4; }

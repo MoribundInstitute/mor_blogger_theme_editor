@@ -3745,6 +3745,7 @@ dependencies = [
  "dioxus-logger 0.5.1",
  "dirs 5.0.1",
  "futures-util",
+ "glib",
  "image 0.24.9",
  "js-sys",
  "log",

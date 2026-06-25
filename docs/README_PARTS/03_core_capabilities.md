@@ -5,6 +5,12 @@
 - **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
 - **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
 
+![Theme compile and export pipeline](docs/diagrams/theme_compile_pipeline.drawio.png)
+
+![CSS assembly pipeline](docs/diagrams/css_assembly_pipeline.drawio.png)
+
+See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
+
 ### 🎨 GTK Desktop Integration
 - **Native-Feeling Themes:** Import visual variables directly from legendary Linux themes like Adwaita, Nord, and WhiteSur.
 - **Asset Compilation:** Automatically converts external SVG assets into lightweight, embedded CSS data URIs to eliminate external HTTP requests.
@@ -14,3 +20,7 @@
 - **Adaptive Window Shell:** Features a custom Adwaita-inspired Client-Side Decoration (CSD) header bar. Seamlessly toggle between `frameless` with custom drag-and-drop borders, `native` with OS-drawn window chrome, or `tiling` with no custom window buttons for i3/Sway users.
 - **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
+
+![Workspace UI layout](docs/diagrams/workspace_ui_layout.drawio.png)
+
+![Dioxus state, docks, and ThemeSignals](docs/diagrams/dioxus_app_architecture.drawio.png)

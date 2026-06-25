@@ -23,6 +23,15 @@ fn load_app_icon() -> Icon {
 
 fn main() {
     dioxus_logger::init(dioxus_logger::tracing::Level::INFO).expect("failed to init logger");
+
+    // Wayland ignores the WindowBuilder pixel icon for the taskbar/dock; it maps a
+    // window to its icon by app_id -> a matching .desktop file. tao 0.34 has no
+    // window-level app_id setter, but GTK derives the Wayland app_id from the glib
+    // program name, so set it here (before launch/gtk_init). Must equal the
+    // .desktop basename and its StartupWMClass (see
+    // packaging/com.moribundinstitute.morblogger-theme-editor.desktop).
+    #[cfg(target_os = "linux")]
+    glib::set_prgname(Some("com.moribundinstitute.morblogger-theme-editor"));
     let mut mode = "frameless".to_string();
 
     // 1. Read persistent preferences from disk

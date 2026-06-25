@@ -1,7 +1,9 @@
-use crate::app::state::{DockPosition, LayoutState, ThemeState, WindowManager};
+use crate::app::state::{DockPosition, LayoutState, ThemeState};
 use crate::ui::layout::shortcut::use_shortcut;
 
 use dioxus::prelude::*;
+
+const LOGO: Asset = asset!("/assets/images/my_logo.png");
 
 // =========================================================================
 // 1. GENERIC BUILDING BLOCKS
@@ -28,6 +30,11 @@ pub fn MorMenuDropdown(props: MorMenuDropdownProps) -> Element {
 pub fn MorMenuBar(children: Element) -> Element {
     rsx! {
         nav { class: "mor-menu-bar",
+            img {
+                src: LOGO,
+                alt: "MorBlogger",
+                style: "height: 22px; width: auto; margin: 0 8px 0 4px; flex-shrink: 0; object-fit: contain; pointer-events: none; -webkit-user-select: none;",
+            }
             {children}
         }
     }
@@ -90,7 +97,6 @@ pub fn AppMenuBar(
     on_reset_viewport: EventHandler<()>,
 ) -> Element {
     let theme = use_context::<ThemeState>();
-    let mut wm = use_context::<Signal<WindowManager>>();
     let mut layout = use_context::<LayoutState>();
 
     rsx! {
@@ -200,10 +206,13 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
-                    label: format!("Template Modules {}", if wm.read().show_template_modules { "✓" } else { "" }),
+                    label: format!("Template Modules {}", if (layout.template_modules_pos)() != DockPosition::Hidden { "✓" } else { "" }),
                     on_action: move |_| {
-                        let mut state = wm.write();
-                        state.show_template_modules = !state.show_template_modules;
+                        if (layout.template_modules_pos)() == DockPosition::Hidden {
+                            layout.template_modules_pos.set(DockPosition::mor_panel_left);
+                        } else {
+                            layout.template_modules_pos.set(DockPosition::Hidden);
+                        }
                     }
                 }
                 MenuItem {

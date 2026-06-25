@@ -1,6 +1,6 @@
 use crate::app::config_bridge::PluginState;
 use crate::app::state::{DockPosition, LayoutState, PluginManagerContext};
-use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
+use crate::ui::components::dock_chrome::DockChrome;
 use dioxus::prelude::*;
 use rfd::FileDialog;
 
@@ -81,69 +81,16 @@ pub fn PluginManagerDock() -> Element {
         .collect();
 
     let updates_count = updates_available.len();
-    let is_floating = pos == DockPosition::Floating;
-
-    let header_actions = rsx! {
-        div { class: "floating-editor-actions",
-            if pos != DockPosition::mor_panel_left {
-                button {
-                    title: "Dock Left",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("plugin_manager", DockPosition::mor_panel_left);
-                    },
-                    IconDockLeft {}
-                }
-            }
-            if pos != DockPosition::mor_panel_right {
-                button {
-                    title: "Dock Right",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("plugin_manager", DockPosition::mor_panel_right);
-                    },
-                    IconDockRight {}
-                }
-            }
-            if !is_floating {
-                button {
-                    title: "Float Window",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("plugin_manager", DockPosition::Floating);
-                    },
-                    IconFloat {}
-                }
-            }
-            button {
-                title: "Close",
-                onclick: move |_| {
-                    layout.plugin_manager_pos.set(DockPosition::Hidden);
-                },
-                IconClose {}
-            }
-        }
-    };
-
     let inner_content = rsx! {
-        if is_floating {
-            div { class: "floating-editor-window-bar",
-                div {
-                    class: "floating-editor-grip-group",
-                    span { class: "floating-editor-grip", style: "display: flex; align-items: center;", IconGrip {} }
-                    span {
-                        class: "floating-editor-title",
-                        "Plugin Manager"
-                    }
-                }
-                {header_actions}
-            }
-        } else {
-            div { class: "editor-panel-header",
-                h2 { class: "editor-panel-title", "Plugin Manager" }
-                {header_actions}
-            }
-        }
-
-        div {
-            style: "display: flex; flex-direction: column; height: calc(100% - 45px); overflow: hidden; background: var(--bg-panel); color: var(--fg-base); font-size: 0.85rem;",
+        DockChrome {
+            title: "Plugin Manager".to_string(),
+            dock_id: "plugin_manager".to_string(),
+            position: pos,
+            on_close: move |_| {
+                layout.plugin_manager_pos.set(DockPosition::Hidden);
+            },
+            div {
+                style: "display: flex; flex-direction: column; height: calc(100% - 45px); overflow: hidden; background: var(--bg-panel); color: var(--fg-base); font-size: 0.85rem;",
             
             if needs_restart() {
                 div {
@@ -362,6 +309,7 @@ pub fn PluginManagerDock() -> Element {
                 }
             }
         }
+    }
     };
 
     rsx! {

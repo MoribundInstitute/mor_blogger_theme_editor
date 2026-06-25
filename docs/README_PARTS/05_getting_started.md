@@ -123,6 +123,8 @@ mbt build
 mbt bundle
 ```
 
+![GUI and CLI development workflow](docs/diagrams/dev_workflow.drawio.png)
+
 ---
 
 # Project Goals

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Workspace UI Layout">
+    <mxGraphModel dx="1200" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="600">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="MorBlogger Workspace UI Layout (MorLayoutChrome)" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="MorShell + AppMenuBar" style="swimlane;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="MorHeaderBar (frameless CSD)" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=11;" vertex="1" parent="3">
+          <mxGeometry x="400" y="30" width="320" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="ActivityBar&#xa;48px&#xa;10 dock toggles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="150" width="80" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="LeftPanelContainer&#xa;DockZone(left)&#xa;&#xa;ThemePalette · SiteData&#xa;CssEditor · XmlEditor · …" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="140" y="150" width="280" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="BloggerWorkspace (center)&#xa;&#xa;CenterView modes:&#xa;Preview · CodeEditor · Split&#xa;ModuleWorkbench · StaticPageEditor&#xa;&#xa;Live preview_html" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="150" width="400" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="RightPanelContainer&#xa;DockZone(right)&#xa;&#xa;Presets · Diagnostics&#xa;PluginManager · …" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="860" y="150" width="280" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="FloatingWindowManager&#xa;(undocked presets, glow, static pages)" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="440" y="550" width="400" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="LayoutState: DockPosition · CenterView · pinned_docks" style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="1">
+          <mxGeometry x="860" y="550" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="20" value="toggle" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="5" target="6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="21" value="toggle" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="5" target="8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="120" y="435" /><mxPoint x="120" y="435" /></Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

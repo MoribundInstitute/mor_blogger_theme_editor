@@ -61,6 +61,25 @@ impl Drop for WindowCleanupInner {
     }
 }
 
+/// Build the pop-out editor window's menu, replacing the default OS menu.
+/// IDs are namespaced per editor mode (`xml-*`, `css-*`, `js-*`) so several
+/// open windows don't cross-trigger on the global muda event channel.
+#[cfg(not(target_arch = "wasm32"))]
+fn build_editor_menu(mode: &str) -> dioxus::desktop::muda::Menu {
+    use dioxus::desktop::muda::{
+        accelerator::{Accelerator, Code, Modifiers},
+        Menu, MenuItem, Submenu,
+    };
+    let acc = |m, c| Some(Accelerator::new(Some(m), c));
+    let save = MenuItem::with_id(format!("{mode}-save"), "Save", true, acc(Modifiers::CONTROL, Code::KeyS));
+    let close = MenuItem::with_id(format!("{mode}-close"), "Close", true, acc(Modifiers::CONTROL, Code::KeyW));
+    let prev = MenuItem::with_id(format!("{mode}-prev"), "Previous File", true, acc(Modifiers::ALT, Code::ArrowLeft));
+    let next = MenuItem::with_id(format!("{mode}-next"), "Next File", true, acc(Modifiers::ALT, Code::ArrowRight));
+    let file = Submenu::with_items("File", true, &[&save, &close]).expect("file submenu");
+    let go = Submenu::with_items("Go", true, &[&prev, &next]).expect("go submenu");
+    Menu::with_items(&[&file, &go]).expect("editor menu")
+}
+
 #[component]
 pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let _cleanup = use_hook(|| WindowCleanup {
@@ -113,11 +132,13 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                 };
 
                 let dom = VirtualDom::new_with_props(IsolatedEditorWindow, child_props);
-                let cfg = dioxus::desktop::Config::new().with_window(
-                    dioxus::desktop::WindowBuilder::new()
-                        .with_title(format!("MorBlogger - {}", title))
-                        .with_inner_size(dioxus::desktop::LogicalSize::new(800.0, 600.0)),
-                );
+                let cfg = dioxus::desktop::Config::new()
+                    .with_menu(Some(build_editor_menu(child_window_props.mode)))
+                    .with_window(
+                        dioxus::desktop::WindowBuilder::new()
+                            .with_title(format!("MorBlogger - {}", title))
+                            .with_inner_size(dioxus::desktop::LogicalSize::new(800.0, 600.0)),
+                    );
                 let pending_ctx = dioxus::desktop::window().new_window(dom, cfg);
 
                 spawn(async move {
@@ -157,6 +178,47 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         );
         let _ = dioxus::document::eval(&js);
     });
+
+    // Menu events arrive on a global channel and every mounted instance's
+    // handler sees them, so act only in the native pop-out window and only on
+    // this editor's own namespaced IDs.
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mode = props.mode;
+        let is_native = props.is_native_window;
+        let on_save = props.on_save;
+        let on_close = props.on_close;
+        let files = props.available_files.clone();
+        let default_file = props.default_file;
+        let mut active_tab = active_tab;
+        dioxus::desktop::use_muda_event_handler(move |event| {
+            if !is_native {
+                return;
+            }
+            let id = event.id.0.as_str();
+            if id == format!("{mode}-save") {
+                on_save.call(());
+            } else if id == format!("{mode}-close") {
+                on_close.call(());
+            } else if id == format!("{mode}-prev") || id == format!("{mode}-next") {
+                if files.is_empty() {
+                    return;
+                }
+                let cur = if files.contains(&active_tab()) {
+                    active_tab()
+                } else {
+                    files.first().cloned().unwrap_or_else(|| default_file.to_string())
+                };
+                let idx = files.iter().position(|f| f == &cur).unwrap_or(0);
+                let new_idx = if id.ends_with("-prev") {
+                    if idx == 0 { files.len() - 1 } else { idx - 1 }
+                } else {
+                    (idx + 1) % files.len()
+                };
+                active_tab.set(files[new_idx].clone());
+            }
+        });
+    }
 
     let pos = (props.dock_position)();
     if pos == DockPosition::Hidden {
@@ -199,6 +261,12 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     // round-trips through on_change, so beautify must never touch it (it also shreds
     // {{TEMPLATE_TOKENS}}). Display raw; no separate display/state split needed.
     let val = raw_val;
+
+    // Display the same per-file buffer that on_change writes (preset_css for the
+    // default file, otherwise the file's VFS entry). Reading content_signal here
+    // instead would show a single shared scalar that diverges from the edit
+    // target once a non-preset file is selected, so edits never appear on screen.
+    let editor_value = val.clone();
 
     let last_file = use_signal(|| current_file.clone());
     let mut last_external_val = use_signal(|| val.clone());
@@ -252,7 +320,27 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
 
     let available_files_clone = props.available_files.clone();
     let default_file_clone = props.default_file;
+    let tx_opt_key = tx_opt.clone();
+    let on_save_key = props.on_save;
+    let is_native_kbd = props.is_native_window;
     let onkeydown_handler = move |evt: Event<KeyboardData>| {
+        // In the pop-out window the muda menu owns these shortcuts; only handle
+        // them here for the in-app docked panels (which have no menu).
+        if is_native_kbd {
+            return;
+        }
+        // Ctrl+S — save to disk via the same dispatch the Save button uses.
+        let key_str = evt.key().to_string();
+        if evt.modifiers().ctrl() && key_str.eq_ignore_ascii_case("s") {
+            evt.prevent_default();
+            if let Some(tx) = &tx_opt_key {
+                let _ = tx.send(EditorEvent::Save);
+            } else {
+                on_save_key.call(());
+            }
+            return;
+        }
+
         let files = &available_files_clone;
         if files.is_empty() { return; }
         let current_file = if files.contains(&active_tab()) {
@@ -435,6 +523,20 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         align-items: center !important;
         gap: 6px !important;
     }}
+    /* WebKitGTK hides scrollbars by default; child editor windows don't load the
+       global editor CSS, so style the ghost textarea's scrollbar here. */
+    .pure-rust-editor-ghost::-webkit-scrollbar {{ width: 12px; height: 12px; }}
+    .pure-rust-editor-ghost::-webkit-scrollbar-track {{ background: transparent; }}
+    .pure-rust-editor-ghost::-webkit-scrollbar-thumb {{
+        background: var(--editor-border, #555);
+        border-radius: 6px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }}
+    .pure-rust-editor-ghost::-webkit-scrollbar-thumb:hover {{
+        background: var(--editor-accent, #888);
+        background-clip: padding-box;
+    }}
 "#,
         mode = props.mode,
         default_x = if props.mode == "css" { 100 } else { 150 },
@@ -448,11 +550,14 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let editor_body = rsx! {
         script { dangerous_inner_html: "{drag_js}" }
         script { dangerous_inner_html: "{resize_js}" }
+        script { dangerous_inner_html: crate::app::keyboard::EDITOR_KEY_GUARD_JS }
         style { dangerous_inner_html: "{editor_css}" }
 
         div {
             style: "display: flex; flex-direction: column; height: 100%; width: 100%; flex-grow: 1; min-height: 0;",
-            
+            tabindex: "0",
+            onkeydown: onkeydown_handler,
+
             // UNIFIED HEADER ROW: Tabs -> Actions
             div {
                 class: "floating-editor-window-bar",
@@ -503,7 +608,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
             div {
                 style: "display: flex; flex-direction: column; flex-grow: 1; width: 100%; min-height: 0;",
                 CodeEditor {
-                    value: (props.content_signal)(),
+                    value: editor_value,
                     mode: props.mode.to_string(),
                     on_change: move |new_val: String| {
                         let file = current_file.clone();
@@ -536,7 +641,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     class: "mor_panel_left {props.mode}-editor-mode",
                     tabindex: "0",
                     autofocus: true,
-                    onkeydown: onkeydown_handler.clone(),
                     DockChrome {
                         title: props.title.to_string(),
                         dock_id: target_id.to_string(),
@@ -556,7 +660,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     class: "mor_panel_right {props.mode}-editor-mode",
                     tabindex: "0",
                     autofocus: true,
-                    onkeydown: onkeydown_handler.clone(),
                     DockChrome {
                         title: props.title.to_string(),
                         dock_id: target_id.to_string(),
@@ -630,7 +733,7 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
     let _tx = use_signal(|| props.tx.clone());
 
     rsx! {
-        style { "body {{ margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
+        style { "html, body {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
         AssetEditorDock {
             is_native_window: true,
             ..props.dock_props

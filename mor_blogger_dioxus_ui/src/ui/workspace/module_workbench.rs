@@ -12,15 +12,6 @@ use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{apply_preview_viewport, clamp_preview_width, PreviewViewport};
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 
-const TEMPLATE_LAYOUTS: &[(&str, &str)] = &[
-    ("Header Variant", "header_variant"),
-    ("Main Canvas Variant", "main_variant"),
-    ("Content Feed", "content_variant"),
-    ("Left Sidebar", "left_sidebar_variant"),
-    ("Right Sidebar", "right_sidebar_variant"),
-    ("Footer Grid", "footer_variant"),
-];
-
 fn esc(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
@@ -282,7 +273,7 @@ pub fn ModuleWorkbench(
     config_toml: ReadSignal<String>,
     on_load_theme: EventHandler<String>,
 ) -> Element {
-    let mut layout = use_context::<LayoutState>();
+    let layout = use_context::<LayoutState>();
     let render = use_context::<RenderState>();
     let mut edited_xml: Signal<String> = use_signal(String::new);
     let mut is_takeover_active = use_signal(|| false);
@@ -307,6 +298,15 @@ pub fn ModuleWorkbench(
             edited
         }
     });
+
+    // Reset the scratchpad when the active module changes, so switching modules
+    // (now driven from the TemplateModulesDock) falls back to the new module's
+    // config-derived XML. Keyed on the module, so it never clobbers live typing.
+    let module_key = (layout.active_workbench_module)();
+    use_effect(use_reactive!(|module_key| {
+        let _ = module_key;
+        edited_xml.set(String::new());
+    }));
 
     // Generate the isolated module preview HTML from the live config.
     let module_preview_html = use_memo(move || match (layout.active_workbench_module)() {
@@ -423,54 +423,7 @@ pub fn ModuleWorkbench(
                 class: "export-viewport",
                 style: "display: flex; flex-direction: row; flex: 1; min-height: 0; border: 1px solid var(--editor-border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel);",
 
-                // ── Left Pane ─ Module Selector (220px) ──────────────────
-                div {
-                    style: "width: 220px; flex-shrink: 0; border-right: 1px solid var(--editor-border); display: flex; flex-direction: column;",
-
-                    div {
-                        style: "padding: 12px; border-bottom: 1px solid var(--editor-border-soft); background: var(--bg-elevated);",
-                        span {
-                            style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em;",
-                            "Template Modules"
-                        }
-                    }
-                    div {
-                        style: "padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1;",
-                        for (label, key) in TEMPLATE_LAYOUTS {
-                            button {
-                                class: if (layout.active_workbench_module)() == Some(key) { "editor-button editor-button-active" } else { "editor-button" },
-                                style: "text-align: left; font-size: 0.85rem;",
-                                onclick: {
-                                    let key = *key;
-                                    move |_| {
-                                        layout.active_workbench_module.set(Some(key));
-                                        edited_xml.set(String::new());
-                                    }
-                                },
-                                "{label}"
-                            }
-                        }
-                    }
-
-                    // "Open Templates Folder" utility action — bottom of left pane
-                    div {
-                        style: "padding: 10px 12px; border-top: 1px solid var(--editor-border-soft);",
-                        button {
-                            class: "editor-button",
-                            style: "width: 100%; justify-content: center; font-size: 0.8rem;",
-                            title: "Open the user-space templates directory in the system file manager",
-                            onclick: move |_| {
-                                match fs_bridge::open_templates_folder() {
-                                    Ok(()) => workbench_status.set("Templates folder opened.".to_string()),
-                                    Err(e) => workbench_status.set(format!("Could not open folder: {}", e)),
-                                }
-                            },
-                            "Open Templates Folder"
-                        }
-                    }
-                }
-
-                // ── Middle Pane ─ XML Fragment Editor ────────────────────
+                // ── Left Pane ─ XML Fragment Editor ──────────────────────
                 div {
                     style: "flex: 1; display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--editor-border);",
                     div {

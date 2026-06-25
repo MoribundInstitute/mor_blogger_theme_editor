@@ -33,99 +33,36 @@ impl ThemeState {
             defaults.template_pack = pack;
         }
 
-        let site_title = use_signal(|| defaults.site.site_title.clone());
-        let site_subtitle = use_signal(|| defaults.site.site_subtitle.clone());
-        let header_logo_url = use_signal(|| defaults.site.header_logo_url.clone());
-        let home_url = use_signal(|| defaults.site.home_url.clone());
+        // Seed a default preset at startup so the editor's bound `preset_css` buffer
+        // (and the whole preview) is populated on first launch instead of empty.
+        // Without this, `preset_css` stays "" until the user manually applies a preset,
+        // so the CSS editor opens on a blank buffer ("[render_theme] preset_css bytes = 0").
+        // ponytail: reuse apply_preset (it also sets preset_css). Reversible — delete the
+        // apply call + restore `active_preset` to None to go back to an empty default.
+        let all_presets = mor_blogger_core::presets::all_presets();
+        // TEMP DEBUG: did presets load from the running binary's cwd? Empty here ->
+        // default_preset = None -> preset_css never seeded -> "[render_theme] preset_css bytes = 0".
+        eprintln!(
+            "[seed] all_presets len = {} (cwd-dependent)",
+            all_presets.len()
+        );
+        let default_preset = all_presets.into_iter().next();
+        let default_preset_id = default_preset.as_ref().map(|p| p.id);
 
-        let bg_base = use_signal(|| defaults.colors.bg_base.clone());
-        let bg_panel = use_signal(|| defaults.colors.bg_panel.clone());
-        let bg_elevated = use_signal(|| defaults.colors.bg_elevated.clone());
-        let fg_base = use_signal(|| defaults.colors.fg_base.clone());
-        let fg_muted = use_signal(|| defaults.colors.fg_muted.clone());
-        let accent = use_signal(|| defaults.colors.accent.clone());
-        let border = use_signal(|| defaults.colors.border.clone());
-        let panel_border_width = use_signal(|| defaults.colors.panel_border_width.clone());
-        let glow_spread = use_signal(|| defaults.colors.glow_spread.clone());
-        let hover_scale = use_signal(|| defaults.colors.hover_scale.clone());
-        let panel_border_image_url = use_signal(|| defaults.colors.panel_border_image_url.clone());
-        let panel_border_image_slice =
-            use_signal(|| defaults.colors.panel_border_image_slice.clone());
-        let panel_border_image_repeat =
-            use_signal(|| defaults.colors.panel_border_image_repeat.clone());
+        let signals = use_hook(move || {
+            let s = ThemeSignals::from_config(&defaults);
+            if let Some(p) = &default_preset {
+                s.apply_preset(p);
+            }
+            // TEMP DEBUG: byte length actually seeded into the editor-bound buffer.
+            eprintln!(
+                "[seed] preset_css after apply = {}",
+                s.preset_css.peek().len()
+            );
+            s
+        });
 
-        let btn_radius = use_signal(|| defaults.buttons.radius.clone());
-        let btn_border_width = use_signal(|| defaults.buttons.border_width.clone());
-        let btn_text_transform = use_signal(|| defaults.buttons.text_transform.clone());
-
-        let body_font_stack = use_signal(|| defaults.typography.body_font_stack.clone());
-        let heading_font_stack = use_signal(|| defaults.typography.heading_font_stack.clone());
-        let mono_font_stack = use_signal(|| defaults.typography.mono_font_stack.clone());
-        let base_size = use_signal(|| defaults.typography.base_size.clone());
-        let scale_ratio = use_signal(|| defaults.typography.scale_ratio.clone());
-        let line_height = use_signal(|| defaults.typography.line_height.clone());
-        let heading_weight = use_signal(|| defaults.typography.heading_weight.clone());
-
-        let background = use_signal(|| defaults.background.clone());
-        let favicon_url = use_signal(|| defaults.assets.favicon_url.clone());
-        let social_card_image_url = use_signal(|| defaults.assets.social_card_image_url.clone());
-
-        let meta_description = use_signal(|| defaults.seo.meta_description.clone());
-        let meta_keywords = use_signal(|| defaults.seo.meta_keywords.clone());
-        let custom_robots = use_signal(|| defaults.seo.custom_robots.clone());
-        let license_url = use_signal(|| defaults.seo.license_url.clone());
-        let author_name = use_signal(|| defaults.seo.author_name.clone());
-
-        let menu_1_label = use_signal(|| crate::app::config_bridge::menu_label(&defaults, 0));
-        let menu_1_url = use_signal(|| crate::app::config_bridge::menu_url(&defaults, 0));
-        let menu_2_label = use_signal(|| crate::app::config_bridge::menu_label(&defaults, 1));
-        let menu_2_url = use_signal(|| crate::app::config_bridge::menu_url(&defaults, 1));
-        let menu_3_label = use_signal(|| crate::app::config_bridge::menu_label(&defaults, 2));
-        let menu_3_url = use_signal(|| crate::app::config_bridge::menu_url(&defaults, 2));
-        let menu_4_label = use_signal(|| crate::app::config_bridge::menu_label(&defaults, 3));
-        let menu_4_url = use_signal(|| crate::app::config_bridge::menu_url(&defaults, 3));
-
-        let footer_text = use_signal(|| defaults.footer.footer_text.clone());
-        let footer_license_label = use_signal(|| defaults.footer.footer_license_label.clone());
-        let footer_license_url = use_signal(|| defaults.footer.footer_license_url.clone());
-
-        let custom_js = use_signal(|| defaults.plugins.custom_js.clone());
-        let template_pack = use_signal(|| defaults.template_pack.clone());
-        let scripts = use_signal(|| defaults.scripts.clone());
-        let static_pages = use_signal(|| defaults.static_pages.clone());
-        let ads = use_signal(|| defaults.ads.clone());
-        let icons = use_signal(|| defaults.icons.clone());
-        let preset_css = use_signal(String::new);
-        let enable_image_borders = use_signal(|| defaults.enable_image_borders);
-        let custom_border_url = use_signal(|| defaults.custom_border_url.clone());
-        let svg_border_slice = use_signal(|| defaults.svg_border_slice.clone());
-        let image_border_width = use_signal(|| defaults.image_border_width.clone());
-        let target_sidebars = use_signal(|| defaults.target_sidebars);
-        let target_canvas = use_signal(|| defaults.target_canvas);
-        let glow_color = use_signal(|| defaults.colors.glow_color.clone());
-        let glow_logo = use_signal(|| defaults.colors.glow_logo);
-        let glow_title = use_signal(|| defaults.colors.glow_title);
-        let glow_toc = use_signal(|| defaults.colors.glow_toc);
-        let glow_sidebar = use_signal(|| defaults.colors.glow_sidebar);
-        let glow_logo_color = use_signal(|| defaults.colors.glow_logo_color.clone());
-        let glow_title_color = use_signal(|| defaults.colors.glow_title_color.clone());
-        let glow_toc_color = use_signal(|| defaults.colors.glow_toc_color.clone());
-        let glow_sidebar_color = use_signal(|| defaults.colors.glow_sidebar_color.clone());
-        let glow_text = use_signal(|| defaults.colors.glow_text);
-        let glow_containers = use_signal(|| defaults.colors.glow_containers);
-        let glow_icons = use_signal(|| defaults.colors.glow_icons);
-        let glow_text_color = use_signal(|| defaults.colors.glow_text_color.clone());
-        let glow_containers_color = use_signal(|| defaults.colors.glow_containers_color.clone());
-        let glow_icons_color = use_signal(|| defaults.colors.glow_icons_color.clone());
-        let cursor_style = use_signal(|| defaults.cursor_style.clone());
-        let scrollbar_width = use_signal(|| defaults.scrollbar_width.clone());
-        let scrollbar_track_color = use_signal(|| defaults.scrollbar_track_color.clone());
-        let scrollbar_thumb_color = use_signal(|| defaults.scrollbar_thumb_color.clone());
-        let scrollbar_thumb_hover_color =
-            use_signal(|| defaults.scrollbar_thumb_hover_color.clone());
-
-        let active_preset = use_signal(|| None::<&'static str>);
-        let is_dark_mode = use_signal(|| true);
+        let active_preset = use_signal(move || default_preset_id);
         let show_undocked_presets = use_signal(|| false);
         let show_advanced_presets = use_signal(|| false);
         let show_advanced_glow = use_signal(|| false);
@@ -135,89 +72,6 @@ impl ThemeState {
             snapshots: vec![None],
             cursor: 0,
         });
-
-        let signals = ThemeSignals {
-            is_dark_mode,
-            site_title,
-            site_subtitle,
-            header_logo_url,
-            home_url,
-            bg_base,
-            bg_panel,
-            bg_elevated,
-            fg_base,
-            fg_muted,
-            accent,
-            border,
-            panel_border_width,
-            glow_spread,
-            hover_scale,
-            panel_border_image_url,
-            panel_border_image_slice,
-            panel_border_image_repeat,
-            btn_radius,
-            btn_border_width,
-            btn_text_transform,
-            body_font_stack,
-            heading_font_stack,
-            mono_font_stack,
-            base_size,
-            scale_ratio,
-            line_height,
-            heading_weight,
-            background,
-            favicon_url,
-            social_card_image_url,
-            meta_description,
-            meta_keywords,
-            custom_robots,
-            license_url,
-            author_name,
-            menu_1_label,
-            menu_1_url,
-            menu_2_label,
-            menu_2_url,
-            menu_3_label,
-            menu_3_url,
-            menu_4_label,
-            menu_4_url,
-            footer_text,
-            footer_license_label,
-            footer_license_url,
-            custom_js,
-            template_pack,
-            scripts,
-            preset_css,
-            static_pages,
-            ads,
-            icons,
-            enable_image_borders,
-            custom_border_url,
-            svg_border_slice,
-            image_border_width,
-            target_sidebars,
-            target_canvas,
-            glow_color,
-            glow_logo,
-            glow_title,
-            glow_toc,
-            glow_sidebar,
-            glow_logo_color,
-            glow_title_color,
-            glow_toc_color,
-            glow_sidebar_color,
-            glow_text,
-            glow_containers,
-            glow_icons,
-            glow_text_color,
-            glow_containers_color,
-            glow_icons_color,
-            cursor_style,
-            scrollbar_width,
-            scrollbar_track_color,
-            scrollbar_thumb_color,
-            scrollbar_thumb_hover_color,
-        };
 
         let last_imported_gtk =
             use_signal(|| None::<mor_blogger_core::config::gtk_theme::ImportedGtkPreset>);

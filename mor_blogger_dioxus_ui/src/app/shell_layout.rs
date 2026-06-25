@@ -1,7 +1,6 @@
 use super::hotswap::apply_hotswap_json;
 use crate::app::state::{
     CenterView, ContextMenuPayload, DockPosition, LayoutState, RenderState, ThemeState,
-    WindowManager,
 };
 use crate::ui::components::icon_context_menu::IconContextMenu;
 use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, IconPreset, IconSiteData, IconXml};
@@ -122,13 +121,13 @@ pub fn DockZone(position: DockPosition) -> Element {
     let theme = use_context::<ThemeState>();
     let render = use_context::<RenderState>();
     let local = use_context::<DockLocalSignals>();
-    let _wm = use_context::<Signal<WindowManager>>();
 
     let active_tab = match position {
         DockPosition::mor_panel_left => layout.active_left_tab,
         _ => layout.active_right_tab,
     };
 
+    let show_template_modules = (layout.template_modules_pos)() == position;
     let show_theme_palette = (layout.theme_palette_pos)() == position;
     let show_site_data = (layout.site_data_pos)() == position;
     let show_presets = (layout.presets_pos)() == position;
@@ -139,6 +138,13 @@ pub fn DockZone(position: DockPosition) -> Element {
     let show_plugin_manager = (layout.plugin_manager_pos)() == position;
     let show_css_builder = (layout.css_builder_pos)() == position;
     let show_js_builder = (layout.js_builder_pos)() == position;
+
+    // Workbench tool: wins the zone over palette/site-data while active.
+    if show_template_modules {
+        return rsx! {
+            TemplateModulesDock {}
+        };
+    }
 
     if show_css_editor {
         return rsx! {
@@ -266,6 +272,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
             || (layout.css_builder_pos)() == DockPosition::mor_panel_left
             || (layout.js_builder_pos)() == DockPosition::mor_panel_left
+            || (layout.template_modules_pos)() == DockPosition::mor_panel_left
     });
 
     let right_active = use_memo(move || {
@@ -279,6 +286,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
             || (layout.css_builder_pos)() == DockPosition::mor_panel_right
             || (layout.js_builder_pos)() == DockPosition::mor_panel_right
+            || (layout.template_modules_pos)() == DockPosition::mor_panel_right
     });
 
     let grid_style = use_memo(move || {
@@ -376,7 +384,6 @@ pub struct FloatingWindowManagerProps {
     pub show_preview: Signal<bool>,
     pub show_undocked_pages: Signal<bool>,
     pub tv_monitor: Signal<String>,
-    pub active_view: Signal<&'static str>,
 }
 
 #[component]
@@ -384,7 +391,6 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
     let layout = use_context::<LayoutState>();
     let theme = use_context::<ThemeState>();
     let render = use_context::<RenderState>();
-    let mut wm = use_context::<Signal<WindowManager>>();
 
     let signals = theme.signals;
     let active_preset = theme.active_preset;
@@ -432,20 +438,7 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
                 }
             }
 
-            // 1. WORKBENCH-ONLY TOOLS
-            if *props.active_view.read() == "workbench" {
-                if wm.read().show_template_modules {
-                    div { style: "pointer-events: auto;",
-                        TemplateModulesDock {
-                            on_close: move |_| {
-                                wm.write().show_template_modules = false;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 2. GLOBAL TOOLS
+            // GLOBAL TOOLS
             if (layout.css_editor_pos)() == DockPosition::Floating {
                 div { style: "pointer-events: auto;",
                     CssEditorPanel {}

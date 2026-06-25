@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=MorBlogger Theme Editor
+Comment=A visual Blogger theme editor
+# Exec must point at the installed/launched binary (the dev binary is
+# target/debug/mor_blogger_dioxus_ui). Use an absolute path for dev runs.
+Exec=morblogger-theme-editor
+# Icon name resolved from the icon theme (e.g. ~/.local/share/icons/.../apps/).
+Icon=com.moribundinstitute.morblogger-theme-editor
+Terminal=false
+Categories=Development;
+# MUST equal the Wayland app_id set via WindowBuilder::with_name in main.rs,
+# otherwise GNOME/KDE won't map the running window to this icon.
+StartupWMClass=com.moribundinstitute.morblogger-theme-editor

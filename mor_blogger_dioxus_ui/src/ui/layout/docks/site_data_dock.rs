@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use crate::app::state::{DockPosition, LayoutState};
 use crate::app::theme_signals::ThemeSignals;
 use crate::ui::components::accordion::EditorAccordion;
-use crate::ui::components::icons::{IconClose, IconDockLeft, IconDockRight, IconFloat, IconGrip};
+use crate::ui::components::dock_chrome::DockChrome;
 use crate::ui::panels::site_data::ads_panel::AdsPanel;
 use crate::ui::panels::site_data::assets_panel::AssetsPanel;
 use crate::ui::panels::site_data::menu_panel::MenuPanel;
@@ -100,170 +100,124 @@ const PANE_DRAG_JS: &str = r#"
 "#;
 
 const PANE_RESIZE_JS: &str = r#"
-(function() {
-    if (window.__morPaneResizeInstalled) return;
-    window.__morPaneResizeInstalled = true;
-    document.addEventListener('pointerdown', function(e) {
+(function () {
+    if (window.__morCorePaneResizeInstalled) return;
+    window.__morCorePaneResizeInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
         const resizer = e.target.closest('.pane-resizer');
         if (!resizer) return;
-        e.preventDefault();
-        const isLeft = resizer.classList.contains('pane-resizer-right');
-        const startX = e.clientX;
+
         const panel = resizer.closest('.mor_panel_left, .mor_panel_right');
+        if (!panel) return;
+
+        e.preventDefault();
+
+        const isLeft = panel.classList.contains('mor_panel_left');
+        const varWidth = isLeft ? '--left-pane-width' : '--right-pane-width';
+        const startX = e.clientX;
         const startWidth = panel.getBoundingClientRect().width;
-        
-        const onMove = function(moveEvt) {
+
+        const onMove = function (moveEvt) {
             const dx = moveEvt.clientX - startX;
-            const newWidth = isLeft ? startWidth + dx : startWidth - dx;
-            const clamped = Math.max(200, Math.min(newWidth, window.innerWidth / 2.5));
-            const varName = isLeft ? '--left-pane-width' : '--right-pane-width';
-            document.documentElement.style.setProperty(varName, clamped + 'px');
+            const newWidth = isLeft ? (startWidth + dx) : (startWidth - dx);
+            const clamped = Math.max(220, Math.min(newWidth, 600));
+            document.documentElement.style.setProperty(varWidth, clamped + 'px');
         };
-        const onUp = function() {
+
+        const onUp = function () {
             document.removeEventListener('pointermove', onMove);
             document.removeEventListener('pointerup', onUp);
         };
+
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
     });
 })();
 "#;
 
+#[derive(Props, Clone, PartialEq)]
+pub struct SiteDataDockProps {
+    pub active_tab: Signal<&'static str>,
+    pub signals: ThemeSignals,
+    pub current_config: ThemeConfig,
+    pub on_apply_theme: EventHandler<ThemeConfig>,
+}
+
 #[component]
-pub fn SiteDataDock(
-    active_tab: Signal<&'static str>,
-    signals: ThemeSignals,
-    current_config: ThemeConfig,
-    on_apply_theme: EventHandler<ThemeConfig>,
-) -> Element {
+pub fn SiteDataDock(props: SiteDataDockProps) -> Element {
     let mut layout = use_context::<LayoutState>();
+    let active_tab = props.active_tab;
+    let signals = props.signals;
+    let current_config = props.current_config;
+    let on_apply_theme = props.on_apply_theme;
+
     let pos = (layout.site_data_pos)();
 
     if pos == DockPosition::Hidden {
         return rsx! { div { style: "display: none;" } };
     }
 
-    let header_actions = rsx! {
-        div { class: "floating-editor-window-actions",
-            if pos != DockPosition::mor_panel_left {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Dock Left",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("site", DockPosition::mor_panel_left);
-                    },
-                    IconDockLeft {}
-                }
-            }
-            if pos != DockPosition::mor_panel_right {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Dock Right",
-                    onclick: move |_| {
-                        layout.request_exclusive_dock("site", DockPosition::mor_panel_right);
-                    },
-                    IconDockRight {}
-                }
-            }
-            if pos != DockPosition::Floating {
-                button {
-                    class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
-                    title: "Float Window",
-                    onclick: move |_| {
-                        layout.site_data_pos.set(DockPosition::Floating);
-                    },
-                    IconFloat {}
-                }
-            }
-            button {
-                class: "editor-mini-button",
-                style: "display: flex; align-items: center; padding: 4px;",
-                title: "Close",
-                onclick: move |_| layout.site_data_pos.set(DockPosition::Hidden),
-                IconClose {}
-            }
-        }
-    };
-
-    let inner_content = rsx! {
-        script { dangerous_inner_html: "{PANE_DRAG_JS}" }
-        script { dangerous_inner_html: "{PANE_RESIZE_JS}" }
-        style { "{RIGHT_PANE_CSS}" }
-
-        if pos == DockPosition::Floating {
-            div {
-                class: "floating-editor-window-bar",
-                div {
-                    class: "floating-editor-grip-group",
-                    span { class: "floating-editor-grip", style: "display: flex; align-items: center;", IconGrip {} }
-                    span {
-                        class: "floating-editor-title",
-                        "Site Data"
-                    }
-                }
-                {header_actions}
-            }
-        } else {
-            div { class: "editor-panel-header",
-                h2 { class: "editor-panel-title", "Site Data" }
-                {header_actions}
-            }
-        }
-
-        div { class: "editor-panel-tabs",
-            EditorAccordion { id: "Site", title: "Site Identity", active: active_tab,
-                SitePanel {}
-            }
-
-            EditorAccordion { id: "Assets", title: "Images & Assets", active: active_tab,
-                AssetsPanel {
-                    favicon_url: signals.favicon_url,
-                    social_card_image_url: signals.social_card_image_url,
-                    current_config: current_config.clone(),
-                    on_apply_theme,
-                }
-            }
-
-            EditorAccordion { id: "Menu", title: "Navigation Menu", active: active_tab,
-                MenuPanel {
-                    menu_1_label: signals.menu_1_label,
-                    menu_1_url: signals.menu_1_url,
-                    menu_2_label: signals.menu_2_label,
-                    menu_2_url: signals.menu_2_url,
-                    menu_3_label: signals.menu_3_label,
-                    menu_3_url: signals.menu_3_url,
-                    menu_4_label: signals.menu_4_label,
-                    menu_4_url: signals.menu_4_url,
-                }
-            }
-
-            EditorAccordion { id: "SEO", title: "SEO & Footer", active: active_tab,
-                SeoPanel {}
-                FooterPanel {
-                    footer_text: signals.footer_text,
-                    footer_license_label: signals.footer_license_label,
-                    footer_license_url: signals.footer_license_url,
-                }
-            }
-
-            EditorAccordion { id: "Ads", title: "Advertising", active: active_tab,
-                AdsPanel { ads: signals.ads }
-            }
-
-            EditorAccordion { id: "Plugins", title: "Custom Scripts", active: active_tab,
-                PluginsPanel { custom_js: signals.custom_js }
-            }
-        }
-    };
-
     rsx! {
         crate::ui_kit::MorPanelWrapper {
             position: pos,
             default_position: DockPosition::mor_panel_right,
-            {inner_content}
+            script { dangerous_inner_html: "{PANE_DRAG_JS}" }
+            script { dangerous_inner_html: "{PANE_RESIZE_JS}" }
+            style { "{RIGHT_PANE_CSS}" }
+
+            DockChrome {
+                title: "Site Data".to_string(),
+                dock_id: "site".to_string(),
+                position: pos,
+                on_close: move |_| {
+                    layout.site_data_pos.set(DockPosition::Hidden);
+                },
+                div { class: "editor-panel-tabs",
+                    EditorAccordion { id: "Site", title: "Site Identity", active: active_tab,
+                        SitePanel {}
+                    }
+
+                    EditorAccordion { id: "Assets", title: "Images & Assets", active: active_tab,
+                        AssetsPanel {
+                            favicon_url: signals.favicon_url,
+                            social_card_image_url: signals.social_card_image_url,
+                            current_config: current_config.clone(),
+                            on_apply_theme,
+                        }
+                    }
+
+                    EditorAccordion { id: "Menu", title: "Navigation Menu", active: active_tab,
+                        MenuPanel {
+                            menu_1_label: signals.menu_1_label,
+                            menu_1_url: signals.menu_1_url,
+                            menu_2_label: signals.menu_2_label,
+                            menu_2_url: signals.menu_2_url,
+                            menu_3_label: signals.menu_3_label,
+                            menu_3_url: signals.menu_3_url,
+                            menu_4_label: signals.menu_4_label,
+                            menu_4_url: signals.menu_4_url,
+                        }
+                    }
+
+                    EditorAccordion { id: "SEO", title: "SEO & Footer", active: active_tab,
+                        SeoPanel {}
+                        FooterPanel {
+                            footer_text: signals.footer_text,
+                            footer_license_label: signals.footer_license_label,
+                            footer_license_url: signals.footer_license_url,
+                        }
+                    }
+
+                    EditorAccordion { id: "Ads", title: "Advertising", active: active_tab,
+                        AdsPanel { ads: signals.ads }
+                    }
+
+                    EditorAccordion { id: "Plugins", title: "Custom Scripts", active: active_tab,
+                        PluginsPanel { custom_js: signals.custom_js }
+                    }
+                }
+            }
         }
     }
 }

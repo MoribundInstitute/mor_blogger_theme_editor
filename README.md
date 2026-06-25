@@ -43,6 +43,8 @@ Editing a custom Blogger theme means wrestling with a monolithic, 3,000-line `te
 
 The MorBlogger GUI Theme Builder replaces the monolith with a component-driven pipeline. You work visually with structured modules in a desktop UI. When you are ready, the Rust engine safely compiles your palettes, typography, and modular CSS into a single bulletproof XML file, matching HTML pages, or a ZIP archive containing the whole lot, ready for upload.
 
+![Monolith vs modular pipeline](docs/diagrams/monolith_vs_modular.drawio.png)
+
 The theming is also hype because we have Rust code that converts GTK4 SVGs into Data URIs. Then, with a bit of behind-the-scenes CSS magic, we can make all sorts of SVG whatnot appear on your blog. I think we could get it to work for these later too: [GNOME-Look SVG Themes](https://www.gnome-look.org/browse?cat=277&ord=rating).
 
 ---
@@ -54,6 +56,12 @@ The theming is also hype because we have Rust code that converts GTK4 SVGs into 
 - **Suckless CSS Pipeline:** The engine safely slices, sanitizes, and stitches dozens of individual CSS modules into a final layout without nesting errors.
 - **Intelligent Injection:** Automatically wires up SEO metadata, typography scaling systems, and dynamic widget sockets.
 
+![Theme compile and export pipeline](docs/diagrams/theme_compile_pipeline.drawio.png)
+
+![CSS assembly pipeline](docs/diagrams/css_assembly_pipeline.drawio.png)
+
+See also: [CSS Assembly Pipeline](docs/CSS_PIPELINE.md)
+
 ### 🎨 GTK Desktop Integration
 - **Native-Feeling Themes:** Import visual variables directly from legendary Linux themes like Adwaita, Nord, and WhiteSur.
 - **Asset Compilation:** Automatically converts external SVG assets into lightweight, embedded CSS data URIs to eliminate external HTTP requests.
@@ -64,11 +72,19 @@ The theming is also hype because we have Rust code that converts GTK4 SVGs into 
 - **Smart Code Dock:** An interactive configuration editor that maps visual template modules (Headers, Sidebars, Footers) directly to raw TOML byte-offsets, centering exactly what you need to edit.
 - **Hardware Accelerated:** Powered entirely by Rust and Dioxus for instantaneous hot-swapping and rendering.
 
+![Workspace UI layout](docs/diagrams/workspace_ui_layout.drawio.png)
+
+![Dioxus state, docks, and ThemeSignals](docs/diagrams/dioxus_app_architecture.drawio.png)
+
 ---
 
 ## 🎨 How to Import Native GTK4 Linux Themes
 
 Moribund Architect can steal colors, borders, and UI icons directly from native Linux GTK Desktop themes and convert them into Blogger templates.
+
+![GTK theme import flow](docs/diagrams/gtk_import_flow.drawio.png)
+
+See also: [GTK Theme Parsing](docs/GTK_PARSER.md)
 
 1. Go to [GNOME-Look.org](https://www.gnome-look.org/browse/).
 2. Download any GTK3/GTK4 theme archive (e.g., `Mojave-Dark-alt.tar.xz`).
@@ -204,6 +220,8 @@ mbt build
 mbt bundle
 ```
 
+![GUI and CLI development workflow](docs/diagrams/dev_workflow.drawio.png)
+
 ---
 
 # Project Goals
@@ -268,13 +286,19 @@ https://github.com/MoribundInstitute/mor_blogger_theme_editor
 
 This project adheres to a strict "Bring Your Own Frontend" (BYOF) modular architecture. We believe the logic that generates a theme should not be permanently bolted to the interface used to design it.
 
+![BYOF crate boundaries](docs/diagrams/byof_crates.drawio.png)
+
 The workspace is divided into distinct crates with hard compile-time boundaries:
 
 * **`mor_blogger_core` (The Headless Engine):** The pure logic heart of the compiler. It handles TOML parsing, XML template resolution, CSS generation, and strict structural validation. It has zero GUI, OS, or filesystem-dialog dependencies.
 * **`mor_blogger_dioxus_ui` (The Visual Workspace):** A Dioxus-powered graphical interface. It features a true "Socket and Plug" design:
-  * **The Socket (`MainDock`):** A generic, framework-agnostic window container that draws borders, tabs, and layout boundaries.
-  * **The Plug (`BloggerWorkspace`):** The Blogger-specific logic module that slots into the dock. If a developer forks this project for Neocities, they simply rip out the Blogger plug and insert their own. Zero structural friction.
+  * **The Socket (`MorLayoutChrome`):** A generic window shell that draws borders, dock zones, tabs, and layout boundaries.
+  * **The Plug (`BloggerWorkspace`):** The Blogger-specific logic module that slots into the center workspace. If a developer forks this project for Neocities, they simply rip out the Blogger plug and insert their own. Zero structural friction.
 * **`mor_blogger_cli` (`mbt`):** A lightweight, native terminal interface. Built for power users, it wraps the core engine in a fast, standard Unix command surface. Use it to scaffold projects, validate XML syntax, or integrate theme builds into automated CI/CD pipelines without ever opening a window.
+
+![Socket and plug UI pattern](docs/diagrams/socket_plug_ui.drawio.png)
+
+Deep dive: [Architecture Overview](docs/ARCHITECTURE.md)
 
 ---
 
@@ -302,10 +326,12 @@ See the exported themes running live on Blogger's infrastructure:
 ## 📚 Documentation & Deep Dives
 The Architect is designed to be extensible. Whether you want to understand the reactive state engine or submit your own preset to the Compendium, our documentation hub has you covered:
 
-- [Architecture Overview](docs/ARCHITECTURE.md) : How the Rust rendering engine and Dioxus state management interact.
-- [The CSS Assembly Pipeline](docs/CSS_PIPELINE.md) : Understanding the `mor_` namespace and how modular CSS is stitched together.
-- [Creating a Theme Preset](docs/THEME_CREATION.md) : Guide to defining tokens, palettes, and custom layouts for the Compendium.
-- [GTK Theme Parsing](docs/GTK_PARSER.md) : How the engine translates Linux desktop themes into Blogger variables.
+- [Architecture Overview](docs/ARCHITECTURE.md) — Rust rendering engine, Dioxus state, docks, and ThemeSignals (with diagrams).
+- [The CSS Assembly Pipeline](docs/CSS_PIPELINE.md) — The `mor_` namespace and how modular CSS is stitched together.
+- [Creating a Theme Preset](docs/THEME_CREATION.md) — Tokens, palettes, and compendium submission.
+- [GTK Theme Parsing](docs/GTK_PARSER.md) — How Linux desktop themes become Blogger variables.
+
+Editable diagram sources live in [`docs/diagrams/`](docs/diagrams/).
 
 ## 🧰 Resources
 Need assets or reference material for your theme? Use these external tools:
@@ -384,6 +410,8 @@ Paste the `@font-face` block and your `--font-*` overrides into the **MorBlogger
 ---
 
 ## 🤖 AI & LLM Integration (Strictly Opt-In)
+
+![MCP integration architecture](docs/diagrams/mcp_integration.drawio.png)
 
 For developers and power users who want AI assistance without adding bloated Electron apps or embedded runtimes to the GUI, we maintain a standalone, headless MCP (Model Context Protocol) server.
 

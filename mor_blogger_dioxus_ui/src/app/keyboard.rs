@@ -2,6 +2,24 @@ use dioxus::prelude::*;
 
 use super::state::{DockPosition, LayoutState};
 
+/// Synchronous (capture-phase) keydown guard for the editor windows. Dioxus's
+/// `evt.prevent_default()` runs after the event round-trips to Rust, which is
+/// too late to stop the webview's built-in actions (save-page, close-tab,
+/// history back/forward). This cancels those defaults inline so the muda menu /
+/// onkeydown handlers can own the shortcuts. It only prevents defaults — it
+/// performs no actions. Inject once per editor DOM via a `<script>`.
+pub const EDITOR_KEY_GUARD_JS: &str = r#"
+(function(){
+  if (window.__morEditorKeyGuard) return;
+  window.__morEditorKeyGuard = true;
+  window.addEventListener('keydown', function(e){
+    var k = (e.key || '').toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'w')) { e.preventDefault(); }
+    if (e.altKey && (k === 'arrowleft' || k === 'arrowright')) { e.preventDefault(); }
+  }, true);
+})();
+"#;
+
 pub fn use_keyboard_shortcuts(layout: LayoutState) {
     let mut theme_palette_pos = layout.theme_palette_pos;
     let mut site_data_pos = layout.site_data_pos;

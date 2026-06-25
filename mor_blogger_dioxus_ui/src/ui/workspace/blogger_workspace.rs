@@ -1,5 +1,5 @@
 use crate::app::state::{
-    CenterView, ContextMenuPayload, LayoutState, RenderState, WindowManager,
+    CenterView, ContextMenuPayload, LayoutState, RenderState,
 };
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
@@ -319,22 +319,25 @@ pub fn BloggerWorkspace(
 }
 
 #[component]
-fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
-    let mut wm = use_context::<Signal<WindowManager>>();
+fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
+    // Route every workspace switch through enter_workspace so the per-workspace
+    // default dock layout (e.g. Template Modules on the left for ModuleWorkbench)
+    // is applied on click, not via a use_effect.
+    let mut layout = use_context::<LayoutState>();
     rsx! {
         button {
             class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| center_view.set(CenterView::Preview),
+            onclick: move |_| layout.enter_workspace(CenterView::Preview),
             "Preview"
         }
         button {
             class: if center_view() == CenterView::CodeEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| center_view.set(CenterView::CodeEditor),
+            onclick: move |_| layout.enter_workspace(CenterView::CodeEditor),
             "Code Editor"
         }
         button {
             class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| center_view.set(CenterView::Export),
+            onclick: move |_| layout.enter_workspace(CenterView::Export),
             "Export XML"
         }
         button {
@@ -345,17 +348,13 @@ fn WorkspaceTabs(mut center_view: Signal<CenterView>) -> Element {
             },
             onclick: move |e| {
                 e.stop_propagation();
-
-                center_view.set(CenterView::ModuleWorkbench);
-
-                let mut state = wm.write();
-                state.show_template_modules = true;
+                layout.enter_workspace(CenterView::ModuleWorkbench);
             },
             "Module Workbench"
         }
         button {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| center_view.set(CenterView::StaticPageEditor),
+            onclick: move |_| layout.enter_workspace(CenterView::StaticPageEditor),
             "Static Pages"
         }
     }

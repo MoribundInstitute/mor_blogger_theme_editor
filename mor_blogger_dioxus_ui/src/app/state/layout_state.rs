@@ -54,6 +54,7 @@ pub struct LayoutState {
     pub xml_editor_pos: Signal<DockPosition>,
     pub css_builder_pos: Signal<DockPosition>,
     pub js_builder_pos: Signal<DockPosition>,
+    pub template_modules_pos: Signal<DockPosition>,
     pub active_workbench_module: Signal<Option<&'static str>>,
 
     pub center_view: Signal<CenterView>,
@@ -84,6 +85,7 @@ impl LayoutState {
             xml_editor_pos: use_signal(|| DockPosition::Hidden),
             css_builder_pos: use_signal(|| DockPosition::Hidden),
             js_builder_pos: use_signal(|| DockPosition::Hidden),
+            template_modules_pos: use_signal(|| DockPosition::Hidden),
             active_workbench_module: use_signal(|| None),
 
             center_view: use_signal(|| CenterView::Preview),
@@ -137,6 +139,17 @@ impl LayoutState {
 
     pub fn is_dock_pinned(&self, dock_name: &str) -> bool {
         self.pinned_docks.read().contains(&dock_name.to_string())
+    }
+
+    /// Switch the center workspace and apply that workspace's default dock layout
+    /// in one shot (called on the switcher click, not via a use_effect). Module
+    /// Workbench opens the Template Modules dock on the left; other views hide it.
+    pub fn enter_workspace(&mut self, ws: CenterView) {
+        self.center_view.set(ws);
+        self.template_modules_pos.set(match ws {
+            CenterView::ModuleWorkbench => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
     }
 
     pub fn request_exclusive_dock(&mut self, target_id: &str, requested_pos: DockPosition) {

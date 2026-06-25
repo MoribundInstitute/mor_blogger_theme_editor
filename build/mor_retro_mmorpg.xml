@@ -1,0 +1,3086 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0' name='viewport'/>
+  <meta content='IE=edge' http-equiv='X-UA-Compatible'/>
+  <meta content='true' name='HandheldFriendly'/>
+  <meta content='width' name='MobileOptimized'/>
+  <meta content='yes' name='apple-mobile-web-app-capable'/>
+
+  <title><data:view.title.escaped/></title>
+  <b:include data='blog' name='all-head-content'/>
+
+  <meta content='A modern Blogger theme generated with Blogger Theme Architect.' name='description'/>
+  <meta content='blog, writing, theme, editorial' name='keywords'/>
+  <meta content='' name='author'/>
+  <meta content='index, follow' name='robots'/>
+  <meta content='#4f3b2a' name='theme-color'/>
+  <meta content='#4f3b2a' name='msapplication-TileColor'/>
+
+  <meta expr:content='data:view.title.escaped' property='og:title'/>
+  <meta content='A modern Blogger theme generated with Blogger Theme Architect.' property='og:description'/>
+  <meta expr:content='data:blog.canonicalUrl' property='og:url'/>
+  <meta content='website' property='og:type'/>
+  <meta content='https://imgur.com/QZ7pbY6' property='og:image'/>
+
+  <meta expr:content='data:view.title.escaped' name='twitter:title'/>
+  <meta content='A modern Blogger theme generated with Blogger Theme Architect.' name='twitter:description'/>
+  <meta content='summary_large_image' name='twitter:card'/>
+  <meta content='https://imgur.com/QZ7pbY6' name='twitter:image'/>
+
+  <link href='https://imgur.com/QZ7pbY6' rel='icon' sizes='16x16' type='image/png'/>
+  <link href='https://imgur.com/QZ7pbY6' rel='icon' sizes='32x32' type='image/png'/>
+  <link href='https://imgur.com/QZ7pbY6' rel='icon' sizes='48x48' type='image/png'/>
+  <link href='https://imgur.com/QZ7pbY6' rel='icon' sizes='192x192' type='image/png'/>
+  <link href='https://imgur.com/QZ7pbY6' rel='icon' sizes='512x512' type='image/png'/>
+  <link href='https://imgur.com/QZ7pbY6' rel='apple-touch-icon' sizes='180x180'/>
+
+  <meta content='https://imgur.com/QZ7pbY6' name='msapplication-TileImage'/>
+
+  <link href='/' rel='home'/>
+  <link href='' rel='license'/>
+
+  
+  
+  
+<b:skin><![CDATA[
+:root {
+  --bg-base: #24170f;
+  --bg-panel: #4f3b2a;
+  --bg-elevated: #5e4732;
+  --bg-highlight: #5e4732;
+  --bg-workspace: linear-gradient(180deg, #362317, #1b120d);
+  --fg-base: #e7dcc0;
+  --fg-dim: #b8a88d;
+  --fg-muted: #b8a88d;
+  --accent: #ffae42;
+  --border-color: #22160f;
+  --border-soft: #22160f;
+  --theme-border-color: #22160f;
+  --panel-border-width: 1px;
+  --glow: 0 0 10px #ffae42;
+  --glow-strong: 0 0 calc(10px * 2) #ffae42;
+  --btn-radius: 2px;
+  --btn-border-width: 2px;
+  --btn-text-transform: none;
+  --font-body: Georgia, 'Times New Roman', Times, serif;
+  --font-heading: Georgia, 'Times New Roman', Times, serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  --font-size-base: 16px;
+  --line-height-body: 1.5;
+  --heading-weight: 700;
+  --icon-sidebar-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9%204v16M6%208h.01M6%2012h.01%20M3%204h18v16H3z'/%3E%3C/svg%3E");
+  --icon-sidebar-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15%204v16M18%208h.01M18%2012h.01%20M3%204h18v16H3z'/%3E%3C/svg%3E");
+  --icon-panel-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z'/%3E%3C/svg%3E");
+  --icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.5%2010.5a5.5%205.5%200%201%201-11%200%205.5%205.5%200%200%201%2011%200Z%20M21%2021l-5.5-5.5'/%3E%3C/svg%3E");
+  --icon-menu: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3%2018h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z'/%3E%3C/svg%3E");
+  --mor-border-image: none;
+  --mor-border-slice: 0;
+  --mor-border-width-img: var(--panel-border-width);
+}
+#Label1, .Label { --widget-icon: var(--icon-label); }
+#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }
+
+
+:root {
+  /* DARK MODE (Default) */
+  --bg-base: #e7dcc0;
+  --bg-panel: #b8a88d;
+  --bg-highlight: #e7dcc0;
+  --bg-soft: #b8a88d;
+  --bg-elevated: #e7dcc0;
+  --bg-workspace: linear-gradient(180deg, #362317, #1b120d);
+
+  --fg-base: #24170f;
+  --fg-dim: #4f3b2a;
+  --fg-muted: #4f3b2a;
+  --accent: #ffae42;
+
+  --border-color: #22160f;
+  --border-soft: #22160f;
+  --theme-border-color: #22160f;
+  --panel-border-width: 1px;
+  --theme-border-image: none;
+
+  --font-body: Georgia, &#39;Times New Roman&#39;, Times, serif;
+  --font-heading: Georgia, &#39;Times New Roman&#39;, Times, serif;
+  --font-mono: &#39;Courier New&#39;, Courier, monospace;
+  --font-size-base: 16px;
+  --line-height-body: 1.5;
+  --heading-weight: 700;
+  --sidebar-width: 300px;
+  --header-z: 1100;
+  --overlay-z: 1200;
+  --dropdown-z: 1300;
+
+  --theme-cursor-default: auto;
+  --theme-cursor-pointer: pointer;
+  
+  --theme-scrollbar-width: 6px;
+  --theme-scrollbar-track: transparent;
+  --theme-scrollbar-thumb: #4c566a;
+  --theme-scrollbar-thumb-hover: #81a1c1;
+
+  --glow: 0 0 4px #ffae42;
+  --glow-strong: 0 0 8px #ffae42;
+  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--bg-base) 65%, transparent);
+  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--bg-base) 90%, transparent);
+  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--bg-base) 10%, transparent);
+  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--bg-base) 20%, transparent);
+  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
+
+  background: linear-gradient(180deg, #362317, #1b120d);
+}
+
+/* LIGHT MODE (Triggered via JS) */
+html[data-theme="light"] {
+  --bg-base: #24170f;
+  --bg-panel: #4f3b2a;
+  --bg-highlight: #5e4732;
+  --bg-soft: #4f3b2a;
+  --bg-elevated: #5e4732;
+  --bg-workspace: linear-gradient(180deg, #362317, #1b120d);
+
+  --fg-base: #e7dcc0;
+  --fg-dim: #b8a88d;
+  --fg-muted: #b8a88d;
+  --accent: #ffae42;
+
+  --border-color: #22160f;
+  --border-soft: #22160f;
+  --theme-border-color: #22160f;
+  --theme-border-image: none;
+
+  --glow: 0 0 4px #ffae42;
+  --glow-strong: 0 0 8px #ffae42;
+  --shadow-elevated: 0 18px 45px color-mix(in srgb, var(--fg-base) 15%, transparent);
+  --shadow-overlay: 0 0 30px color-mix(in srgb, var(--fg-base) 90%, transparent);
+  --shadow-soft: 0 2px 4px color-mix(in srgb, var(--fg-base) 10%, transparent);
+  --shadow-dropdown: 0 8px 24px color-mix(in srgb, var(--fg-base) 20%, transparent);
+  --shadow-inset-highlight: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 5%, transparent);
+
+  background: linear-gradient(180deg, #362317, #1b120d);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size-base);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-body);
+  line-height: var(--line-height-body);
+  cursor: var(--theme-cursor-default, auto);
+}
+
+body {
+  min-width: 0;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
+/* ============================================================
+   Universal Accessibility Overrides
+   These rules sit at the bottom of the cascade and intercept
+   OS-level accessibility requests, overriding TOML presets.
+   ============================================================ */
+
+/* 1. Keyboard Focus Safety 
+   Never allow an outline to be removed without replacing it. */
+*:focus-visible {
+  outline: 2px solid var(--fg-base) !important;
+  outline-offset: 4px !important;
+  box-shadow: none !important;
+}
+
+/* 2. High Contrast Mode (prefers-contrast: more)
+   Strips gradients, blurs, and glows. Enforces hard lines. */
+@media (prefers-contrast: more) {
+  :root {
+    --glow-spread: 0px !important;
+  }
+  
+  /* Flatten surfaces and enforce strict foreground/background contrast */
+  .canvas-core, 
+  .mor-post, 
+  .mor-panel, 
+  .main-header, 
+  .mor-footer, 
+  .mor-catalog-dropdown,
+  button, 
+  input {
+    background: var(--bg-base) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--fg-base) !important;
+    color: var(--fg-base) !important;
+    text-shadow: none !important;
+  }
+
+  /* Force links to be aggressively underlined so they don't rely on color alone */
+  a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 3px !important;
+  }
+}
+
+/* 3. Reduced Motion (prefers-reduced-motion: reduce)
+   Kills all background drifts, hover floats, and CSS animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 4. Visually Hidden Utility
+   Hides element from screen while keeping it accessible to screen readers.
+   Robust against font-size or color overrides. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+}
+
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+a { 
+  color: var(--fg-base); 
+  text-decoration: none; 
+  border-bottom: 1px dotted var(--fg-dim); 
+  cursor: var(--theme-cursor-pointer, pointer);
+}
+
+a:hover, 
+a:focus-visible { 
+  background: var(--fg-base); 
+  color: var(--bg-base); 
+  text-shadow: none; 
+  outline: none; 
+}
+
+button { background: transparent; color: var(--fg-base); border: 1px solid var(--border-color); cursor: pointer; font-family: var(--font-mono); padding: 4px 8px; line-height: 1.2; }
+button:hover, button:focus { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+button:focus-visible { box-shadow: 0 0 0 2px var(--fg-dim); }
+.panel-toggle { min-width: 92px; text-align: center; white-space: nowrap; }
+.panel-header .panel-toggle { min-width: auto; padding: 2px 7px; }
+
+.main-header { display: flex; flex-direction: column; flex-shrink: 0; border-bottom: var(--panel-border-width) solid var(--theme-border-color); background: transparent; width: 100%; position: relative; z-index: var(--header-z); }
+
+/* The fix: Background is now transparent so the parent's glass/gradient shines through */
+.header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 10px 20px 9px; line-height: 1.2; border-bottom: var(--panel-border-width) dashed var(--theme-border-color); background: transparent; }
+.header-bottom-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 12px 20px 14px; flex-wrap: wrap; line-height: 1.2; background: transparent; }
+
+/* Group wrappers to maintain strict center alignment of the logo */
+.header-side-controls { display: flex; align-items: center; gap: 8px; flex: 1 1 0; }
+.right-controls { justify-content: flex-end; }
+
+/* --- Light/Dark Toggle SVG Logic --- */
+/* Sun shown in light mode, Moon shown in dark mode (standard convention) */
+/* Use ID selector to guarantee we override 22-Export-Safety.css */
+#mor-theme-toggle { 
+  color: var(--fg-base) !important; 
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Kill the engine's default icon mask so it doesn't overlap the SVGs */
+#mor-theme-toggle::before,
+#mor-theme-toggle::after { 
+  display: none !important; 
+  background: none !important;
+  content: none !important;
+}
+
+#mor-theme-toggle svg { 
+  width: 18px !important; 
+  height: 18px !important; 
+  fill: currentColor !important; 
+}
+
+/* Light Mode: Show Sun, Hide Moon */
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-sun { display: block !important; }
+html:not([data-theme="dark"]) #mor-theme-toggle .theme-toggle-moon { display: none !important; }
+
+/* Dark Mode: Show Moon, Hide Sun */
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-sun { display: none !important; }
+html[data-theme="dark"] #mor-theme-toggle .theme-toggle-moon { display: block !important; }
+
+.branding { min-width: 0; text-align: center; }
+.branding-link { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-decoration: none; color: inherit; border-bottom: none; }
+.branding-link:hover, .branding-link:focus-visible { background: transparent; color: inherit; }
+.institute-logo { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: var(--glow); }
+.branding .institute-title { display: inline-block; font-size: 1.05rem; font-weight: bold; letter-spacing: 2px; line-height: 1.2; color: var(--fg-base); text-shadow: var(--glow-strong); white-space: nowrap; }
+.branding-link:hover .institute-logo, .branding-link:focus-visible .institute-logo { border-color: var(--fg-dim); box-shadow: var(--glow-strong); }
+.branding-link:hover .institute-title, .branding-link:focus-visible .institute-title { color: var(--fg-base); text-decoration: underline; }
+
+.mor-nav { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.mor-nav a, .mor-nav button { color: var(--fg-dim); border-bottom: none; font-size: 0.95rem; white-space: nowrap; }
+.mor-nav > a { border: none; }
+.mor-nav > a:hover, .mor-nav > a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }
+
+.mor-catalog-menu { position: relative; display: inline-flex; align-items: center; }
+.mor-catalog-trigger { appearance: none; display: inline-flex; align-items: center; gap: 0.35rem; border: none; background: transparent; color: var(--fg-dim); font: inherit; cursor: pointer; padding: 0; }
+.mor-catalog-trigger:hover, .mor-catalog-trigger:focus-visible, .mor-catalog-menu.is-open .mor-catalog-trigger { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-dropdown { position: absolute; top: 100%; left: 0; z-index: var(--dropdown-z); display: none; grid-template-columns: minmax(230px, 280px) minmax(340px, 520px); width: min(860px, calc(100vw - 2rem)); max-height: min(72vh, 680px); background: var(--bg-elevated); border: var(--panel-border-width) solid var(--theme-border-color); border-image: var(--theme-border-image); box-shadow: var(--shadow-elevated); overflow: hidden; }
+.mor-catalog-menu.is-open .mor-catalog-dropdown, .mor-catalog-menu:focus-within .mor-catalog-dropdown { display: grid; }
+.mor-catalog-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 8px; }
+.mor-catalog-left, .mor-catalog-right { padding: 0.85rem; overflow-y: auto; overflow-x: hidden; }
+.mor-catalog-left { background: var(--bg-panel); border-right: var(--panel-border-width) solid var(--theme-border-color); }
+.mor-catalog-right { background: var(--bg-base); min-width: 0; }
+.mor-catalog-category { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid transparent; background: transparent; color: var(--fg-base); cursor: pointer; padding: 0.65rem 0.75rem; text-align: left; font: inherit; }
+.mor-catalog-category:hover, .mor-catalog-category:focus-visible, .mor-catalog-category.is-active { border-color: var(--fg-dim); background: var(--bg-highlight); color: var(--fg-base); text-shadow: var(--glow-strong); outline: none; }
+.mor-catalog-all { display: block; margin-top: 0.75rem; padding: 0.65rem 0.75rem; border-top: var(--panel-border-width) solid var(--theme-border-color); border-bottom: none; color: var(--fg-dim); }
+.mor-catalog-all:hover, .mor-catalog-all:focus-visible { background: var(--fg-base); color: var(--bg-base); }
+.mor-catalog-panel { display: none; }
+.mor-catalog-panel.is-active { display: grid; gap: 0.2rem; align-content: start; }
+.mor-catalog-panel a { display: block; padding: 0.55rem 0.75rem; color: var(--fg-base); border-bottom: none; white-space: normal; }
+.mor-catalog-panel a:hover, .mor-catalog-panel a:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; outline: none; }
+.mor-catalog-panel .mor-panel-heading { border: var(--panel-border-width) solid var(--theme-border-color); border-image: var(--theme-border-image); background: var(--bg-highlight); color: var(--fg-base); font-weight: bold; margin-bottom: 0.35rem; text-shadow: var(--glow-strong); }
+.mor-catalog-panel .mor-panel-heading:hover, .mor-catalog-panel .mor-panel-heading:focus-visible { background: var(--fg-base); color: var(--bg-base); text-shadow: none; }
+.mor-catalog-left::-webkit-scrollbar, .mor-catalog-right::-webkit-scrollbar { width: 6px; }
+.mor-catalog-left::-webkit-scrollbar-track, .mor-catalog-right::-webkit-scrollbar-track { background: var(--bg-base); }
+.mor-catalog-left::-webkit-scrollbar-thumb, .mor-catalog-right::-webkit-scrollbar-thumb { background: var(--border-color); }
+.mor-catalog-left::-webkit-scrollbar-thumb:hover, .mor-catalog-right::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }
+
+.mor-search { min-width: 0; }
+.mor-search form { display: flex; align-items: center; gap: 8px; margin: 0; }
+.mor-search .prompt { display: none; color: var(--fg-dim); font-size: 0.9rem; white-space: nowrap; }
+.mor-search input { background: transparent; border: none; border-bottom: 1px solid var(--border-color); color: var(--fg-base); font-family: var(--font-mono); outline: none; width: 180px; padding: 3px 4px; transition: width 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+.mor-search input:focus { width: 240px; border-bottom: 1px solid var(--fg-base); box-shadow: 0 1px 0 var(--fg-base); }
+.mor-search input::placeholder { color: var(--fg-muted); }
+.mor-search button.icon-search-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background-color: var(--fg-base);
+    -webkit-mask-image: var(--icon-search);
+    -webkit-mask-size: 20px 20px;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    cursor: pointer;
+    transition: background-color 0.2s ease, filter 0.2s ease;
+}
+
+.mor-search button.icon-search-btn:hover {
+    background-color: var(--accent);
+    filter: drop-shadow(0 0 4px var(--accent));
+}
+
+.mor-workspace { display: flex; flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden; }
+
+.mor-panel { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--bg-workspace); border-style: solid; border-color: var(--theme-border-color); border-width: var(--mor-border-width-img); border-image: var(--theme-border-image); display: flex; flex-direction: column; flex-shrink: 0; transition: margin 0.2s ease-in-out, transform 0.2s ease-in-out; border-image-source: var(--mor-border-image, none); border-image-slice: var(--mor-border-slice, 0); border-image-repeat: round; }
+.panel-right { border-image: var(--theme-border-image); }
+.panel-left.is-collapsed { margin-left: calc(var(--sidebar-width) * -1); }
+.panel-right.is-collapsed { margin-right: calc(var(--sidebar-width) * -1); }
+.panel-header { padding: 10px; border-bottom: var(--panel-border-width) solid var(--theme-border-color); display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: bold; font-size: 0.9rem; line-height: 1.2; background: var(--bg-highlight); }
+.panel-header span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.panel-content { padding: 15px; overflow-y: auto; overflow-x: hidden; flex-grow: 1; min-height: 0; font-size: 0.85rem; background: transparent; }
+
+.canvas-core { flex-grow: 1; display: flex; flex-direction: column; height: auto; min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden; background: transparent; }
+.canvas-header { padding: 10px 20px; border-bottom: var(--panel-border-width) solid var(--theme-border-color); display: flex; justify-content: space-between; align-items: center; }
+.system-status { color: var(--fg-dim); font-size: 0.8rem; }
+.canvas-content { padding: 24px 20px 20px; max-width: 1200px; margin: 0 auto; width: 100%; min-width: 0; display: flex; flex-direction: column; flex-grow: 1; gap: 60px; background: transparent; }
+
+.mor-post { margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+.post-title { margin-top: 0; font-family: var(--font-heading); font-size: 1.5rem; line-height: 1.25; }
+.post-title a { color: var(--fg-base); border-bottom: none; }
+.post-title a:hover, .post-title a:focus-visible { background: transparent; color: var(--fg-base); text-shadow: var(--glow-strong); }
+.post-meta { color: var(--fg-dim); font-size: 0.85rem; margin-bottom: 20px; line-height: var(--line-height-body); }
+.sys-tags a { color: var(--fg-dim); }
+.post-body { line-height: var(--line-height-body); overflow-wrap: break-word; }
+.post-body pre { max-width: 100%; overflow-x: auto; border: 1px solid var(--border-color); background: var(--bg-soft); padding: 12px; }
+.post-body code { background: var(--bg-soft); border: 1px solid var(--border-soft); padding: 1px 4px; }
+
+.mor-pager { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 30px; justify-content: flex-start; }
+.pager-btn { color: var(--fg-dim); border: none; }
+.pager-btn:hover, .pager-btn:focus-visible { color: var(--bg-base); background: var(--fg-base); }
+
+.widget { margin-bottom: 25px; }
+.widget h2 { margin-top: 0; font-size: 1rem; border-bottom: var(--panel-border-width) solid var(--theme-border-color); padding-bottom: 5px; }
+.widget.BlogArchive h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-archive);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.Label h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-label);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+
+.widget.HTML h2.title::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  background-color: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  -webkit-mask-image: var(--icon-toc);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: text-bottom;
+  margin-right: 8px;
+}
+.sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+.sidebar-section .Label ul,
+.sidebar-section .BlogArchive ul:not(.posts) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sidebar-section .Label li { padding: 0; font-size: 0.75rem; }
+.sidebar-section .Label a,
+.sidebar-section .BlogArchive ul:not(.posts) a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 1px solid var(--accent);
+  border-radius: var(--btn-radius, 4px);
+  background: transparent;
+  color: var(--fg-dim);
+  text-decoration: none;
+  text-align: center;
+}
+.sidebar-section .Label a:hover,
+.sidebar-section .Label a:focus-visible,
+.sidebar-section .BlogArchive ul:not(.posts) a:hover,
+.sidebar-section .BlogArchive ul:not(.posts) a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.sidebar-section .Label a .label-count,
+.sidebar-section .BlogArchive .post-count {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+.sidebar-section .BlogArchive { font-size: 0.75rem; }
+.sidebar-section .BlogArchive .hierarchy-title { color: var(--fg-dim); margin-top: 10px; border-bottom: var(--panel-border-width) dotted var(--theme-border-color); padding-bottom: 2px; }
+.sidebar-section .BlogArchive ul.posts { display: flex; flex-direction: column; gap: 6px; padding-left: 8px; border-left: var(--panel-border-width) dashed var(--theme-border-color); margin-left: 4px; margin-top: 6px; }
+.sidebar-section .BlogArchive ul.posts li { padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#mor-toc-wrapper { font-size: 0.85rem; }
+#mor-toc-list li { line-height: 1.35; }
+.toc-jump-link { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+
+.sidebar-section .widget-content::-webkit-scrollbar, 
+.panel-content::-webkit-scrollbar, 
+.canvas-core::-webkit-scrollbar { 
+  width: var(--theme-scrollbar-width, 6px); 
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-track, 
+.panel-content::-webkit-scrollbar-track, 
+.canvas-core::-webkit-scrollbar-track { 
+  background: var(--theme-scrollbar-track, transparent); 
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-thumb, 
+.panel-content::-webkit-scrollbar-thumb, 
+.canvas-core::-webkit-scrollbar-thumb { 
+  background: var(--theme-scrollbar-thumb, #4c566a); 
+  border-radius: 4px;
+}
+
+.sidebar-section .widget-content::-webkit-scrollbar-thumb:hover, 
+.panel-content::-webkit-scrollbar-thumb:hover, 
+.canvas-core::-webkit-scrollbar-thumb:hover { 
+  background: var(--theme-scrollbar-thumb-hover, #81a1c1); 
+}
+
+/* =========================================================
+   18-Footer-Base.css
+   Shared footer chrome. Loaded for EVERY footer variant
+   (Basic / Compact / Mega): the outer container + the
+   bottom system-info bar.
+   ========================================================= */
+
+.mor-footer {
+  margin-top: auto;
+  border-top: 1px dashed var(--border-color);
+  padding: 30px 40px 20px;
+  font-size: 0.85rem;
+  width: 100%;
+  min-width: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.footer-sys-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.footer-sys-info a {
+  color: var(--fg-dim);
+  border-bottom: 1px dotted var(--fg-dim);
+}
+
+.footer-sys-info a:hover,
+.footer-sys-info a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+}
+
+.back-to-top-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--fg-dim);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.back-to-top-btn:hover {
+  background: var(--fg-base);
+  color: var(--bg-base);
+}
+
+/* Footer grid for basic/compact variants (fluid to prevent overflow when sidebars reduce canvas width) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+
+.footer-col {
+  min-width: 0;
+}
+
+.footer-col h4 {
+  color: var(--fg-base);
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col li {
+  margin-bottom: 8px;
+}
+
+/* =========================================================
+   18-Footer-Mega.css
+   Mega-footer ONLY: the multi-column link directory grid.
+   Pulled in only when footer_variant resolves to the "mor"
+   manifest (MorFooterMega.xml). Layers on top of
+   18-Footer-Base.css.
+   ========================================================= */
+
+.footer-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+  min-width: 0;
+}
+
+.footer-col a {
+  color: var(--fg-dim);
+  border-bottom: none;
+  display: inline-block;
+}
+
+.footer-col a:hover,
+.footer-col a:focus-visible {
+  color: var(--bg-base);
+  background: var(--fg-base);
+  text-shadow: none;
+}
+
+/* --- NEW: Logo & Brand Constraints --- */
+.footer-brand-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 30px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-logo {
+  max-width: 200px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.footer-brand-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--fg-base);
+}
+
+/* --- NEW: Footer System Info Layout Fix --- */
+.footer-sys-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-copyright {
+  margin: 0;
+  flex: 1 1 100%;
+}
+
+.footer-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 768px) {
+  .footer-copyright {
+    flex: 0 1 auto;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  :root { --sidebar-width: 85vw; }
+  html, body { height: auto; min-height: 100vh; overflow-x: hidden; }
+  body { display: block; }
+  .main-header { position: sticky; top: 0; z-index: 50; background: transparent; }
+  .header-top-row { min-height: 60px; padding: 10px 15px; gap: 12px; }
+  .institute-logo { width: 40px; height: 40px; border-radius: 8px; }
+  .branding .institute-title { font-size: 1.05rem; letter-spacing: 1px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; }
+  .panel-toggle { min-width: auto; font-size: 0.9rem; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-width: 1px; }
+  .header-bottom-row { flex-direction: column; align-items: stretch; padding: 12px 15px; gap: 15px; }
+  .mor-nav { width: 100%; gap: 15px; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+  .mor-nav a, .mor-nav button { font-size: 0.95rem; padding: 8px 10px; white-space: nowrap; }
+  .mor-search { width: 100%; }
+  .mor-search form { width: 100%; align-items: stretch; }
+  .mor-search .prompt { display: none; }
+  .mor-search input { width: 100%; flex: 1; padding: 10px; font-size: 1rem; }
+  .mor-workspace { display: block; height: auto; min-height: 100vh; overflow: visible; }
+  .canvas-core { height: auto; min-height: 100vh; overflow: visible; background: transparent; }
+  .canvas-content { padding: 24px 16px; max-width: none; gap: 40px; background: transparent; }
+  .post-title { font-size: 1.35rem; line-height: 1.3; }
+  .mor-panel { position: fixed; top: 0; bottom: 0; width: var(--sidebar-width); max-width: 350px; height: 100vh; z-index: var(--overlay-z, 100); box-shadow: var(--shadow-overlay); margin: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-workspace); overflow-y: auto; }
+  .panel-left { left: 0; right: auto; border-right: 1px solid var(--border-color); transform: translateX(-100%); }
+  .panel-right { right: 0; left: auto; border-left: 1px solid var(--border-color); transform: translateX(100%); }
+  .panel-left:not(.is-collapsed), .panel-right:not(.is-collapsed) { transform: translateX(0); }
+  .panel-content { padding: 20px; background: transparent; }
+  .sidebar-section .widget-content { max-height: none; }
+  .mor-footer { margin-top: auto; padding: 20px 15px; width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .footer-sys-info { align-items: flex-start; flex-direction: column; gap: 10px; }
+}
+
+@media screen and (max-width: 480px) {
+  .institute-logo { width: 38px; height: 38px; border-radius: 7px; }
+  .branding .institute-title { font-size: 0.8rem; max-width: 38vw; }
+  .header-top-row { gap: 6px; }
+  .panel-toggle { font-size: 0.72rem; padding: 4px 5px; }
+  .mor-nav { font-size: 0.8rem; }
+  .mor-catalog-dropdown { left: 6px; right: 6px; top: 140px; max-height: calc(100vh - 155px); }
+  .mor-catalog-left, .mor-catalog-right { padding: 0.65rem; }
+  .mor-catalog-category, .mor-catalog-panel a, .mor-catalog-all { padding: 0.55rem 0.6rem; }
+  .post-meta { font-size: 0.78rem; }
+}
+
+@media screen and (min-width: 901px) {
+  html, body { height: 100vh; overflow: hidden; }
+  body { display: flex; flex-direction: column; }
+  .main-header { position: relative; }
+  .mor-panel { position: relative; transform: none; }
+  .panel-left.is-collapsed { margin-left: calc(var(--sidebar-width) * -1); }
+  .panel-right.is-collapsed { margin-right: calc(var(--sidebar-width) * -1); }
+}
+
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+    min-width: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    flex-shrink: 0 !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    text-shadow: none !important;
+    background-color: transparent !important;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.header-panel-toggle:hover,
+.header-top-row > .panel-toggle:hover {
+    background-color: color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--border-color) 50%, transparent) !important;
+}
+
+.header-panel-toggle-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-sidebar-left) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-left) center/20px no-repeat;
+}
+
+.header-panel-toggle-right::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-sidebar-right) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-right) center/20px no-repeat;
+}
+
+.panel-header .panel-toggle {
+    min-width: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    border: 1px solid transparent !important;
+    flex-shrink: 0 !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    text-shadow: none !important;
+    background-color: transparent !important;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.panel-header .panel-toggle::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--fg-base);
+    mask: var(--icon-panel-close) center/18px no-repeat;
+    -webkit-mask: var(--icon-panel-close) center/18px no-repeat;
+}
+
+.panel-header .panel-toggle:hover {
+    background-color: color-mix(in srgb, var(--fg-base) 15%, transparent) !important;
+}
+
+/* ============================================================
+   23. Comments Section
+   ============================================================ */
+
+#comments {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px dashed var(--border-color);
+}
+
+#comments h3.title {
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+  color: var(--fg-base);
+  font-family: var(--font-heading);
+}
+
+/* Individual Comment Wrapper */
+.comments .comment {
+  margin-bottom: 24px;
+  clear: both;
+}
+
+/* Avatar Styling */
+.comments .avatar-image-container {
+  float: left;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--bg-panel);
+  box-shadow: var(--shadow-soft);
+}
+
+.comments .author-avatar {
+  width: 100%;
+  height: auto;
+}
+
+/* Comment Box */
+.comments .comment-block {
+  margin-left: 56px; /* Makes room for the floating avatar */
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-inset-highlight);
+}
+
+.comments .comment-author {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.comments .comment-author a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.comments .comment-body {
+  color: var(--fg-base);
+  line-height: var(--line-height-body);
+  font-size: 0.95rem;
+}
+
+.comments .comment-footer {
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Nested (Threaded) Replies */
+.comments .comment-thread.inline-thread {
+  padding-left: 24px;
+  border-left: 2px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  margin-top: 20px;
+}
+
+/* The Comment Input Form (Iframe) */
+.comment-form {
+  margin-top: 30px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.comment-form h4 {
+  margin-top: 0;
+  color: var(--fg-base);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   24. Author Profile Block
+   ============================================================ */
+
+.author-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 24px; /* Slightly reduced top/bottom padding for the pill shape */
+  margin: 40px 0;
+  background: color-mix(in srgb, var(--bg-panel) 60%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 133px; /* Kept your custom pill radius! */
+  
+  /* THIS IS THE MAGIC BULLET */
+  width: fit-content; 
+}
+
+.author-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.author-about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Flex alignment for the By label and the Name */
+.author-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.author-label {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+.author-name a {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fg-base);
+  text-decoration: none;
+}
+
+.author-desc {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  line-height: var(--line-height-body);
+}
+
+/* ============================================================
+   25. Share Buttons & Dropdown Menu
+   ============================================================ */
+
+.post-share-buttons {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* The trigger button itself (Shrunk & Softened) */
+.sharing-button {
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  border-radius: var(--btn-radius, 8px);
+  padding: 6px 12px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.sharing-button:hover {
+  color: var(--fg-base);
+  border-color: var(--fg-base);
+  background: color-mix(in srgb, var(--bg-elevated) 30%, transparent);
+}
+
+/* Force Blogger's native trigger SVGs to size correctly (Shrunk to 16px) */
+.sharing-button svg,
+.flat-icon-button svg {
+    width: 16px !important;
+    height: 16px !important;
+    fill: currentColor !important;
+}
+
+/* The Popup Container */
+.share-buttons-container {
+  position: absolute;
+  bottom: 100%; /* Makes it drop-up instead of drop-down */
+  left: 0;
+  margin-bottom: 8px;
+  z-index: var(--dropdown-z, 1300);
+}
+
+/* The actual ul list */
+ul.share-buttons {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-dropdown);
+  min-width: 160px;
+  
+  /* Hidden by default, toggled by Blogger's native JS */
+  display: none; 
+}
+
+/* Blogger's JS removes the 'hidden' class when the button is clicked */
+ul.share-buttons:not(.hidden) {
+  display: block;
+  animation: share-menu-fade-in 0.15s ease-out forwards;
+}
+
+@keyframes share-menu-fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+ul.share-buttons li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* The individual share links */
+.sharing-platform-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: var(--fg-base);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.sharing-platform-button:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+/* Size down Blogger's injected SVG icons in the dropdown */
+.sharing-platform-button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* ---------------------------------------------------------
+   26 - Analytics Dashboard Static Page
+   Paste-ready HTML page stencil styles. Uses Mor theme tokens.
+   --------------------------------------------------------- */
+
+.mor-analytics-dashboard {
+  display: grid;
+  gap: 1rem;
+  color: var(--fg-base);
+}
+
+.mor-analytics-intro,
+.mor-analytics-summary,
+.mor-analytics-card,
+.mor-analytics-updated,
+.mor-analytics-notice {
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-elevated);
+}
+
+.mor-analytics-intro {
+  padding: 1.25rem;
+}
+
+.mor-analytics-kicker {
+  margin-bottom: 0.35rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.mor-analytics-title {
+  margin: 0;
+  color: var(--fg-base);
+}
+
+.mor-analytics-desc {
+  max-width: 72ch;
+  margin: 0.75rem 0 0;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-notice {
+  padding: 0.9rem 1rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-summary {
+  padding: 1.25rem;
+}
+
+.mor-analytics-summary h3,
+.mor-analytics-card h3 {
+  margin-top: 0;
+}
+
+.mor-analytics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-stat-grid li {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+}
+
+.mor-analytics-stat-grid span {
+  display: block;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.mor-analytics-stat-grid strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--fg-base);
+  font-size: 1.45rem;
+}
+
+.mor-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mor-analytics-card {
+  padding: 1.25rem;
+}
+
+.mor-analytics-card-head p {
+  margin-top: 0.3rem;
+  color: var(--fg-muted);
+}
+
+.mor-analytics-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.mor-analytics-button {
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--fg-base);
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+}
+
+.mor-analytics-button:hover,
+.mor-analytics-button:focus,
+.mor-analytics-button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
+.mor-analytics-chart {
+  min-height: 17rem;
+  border: 1px dashed var(--border-soft);
+  background: var(--bg-elevated);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.mor-analytics-placeholder {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.mor-analytics-bars {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 13rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.mor-analytics-bar {
+  flex: 1;
+  min-width: 0.5rem;
+  background: var(--accent);
+  opacity: 0.82;
+}
+
+.mor-analytics-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+.mor-analytics-category-layout {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.mor-analytics-pie {
+  width: 11rem;
+  height: 11rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      var(--accent) 0 38%,
+      var(--fg-muted) 38% 61%,
+      var(--border-color) 61% 78%,
+      var(--bg-elevated) 78% 100%
+    );
+}
+
+.mor-analytics-legend {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.mor-analytics-legend li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 0.4rem;
+}
+
+.mor-analytics-legend strong {
+  color: var(--accent);
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.mor-analytics-updated {
+  padding: 0.85rem 1rem;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .mor-analytics-stat-grid,
+  .mor-analytics-grid,
+  .mor-analytics-category-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mor-analytics-pie {
+    justify-self: center;
+  }
+}
+
+
+
+/* --- User Custom CSS --- */
+/* ============================================================
+   Retro MMORPG Preset
+   Warm brown panels, ember-red controls, and gold text with
+   chunky shadowing. The goal is an old fantasy-game UI feel
+   without the dead black page backdrop.
+   ============================================================ */
+
+/* Global text shadow for that bitmap-font-engine look */
+body, h1, h2, h3, h4, p, a, span, div, li {
+  text-shadow: 1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)) !important;
+}
+
+/* Remove the base theme's vignette/glow */
+body::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* Warm workspace gradient driven by editor palette */
+html,
+body {
+  background-color: var(--bg-base) !important;
+}
+
+body {
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg-panel) 55%, var(--bg-base)) 0%,
+      var(--bg-base) 42%,
+      color-mix(in srgb, var(--bg-base) 82%, var(--border-color)) 100%
+    ),
+    radial-gradient(
+      circle at top center,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at bottom center,
+      color-mix(in srgb, var(--border-color) 28%, transparent),
+      transparent 55%
+    ) !important;
+  background-attachment: fixed !important;
+}
+
+/* CONTAINER surfaces */
+.canvas-core,
+.mor-post,
+.mor-panel,
+.main-header,
+.mor-footer,
+.mor-catalog-dropdown {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 72%, var(--accent)) 0%,
+    var(--bg-panel) 100%
+  ) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 4px !important;
+  box-shadow:
+    inset 1px 1px 0 color-mix(in srgb, var(--fg-base) 8%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
+}
+
+/* Make the header itself part of the brown surface instead of floating over black */
+.main-header {
+  margin-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+.main-header,
+.main-header .header-top-row,
+.main-header .header-bottom-row {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 80%, var(--accent)) 0%,
+    color-mix(in srgb, var(--bg-panel) 88%, var(--bg-base)) 100%
+  ) !important;
+}
+
+.main-header .header-top-row {
+  border-bottom: 2px solid var(--border-color) !important;
+}
+
+.main-header .header-bottom-row {
+  border-top: 1px solid color-mix(in srgb, var(--fg-base) 6%, transparent) !important;
+}
+
+/* CONTENT surfaces inside containers */
+.mor-panel .panel-content,
+.canvas-core .panel-content {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 65%, var(--fg-base)) 0%,
+    color-mix(in srgb, var(--bg-panel) 82%, var(--bg-base)) 100%
+  ) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 2px !important;
+  margin: 6px !important;
+  padding: 12px !important;
+  box-shadow: inset 2px 2px 5px color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
+}
+
+/* Headings (gold/orange) */
+h1, h2, h3, h4,
+.main-header .institute-title,
+.mor-post .post-title,
+.mor-post .post-title a {
+  color: var(--accent) !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  text-shadow:
+    1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)),
+    2px 2px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
+}
+
+.main-header .branding-link,
+.main-header .branding-link:hover,
+.main-header .branding-link:focus-visible {
+  color: var(--accent) !important;
+}
+
+.mor-post .post-title {
+  border-bottom: 2px solid var(--border-color) !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Main navigation band */
+.mor-nav a,
+.mor-nav button {
+  color: color-mix(in srgb, var(--fg-base) 78%, var(--accent)) !important;
+}
+
+.mor-nav > a:hover,
+.mor-nav > a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 38%, var(--bg-base)) !important;
+  color: var(--fg-base) !important;
+}
+
+/* The classic ember-red interface button */
+.pager-btn,
+.panel-toggle,
+.toc-jump-link,
+.back-to-top-btn,
+.mor-catalog-trigger {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 72%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 48%, var(--bg-base)) 100%
+  ) !important;
+  color: var(--accent) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 2px !important;
+  padding: 6px 14px !important;
+  font-weight: bold !important;
+  box-shadow:
+    inset 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
+  cursor: pointer;
+  transition: background 100ms ease, box-shadow 100ms ease !important;
+}
+
+.pager-btn:hover,
+.panel-toggle:hover,
+.toc-jump-link:hover,
+.back-to-top-btn:hover,
+.mor-catalog-trigger:hover {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 82%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 58%, var(--bg-base)) 100%
+  ) !important;
+  color: var(--fg-base) !important;
+}
+
+.pager-btn:active,
+.panel-toggle:active,
+.toc-jump-link:active,
+.back-to-top-btn:active,
+.mor-catalog-trigger:active {
+  background: color-mix(in srgb, var(--accent) 40%, var(--bg-base)) !important;
+  box-shadow: inset 2px 2px 4px color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
+  transform: translateY(1px) !important;
+}
+
+/* Links */
+.mor-post .post-body a,
+.panel-content a {
+  color: var(--accent) !important;
+  text-decoration: underline !important;
+}
+
+.mor-post .post-body a:hover,
+.panel-content a:hover {
+  color: var(--fg-base) !important;
+}
+
+/* Panel headers */
+.panel-header,
+.mor-panel-heading {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 70%, var(--bg-panel)) 0%,
+    color-mix(in srgb, var(--accent) 46%, var(--bg-base)) 100%
+  ) !important;
+  color: var(--accent) !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  padding: 6px 10px !important;
+  border-bottom: 2px solid var(--border-color) !important;
+  border-radius: 2px 2px 0 0 !important;
+  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
+}
+
+/* Search / form fields */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea,
+select {
+  background: color-mix(in srgb, var(--bg-panel) 55%, var(--fg-base)) !important;
+  color: var(--fg-base) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  padding: 6px 8px !important;
+  text-shadow: none !important;
+  font-weight: bold !important;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  background: color-mix(in srgb, var(--bg-panel) 35%, var(--fg-base)) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 14px !important;
+}
+::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--bg-panel) 80%, var(--bg-base)) !important;
+  border-left: 2px solid var(--border-color) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 65%, var(--bg-base)) !important;
+  border: 2px solid var(--border-color) !important;
+  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 78%, var(--bg-panel)) !important;
+}
+
+/* Header toggle compatibility */
+.header-panel-toggle,
+.header-top-row > .panel-toggle {
+  min-width: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.header-panel-toggle::before,
+.header-top-row > .panel-toggle::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  background-color: color-mix(in srgb, var(--accent) 35%, var(--fg-base)) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.header-panel-toggle::after,
+.header-top-row > .panel-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+
+]]></b:skin>
+<b:template-skin><![CDATA[]]></b:template-skin>
+
+</head>
+<body>
+
+<header class="mor-header-baseline" id="mor-header">
+    
+    <button class="panel-toggle left-panel-toggle" data-target="panel-left" aria-label="Open Browse Panel">
+        <span data-edit-target="icons.sidebar_left" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><path d="url(&quot;data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; viewBox=&#39;0 0 24 24&#39; fill=&#39;none&#39; stroke=&#39;black&#39; stroke-width=&#39;2.2&#39; stroke-linecap=&#39;round&#39; stroke-linejoin=&#39;round&#39;%3E%3Cpath d=&#39;M9%204v16M6%208h.01M6%2012h.01%20M3%204h18v16H3z&#39;/%3E%3C/svg%3E&quot;)"/></svg><span class="visually-hidden">Browse</span></span>
+    </button>
+
+    <div class="mor-header-brand">
+        
+    </div>
+
+    <nav class="mor-catalog-mega-dropdown">
+        <button class="catalog-toggle" aria-haspopup="true" aria-expanded="false">
+            Catalog
+        </button>
+        
+        <div class="dropdown-content">
+            
+            
+            
+            
+            
+            
+        </div>
+    </nav>
+
+    <button class="panel-toggle right-panel-toggle" data-target="panel-right" aria-label="Open Contents Panel">
+        <span data-edit-target="icons.sidebar_right" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"><span class="visually-hidden">Contents</span><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><path d="url(&quot;data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; viewBox=&#39;0 0 24 24&#39; fill=&#39;none&#39; stroke=&#39;black&#39; stroke-width=&#39;2.2&#39; stroke-linecap=&#39;round&#39; stroke-linejoin=&#39;round&#39;%3E%3Cpath d=&#39;M15%204v16M18%208h.01M18%2012h.01%20M3%204h18v16H3z&#39;/%3E%3C/svg%3E&quot;)"/></svg></span>
+    </button>
+
+</header>
+<div class='mor-workspace'>
+<aside class='mor-panel panel-left' id='panel-left'>
+  <div class='panel-header'>
+    <span>Browse</span>
+    <button aria-label='Close Browse panel' class='panel-toggle' data-edit-target='icons.panel_close' data-target='panel-left'>
+      <span class="mor-icon" style="display: block; width: 1.2em; height: 1.2em; background-color: currentColor; -webkit-mask-image: url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z'/%3E%3C/svg%3E'); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></span>
+    </button>
+  </div>
+
+  <div class='panel-content' id='toc-container'>
+    <b:section class='sidebar-section' id='sidebar-left' showaddelement='yes'>
+      <b:widget data-block-id='Label1' id='Label1' locked='false' title='Labels' type='Label' version='2' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='sorting'>ALPHA</b:widget-setting>
+    <b:widget-setting name='display'>LIST</b:widget-setting>
+    <b:widget-setting name='selectedLabelsList'/>
+    <b:widget-setting name='showType'>ALL</b:widget-setting>
+    <b:widget-setting name='showFreqNumbers'>true</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main' var='this'>
+    <b:if cond='data:title != &quot;&quot;'>
+      <h2 class='title'><span data-field-path='widget.Label1.title'><data:title/></span></h2>
+    </b:if>
+    <b:include name='content'/>
+  </b:includable>
+  <b:includable id='content'>
+    <div class='widget-content'>
+      <b:class expr:name='data:this.display + &quot;-label-widget-content&quot;'/>
+      <b:include cond='data:this.display == &quot;list&quot;' name='list'/>
+      <b:include cond='data:this.display == &quot;cloud&quot;' name='cloud'/>
+    </div>
+  </b:includable>
+  <b:includable id='list'>
+    <ul>
+      <b:loop values='data:labels' var='label'>
+        <li>
+          <a class='label-name' expr:href='data:label.url'>
+            <data:label.name/>
+            <b:if cond='data:this.showFreqNumbers'>
+              <span class='label-count'>(<data:label.count/>)</span>
+            </b:if>
+          </a>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+  <b:includable id='cloud'>
+    <b:loop values='data:labels' var='label'>
+      <span class='label-size'>
+        <b:class expr:name='&quot;label-size-&quot; + data:label.cssSize'/>
+        <a class='label-name' expr:href='data:label.url'>
+          <data:label.name/>
+          <b:if cond='data:this.showFreqNumbers'>
+            <span class='label-count'>(<data:label.count/>)</span>
+          </b:if>
+        </a>
+      </span>
+    </b:loop>
+  </b:includable>
+</b:widget>
+<b:widget data-block-id='BlogArchive1' id='BlogArchive1' locked='false' title='Archive' type='BlogArchive' version='2' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='showStyle'>HIERARCHY</b:widget-setting>
+    <b:widget-setting name='yearPattern'>yyyy</b:widget-setting>
+    <b:widget-setting name='showWeekEnd'>true</b:widget-setting>
+    <b:widget-setting name='monthPattern'>MMMM</b:widget-setting>
+    <b:widget-setting name='dayPattern'>MMM dd</b:widget-setting>
+    <b:widget-setting name='weekPattern'>MM/dd</b:widget-setting>
+    <b:widget-setting name='chronological'>false</b:widget-setting>
+    <b:widget-setting name='showPosts'>true</b:widget-setting>
+    <b:widget-setting name='frequency'>MONTHLY</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main'>
+    <b:if cond='data:title != &quot;&quot;'>
+      <h2 class='title'><span data-field-path='widget.BlogArchive1.title'><data:title/></span></h2>
+    </b:if>
+    <b:include name='content'/>
+  </b:includable>
+  <b:includable id='content'>
+    <div class='widget-content'>
+      <div id='ArchiveList'>
+        <div expr:id='data:widget.instanceId + &quot;_ArchiveList&quot;'>
+          <b:include cond='data:this.style == &quot;HIERARCHY&quot;' name='hierarchy'/>
+          <b:include cond='data:this.style in {&quot;FLAT&quot;, &quot;MENU&quot;}' name='flat'/>
+        </div>
+      </div>
+    </div>
+  </b:includable>
+  <b:includable id='hierarchy'>
+    <b:include data='data' name='interval'/>
+  </b:includable>
+  <b:includable id='flat'>
+    <ul class='flat'>
+      <b:loop values='data:data' var='i'>
+        <li class='archivedate'>
+          <a expr:href='data:i.url'>
+            <data:i.name/><span class='post-count'>(<data:i.post-count/>)</span>
+          </a>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+  <b:includable id='interval' var='intervals'>
+    <ul class='hierarchy'>
+      <b:loop values='data:intervals' var='interval'>
+        <li class='archivedate'>
+          <div class='hierarchy-title'>
+            <a class='post-count-link' expr:href='data:interval.url'>
+              <data:interval.name/>
+              <span class='post-count'>(<data:interval.post-count/>)</span>
+            </a>
+          </div>
+          <div class='hierarchy-content'>
+            <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+            <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+          </div>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+  <b:includable id='posts' var='posts'>
+    <ul class='posts hierarchy'>
+      <b:loop values='data:posts' var='post'>
+        <li>
+          <a expr:href='data:post.url'><data:post.title/></a>
+        </li>
+      </b:loop>
+    </ul>
+  </b:includable>
+</b:widget>
+
+    </b:section>
+  </div>
+</aside>
+
+<main class='canvas-core'>
+  <div class='canvas-content'>
+
+    
+
+    <b:section class='main-section' id='main-content' showaddelement='no'>
+      <b:widget data-block-id='Blog1' id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+          <b:widget-setting name='commentLabel'>Comment</b:widget-setting>
+          <b:widget-setting name='style.textcolor'>#e7dcc0</b:widget-setting>
+          <b:widget-setting name='showShareButtons'>true</b:widget-setting>
+          <b:widget-setting name='authorLabel'>By </b:widget-setting>
+          <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+          <b:widget-setting name='style.urlcolor'>#ffae42</b:widget-setting>
+          <b:widget-setting name='showAuthor'>true</b:widget-setting>
+          <b:widget-setting name='style.linkcolor'>#ffae42</b:widget-setting>
+          <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+          <b:widget-setting name='style.bgcolor'>#24170f</b:widget-setting>
+          <b:widget-setting name='timestampLabel'>d MMM, yyyy</b:widget-setting>
+          <b:widget-setting name='reactionsLabel'/>
+          <b:widget-setting name='showAuthorProfile'>true</b:widget-setting>
+          <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+          <b:widget-setting name='showLabels'>true</b:widget-setting>
+          <b:widget-setting name='showLocation'>false</b:widget-setting>
+          <b:widget-setting name='postLabelsLabel'/>
+          <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+          <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+          <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+          <b:widget-setting name='style.bordercolor'>#22160f</b:widget-setting>
+          <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+          <b:widget-setting name='showReactions'>false</b:widget-setting>
+        </b:widget-settings>
+
+        <b:includable id='main' var='top'>
+          <div class='blog-posts'>
+            <b:loop values='data:posts' var='post'>
+              <article class='mor-post'>
+
+                <h2 class='post-title'>
+                  <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+                    <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+                  <b:else/>
+                    <data:post.title/>
+                  </b:if>
+                </h2>
+
+                <div class='post-meta'>
+                  <span class='sys-date'>[<data:post.date/>]</span>
+                  <b:if cond='data:post.labels'>
+                    <span class='sys-tags'>
+                      Tags: 
+                      <b:loop values='data:post.labels' var='label'>
+                        <a expr:href='data:label.url'><data:label.name/></a><b:if cond='not data:label.isLast'>, </b:if>
+                      </b:loop>
+                    </span>
+                  </b:if>
+                </div>
+
+                <div class='post-body'>
+                  <data:post.body/>
+                </div>
+
+                <!-- ADD THE FOOTER HERE INSIDE THE ACTUAL ARTICLE TAG -->
+                <div class='post-footer'>
+                  <b:if cond='data:view.isSingleItem'>
+                    <!-- 1. Render the Author Profile -->
+                    <b:include data='post' name='postFooterAuthorProfile'/>
+                    
+                    <!-- 2. Render the Share Buttons -->
+                    <b:include name='postShareButtons'/>
+                  </b:if>
+                </div>
+
+              </article>
+
+              <b:if cond='data:view.isSingleItem'>
+                <b:include data='post' name='commentPicker'/>
+              </b:if>
+
+            </b:loop>
+          </div>
+
+          <b:include name='nextprev'/>
+        </b:includable>
+
+        <b:includable id='aboutPostAuthor'>
+          <div class='author-name'>
+            <!-- NEW: The 'By' label -->
+            <span class='author-label'>By</span>
+            <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+              <span>
+                <data:post.author.name/>
+              </span>
+            </a>
+          </div>
+          <div>
+            <span class='author-desc'>
+              <data:post.author.aboutMe/>
+            </span>
+          </div>
+        </b:includable>
+
+        <b:includable id='addComments'>
+          <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+            <b:message name='messages.postAComment'/>
+          </a>
+        </b:includable>
+
+        <b:includable id='blogThisShare'>
+          <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+            <b:include name='platformShare'/>
+          </b:with>
+        </b:includable>
+
+        <b:includable id='bylineByName' var='byline'>
+          <b:switch var='data:byline.name'>
+            <b:case value='share'/>
+              <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+            <b:case value='comments'/>
+              <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+            <b:case value='location'/>
+              <b:include cond='data:post.location' name='postLocation'/>
+            <b:case value='timestamp'/>
+              <b:include cond='not data:view.isPage' name='postTimestamp'/>
+            <b:case value='author'/>
+              <b:include name='postAuthor'/>
+            <b:case value='labels'/>
+              <b:include cond='data:post.labels' name='postLabels'/>
+            <b:case value='icons'/>
+              <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+          </b:switch>
+        </b:includable>
+
+        <b:includable id='bylineRegion' var='regionItems'>
+          <b:loop values='data:regionItems' var='byline'>
+            <b:include data='byline' name='bylineByName'/>
+          </b:loop>
+        </b:includable>
+
+        <b:includable id='commentAuthorAvatar'>
+          <div class='avatar-image-container'>
+            <img class='author-avatar' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='commentDeleteIcon' var='comment'>
+          <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+            <b:if cond='data:showCmtPopup'>
+              <div class='goog-toggle-button'>
+                <div class='goog-inline-block comment-action-icon'/>
+              </div>
+            <b:else/>
+              <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+                <img src='https://resources.blogblog.com/img/icon_delete13.gif'/>
+              </a>
+            </b:if>
+          </span>
+        </b:includable>
+
+        <b:includable id='commentForm' var='post'>
+          <div class='comment-form'>
+            <a name='comment-form'/>
+            <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+            <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+              <p><data:this.messages.blogComment/></p>
+            </b:if>
+            <b:include data='post' name='commentFormIframeSrc'/>
+            <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+            <data:post.cmtfpIframe/>
+            <script type='text/javascript'>
+              BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+            </script>
+          </div>
+        </b:includable>
+
+        <b:includable id='commentFormIframeSrc' var='post'>
+          <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+        </b:includable>
+
+        <b:includable id='commentItem' var='comment'>
+          <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+            <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+            <div class='comment-block'>
+              <div class='comment-author'>
+                <b:if cond='data:comment.authorUrl'>
+                  <b:message name='messages.authorSaidWithLink'>
+                    <b:param expr:value='data:comment.author' name='authorName'/>
+                    <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+                  </b:message>
+                <b:else/>
+                  <b:message name='messages.authorSaid'>
+                    <b:param expr:value='data:comment.author' name='authorName'/>
+                  </b:message>
+                </b:if>
+              </div>
+              <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+                <data:comment.body/>
+              </div>
+              <div class='comment-footer'>
+                <span class='comment-timestamp'>
+                  <a expr:href='data:comment.url' title='comment permalink'>
+                    <data:comment.timestamp/>
+                  </a>
+                  <b:include data='comment' name='commentDeleteIcon'/>
+                </span>
+              </div>
+            </div>
+          </div>
+        </b:includable>
+
+        <b:includable id='commentList' var='comments'>
+          <div id='comments-block'>
+            <b:loop values='data:comments' var='comment'>
+              <b:include data='comment' name='commentItem'/>
+            </b:loop>
+          </div>
+        </b:includable>
+
+        <b:includable id='commentPicker' var='post'>
+          <b:if cond='data:post.showThreadedComments'>
+            <b:include data='post' name='threadedComments'/>
+          <b:else/>
+            <b:include data='post' name='comments'/>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='comments' var='post'>
+          <section expr:class='&quot;comments&quot; + (data:post.embedCommentForm ? &quot; embed&quot; : &quot;&quot;)' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+            <a name='comments'/>
+            <b:if cond='data:post.allowComments'>
+
+              <b:include name='commentsTitle'/>
+
+              <div expr:id='data:widget.instanceId + &quot;_comments-block-wrapper&quot;'>
+                <b:include cond='data:post.comments' data='post.comments' name='commentList'/>
+              </div>
+
+              <b:if cond='data:post.commentPagingRequired'>
+                <div class='paging-control-container'>
+                  <b:if cond='data:post.hasOlderLinks'>
+                    <a expr:class='data:post.oldLinkClass' expr:href='data:post.oldestLinkUrl'>
+                      <data:messages.oldest/>
+                    </a>
+                    <a expr:class='data:post.oldLinkClass' expr:href='data:post.olderLinkUrl'>
+                      <data:messages.older/>
+                    </a>
+                  </b:if>
+
+                  <span class='comment-range-text'>
+                    <data:post.commentRangeText/>
+                  </span>
+
+                  <b:if cond='data:post.hasNewerLinks'>
+                    <a expr:class='data:post.newLinkClass' expr:href='data:post.newerLinkUrl'>
+                      <data:messages.newer/>
+                    </a>
+                    <a expr:class='data:post.newLinkClass' expr:href='data:post.newestLinkUrl'>
+                      <data:messages.newest/>
+                    </a>
+                  </b:if>
+                </div>
+              </b:if>
+
+              <div class='footer'>
+                <b:if cond='data:post.embedCommentForm'>
+                  <b:if cond='data:post.allowNewComments'>
+                    <b:include data='post' name='commentForm'/>
+                  <b:else/>
+                    <data:post.noNewCommentsText/>
+                  </b:if>
+                <b:else/>
+                  <b:if cond='data:post.allowComments'>
+                    <b:include data='post' name='addComments'/>
+                  </b:if>
+                </b:if>
+              </div>
+            </b:if>
+            <b:if cond='data:showCmtPopup'>
+              <div id='comment-popup'>
+                <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+                </iframe>
+              </div>
+            </b:if>
+          </section>
+        </b:includable>
+
+        <b:includable id='commentsLink'>
+          <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+            <b:if cond='data:post.numberOfComments &gt; 0'>
+              <b:message name='messages.numberOfComments'>
+                <b:param expr:value='data:post.numberOfComments' name='numComments'/>
+              </b:message>
+            <b:else/>
+              <data:messages.postAComment/>
+            </b:if>
+          </a>
+        </b:includable>
+
+        <b:includable id='commentsLinkIframe'>
+        </b:includable>
+
+        <b:includable id='commentsTitle'>
+          <h3 class='title'><data:messages.comments/></h3>
+        </b:includable>
+
+        <b:includable id='defaultAdUnit'>
+          <ins class='adsbygoogle' data-ad-format='auto' expr:data-ad-client='data:adClientId ?: data:blog.adsenseClientId' expr:data-ad-host='data:blog.adsenseHostId' expr:style='data:style ?: &quot;display: block;&quot;'>
+            <b:attr cond='not data:blog.analytics4' expr:value='data:blog.analyticsAccountNumber' name='data-analytics-uacct'/>
+          </ins>
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </b:includable>
+
+        <b:includable id='emailPostIcon'>
+          <span class='byline post-icons'>
+            <span class='item-action'>
+              <a expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+                <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+              </a>
+            </span>
+          </span>
+        </b:includable>
+
+        <b:includable id='facebookShare'>
+          <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+            <b:include name='platformShare'/>
+          </b:with>
+        </b:includable>
+
+        <b:includable id='feedLinks'>
+          <b:if cond='!data:view.isPost'>
+            <b:if cond='data:feedLinks'>
+              <div class='blog-feeds'>
+                <b:include data='feedLinks' name='feedLinksBody'/>
+              </div>
+            </b:if>
+          <b:else/>
+            <div class='post-feeds'>
+              <b:loop values='data:posts' var='post'>
+                <b:if cond='data:post.allowComments and data:post.feedLinks'>
+                  <b:include data='post.feedLinks' name='feedLinksBody'/>
+                </b:if>
+              </b:loop>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='feedLinksBody' var='links'>
+          <div class='feed-links'>
+            <data:messages.subscribeTo/>
+            <b:loop values='data:links' var='f'>
+              <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+            </b:loop>
+          </div>
+        </b:includable>
+
+        <b:includable id='footerBylines'>
+          <b:if cond='data:widgets.Blog.first.footerBylines'>
+            <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+              <b:if cond='not data:region.items.empty'>
+                <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+                  <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+                    <b:include data='region.items' name='bylineRegion'/>
+                  </b:with>
+                </div>
+              </b:if>
+            </b:loop>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='googlePlusShare'>
+        </b:includable>
+
+        <b:includable id='headerByline'>
+          <b:if cond='data:widgets.Blog.first.headerByline'>
+            <div class='post-header'>
+              <div class='post-header-line-1'>
+                <b:with value='&quot;header-1&quot;' var='regionName'>
+                  <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+                </b:with>
+              </div>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='homePageLink'>
+          <a class='home-link' expr:href='data:blog.homepageUrl'>
+            <data:messages.home/>
+          </a>
+        </b:includable>
+
+        <b:includable id='iframeComments' var='post'>
+        </b:includable>
+
+        <b:includable id='inlineAd' var='post'>
+          <b:if cond='!data:view.isPreview'>
+            <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+              <div class='inline-ad'>
+                <b:if cond='data:this.adCode != &quot;&quot;'>
+                  <data:this.adCode/>
+                <b:else/>
+                  <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+                </b:if>
+              </div>
+            </b:if>
+          <b:else/>
+            <div class='inline-ad'>
+              <div class='inline-ad-placeholder'>
+                <span><b:message name='messages.adsGoHere'/></span>
+              </div>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='linkShare'>
+          <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+            <b:include name='platformShare'/>
+          </b:with>
+        </b:includable>
+
+        <b:includable id='nextPageLink'>
+          <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+            <data:messages.olderPosts/>
+          </a>
+        </b:includable>
+
+        <b:includable id='nextprev'>
+          <div class='mor-pager'>
+            <b:if cond='data:newerPageUrl'>
+              <a class='pager-btn' expr:href='data:newerPageUrl'>Newer</a>
+            </b:if>
+            <a class='pager-btn' expr:href='data:blog.homepageUrl'>Home</a>
+            <b:if cond='data:olderPageUrl'>
+              <a class='pager-btn' expr:href='data:olderPageUrl'>Older</a>
+            </b:if>
+          </div>
+        </b:includable>
+
+        <b:includable id='otherSharingButton'>
+          <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+            <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+              <b:include name='sharingPlatformIcon'/>
+            </b:with>
+            <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+          </span>
+        </b:includable>
+
+        <b:includable id='platformShare'>
+          <a expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' target='_blank'>
+            <span class='share-button-link-text'>
+              <data:platform.shareMessage/>
+            </span>
+          </a>
+        </b:includable>
+
+        <b:includable id='post' var='post'>
+          <div class='post'>
+            <b:include data='post' name='postMeta'/>
+            <b:include data='post' name='postTitle'/>
+            <b:include name='headerByline'/>
+            <b:if cond='data:view.isSingleItem'>
+              <b:include data='post' name='postBody'/>
+            <b:else/>
+              <b:include data='post' name='postBodySnippet'/>
+              <b:include data='post' name='postJumpLink'/>
+            </b:if>
+
+            <div class='post-footer'>
+              <b:if cond='data:view.isSingleItem'>
+                <b:include data='post' name='postFooterAuthorProfile'/>
+
+                <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+              </b:if>
+            </div>
+
+          </div>
+        </b:includable>
+
+        <b:includable id='postAuthor'>
+          <span class='byline post-author vcard'>
+            <span class='post-author-label'>
+              <data:byline.label/>
+            </span>
+            <span class='fn'>
+              <b:if cond='data:post.author.profileUrl'>
+                <meta expr:content='data:post.author.profileUrl'/>
+                <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+                  <span><data:post.author.name/></span>
+                </a>
+              <b:else/>
+                <span><data:post.author.name/></span>
+              </b:if>
+            </span>
+          </span>
+        </b:includable>
+
+        <b:includable id='postBody' var='post'>
+          <div class='post-body entry-content float-container' expr:id='&quot;post-body-&quot; + data:post.id'>
+            <data:post.body/>
+          </div>
+        </b:includable>
+
+        <b:includable id='postBodySnippet' var='post'>
+          <b:include data='post' name='postBody'/>
+        </b:includable>
+
+        <b:includable id='postCommentsAndAd' var='post'>
+          <article class='post-outer-container'>
+            <div class='post-outer'>
+              <b:include data='post' name='post'/>
+            </div>
+
+            <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+            <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+          </article>
+
+          <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+        </b:includable>
+
+        <b:includable id='postCommentsLink'>
+          <b:if cond='data:view.isMultipleItems'>
+            <span class='byline post-comment-link container'>
+              <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+            </span>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='postFooter' var='post'>
+          <div class='post-footer'>
+            <b:include name='footerBylines'/>
+            <b:include data='post' name='postFooterAuthorProfile'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='postFooterAuthorProfile' var='post'>
+          <b:if cond='data:view.isPost'>
+            <div class='author-profile'>
+              <b:if cond='data:post.author.authorPhoto.url'>
+                <img class='author-image' expr:src='data:post.author.authorPhoto.url' width='50px'/>
+                <div class='author-about'>
+                  <b:include data='post' name='aboutPostAuthor'/>
+                </div>
+              <b:else/>
+                <b:include data='post' name='aboutPostAuthor'/>
+              </b:if>
+            </div>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='postHeader' var='post'>
+          <b:include name='headerByline'/>
+        </b:includable>
+
+        <b:includable id='postJumpLink' var='post'>
+          <div class='jump-link flat-button'>
+            <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+              <b:eval expr='data:blog.jumpLinkMessage'/>
+            </a>
+          </div>
+        </b:includable>
+
+        <b:includable id='postLabels'>
+          <span class='byline post-labels'>
+            <span class='byline-label'><data:byline.label/></span>
+            <b:loop index='i' values='data:post.labels' var='label'>
+              <a expr:href='data:label.url' rel='tag'>
+                <data:label.name/>
+              </a>
+            </b:loop>
+          </span>
+        </b:includable>
+
+        <b:includable id='postLocation'>
+          <span class='byline post-location'>
+            <data:byline.label/>
+            <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+          </span>
+        </b:includable>
+
+        <b:includable id='postMeta' var='post'>
+          <b:include data='post' name='postMetadataJSON'/>
+        </b:includable>
+
+        <b:includable id='postMetadataJSONImage'>
+          &quot;image&quot;: {
+            &quot;@type&quot;: &quot;ImageObject&quot;,
+            <b:if cond='data:post.featuredImage.isResizable'>
+            &quot;url&quot;: &quot;<b:eval expr='resizeImage(data:post.featuredImage, 1200, &quot;1200:630&quot;)'/>&quot;,
+            &quot;height&quot;: 630,
+            &quot;width&quot;: 1200
+            <b:else/>
+            &quot;url&quot;: &quot;https://imgur.com/QZ7pbY6&quot;,
+            &quot;height&quot;: 348,
+            &quot;width&quot;: 1200
+            </b:if>
+          },
+        </b:includable>
+
+        <b:includable id='postMetadataJSONPublisher'>
+          &quot;publisher&quot;: {
+            &quot;@type&quot;: &quot;Organization&quot;,
+            &quot;name&quot;: &quot;Modern Editorial&quot;,
+            &quot;logo&quot;: {
+              &quot;@type&quot;: &quot;ImageObject&quot;,
+              &quot;url&quot;: &quot;&quot;,
+              &quot;width&quot;: 206,
+              &quot;height&quot;: 60
+            }
+          },
+        </b:includable>
+
+        <b:includable id='postPagination'>
+          <div class='blog-pager container' id='blog-pager'>
+            <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+            <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+            <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='postReactions'>
+        </b:includable>
+
+        <b:includable id='postShareButtons'>
+          <div class='byline post-share-buttons goog-inline-block'>
+            <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+              <b:include data='{ sharingId: data:sharingId, originalUrl: data:post.url, platforms: data:this.sharing.platforms, shareUrl: data:post.shareUrl, shareTitle: data:post.title }' name='sharingButtons'/>
+            </b:with>
+          </div>
+        </b:includable>
+
+        <b:includable id='postTimestamp'>
+          <span class='byline post-timestamp'>
+            <data:byline.label/>
+            <b:if cond='data:post.url'>
+              <meta expr:content='data:post.url.canonical'/>
+              <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+                <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+                  <data:post.date/>
+                </time>
+              </a>
+            </b:if>
+          </span>
+        </b:includable>
+
+        <b:includable id='postTitle' var='post'>
+          <a expr:name='data:post.id'/>
+          <b:if cond='data:post.title != &quot;&quot;'>
+            <h3 class='post-title entry-title'>
+              <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+                <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+              <b:else/>
+                <data:post.title/>
+              </b:if>
+            </h3>
+          </b:if>
+        </b:includable>
+
+        <b:includable id='previousPageLink'>
+          <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+            <data:messages.newerPosts/>
+          </a>
+        </b:includable>
+
+        <b:includable id='sharingButton'>
+          <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+            <b:include name='sharingPlatformIcon'/>
+            <span class='platform-sharing-text'><data:platform.name/></span>
+          </span>
+        </b:includable>
+
+        <b:includable id='sharingButtonContent'>
+          <div class='flat-icon-button ripple'>
+            <b:include name='shareIcon'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='sharingButtons'>
+          <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+            <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+              <b:include name='sharingButtonContent'/>
+            </button>
+            <b:include name='sharingButtonsMenu'/>
+          </div>
+        </b:includable>
+
+        <b:includable id='sharingButtonsMenu'>
+          <div class='share-buttons-container'>
+            <ul aria-hidden='true' class='share-buttons hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+              <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+                <li>
+                  <b:include name='sharingButton'/>
+                </li>
+              </b:loop>
+              <li aria-hidden='true' class='hidden'>
+                <b:include name='otherSharingButton'/>
+              </li>
+            </ul>
+          </div>
+        </b:includable>
+
+        <b:includable id='sharingPlatformIcon'>
+          <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+        </b:includable>
+
+        <b:includable id='threadedCommentForm' var='post'>
+          <div class='comment-form'>
+            <a name='comment-form'/>
+            <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+            <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+              <p><data:this.messages.blogComment/></p>
+            </b:if>
+            <b:include data='post' name='commentFormIframeSrc'/>
+            <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+            <data:post.cmtfpIframe/>
+            <script type='text/javascript'>
+              BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+            </script>
+          </div>
+        </b:includable>
+
+        <b:includable id='threadedCommentJs' var='post'>
+          <script async='async' expr:src='data:post.commentSrc' type='text/javascript'/>
+          <b:template-script inline='true' name='threaded_comments'/>
+          <script type='text/javascript'>
+            blogger.widgets.blog.initThreadedComments(
+              <data:post.commentJso/>,
+              <data:post.commentMsgs/>,
+              <data:post.commentConfig/>);
+          </script>
+        </b:includable>
+
+        <b:includable id='threadedComments' var='post'>
+          <section class='comments threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+            <a name='comments'/>
+
+            <b:include name='commentsTitle'/>
+
+            <div class='comments-content'>
+              <b:if cond='data:post.embedCommentForm'>
+                <b:include data='post' name='threadedCommentJs'/>
+              </b:if>
+              <div id='comment-holder'>
+                <data:post.commentHtml/>
+              </div>
+            </div>
+
+            <p class='comment-footer'>
+              <b:if cond='data:post.allowNewComments'>
+                <b:include data='post' name='threadedCommentForm'/>
+              <b:else/>
+                <data:post.noNewCommentsText/>
+              </b:if>
+              <b:if cond='data:post.showManageComments'>
+                <b:include data='post' name='manageComments'/>
+              </b:if>
+            </p>
+
+            <b:if cond='data:showCmtPopup'>
+              <div id='comment-popup'>
+                <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+                </iframe>
+              </div>
+            </b:if>
+          </section>
+        </b:includable>
+
+        <b:includable id='tooltipCss'>
+          <style>
+            .post-body a.b-tooltip-container {
+              position: relative;
+              display: inline-block;
+            }
+
+            .post-body a.b-tooltip-container .b-tooltip {
+              display: block !important;
+              position: absolute;
+              top: 100%;
+              left: 50%;
+              transform: translate(-20%, 1px);
+              visibility: hidden;
+              opacity: 0;
+              z-index: 1;
+              transition: opacity 0.2s ease-in-out;
+            }
+
+            .post-body a.b-tooltip-container .b-tooltip iframe {
+              width: 200px;
+              height: 198px;
+              max-width: none;
+              border: none;
+              border-radius: 20px;
+              box-shadow: var(--shadow-soft);
+            }
+
+            @media (hover: hover) {
+              .post-body a.b-tooltip-container:hover .b-tooltip {
+                visibility: visible;
+                opacity: 1;
+              }
+            }
+          </style>
+        </b:includable>
+      </b:widget>
+
+    </b:section>
+
+  </div>
+
+  <!-- Moved outside of canvas-content so it can stretch fully! -->
+  <footer class='mor-footer mor-footer-mega'>
+  <div class='footer-mega-grid'>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.0.heading'>Introduction</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.0.links.0.label'>Getting Started</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.0.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.0.links.2.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.0.links.3.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.0.links.4.label'></a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.1.heading'>Downloads</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.1.links.0.label'>Source Code</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.1.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.1.links.2.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.1.links.3.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.1.links.4.label'></a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.2.heading'>Documentation</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.2.links.0.label'>Guides</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.2.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.2.links.2.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.2.links.3.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.2.links.4.label'></a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.3.heading'>News</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.3.links.0.label'>Announcements</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.3.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.3.links.2.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.3.links.3.label'></a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.4.heading'>Team</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.4.links.0.label'>Core Team</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.4.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.4.links.2.label'></a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.5.heading'>Donate</h4>
+      <ul>
+        <li><a href='/' rel='noopener' data-field-path='footer.columns.5.links.0.label'>How to contribute</a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.5.links.1.label'></a></li>
+        <li><a href='#' rel='noopener' data-field-path='footer.columns.5.links.2.label'></a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class='footer-brand-center'>
+    <img class='footer-logo' src='' alt='Logo' />
+    <span class='footer-brand-name' data-field-path='site.site_title'>Modern Editorial</span>
+  </div>
+
+  <div class='footer-sys-info'>
+    <p class='footer-copyright'>&#169; 2026 <span data-field-path='site.site_title'>Modern Editorial</span> and others</p>
+    <div class='footer-legal-links'>
+      <a href='#' data-field-path='footer.legal_links.0.label'>Website source code</a> |
+      <a href='#' data-field-path='footer.legal_links.1.label'>Privacy policy</a> |
+      <a href='#' data-field-path='footer.legal_links.2.label'>Terms of use</a> |
+      <a href='#' data-field-path='footer.legal_links.3.label'>Sitemap</a>
+    </div>
+    <button class='back-to-top-btn' type='button'>Back to Top</button>
+  </div>
+</footer> 
+</main>
+<aside class='mor-panel panel-right' id='panel-right'>
+  <div class='panel-header'>
+    <span>Contents</span>
+    <button aria-label='Close Contents panel' class='panel-toggle' data-edit-target='icons.panel_close' data-target='panel-right'>
+      <span class="mor-icon" style="display: block; width: 1.2em; height: 1.2em; background-color: currentColor; -webkit-mask-image: url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z'/%3E%3C/svg%3E'); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></span>
+    </button>
+  </div>
+
+  <div class='panel-content' id='control-container'>
+    <b:section class='sidebar-section' id='sidebar-right' showaddelement='yes'>
+      <b:widget data-block-id='HTML1' id='HTML1' locked='false' title='Table of Contents' type='HTML' version='1' visible='true'>
+  <b:includable id='main'>
+    <b:if cond='data:title != &quot;&quot;'>
+      <h2 class='title'><span data-field-path='widget.HTML1.title'><data:title/></span></h2>
+    </b:if>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+</b:widget>
+
+
+    </b:section>
+  </div>
+</aside>
+
+</div>
+
+
+<script type='text/javascript'>
+//<![CDATA[
+const _MOR_CONFIG = {
+  MOBILE_BREAKPOINT: 900,
+  PANELS_COLLAPSED_MOBILE: true,
+  THEME_TOGGLE: true,
+  SHARE_ACTIONS: true
+};
+
+/* --- 01-Core-Helpers.js --- */
+(() => {
+  document.addEventListener('DOMContentLoaded', () => {
+    /* =========================================================
+    01. Shared Helpers
+    ========================================================= */
+    const MOBILE_BREAKPOINT = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.MOBILE_BREAKPOINT : 900;
+    const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
+
+    function isTypingInField() {
+      const activeElement = document.activeElement;
+      if (!activeElement) return false;
+      const activeTag = activeElement.tagName ? activeElement.tagName.toLowerCase() : '';
+      return activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select' || activeElement.isContentEditable;
+    }
+
+    function safeClosest(target, selector) {
+      if (!target || typeof target.closest !== 'function') return null;
+      return target.closest(selector);
+    }
+
+    /* =========================================================
+    02. Side Panels + Back to Top
+    ========================================================= */
+    const panelLeft = document.getElementById('panel-left');
+    const panelRight = document.getElementById('panel-right');
+    const canvasCore = document.querySelector('.canvas-core');
+    const backToTopBtn = document.querySelector('.back-to-top-btn') || document.querySelector('.footer-sys-info button[onclick*="scrollTo"]');
+
+    function scrollMainContentToTop() {
+      const scrollOptions = { top: 0, behavior: 'smooth' };
+      if (canvasCore && typeof canvasCore.scrollTo === 'function') canvasCore.scrollTo(scrollOptions);
+      if (typeof window.scrollTo === 'function') window.scrollTo(scrollOptions);
+      if (document.documentElement && typeof document.documentElement.scrollTo === 'function') document.documentElement.scrollTo(scrollOptions);
+      if (document.body && typeof document.body.scrollTo === 'function') document.body.scrollTo(scrollOptions);
+    }
+
+    function setInitialPanelState() {
+      if (!panelLeft || !panelRight) return;
+      const collapseOnMobile = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.PANELS_COLLAPSED_MOBILE : true;
+      if (isMobile() && collapseOnMobile) {
+        panelLeft.classList.add('is-collapsed');
+        panelRight.classList.add('is-collapsed');
+      } else {
+        panelLeft.classList.remove('is-collapsed');
+        panelRight.classList.remove('is-collapsed');
+      }
+    }
+
+    function closeMobilePanels() {
+      if (!isMobile()) return;
+      if (panelLeft) panelLeft.classList.add('is-collapsed');
+      if (panelRight) panelRight.classList.add('is-collapsed');
+    }
+
+    setInitialPanelState();
+
+    if (backToTopBtn) {
+      backToTopBtn.removeAttribute('onclick');
+      backToTopBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        scrollMainContentToTop();
+      });
+    }
+
+    /* =========================================================
+    03. Catalog Mega Dropdown
+    ========================================================= */
+    const catalogMenu = document.querySelector('.mor-catalog-menu');
+    let catalogTrigger = null;
+
+    function openCatalogMenu() {
+      if (!catalogMenu) return;
+      catalogMenu.classList.add('is-open');
+      if (catalogTrigger) catalogTrigger.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeCatalogMenu() {
+      if (!catalogMenu) return;
+      catalogMenu.classList.remove('is-open');
+      if (catalogTrigger) catalogTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleCatalogMenu() {
+      if (!catalogMenu) return;
+      if (catalogMenu.classList.contains('is-open')) {
+        closeCatalogMenu();
+      } else {
+        openCatalogMenu();
+      }
+    }
+
+    function setupCatalogMenu() {
+      if (!catalogMenu) return;
+      catalogTrigger = catalogMenu.querySelector('.mor-catalog-trigger');
+      const categoryButtons = catalogMenu.querySelectorAll('.mor-catalog-category');
+      const panels = catalogMenu.querySelectorAll('.mor-catalog-panel');
+
+      function showPanel(panelName) {
+        if (!panelName) return;
+        categoryButtons.forEach((button) => {
+          const isActive = button.getAttribute('data-catalog-panel') === panelName;
+          button.classList.toggle('is-active', isActive);
+        });
+        panels.forEach((panel) => {
+          const isActive = panel.getAttribute('data-catalog-panel-content') === panelName;
+          panel.classList.toggle('is-active', isActive);
+        });
+      }
+
+      if (catalogTrigger) {
+        catalogTrigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          toggleCatalogMenu();
+        });
+      }
+
+      categoryButtons.forEach((button) => {
+        const panelName = button.getAttribute('data-catalog-panel');
+        button.addEventListener('mouseenter', () => { showPanel(panelName); openCatalogMenu(); });
+        button.addEventListener('focus', () => { showPanel(panelName); openCatalogMenu(); });
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          showPanel(panelName);
+          openCatalogMenu();
+        });
+      });
+    }
+    setupCatalogMenu();
+
+    /* =========================================================
+    04. Global Click Handling
+    ========================================================= */
+    document.addEventListener('click', (event) => {
+      const toggleBtn = safeClosest(event.target, '.panel-toggle');
+      if (toggleBtn) {
+        const targetId = toggleBtn.getAttribute('data-target');
+        if (targetId) {
+          const targetPanel = document.getElementById(targetId);
+          if (targetPanel) {
+            event.preventDefault();
+            targetPanel.classList.toggle('is-collapsed');
+            
+            // Accessibility update
+            const isCollapsed = targetPanel.classList.contains('is-collapsed');
+            toggleBtn.setAttribute('aria-expanded', (!isCollapsed).toString());
+          }
+        }
+      }
+      if (catalogMenu && !catalogMenu.contains(event.target)) {
+        closeCatalogMenu();
+      }
+    });
+
+    /* =========================================================
+    05. Keyboard Shortcuts
+    ========================================================= */
+    document.addEventListener('keydown', (event) => {
+      const key = event.key ? event.key.toLowerCase() : '';
+      const typing = isTypingInField();
+
+      if (event.ctrlKey && key === 'b') {
+        event.preventDefault();
+        if (panelLeft) panelLeft.classList.toggle('is-collapsed');
+      }
+      if (event.ctrlKey && key === 'e') {
+        event.preventDefault();
+        if (panelRight) panelRight.classList.toggle('is-collapsed');
+      }
+      if (key === 'home' && !typing) {
+        event.preventDefault();
+        scrollMainContentToTop();
+      }
+      if (key === 'escape') {
+        if (catalogMenu && catalogMenu.classList.contains('is-open')) {
+          closeCatalogMenu();
+          if (catalogTrigger) catalogTrigger.focus();
+        }
+        closeMobilePanels();
+      }
+    });
+
+    /* =========================================================
+    06. Resize Handling
+    ========================================================= */
+    let lastMobileState = isMobile();
+    window.addEventListener('resize', () => {
+      const currentMobileState = isMobile();
+      if (currentMobileState !== lastMobileState) {
+        lastMobileState = currentMobileState;
+        setInitialPanelState();
+        closeCatalogMenu();
+      }
+    });
+  });
+})();
+
+/* --- 07-Theme-Toggler.js --- */
+(() => {
+  // Skip when running inside the editor preview iframe
+  if (window.self !== window.top) return;
+
+  const K = 'mor-theme';
+  const html = document.documentElement;
+
+  // Apply stored preference on load
+  const stored = localStorage.getItem(K);
+  if (stored === 'dark' || stored === 'light') {
+    html.setAttribute('data-theme', stored);
+  }
+
+  // Toggle on button click
+  document.addEventListener('DOMContentLoaded', () => {
+    const enableToggle = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.THEME_TOGGLE : true;
+    if (!enableToggle) {
+      const btn = document.getElementById('mor-theme-toggle');
+      if (btn) btn.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#mor-theme-toggle')) return;
+    const enableToggle = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.THEME_TOGGLE : true;
+    if (!enableToggle) return;
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    try { localStorage.setItem(K, next); } catch (_) {}
+  });
+})();
+
+
+/* --- 08-Share-Actions.js --- */
+(() => {
+  document.addEventListener('DOMContentLoaded', () => {
+    /* =========================================================
+    08. Share Menu Toggler & Actions
+    ========================================================= */
+    const enableShare = typeof _MOR_CONFIG !== 'undefined' ? _MOR_CONFIG.SHARE_ACTIONS : true;
+    if (!enableShare) {
+      document.querySelectorAll('.sharing-button, .post-share-buttons').forEach(el => el.style.display = 'none');
+      return;
+    }
+
+    const shareButtons = document.querySelectorAll('.sharing-button');
+
+    // 1. Handle opening/closing the dropdown
+    shareButtons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const targetId = button.getAttribute('aria-controls');
+        if (targetId) {
+          const targetMenu = document.getElementById(targetId);
+          if (targetMenu) {
+            // Close other open menus first
+            document.querySelectorAll('.share-buttons').forEach(menu => {
+              if (menu !== targetMenu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                menu.setAttribute('aria-hidden', 'true');
+              }
+            });
+
+            targetMenu.classList.toggle('hidden');
+            const isHidden = targetMenu.classList.contains('hidden');
+            targetMenu.setAttribute('aria-hidden', isHidden.toString());
+          }
+        }
+      });
+    });
+
+    // 2. Handle clicking the actual platforms
+    const platformButtons = document.querySelectorAll('.sharing-platform-button');
+    platformButtons.forEach(btn => {
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const shareHref = btn.getAttribute('data-href');
+        const shareUrl = btn.getAttribute('data-url');
+        const isCopyLink = btn.classList.contains('sharing-element-link');
+
+        // Action A: "Get Link" (Copy to Clipboard)
+        if (isCopyLink && shareUrl) {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+              // Visual feedback
+              const textSpan = btn.querySelector('.platform-sharing-text');
+              if (textSpan) {
+                const originalText = textSpan.innerText;
+                textSpan.innerText = 'Link Copied!';
+                setTimeout(() => { textSpan.innerText = originalText; }, 2000);
+              }
+            });
+          } else {
+            // Fallback for older browsers
+            prompt("Copy to clipboard: Ctrl+C, Enter", shareUrl);
+          }
+        } 
+        // Action B: Social Platforms (Popup Window)
+        else if (shareHref) {
+          window.open(shareHref, 'shareWindow', 'width=600,height=500,scrollbars=yes,resizable=yes');
+        }
+
+        // Close the menu after clicking
+        const parentMenu = btn.closest('.share-buttons');
+        if (parentMenu) {
+          parentMenu.classList.add('hidden');
+          parentMenu.setAttribute('aria-hidden', 'true');
+        }
+      });
+    });
+
+    // 3. Close the menu if clicking off-target
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.post-share-buttons')) {
+        const allMenus = document.querySelectorAll('.share-buttons');
+        allMenus.forEach(menu => {
+          if (!menu.classList.contains('hidden')) {
+            menu.classList.add('hidden');
+            menu.setAttribute('aria-hidden', 'true');
+          }
+        });
+      }
+    });
+  });
+})();
+//]]>
+</script>
+</body>
+</html>

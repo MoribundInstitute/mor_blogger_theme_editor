@@ -8,7 +8,7 @@ use dioxus::prelude::*;
 
 pub mod config_bridge;
 pub mod hotswap;
-mod keyboard;
+pub mod keyboard;
 mod restore_drop;
 pub mod services;
 pub mod shell;
@@ -25,18 +25,12 @@ use crate::app::vfs::VfsDictionary;
 use keyboard::use_keyboard_shortcuts;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
-use state::{LayoutState, RenderState, SiteData, ThemeState, WindowManager};
+use state::{LayoutState, RenderState, SiteData, ThemeState};
 #[cfg(not(target_arch = "wasm32"))]
 use theme_hot_reload::use_theme_config_hot_reload;
 
 #[allow(non_snake_case)]
 pub fn App() -> Element {
-    use_context_provider(|| {
-        Signal::new(WindowManager {
-            show_template_modules: false, // Hidden by default until called
-        })
-    });
-
     // VFS must be provided before any hook that calls use_context::<VfsDictionary>()
     let vfs_map = use_signal(|| {
         let mut map = mor_blogger_core::utils::fs_bridge::load_all_custom_css().unwrap_or_default();

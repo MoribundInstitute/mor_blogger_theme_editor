@@ -134,15 +134,6 @@ pub fn render_app_shell(
         tv_monitor.set((render.preview_html)());
     });
 
-    let mut active_view = use_signal(|| "preview");
-    use_effect(move || {
-        if center_view() == CenterView::ModuleWorkbench {
-            active_view.set("workbench");
-        } else {
-            active_view.set("preview");
-        }
-    });
-
     let edited_xml = use_signal(String::new);
     let module_xml_signal = use_signal(String::new);
     let workbench_status = use_signal(String::new);
@@ -252,7 +243,6 @@ pub fn render_app_shell(
                 show_preview,
                 show_undocked_pages,
                 tv_monitor,
-                active_view,
             }
         }
     }

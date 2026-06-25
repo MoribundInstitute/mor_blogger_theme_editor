@@ -305,9 +305,13 @@ Deep dive: [Architecture Overview](docs/ARCHITECTURE.md)
 ## 🌐 Ecosystem & Live Demos
 The Architect is part of a larger ecosystem of tools and live examples:
 
+![MorBlogger ecosystem map](docs/diagrams/ecosystem_map.drawio.png)
+
 ### Core Libraries
 - [MOR UI Kit](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
 - [Theme Compendium](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
+
+![Compendium and plugin hub](docs/diagrams/compendium_plugin_hub.drawio.png)
 
 ### Live Production Sites
 See the exported themes running live on Blogger's infrastructure:
@@ -319,6 +323,8 @@ See the exported themes running live on Blogger's infrastructure:
 ## ⚠️ Real-Time Diagnostics
 - **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
 - **Export Safety:** Prevents broken XML from ever reaching your clipboard.
+
+![Real-time diagnostics and export safety](docs/diagrams/diagnostics_flow.drawio.png)
 
 
 ---
@@ -346,6 +352,8 @@ Need assets or reference material for your theme? Use these external tools:
 ## 🤝 Contributing
 The Moribund Institute welcomes contributions! If you have built a beautiful, robust theme preset using the Architect, we would love to add it to the default Compendium or feature it on the [Theme Gallery](https://mor-theme-compendium.blogspot.com/).
 
+![Contributing a theme preset](docs/diagrams/contributing_preset_flow.drawio.png)
+
 To leave naming space open for the community (so we don't hog generic names like "Modern Editorial" or "Web 2.0"), the Moribund Institute reserves the `mor-` prefix for our official theme releases. 
 
 Whether you are submitting a PR to share your preset publicly or just building for yourself, please ensure your internal CSS and variables follow the `mor_` namespacing guidelines outlined in the [Theme Creation Guide](docs/THEME_CREATION.md).
@@ -369,9 +377,13 @@ The Moribund Institute doesn't strictly care about copyright (it's often an arbi
 
 Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font files. You cannot upload `.ttf`, `.woff`, or `.woff2` to Blogger and reference them with a local path. Any custom typeface must arrive via an external URL—either a CDN `@import` or a remote `@font-face` `src`.
 
+![Blogger font constraints](docs/diagrams/blogger_font_constraints.drawio.png)
+
 ### The Privacy Alternative
 
 [fonts.bunny.net](https://fonts.bunny.net) mirrors the Google Fonts catalog without tracking pixels, referrer logging, or IP retention. It is a drop-in, GDPR-compliant substitute for `fonts.googleapis.com`.
+
+![Privacy-friendly font path via fonts.bunny.net](docs/diagrams/fonts_bunny_privacy_path.drawio.png)
 
 1. Pick your family at [fonts.bunny.net](https://fonts.bunny.net).
 2. Copy the generated `@import` rule.
@@ -386,6 +398,10 @@ Blogger's `<b:skin>` block is CSS-only. There is no asset host for binary font f
 ```
 
 The MorBlogger export pipeline injects this block into the compiled `<b:skin>` stylesheet. No Google Fonts request hits your readers' browsers.
+
+![Font normalization funnel](docs/diagrams/font_normalization_funnel.drawio.png)
+
+All UI font inputs (typed names, drag-drop files, CDN rules) coerce to a font name string and pass through `resolve_font_stack()` in `mor_blogger_core` — see [DECISIONS.md](../DECISIONS.md).
 
 ### Self-Hosting
 

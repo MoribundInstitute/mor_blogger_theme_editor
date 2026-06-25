@@ -9,6 +9,8 @@ This guide covers authoring presets for the MorBlogger compendium and local use.
 
 ## Authoring Flow
 
+![Contributing a theme preset](diagrams/contributing_preset_flow.drawio.png)
+
 1. Design tokens (colors, typography, effects) in the **Theme Palette** dock.
 2. Apply and refine via `ThemeSignals` — changes flow through `apply_preset()` / `apply_config()`.
 3. Validate with live diagnostics before export.

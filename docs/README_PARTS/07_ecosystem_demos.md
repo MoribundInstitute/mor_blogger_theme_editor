@@ -1,9 +1,13 @@
 ## 🌐 Ecosystem & Live Demos
 The Architect is part of a larger ecosystem of tools and live examples:
 
+![MorBlogger ecosystem map](docs/diagrams/ecosystem_map.drawio.png)
+
 ### Core Libraries
 - [MOR UI Kit](https://github.com/MoribundInstitute/mor_rust_dioxus_ui_kit) — The standalone, zero-bloat Dioxus UI toolkit powering this editor.
 - [Theme Compendium](https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium) — The open-source collection of community-driven Blogger templates.
+
+![Compendium and plugin hub](docs/diagrams/compendium_plugin_hub.drawio.png)
 
 ### Live Production Sites
 See the exported themes running live on Blogger's infrastructure:
@@ -15,3 +19,5 @@ See the exported themes running live on Blogger's infrastructure:
 ## ⚠️ Real-Time Diagnostics
 - **Live Validation:** The engine actively detects structural inconsistencies, missing bindings, or broken toggles before you export.
 - **Export Safety:** Prevents broken XML from ever reaching your clipboard.
+
+![Real-time diagnostics and export safety](docs/diagrams/diagnostics_flow.drawio.png)

@@ -1,4 +1,4 @@
-use directories::ProjectDirs;
+use directories::{BaseDirs, ProjectDirs};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fs;
@@ -43,13 +43,15 @@ pub struct McpInstallReport {
 }
 
 pub fn mcp_plugins_dir() -> PathBuf {
-    dirs::data_local_dir()
+    BaseDirs::new()
+        .map(|d| d.data_local_dir().to_path_buf())
         .unwrap_or_else(std::env::temp_dir)
         .join("morblogger/plugins")
 }
 
 pub fn mcp_daemon_registry_path() -> PathBuf {
-    dirs::config_dir()
+    BaseDirs::new()
+        .map(|d| d.config_dir().to_path_buf())
         .unwrap_or_else(std::env::temp_dir)
         .join("mor_blogger/mcp_servers/registry.json")
 }
@@ -216,8 +218,10 @@ pub fn register_mcp_daemon_entry(
 }
 
 pub fn install_mcp_to_claude(binary_path: &Path, server_key: &str) -> Result<PathBuf, String> {
-    let config_dir = dirs::config_dir().ok_or("Could not find OS config directory")?;
-    let claude_config_path = config_dir.join("Claude/claude_desktop_config.json");
+    let base = BaseDirs::new().ok_or("Could not find OS config directory")?;
+    let claude_config_path = base
+        .config_dir()
+        .join("Claude/claude_desktop_config.json");
     install_mcp_to_path(&claude_config_path, binary_path, server_key)?;
     Ok(claude_config_path)
 }

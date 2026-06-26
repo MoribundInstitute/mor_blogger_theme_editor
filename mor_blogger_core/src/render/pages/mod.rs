@@ -10,6 +10,7 @@ pub use analytics::{generate_analytics_dashboard_html, generate_analytics_html};
 pub use archive::generate_archive_html;
 pub use categories::generate_categories_html;
 pub use lms::course_catalog::generate_course_catalog_html;
+pub use lms::my_courses::generate_my_courses_html;
 pub use lms::syllabus::generate_syllabus_html;
 pub use portfolio::generate_portfolio_html;
 

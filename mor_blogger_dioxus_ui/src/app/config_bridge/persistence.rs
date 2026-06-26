@@ -47,6 +47,7 @@ impl LayoutPrefs {
         let prefs = Self {
             pinned_docks: legacy_pins,
             quick_launch_hidden: Vec::new(),
+            activity_icons: std::collections::HashMap::new(),
         };
         let _ = prefs.save();
         prefs
@@ -81,10 +82,15 @@ impl EditorPrefs {
         let _ = prefs.save();
     }
 
-    #[allow(dead_code)] // reserved for CSS token builder button-color hook
-    pub fn update_custom_btn(btn: String) {
+    pub fn update_minimap(show: bool) {
         let mut prefs = Self::load();
-        prefs.custom_editor_colors.btn = Some(btn);
+        prefs.show_minimap = Some(show);
+        let _ = prefs.save();
+    }
+
+    pub fn update_minimap_override(key: String, show: bool) {
+        let mut prefs = Self::load();
+        prefs.minimap_overrides.insert(key, show);
         let _ = prefs.save();
     }
 

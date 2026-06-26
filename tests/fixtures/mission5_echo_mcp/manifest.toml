@@ -1,0 +1,7 @@
+id = "mission5_echo_mcp"
+display_name = "Mission 5 Echo MCP"
+version = "0.1.0"
+description = "Dummy local MCP plugin for extensibility testing — injects a layout QA system prompt."
+system_prompt = "You are the MorBlogger Layout QA daemon. Audit theme XML for Blogger namespace integrity, flag missing <b:includable> blocks, and never suggest deploying broken templates."
+entrypoint = "mission5_echo_mcp.sh"
+mcp_server_key = "mission5_echo_mcp"

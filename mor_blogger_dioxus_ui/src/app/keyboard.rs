@@ -23,6 +23,7 @@ pub const EDITOR_KEY_GUARD_JS: &str = r#"
 pub fn use_keyboard_shortcuts(layout: LayoutState) {
     let mut theme_palette_pos = layout.theme_palette_pos;
     let mut site_data_pos = layout.site_data_pos;
+    let mut layout = layout;
 
     use_effect(move || {
         let mut eval = dioxus::document::eval(
@@ -31,8 +32,12 @@ pub fn use_keyboard_shortcuts(layout: LayoutState) {
                 let k = e.key.toLowerCase();
 
                 if (e.ctrlKey || e.metaKey) {
-                    if (k === 'b') { e.preventDefault(); dioxus.send("toggle_left"); }
-                    if (k === 'e') { e.preventDefault(); dioxus.send("toggle_right"); }
+                    if (e.shiftKey && k === 'arrowleft')  { e.preventDefault(); dioxus.send("close_left"); }
+                    else if (e.shiftKey && k === 'arrowright') { e.preventDefault(); dioxus.send("close_right"); }
+                    // Ctrl/Cmd+Shift+1..9 toggles the Nth pinned dock (e.code so shifted digits still match).
+                    else if (e.shiftKey && /^Digit[1-9]$/.test(e.code)) { e.preventDefault(); dioxus.send("dock_" + e.code.slice(5)); }
+                    else if (k === 'b') { e.preventDefault(); dioxus.send("toggle_left"); }
+                    else if (k === 'e') { e.preventDefault(); dioxus.send("toggle_right"); }
                 }
 
                 if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
@@ -62,6 +67,8 @@ pub fn use_keyboard_shortcuts(layout: LayoutState) {
                                 site_data_pos.set(DockPosition::Hidden);
                             }
                         }
+                        "close_left" => theme_palette_pos.set(DockPosition::Hidden),
+                        "close_right" => site_data_pos.set(DockPosition::Hidden),
                         "layout_split" | "layout_wide" => {
                             theme_palette_pos.set(DockPosition::mor_panel_left);
                             site_data_pos.set(DockPosition::mor_panel_right);
@@ -70,7 +77,15 @@ pub fn use_keyboard_shortcuts(layout: LayoutState) {
                             theme_palette_pos.set(DockPosition::Floating);
                             site_data_pos.set(DockPosition::Floating);
                         }
-                        _ => {}
+                        other => {
+                            if let Some(n) = other
+                                .strip_prefix("dock_")
+                                .and_then(|s| s.parse::<usize>().ok())
+                                .filter(|&n| n >= 1)
+                            {
+                                layout.toggle_dock_by_index(n - 1);
+                            }
+                        }
                     }
                 }
             }

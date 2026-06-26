@@ -58,6 +58,7 @@ pub fn PluginsPanel(mut custom_js: Signal<String>) -> Element {
                 CodeEditor {
                     value: (custom_js)(),
                     mode: "javascript".to_string(),
+                    minimap_key: Some("plugins_custom_js".to_string()),
                     on_change: move |new_val| {
                         custom_js.set(new_val);
                     }

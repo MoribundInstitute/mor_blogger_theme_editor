@@ -1,5 +1,9 @@
 use crate::app::state::{
-    CenterView, ContextMenuPayload, LayoutState, RenderState,
+    CenterView, ContextMenuPayload, LayoutState, RenderState, ThemeState,
+};
+use mor_blogger_core::render::pages::{
+    generate_about_html, generate_archive_html, generate_categories_html,
+    generate_course_catalog_html, generate_my_courses_html, generate_portfolio_html,
 };
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
@@ -9,12 +13,10 @@ use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::diagnostics::DiagnosticResult;
-use mor_blogger_core::render::PreviewTemplateMode;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
 use super::module_workbench::ModuleWorkbench;
 use super::static_page_editor::StaticPageEditor;
-use crate::ui::components::code_editor::CodeEditor;
 use crate::ui::layout::docks::smart_code_dock::SmartCodeDock;
 use crate::ui::layout::main_pane::MainPane;
 
@@ -60,7 +62,6 @@ fn encode_path_to_mask(path_d: &str) -> String {
 pub fn BloggerWorkspace(
     preview_viewport: Signal<PreviewViewport>,
     preview_width: Signal<u32>,
-    preview_template_mode: Signal<PreviewTemplateMode>,
 
     preview_html: Signal<String>,
     show_preview: Signal<bool>,
@@ -158,7 +159,6 @@ pub fn BloggerWorkspace(
                     ViewportToolbar {
                         preview_viewport,
                         preview_width,
-                        preview_template_mode,
                         is_xray_active,
                     }
                 })
@@ -175,7 +175,6 @@ pub fn BloggerWorkspace(
                         ViewportToolbar {
                             preview_viewport,
                             preview_width,
-                            preview_template_mode,
                             is_xray_active,
                         }
                         div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
@@ -336,11 +335,6 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             "Code Editor"
         }
         button {
-            class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| layout.enter_workspace(CenterView::Export),
-            "Export XML"
-        }
-        button {
             class: if center_view() == CenterView::ModuleWorkbench {
                 "editor-mini-button editor-mini-button-active"
             } else {
@@ -357,6 +351,12 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             onclick: move |_| layout.enter_workspace(CenterView::StaticPageEditor),
             "Static Pages"
         }
+        // Export is the terminal pipeline step, so it sits at the far right.
+        button {
+            class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| layout.enter_workspace(CenterView::Export),
+            "Export"
+        }
     }
 }
 
@@ -364,10 +364,11 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
 fn ViewportToolbar(
     mut preview_viewport: Signal<PreviewViewport>,
     mut preview_width: Signal<u32>,
-    mut preview_template_mode: Signal<PreviewTemplateMode>,
     mut is_xray_active: Signal<bool>,
 ) -> Element {
     rsx! {
+        // One pill: X-Ray toggle, then the device controls. Keeping X-Ray in its
+        // own bordered+shadowed pill was wasted chrome for a single button.
         div {
             class: "preview-toolbar-group",
             style: "margin: 0;",
@@ -377,34 +378,36 @@ fn ViewportToolbar(
                 onclick: move |_| is_xray_active.set(!is_xray_active()),
                 "X-Ray"
             }
-        }
-        div {
-            class: "preview-toolbar-group",
-            style: "margin: 0;",
-            button {
-                class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
-                "Desktop"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
-                "Laptop"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
-                "Tablet"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
-                "Phone"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
-                "Fit"
+            div { class: "preview-toolbar-divider" }
+            // Desktop/Laptop/Tablet/Phone/Fit are one mutually-exclusive choice,
+            // so render them as a single segmented control rather than 5 pills.
+            div {
+                class: "editor-segmented",
+                button {
+                    class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
+                    "Desktop"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
+                    "Laptop"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
+                    "Tablet"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
+                    "Phone"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
+                    "Fit"
+                }
             }
             button {
                 class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
@@ -424,22 +427,6 @@ fn ViewportToolbar(
                         }
                     },
                 }
-            }
-        }
-
-        div {
-            class: "preview-toolbar-group preview-template-mode-group",
-            style: "margin: 0;",
-            span { class: "preview-width-label", "Layout" }
-            button {
-                class: if preview_template_mode() == PreviewTemplateMode::Modern { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Modern); },
-                "Modern"
-            }
-            button {
-                class: if preview_template_mode() == PreviewTemplateMode::Sidebars { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { preview_template_mode.set(PreviewTemplateMode::Sidebars); },
-                "Sidebars"
             }
         }
     }
@@ -577,6 +564,15 @@ fn IconPickerModal(
     }
 }
 
+// (page id, dropdown label) — mirrors the Static Pages panel.
+const PAGE_OPTIONS: &[(&str, &str)] = &[
+    ("Archive", "Archive"),
+    ("Directory", "Directory"),
+    ("About", "About Me"),
+    ("Portfolio", "Portfolio"),
+    ("LMS", "Courses"),
+];
+
 #[component]
 fn ExportResultView(
     export_xml: Memo<String>,
@@ -584,51 +580,34 @@ fn ExportResultView(
     error_count: usize,
     config_toml: ReadSignal<String>,
 ) -> Element {
-    let status_msg = use_signal(String::new);
+    let theme = use_context::<ThemeState>();
+    let mut status_msg = use_signal(String::new);
+    let mut selected_page = use_signal(|| "Archive".to_string());
 
     rsx! {
         div {
-            style: "display: flex; flex-direction: column; flex: 1; min-height: 0;",
+            style: "display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 20px; padding: 4px;",
 
             if !status_msg().is_empty() {
                 div { class: "export-status", "{status_msg}" }
             }
 
             if !is_valid {
-                div { class: "export-error-banner", style: "margin-bottom: 12px;",
+                div { class: "export-error-banner",
                     span { style: "flex-shrink: 0;", "⚠" }
-                    span { "Export disabled \u{2014} {error_count} integrity error(s). Fix the template skeleton before copying." }
+                    span { "Theme export disabled \u{2014} {error_count} integrity error(s). Fix the template skeleton before exporting." }
                 }
             }
 
+            // ── Theme export ────────────────────────────────────────────
             div {
-                class: "export-viewport",
-                style: "flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 0; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-base);",
-                div {
-                    class: "editor-pane-header",
-                    style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
-                    div {
-                        style: "display: flex; align-items: center; gap: 8px;",
-                        span { style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);", "exported_theme.xml" }
-                        span {
-                            style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
-                            "Read-only export preview"
-                        }
-                    }
+                class: "editor-panel",
+                style: "border: 1px solid var(--editor-border); border-radius: var(--radius-md); padding: 16px; background: var(--bg-panel);",
+                h3 { style: "margin: 0 0 4px 0; font-size: 1rem; color: var(--fg-base);", "Theme Export" }
+                p { style: "margin: 0 0 14px 0; font-size: 0.8rem; color: var(--fg-muted); line-height: 1.5;",
+                    "Compile the live config into a Blogger XML theme. The bundle (.zip) also embeds a workspace backup and any pages flagged for inclusion."
                 }
-                div {
-                    style: "flex: 1; min-height: 0; display: flex; flex-direction: column;",
-                    CodeEditor {
-                        value: export_xml(),
-                        mode: "xml".to_string(),
-                        read_only: true,
-                        on_change: |_| {},
-                    }
-                }
-            }
-
-            div { class: "export-action-bar", style: "margin-top: 15px; border-top: 1px solid var(--editor-border-soft); padding-top: 15px;",
-                div { class: "export-action-group",
+                div { class: "export-action-group", style: "display: flex; flex-wrap: wrap; gap: 10px;",
                     if is_valid {
                         button {
                             class: "editor-button editor-button-good",
@@ -655,6 +634,61 @@ fn ExportResultView(
                         button { class: "editor-button editor-button-disabled", title: "Fix errors", "Copy XML" }
                         button { class: "editor-button editor-button-disabled", title: "Fix errors", "Export XML to Disk" }
                         button { class: "editor-button editor-button-disabled", title: "Fix errors", "Export Theme Bundle (.zip)" }
+                    }
+                }
+            }
+
+            // ── Static page export ──────────────────────────────────────
+            div {
+                class: "editor-panel",
+                style: "border: 1px solid var(--editor-border); border-radius: var(--radius-md); padding: 16px; background: var(--bg-panel);",
+                h3 { style: "margin: 0 0 4px 0; font-size: 1rem; color: var(--fg-base);", "Static Page Export" }
+                p { style: "margin: 0 0 14px 0; font-size: 0.8rem; color: var(--fg-muted); line-height: 1.5;",
+                    "Export a single page's generated HTML to a file. Paste it into Blogger's Pages editor (HTML view) to match your active theme."
+                }
+                div { style: "display: flex; flex-wrap: wrap; align-items: center; gap: 10px;",
+                    select {
+                        class: "editor-input",
+                        style: "max-width: 200px;",
+                        onchange: move |evt| selected_page.set(evt.value()),
+                        for (id, label) in PAGE_OPTIONS.iter().copied() {
+                            option { value: "{id}", selected: selected_page() == id, "{label}" }
+                        }
+                    }
+                    button {
+                        class: "editor-button editor-button-good",
+                        onclick: move |_| {
+                            let pages = (theme.signals.static_pages)();
+                            let sel = selected_page();
+                            let html = match sel.as_str() {
+                                "Archive" => generate_archive_html(&pages.archive),
+                                "Directory" => generate_categories_html(&pages.categories),
+                                "Portfolio" => generate_portfolio_html(&pages.portfolio),
+                                "About" => generate_about_html(&pages.about),
+                                "LMS" => generate_course_catalog_html(&pages.lms),
+                                "MyCourses" => generate_my_courses_html(&pages.lms),
+                                _ => String::new(),
+                            };
+                            if html.is_empty() {
+                                status_msg.set(format!("No HTML available for {}", sel));
+                                return;
+                            }
+                            let default_name = format!("{}.html", sel.to_lowercase());
+                            spawn(async move {
+                                if let Some(handle) = rfd::AsyncFileDialog::new()
+                                    .add_filter("HTML", &["html"])
+                                    .set_file_name(default_name)
+                                    .save_file()
+                                    .await
+                                {
+                                    match std::fs::write(handle.path(), &html) {
+                                        Ok(_) => status_msg.set(format!("Exported {} page \u{2192} {}", sel, handle.path().display())),
+                                        Err(e) => status_msg.set(format!("Export failed: {}", e)),
+                                    }
+                                }
+                            });
+                        },
+                        "Export Page HTML"
                     }
                 }
             }

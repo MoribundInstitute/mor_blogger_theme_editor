@@ -277,6 +277,7 @@ pub fn ModuleWorkbench(
     let render = use_context::<RenderState>();
     let mut edited_xml: Signal<String> = use_signal(String::new);
     let mut is_takeover_active = use_signal(|| false);
+    let mut is_editor_takeover_active = use_signal(|| false);
     let mut workbench_status: Signal<String> = use_signal(String::new);
     let vfs = use_context::<VfsDictionary>().0;
 
@@ -319,6 +320,45 @@ pub fn ModuleWorkbench(
 
     let mut preview_viewport: Signal<PreviewViewport> = use_signal(|| PreviewViewport::Fit);
     let mut preview_width: Signal<u32> = use_signal(|| 1200u32);
+
+    // Save buffer to this module's canonical custom override (custom_<key>).
+    // Copy closure (captures only Copy signals/memos) so it's reusable in both the
+    // pane header and the editor-takeover bar.
+    let save_module = move |_: Event<MouseData>| {
+        let Some(key) = (layout.active_workbench_module)() else { return; };
+        let category = module_key_to_category(key);
+        let name = format!("custom_{}", key);
+        let content = display_xml();
+        let mut status = workbench_status;
+        match fs_bridge::save_custom_module(category, &name, &content) {
+            Ok(path) => status.set(format!("Saved → {}", path.display())),
+            Err(e) => status.set(format!("Save failed: {}", e)),
+        }
+    };
+    // Save buffer to a user-named new module file (lets you spin off variants).
+    let save_as_new = move |_: Event<MouseData>| {
+        let Some(key) = (layout.active_workbench_module)() else { return; };
+        let content = display_xml();
+        let category = module_key_to_category(key);
+        let default_name = format!("{}_custom.xml", key);
+        let start_dir = fs_bridge::category_dir(category).or_else(fs_bridge::templates_root);
+        let mut status = workbench_status;
+        spawn(async move {
+            let mut dlg = rfd::AsyncFileDialog::new()
+                .add_filter("Blogger module XML", &["xml"])
+                .set_file_name(default_name);
+            if let Some(dir) = start_dir {
+                dlg = dlg.set_directory(dir);
+            }
+            if let Some(handle) = dlg.save_file().await {
+                let path = handle.path().to_path_buf();
+                match std::fs::write(&path, &content) {
+                    Ok(_) => status.set(format!("Saved new module → {}", path.display())),
+                    Err(e) => status.set(format!("Save failed: {}", e)),
+                }
+            }
+        });
+    };
 
     rsx! {
         if is_takeover_active() {
@@ -388,7 +428,7 @@ pub fn ModuleWorkbench(
                 div {
                     style: "
                         flex: 1; min-height: 0; overflow: auto;
-                        display: flex; align-items: flex-start; justify-content: center;
+                        display: flex; align-items: stretch; justify-content: center;
                         padding: 32px;
                         background-color: var(--bg-base);
                         background-image:
@@ -413,6 +453,50 @@ pub fn ModuleWorkbench(
                                 preview_width,
                                 preview_html: module_preview_html(),
                             }
+                        }
+                    }
+                }
+            }
+        } else if is_editor_takeover_active() {
+            // ── Editor Takeover ─ Full-viewport focused XML editor ────────
+            div {
+                style: "flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;",
+                div {
+                    style: "flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border);",
+                    span {
+                        style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);",
+                        {(layout.active_workbench_module)().map(|k| format!("{k}.xml")).unwrap_or_else(|| "module_fragment.xml".to_string())}
+                    }
+                    div { style: "flex: 1;" }
+                    button {
+                        class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                        title: "Save to this module's custom override",
+                        onclick: save_module,
+                        "Save Module"
+                    }
+                    button {
+                        class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                        title: "Save the buffer as a new named template module",
+                        onclick: save_as_new,
+                        "Save as New"
+                    }
+                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft); margin: 0 2px;" }
+                    button {
+                        class: "editor-mini-button",
+                        onclick: move |_| is_editor_takeover_active.set(false),
+                        "Editor ×"
+                    }
+                }
+                div {
+                    style: "flex: 1; min-height: 0; display: flex; flex-direction: column;",
+                    CodeEditor {
+                        value: display_xml(),
+                        mode: "xml".to_string(),
+                        minimap: Some(false),
+                        minimap_key: Some("module_workbench".to_string()),
+                        on_change: move |new_val| {
+                            edited_xml.set(new_val);
+                            on_load_theme.call(config_toml());
                         }
                     }
                 }
@@ -444,20 +528,26 @@ pub fn ModuleWorkbench(
                                     "Blogger XML · Live"
                                 }
                             }
-                            button {
-                                class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                                title: "Save current XML buffer to the user templates folder",
-                                onclick: move |_| {
-                                    let Some(key) = (layout.active_workbench_module)() else { return; };
-                                    let category = module_key_to_category(key);
-                                    let name = format!("custom_{}", key);
-                                    let content = display_xml();
-                                    match fs_bridge::save_custom_module(category, &name, &content) {
-                                        Ok(path) => workbench_status.set(format!("Saved → {}", path.display())),
-                                        Err(e) => workbench_status.set(format!("Save failed: {}", e)),
-                                    }
-                                },
-                                "Save Module"
+                            div {
+                                style: "display: flex; align-items: center; gap: 6px;",
+                                button {
+                                    class: "editor-mini-button",
+                                    title: "Expand the editor to a full-viewport focused stage",
+                                    onclick: move |_| is_editor_takeover_active.set(true),
+                                    "Takeover"
+                                }
+                                button {
+                                    class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                                    title: "Save current XML buffer to this module's custom override",
+                                    onclick: save_module,
+                                    "Save Module"
+                                }
+                                button {
+                                    class: if (layout.active_workbench_module)().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                                    title: "Save the buffer as a new named template module",
+                                    onclick: save_as_new,
+                                    "Save as New"
+                                }
                             }
                         }
 
@@ -478,6 +568,8 @@ pub fn ModuleWorkbench(
                             CodeEditor {
                                 value: display_xml(),
                                 mode: "xml".to_string(),
+                                minimap: Some(false),
+                                minimap_key: Some("module_workbench".to_string()),
                                 on_change: move |new_val| {
                                     edited_xml.set(new_val);
                                     on_load_theme.call(config_toml());

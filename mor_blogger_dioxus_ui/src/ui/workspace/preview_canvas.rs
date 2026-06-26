@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::app::state::ContextMenuPayload;
-use crate::ui::workspace::layout::PreviewViewport;
+use crate::ui::workspace::layout::{clamp_preview_width, PreviewViewport};
 
 const SCALER_JS: &str = r#"
 (function() {
@@ -85,6 +85,12 @@ pub fn PreviewCanvas(
         });
     }
 
+    let mut preview_width = preview_width;
+    let mut preview_viewport = preview_viewport;
+    // Drag-to-resize state: whether a drag is active, and (start cursor x, start width).
+    let mut dragging = use_signal(|| false);
+    let mut drag_start = use_signal(|| (0.0_f64, 0u32));
+
     let xray_on = xray_active.map(|s| s()).unwrap_or(false);
     let current_viewport = preview_viewport();
     let viewport_label = current_viewport.label();
@@ -96,6 +102,9 @@ pub fn PreviewCanvas(
 
     let device_class = if current_viewport == PreviewViewport::Fit {
         "preview-device-frame preview-device-frame-fit"
+    } else if dragging() {
+        // Kill the width transition mid-drag so the frame tracks the cursor 1:1.
+        "preview-device-frame preview-device-frame-resizing"
     } else {
         "preview-device-frame"
     };
@@ -510,6 +519,41 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                             });
                         }
                     }
+
+                    // Drag-to-resize handle on the frame's right edge (fixed-width modes only).
+                    if current_viewport != PreviewViewport::Fit {
+                        div {
+                            class: "preview-resize-handle",
+                            title: "Drag to resize preview width",
+                            onmousedown: move |e: MouseEvent| {
+                                if e.trigger_button() == Some(dioxus::html::input_data::MouseButton::Primary) {
+                                    drag_start.set((e.client_coordinates().x, preview_width()));
+                                    dragging.set(true);
+                                }
+                            },
+                            div { class: "preview-resize-handle-grip" }
+                        }
+                    }
+                }
+            }
+
+            // While dragging, an overlay above the iframe keeps mousemove/up flowing
+            // (iframes swallow mouse events) so the drag never gets stuck.
+            if dragging() {
+                div {
+                    class: "preview-resize-overlay",
+                    onmousemove: move |e: MouseEvent| {
+                        let (start_x, start_w) = drag_start();
+                        let dx = e.client_coordinates().x - start_x;
+                        // ponytail: 2x because the frame is center-anchored, so the right
+                        // edge moves dx for every 2*dx of width. Ignores --preview-scale,
+                        // which is only <1 when the frame is already wider than the viewport.
+                        let new_w = clamp_preview_width((start_w as f64 + dx * 2.0).round() as u32);
+                        preview_width.set(new_w);
+                        preview_viewport.set(PreviewViewport::Custom);
+                    },
+                    onmouseup: move |_| dragging.set(false),
+                    onmouseleave: move |_| dragging.set(false),
                 }
             }
 

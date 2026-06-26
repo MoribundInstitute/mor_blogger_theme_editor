@@ -91,6 +91,9 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let theme = use_context::<ThemeState>();
     let mut vfs = props.vfs_signal;
     let mut active_tab = use_signal(|| props.default_file.to_string());
+    // Full-viewport focused editing, mirroring the Module Workbench takeover.
+    // Not offered in the pop-out OS window (it is already a standalone window).
+    let mut is_takeover = use_signal(|| false);
     let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
     let theme_state_opt = try_use_context::<ThemeState>();
 
@@ -128,6 +131,14 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     layout_state: use_context::<crate::app::state::LayoutState>(),
                     theme_state: use_context::<crate::app::state::ThemeState>(),
                     vfs: use_context::<crate::app::vfs::VfsDictionary>(),
+                    minimap_setting: try_consume_context::<
+                        crate::ui::components::code_editor::MinimapSetting,
+                    >()
+                    .map(|m| m.0),
+                    minimap_overrides: try_consume_context::<
+                        crate::ui::components::code_editor::MinimapOverrides,
+                    >()
+                    .map(|m| m.0),
                     tx: tx.clone(),
                 };
 
@@ -228,6 +239,27 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     #[cfg(not(target_arch = "wasm32"))]
     if pos == DockPosition::Floating && !is_sub_window {
         return rsx! {};
+    }
+
+    // Lift this editor's dock container above its sibling while taken over
+    // (see the `mor-editor-takeover-*` CSS rules). Self-managing per side, so
+    // a left and a right editor never clobber each other's class.
+    {
+        let dp = props.dock_position;
+        use_effect(move || {
+            let take = is_takeover();
+            let side = match dp() {
+                DockPosition::mor_panel_left => "left",
+                DockPosition::mor_panel_right => "right",
+                _ => "",
+            };
+            if !side.is_empty() {
+                let action = if take { "add" } else { "remove" };
+                let _ = dioxus::document::eval(&format!(
+                    "document.documentElement.classList.{action}('mor-editor-takeover-{side}');"
+                ));
+            }
+        });
     }
 
 
@@ -524,19 +556,24 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         gap: 6px !important;
     }}
     /* WebKitGTK hides scrollbars by default; child editor windows don't load the
-       global editor CSS, so style the ghost textarea's scrollbar here. */
-    .pure-rust-editor-ghost::-webkit-scrollbar {{ width: 12px; height: 12px; }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-track {{ background: transparent; }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-thumb {{
+       global editor CSS, so style the CodeMirror scroller's scrollbar here. */
+    .cm-scroller::-webkit-scrollbar {{ width: 12px; height: 12px; }}
+    .cm-scroller::-webkit-scrollbar-track {{ background: transparent; }}
+    .cm-scroller::-webkit-scrollbar-thumb {{
         background: var(--editor-border, #555);
         border-radius: 6px;
         border: 2px solid transparent;
         background-clip: padding-box;
     }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-thumb:hover {{
+    .cm-scroller::-webkit-scrollbar-thumb:hover {{
         background: var(--editor-accent, #888);
         background-clip: padding-box;
     }}
+    /* Each .panel-container is its own z-index:90 stacking context, so a fixed
+       overlay inside one dock can't paint over the opposite dock. While an
+       editor is taken over, lift its dock container above its sibling. */
+    html.mor-editor-takeover-left .left-dock-container {{ z-index: 6000 !important; }}
+    html.mor-editor-takeover-right .right-dock-container {{ z-index: 6000 !important; }}
 "#,
         mode = props.mode,
         default_x = if props.mode == "css" { 100 } else { 150 },
@@ -590,6 +627,19 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     }
                 }
 
+                if !props.is_native_window {
+                    button {
+                        class: "editor-mini-button",
+                        style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;",
+                        title: if is_takeover() { "Exit full-viewport editing" } else { "Expand the editor to a full-viewport focused stage" },
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            is_takeover.set(!is_takeover());
+                        },
+                        if is_takeover() { "Exit ×" } else { "Takeover" }
+                    }
+                }
+
                 button {
                     class: "editor-mini-button",
                     style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; font-weight: 600; background: var(--accent); color: #111; border: none; cursor: pointer;",
@@ -610,6 +660,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                 CodeEditor {
                     value: editor_value,
                     mode: props.mode.to_string(),
+                    minimap_key: Some(format!("asset_{}", props.mode)),
                     on_change: move |new_val: String| {
                         let file = current_file.clone();
                         if file == props.default_file {
@@ -633,6 +684,21 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
             }
         }
     };
+
+    // Full-viewport focused stage: same editor body, lifted out of the dock.
+    // `editor_body` is moved here only when this diverging branch runs, so the
+    // `match` below can still consume it on the normal path.
+    if is_takeover() && !props.is_native_window {
+        return rsx! {
+            div {
+                class: "editor-takeover-overlay",
+                // Start below the 32px app menu bar so it stays usable and the
+                // Exit button isn't hidden behind it (matches workbench takeover).
+                style: "position: fixed; top: 32px; left: 0; right: 0; bottom: 0; z-index: 5000; background: var(--bg-base, #16140f); display: flex; flex-direction: column;",
+                {editor_body}
+            }
+        };
+    }
 
     match pos {
         DockPosition::mor_panel_left => {
@@ -710,6 +776,8 @@ pub struct EditorWindowProps {
     pub layout_state: crate::app::state::LayoutState,
     pub theme_state: crate::app::state::ThemeState,
     pub vfs: crate::app::vfs::VfsDictionary,
+    pub minimap_setting: Option<Signal<bool>>,
+    pub minimap_overrides: Option<Signal<std::collections::HashMap<String, bool>>>,
     pub tx: tokio::sync::mpsc::UnboundedSender<EditorEvent>,
 }
 
@@ -729,10 +797,19 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
     provide_context(props.vfs);
     provide_context(SubWindowMarker);
     provide_context(props.tx.clone());
+    if let Some(sig) = props.minimap_setting {
+        provide_context(crate::ui::components::code_editor::MinimapSetting(sig));
+    }
+    if let Some(sig) = props.minimap_overrides {
+        provide_context(crate::ui::components::code_editor::MinimapOverrides(sig));
+    }
 
     let _tx = use_signal(|| props.tx.clone());
 
     rsx! {
+        // Separate webview: the main shell's bundle/CSS aren't here, so inject the
+        // CodeMirror runtime this window's CodeEditor needs.
+        script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
         style { "html, body {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
         AssetEditorDock {
             is_native_window: true,

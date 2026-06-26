@@ -6,7 +6,7 @@ pub mod theme_resolver;
 pub use models::{
     CompendiumManifest, CustomEditorColors, EditorPrefs, LayoutPrefs, PluginState, ShortcutPrefs,
 };
-pub use theme_resolver::{menu_label, menu_url, resolve_effective_theme};
+pub use theme_resolver::resolve_effective_theme;
 
 #[cfg(not(target_arch = "wasm32"))]
 #[allow(unused_imports)]

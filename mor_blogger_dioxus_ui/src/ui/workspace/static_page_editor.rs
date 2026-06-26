@@ -1,11 +1,12 @@
 use crate::app::state::{LayoutState, RenderState, ThemeState};
 use crate::ui::components::code_editor::CodeEditor;
 use crate::ui::panels::theme_palette::static_pages_panel::inject_static_page;
+use crate::ui::workspace::layout::{apply_preview_viewport, clamp_preview_width, PreviewViewport};
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use dioxus::prelude::*;
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
-    generate_course_catalog_html, generate_portfolio_html,
+    generate_course_catalog_html, generate_my_courses_html, generate_portfolio_html,
 };
 use mor_blogger_core::utils::fs_bridge;
 
@@ -13,11 +14,13 @@ use mor_blogger_core::utils::fs_bridge;
 pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
     let theme = use_context::<ThemeState>();
     let render = use_context::<RenderState>();
-    let layout = use_context::<LayoutState>();
+    let mut layout = use_context::<LayoutState>();
 
     let active_page = layout.active_static_page;
     let mut raw_html_signal = use_signal(String::new);
     let mut save_status = use_signal(String::new);
+    let mut is_editor_takeover = use_signal(|| false);
+    let mut is_preview_takeover = use_signal(|| false);
 
     let page_name = active_page().clone().unwrap_or_default();
 
@@ -31,6 +34,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                 "Portfolio" => generate_portfolio_html(&pages.portfolio),
                 "About" => generate_about_html(&pages.about),
                 "LMS" => generate_course_catalog_html(&pages.lms),
+                "MyCourses" => generate_my_courses_html(&pages.lms),
                 _ => String::new(),
             };
             raw_html_signal.set(default_html.clone());
@@ -50,7 +54,146 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
         preview_html.set(inject_static_page(&base, &val));
     });
 
+    // Save buffer to this page's canonical custom override. Copy closure so it's
+    // reusable in both the pane header and the editor-takeover bar.
+    let save_page = move |_: Event<MouseData>| {
+        let Some(name) = active_page() else { return; };
+        let content = raw_html_signal();
+        let mut status = save_status;
+        match fs_bridge::save_custom_page(&name, &content) {
+            Ok(path) => status.set(format!(
+                "Saved to {}",
+                path.file_name().and_then(|f| f.to_str()).unwrap_or("file")
+            )),
+            Err(e) => status.set(format!("Save failed: {}", e)),
+        }
+    };
+    // Save buffer to a user-named new HTML file (lets you spin off variants).
+    let save_page_as_new = move |_: Event<MouseData>| {
+        let Some(name) = active_page() else { return; };
+        let content = raw_html_signal();
+        let default_name = format!("{}_custom.html", name.to_lowercase());
+        let start_dir = fs_bridge::pages_root();
+        let mut status = save_status;
+        spawn(async move {
+            let mut dlg = rfd::AsyncFileDialog::new()
+                .add_filter("Static page HTML", &["html"])
+                .set_file_name(default_name);
+            if let Some(dir) = start_dir {
+                dlg = dlg.set_directory(dir);
+            }
+            if let Some(handle) = dlg.save_file().await {
+                let path = handle.path().to_path_buf();
+                match std::fs::write(&path, &content) {
+                    Ok(_) => status.set(format!("Saved new page → {}", path.display())),
+                    Err(e) => status.set(format!("Save failed: {}", e)),
+                }
+            }
+        });
+    };
+
     rsx! {
+        if is_editor_takeover() {
+            // ── Editor Takeover ─ Full-viewport focused HTML editor ───────
+            div {
+                style: "flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;",
+                div {
+                    style: "flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border);",
+                    span {
+                        style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);",
+                        "{page_name} Page Content"
+                    }
+                    div { style: "flex: 1;" }
+                    button {
+                        class: "editor-mini-button",
+                        title: "Save to this page's custom override",
+                        onclick: save_page,
+                        "Save"
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        title: "Save the buffer as a new named HTML file",
+                        onclick: save_page_as_new,
+                        "Save as New"
+                    }
+                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft); margin: 0 2px;" }
+                    button {
+                        class: "editor-mini-button",
+                        onclick: move |_| is_editor_takeover.set(false),
+                        "Editor ×"
+                    }
+                }
+                div {
+                    style: "flex: 1; min-height: 0; display: flex; flex-direction: column;",
+                    CodeEditor {
+                        value: (raw_html_signal)(),
+                        mode: "html".to_string(),
+                        minimap_key: Some("static_page".to_string()),
+                        on_change: move |new_val| { raw_html_signal.set(new_val); }
+                    }
+                }
+            }
+        } else if is_preview_takeover() {
+            // ── Preview Takeover ─ Full-viewport isolated page preview ─────
+            div {
+                style: "flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;",
+                div {
+                    style: "flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-elevated); border-bottom: 1px solid var(--editor-border);",
+                    button {
+                        class: if (layout.preview_viewport)() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, layout.preview_width); layout.preview_viewport.set(PreviewViewport::Desktop); },
+                        "Desktop"
+                    }
+                    button {
+                        class: if (layout.preview_viewport)() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, layout.preview_width); layout.preview_viewport.set(PreviewViewport::Laptop); },
+                        "Laptop"
+                    }
+                    button {
+                        class: if (layout.preview_viewport)() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, layout.preview_width); layout.preview_viewport.set(PreviewViewport::Tablet); },
+                        "Tablet"
+                    }
+                    button {
+                        class: if (layout.preview_viewport)() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, layout.preview_width); layout.preview_viewport.set(PreviewViewport::Phone); },
+                        "Phone"
+                    }
+                    button {
+                        class: if (layout.preview_viewport)() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, layout.preview_width); layout.preview_viewport.set(PreviewViewport::Fit); },
+                        "Fit"
+                    }
+                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft); margin: 0 2px;" }
+                    label {
+                        class: "preview-width-control",
+                        span { class: "preview-width-label", "Width" }
+                        input {
+                            class: "preview-width-input",
+                            r#type: "number", min: "240", max: "2400", step: "10",
+                            value: "{(layout.preview_width)()}",
+                            oninput: move |evt| {
+                                if let Ok(w) = evt.value().parse::<u32>() {
+                                    layout.preview_width.set(clamp_preview_width(w));
+                                    layout.preview_viewport.set(PreviewViewport::Custom);
+                                }
+                            }
+                        }
+                    }
+                    div { style: "flex: 1;" }
+                    button {
+                        class: "editor-mini-button",
+                        onclick: move |_| is_preview_takeover.set(false),
+                        "Editor ×"
+                    }
+                }
+                PreviewCanvas {
+                    preview_viewport: layout.preview_viewport,
+                    preview_width: layout.preview_width,
+                    preview_html: preview_html(),
+                }
+            }
+        } else {
         div {
             class: "export-viewport",
             style: "display: flex; flex-direction: row; flex: 1; min-height: 0; border: 1px solid var(--editor-border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel); height: 100%;",
@@ -66,7 +209,29 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     h3 { style: "margin: 0; font-size: 1.1rem; color: var(--fg-base);", "Static Page Editor" }
                     p {
                         style: "margin: 0; font-size: 0.85rem; max-width: 420px; line-height: 1.5;",
-                        "Select a static page layout from the Left Dock (Theme Palette > Static Pages) to start editing its raw HTML content live."
+                        "Pick a page to start editing its raw HTML live."
+                    }
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 480px;",
+                        for (id, label) in crate::ui::panels::theme_palette::static_pages_panel::TABS.iter().copied() {
+                            button {
+                                key: "{id}",
+                                class: "editor-button",
+                                onclick: move |_| layout.active_static_page.set(Some(id.to_string())),
+                                "{label}"
+                            }
+                        }
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        style: "margin-top: 4px;",
+                        title: "Open the community hub in your browser to browse more layouts",
+                        onclick: move |_| {
+                            let _ = std::process::Command::new("xdg-open")
+                                .arg(crate::ui::panels::theme_palette::static_pages_panel::COMMUNITY_HUB_URL)
+                                .spawn();
+                        },
+                        "Browse Community Hub ↗"
                     }
                 }
             } else {
@@ -77,7 +242,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     div {
                         class: "editor-pane",
                         style: "display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
-                        
+
                         div {
                             class: "editor-pane-header",
                             style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
@@ -89,21 +254,26 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                                     "Live Preview"
                                 }
                             }
-                            button {
-                                class: "editor-mini-button",
-                                style: "color: var(--editor-accent);",
-                                onclick: move |_| {
-                                    let name = page_name.clone();
-                                    let content = raw_html_signal();
-                                    match fs_bridge::save_custom_page(&name, &content) {
-                                        Ok(path) => save_status.set(format!(
-                                            "Saved to {}",
-                                            path.file_name().and_then(|f| f.to_str()).unwrap_or("file")
-                                        )),
-                                        Err(e) => save_status.set(format!("Save failed: {}", e)),
-                                    }
-                                },
-                                "Save"
+                            div {
+                                style: "display: flex; align-items: center; gap: 6px;",
+                                button {
+                                    class: "editor-mini-button",
+                                    title: "Expand the editor to a full-viewport focused stage",
+                                    onclick: move |_| is_editor_takeover.set(true),
+                                    "Takeover"
+                                }
+                                button {
+                                    class: "editor-mini-button",
+                                    title: "Save current HTML buffer to this page's custom override",
+                                    onclick: save_page,
+                                    "Save"
+                                }
+                                button {
+                                    class: "editor-mini-button",
+                                    title: "Save the buffer as a new named HTML file",
+                                    onclick: save_page_as_new,
+                                    "Save as New"
+                                }
                             }
                         }
 
@@ -124,6 +294,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                             CodeEditor {
                                 value: (raw_html_signal)(),
                                 mode: "html".to_string(),
+                                minimap_key: Some("static_page".to_string()),
                                 on_change: move |new_val| {
                                     raw_html_signal.set(new_val);
                                 }
@@ -141,6 +312,11 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                             style: "font-size: 0.8rem; color: var(--accent); font-family: var(--font-mono);",
                             "Live Preview"
                         }
+                        button {
+                            class: "editor-mini-button",
+                            onclick: move |_| is_preview_takeover.set(true),
+                            "Takeover"
+                        }
                     }
                     PreviewCanvas {
                         preview_viewport: layout.preview_viewport,
@@ -149,6 +325,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     }
                 }
             }
+        }
         }
     }
 }

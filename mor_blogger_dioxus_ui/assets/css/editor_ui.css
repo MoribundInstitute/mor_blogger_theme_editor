@@ -689,6 +689,35 @@ html {
   background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
 }
 
+/* Segmented control: mutually-exclusive mini-buttons sharing one border. */
+.editor-segmented {
+  display: inline-flex;
+  align-items: center;
+}
+.editor-segmented .editor-mini-button {
+  border-radius: 0;
+  border-right-width: 0;
+}
+.editor-segmented .editor-mini-button:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+.editor-segmented .editor-mini-button:last-child {
+  border-right-width: 1px;
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+/* Active segment's accent border must win over the collapsed neighbour edge. */
+.editor-segmented .editor-mini-button-active {
+  border-right-width: 1px;
+  margin-right: -1px;
+  position: relative;
+  z-index: 1;
+}
+.editor-segmented .editor-mini-button-active:last-child {
+  margin-right: 0;
+}
+
 /* ============================================================
    24-form-controls.css
    ============================================================ */
@@ -1032,6 +1061,14 @@ html {
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.preview-toolbar-divider {
+  align-self: stretch;
+  width: 1px;
+  min-height: 20px;
+  background: var(--editor-border);
+  margin: 0 2px;
 }
 
 .preview-width-control {
@@ -1649,67 +1686,3 @@ body.editor-floating-dragging * {
 .editor-layout-floating .editor-floating-drag-handle::after {
   content: none;
 }
-
-/* Quick Launch Bar - Stable Layout */
-.mor-quick-launch-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 8px;
-    background: rgba(22, 20, 15, 0.8);
-    border-radius: 8px;
-    height: fit-content;
-    z-index: 100;
-}
-
-.launch-btn {
-    width: 40px;
-    height: 40px;
-    border: 1px solid transparent;
-    background: transparent;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--fg-muted);
-}
-
-.launch-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--fg-base);
-}
-
-.launch-btn.active {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--border-light);
-    color: var(--accent);
-}
-
-/* Template Modules dock (ModuleWorkbench left pane) */
-.template-modules .template-module-btn {
-  width: 100%;
-  text-align: left;
-  font-size: 0.85rem;
-}
-
-.template-modules .template-modules-folder-btn {
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-  font-size: 0.8rem;
-}
-
-/* Reset syntect's wrapper <pre> so the highlight paint layer aligns
-   byte-for-byte with the transparent textarea (no UA 1em margin drift). */
-.pure-rust-editor-paint pre {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent !important;
-  font: inherit;
-  line-height: inherit;
-  white-space: pre;
-  tab-size: 4;
-}
-.pure-rust-editor-ghost { tab-size: 4; }

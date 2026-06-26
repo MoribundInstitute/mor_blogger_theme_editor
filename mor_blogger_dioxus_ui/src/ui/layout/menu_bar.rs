@@ -206,6 +206,16 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
+                    label: format!("Static Pages {}", if (layout.static_pages_pos)() != DockPosition::Hidden { "✓" } else { "" }),
+                    on_action: move |_| {
+                        if (layout.static_pages_pos)() == DockPosition::Hidden {
+                            layout.static_pages_pos.set(DockPosition::mor_panel_left);
+                        } else {
+                            layout.static_pages_pos.set(DockPosition::Hidden);
+                        }
+                    }
+                }
+                MenuItem {
                     label: format!("Template Modules {}", if (layout.template_modules_pos)() != DockPosition::Hidden { "✓" } else { "" }),
                     on_action: move |_| {
                         if (layout.template_modules_pos)() == DockPosition::Hidden {

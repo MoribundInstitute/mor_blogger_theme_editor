@@ -10,8 +10,6 @@
 //!
 //! See the AdsConfig docs in `config.rs` for the full policy explanation.
 
-#![allow(dead_code)]
-
 use crate::config::{AdBannerPosition, AdSlotPlacement, AdsConfig, AdsMode};
 
 const WIDGET_ADSENSE_SIDEBAR: &str = include_str!("../template_parts/widgets/adsense_sidebar.xml");

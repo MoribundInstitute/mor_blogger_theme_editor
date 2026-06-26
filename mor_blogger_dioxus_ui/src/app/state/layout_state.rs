@@ -1,7 +1,30 @@
 use dioxus::prelude::*;
+use std::collections::HashMap;
 
 use crate::ui::workspace::layout::{PreviewTemplateMode, PreviewViewport};
 use crate::app::config_bridge::{CompendiumManifest, PluginState};
+
+/// Normalize a pin/icon key (a dock display name OR id) to its canonical dock id,
+/// so pins keyed from the activity bar (ids) and from preview icons (names) agree.
+pub fn normalize_dock_key(key: &str) -> String {
+    match key {
+        "Theme Palette" => "theme_palette",
+        "Site Data" => "site_data",
+        "CSS Editor" => "css_editor",
+        "JS Editor" => "js_editor",
+        "XML Editor" => "xml_editor",
+        "Presets" => "presets",
+        "Plugin Manager" => "plugin_manager",
+        "Diagnostics" => "diagnostics",
+        "CSS Builder" => "css_builder",
+        "JS Builder" => "js_builder",
+        "Template Modules" => "template_modules",
+        "Code Nav" => "code_nav",
+        "Static Pages" => "static_pages",
+        other => other,
+    }
+    .to_string()
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CenterView {
@@ -55,6 +78,11 @@ pub struct LayoutState {
     pub css_builder_pos: Signal<DockPosition>,
     pub js_builder_pos: Signal<DockPosition>,
     pub template_modules_pos: Signal<DockPosition>,
+    pub code_nav_pos: Signal<DockPosition>,
+    pub static_pages_pos: Signal<DockPosition>,
+    /// Shared TOML/XML toggle for the Code Editor, so the Code Nav dock knows
+    /// which buffer is showing (false = TOML, true = compiled XML).
+    pub code_show_xml: Signal<bool>,
     pub active_workbench_module: Signal<Option<&'static str>>,
 
     pub center_view: Signal<CenterView>,
@@ -64,6 +92,10 @@ pub struct LayoutState {
     pub show_advanced_modules: Signal<bool>,
     pub pinned_docks: Signal<Vec<String>>,
     pub quick_launch_hidden: Signal<Vec<String>>,
+    /// Per-dock activity-bar icon overrides (dock id -> tagged spec string).
+    pub activity_icons: Signal<HashMap<String, String>>,
+    /// Dock id whose activity-bar icon is being edited (drives the picker modal).
+    pub active_activity_icon_picker: Signal<Option<String>>,
 }
 
 impl LayoutState {
@@ -86,6 +118,9 @@ impl LayoutState {
             css_builder_pos: use_signal(|| DockPosition::Hidden),
             js_builder_pos: use_signal(|| DockPosition::Hidden),
             template_modules_pos: use_signal(|| DockPosition::Hidden),
+            code_nav_pos: use_signal(|| DockPosition::Hidden),
+            static_pages_pos: use_signal(|| DockPosition::Hidden),
+            code_show_xml: use_signal(|| false),
             active_workbench_module: use_signal(|| None),
 
             center_view: use_signal(|| CenterView::Preview),
@@ -93,8 +128,31 @@ impl LayoutState {
             active_context_menu: use_signal(|| None::<ContextMenuPayload>),
             active_icon_picker: use_signal(|| None::<String>),
             show_advanced_modules: use_signal(|| false),
-            pinned_docks: use_signal(|| layout_prefs.pinned_docks.clone()),
+            pinned_docks: use_signal(|| {
+                // Migrate any legacy name-based pins to canonical ids and de-dup, so
+                // existing prefs actually register as pinned in the activity bar.
+                let mut seen: Vec<String> = Vec::new();
+                for s in &layout_prefs.pinned_docks {
+                    let id = normalize_dock_key(s);
+                    if !seen.contains(&id) {
+                        seen.push(id);
+                    }
+                }
+                // First run (or unpinned-to-empty): seed a sensible starter set so the
+                // activity bar isn't blank. ponytail: re-seeds if you unpin everything;
+                // add a "configured" flag if that ever annoys.
+                if seen.is_empty() {
+                    ["theme_palette", "site_data", "xml_editor", "css_editor", "js_editor", "presets"]
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect()
+                } else {
+                    seen
+                }
+            }),
             quick_launch_hidden: use_signal(|| layout_prefs.quick_launch_hidden.clone()),
+            activity_icons: use_signal(|| layout_prefs.activity_icons.clone()),
+            active_activity_icon_picker: use_signal(|| None::<String>),
         }
     }
 
@@ -102,43 +160,43 @@ impl LayoutState {
         let prefs = crate::app::config_bridge::LayoutPrefs {
             pinned_docks: self.pinned_docks.read().clone(),
             quick_launch_hidden: self.quick_launch_hidden.read().clone(),
+            activity_icons: self.activity_icons.read().clone(),
         };
         let _ = prefs.save();
     }
 
-    pub fn is_quick_launch_visible(&self, dock_id: &str) -> bool {
-        !self
-            .quick_launch_hidden
-            .read()
-            .contains(&dock_id.to_string())
-    }
-
-    pub fn set_quick_launch_visible(&self, dock_id: &str, visible: bool) {
-        let mut hidden_sig = self.quick_launch_hidden;
-        let mut hidden = hidden_sig.write();
-        let id = dock_id.to_string();
-        if visible {
-            hidden.retain(|x| x != &id);
-        } else if !hidden.contains(&id) {
-            hidden.push(id);
+    /// Set or clear (None) a dock's activity-bar icon override, then persist.
+    pub fn set_activity_icon(&self, dock_id: &str, spec: Option<String>) {
+        let key = normalize_dock_key(dock_id);
+        let mut icons = self.activity_icons;
+        match spec {
+            Some(s) => {
+                icons.write().insert(key, s);
+            }
+            None => {
+                icons.write().remove(&key);
+            }
         }
         self.save_layout_prefs();
     }
 
-    pub fn toggle_pinned_dock(&self, dock_name: &str) {
+    pub fn toggle_pinned_dock(&self, dock_key: &str) {
+        let id = normalize_dock_key(dock_key);
         let mut pinned_docks = self.pinned_docks;
         let mut pinned = pinned_docks.write();
-        let name_str = dock_name.to_string();
-        if let Some(pos) = pinned.iter().position(|x| x == &name_str) {
+        if let Some(pos) = pinned.iter().position(|x| x == &id) {
             pinned.remove(pos);
         } else {
-            pinned.push(name_str);
+            pinned.push(id);
         }
+        drop(pinned);
         self.save_layout_prefs();
     }
 
-    pub fn is_dock_pinned(&self, dock_name: &str) -> bool {
-        self.pinned_docks.read().contains(&dock_name.to_string())
+    pub fn is_dock_pinned(&self, dock_key: &str) -> bool {
+        self.pinned_docks
+            .read()
+            .contains(&normalize_dock_key(dock_key))
     }
 
     /// Switch the center workspace and apply that workspace's default dock layout
@@ -150,6 +208,82 @@ impl LayoutState {
             CenterView::ModuleWorkbench => DockPosition::mor_panel_left,
             _ => DockPosition::Hidden,
         });
+        // Code Nav rides along with the Code Editor view, like Template Modules
+        // does for Module Workbench.
+        self.code_nav_pos.set(match ws {
+            CenterView::CodeEditor => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
+        // Static Pages rides along with the Static Page Editor, since that view
+        // hides the Theme Palette where the page builder otherwise lives.
+        self.static_pages_pos.set(match ws {
+            CenterView::StaticPageEditor => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
+        // Only Preview is about theme/content editing, so the Theme Palette and
+        // Site Data docks default to visible there; every other workspace hides
+        // them (Module Workbench drives its own Template Modules dock instead).
+        match ws {
+            CenterView::Preview | CenterView::Split => {
+                self.theme_palette_pos.set(DockPosition::mor_panel_left);
+                self.site_data_pos.set(DockPosition::mor_panel_right);
+            }
+            CenterView::CodeEditor
+            | CenterView::Export
+            | CenterView::StaticPageEditor
+            | CenterView::ModuleWorkbench => {
+                self.theme_palette_pos.set(DockPosition::Hidden);
+                self.site_data_pos.set(DockPosition::Hidden);
+            }
+        }
+    }
+
+    /// The position signal backing a dock id (canonical or short alias), if any.
+    fn dock_pos_signal(&self, dock_id: &str) -> Option<Signal<DockPosition>> {
+        Some(match dock_id {
+            "theme" | "theme_palette" => self.theme_palette_pos,
+            "site" | "site_data" => self.site_data_pos,
+            "css" | "css_editor" => self.css_editor_pos,
+            "js" | "js_editor" => self.js_editor_pos,
+            "xml" | "xml_editor" => self.xml_editor_pos,
+            "diagnostics" => self.diagnostics_pos,
+            "plugin_manager" => self.plugin_manager_pos,
+            "presets" => self.presets_pos,
+            "css_builder" => self.css_builder_pos,
+            "js_builder" => self.js_builder_pos,
+            "template_modules" => self.template_modules_pos,
+            "code_nav" => self.code_nav_pos,
+            "static_pages" => self.static_pages_pos,
+            _ => return None,
+        })
+    }
+
+    /// Toggle the dock pinned at `index` in the activity bar (0-based, top→bottom).
+    pub fn toggle_dock_by_index(&mut self, index: usize) {
+        let Some(id) = self.pinned_docks.read().get(index).cloned() else {
+            return;
+        };
+        self.toggle_dock_by_id(&id);
+    }
+
+    /// Open the dock into a free zone if hidden, otherwise hide it.
+    pub fn toggle_dock_by_id(&mut self, dock_id: &str) {
+        let id = normalize_dock_key(dock_id);
+        let Some(mut sig) = self.dock_pos_signal(&id) else {
+            return;
+        };
+        if *sig.read() == DockPosition::Hidden {
+            // Site Data is the natural right-hand dock; everything else prefers
+            // the left and falls through to right/floating if that zone is taken.
+            let preferred = if id == "site_data" {
+                DockPosition::mor_panel_right
+            } else {
+                DockPosition::mor_panel_left
+            };
+            self.request_exclusive_dock(&id, preferred);
+        } else {
+            sig.set(DockPosition::Hidden);
+        }
     }
 
     pub fn request_exclusive_dock(&mut self, target_id: &str, requested_pos: DockPosition) {
@@ -164,6 +298,9 @@ impl LayoutState {
             "presets" => &self.presets_pos,
             "css_builder" => &self.css_builder_pos,
             "js_builder" => &self.js_builder_pos,
+            "template_modules" => &self.template_modules_pos,
+            "code_nav" => &self.code_nav_pos,
+            "static_pages" => &self.static_pages_pos,
             _ => return,
         };
 
@@ -188,6 +325,9 @@ impl LayoutState {
                 &self.presets_pos,
                 &self.css_builder_pos,
                 &self.js_builder_pos,
+                &self.template_modules_pos,
+                &self.code_nav_pos,
+                &self.static_pages_pos,
             ];
 
             let is_occupied = |zone: DockPosition| -> bool {

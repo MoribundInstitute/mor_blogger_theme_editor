@@ -101,6 +101,7 @@ pub fn JsBuilderDock() -> Element {
                             CodeEditor {
                                 value: js_preview,
                                 mode: "javascript".to_string(),
+                                minimap_key: Some("js_builder".to_string()),
                                 read_only: true,
                                 on_change: |_| {},
                             }

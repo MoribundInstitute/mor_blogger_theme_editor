@@ -311,299 +311,26 @@ impl ThemeSignals {
         }
     }
 
-    pub fn apply_preset(&self, preset: &Preset) {
-        let is_dark = *self.is_dark_mode.read();
-        let palette = if is_dark { &preset.dark } else { &preset.light };
-
-        self.swap_palette(palette);
-        self.panel_border_width
-            .clone()
-            .set(palette.colors.panel_border_width.clone());
-        self.glow_spread
-            .clone()
-            .set(palette.colors.glow_spread.clone());
-        self.hover_scale
-            .clone()
-            .set(palette.colors.hover_scale.clone());
-        self.panel_border_image_url
-            .clone()
-            .set(palette.colors.panel_border_image_url.clone());
-        self.panel_border_image_slice
-            .clone()
-            .set(palette.colors.panel_border_image_slice.clone());
-        self.panel_border_image_repeat
-            .clone()
-            .set(palette.colors.panel_border_image_repeat.clone());
-        self.glow_color
-            .clone()
-            .set(palette.colors.glow_color.clone());
-        self.glow_logo_color
-            .clone()
-            .set(palette.colors.glow_logo_color.clone());
-        self.glow_title_color
-            .clone()
-            .set(palette.colors.glow_title_color.clone());
-        self.glow_toc_color
-            .clone()
-            .set(palette.colors.glow_toc_color.clone());
-        self.glow_sidebar_color
-            .clone()
-            .set(palette.colors.glow_sidebar_color.clone());
-        self.glow_logo.clone().set(palette.colors.glow_logo);
-        self.glow_title.clone().set(palette.colors.glow_title);
-        self.glow_toc.clone().set(palette.colors.glow_toc);
-        self.glow_sidebar.clone().set(palette.colors.glow_sidebar);
-        self.glow_text.clone().set(palette.colors.glow_text);
-        self.glow_containers
-            .clone()
-            .set(palette.colors.glow_containers);
-        self.glow_icons.clone().set(palette.colors.glow_icons);
-        self.glow_text_color
-            .clone()
-            .set(palette.colors.glow_text_color.clone());
-        self.glow_containers_color
-            .clone()
-            .set(palette.colors.glow_containers_color.clone());
-        self.glow_icons_color
-            .clone()
-            .set(palette.colors.glow_icons_color.clone());
-
-        let base = &preset.base_config;
-        self.icons.clone().set(base.icons.clone());
-        self.apply_preset_css(preset);
-
-        self.btn_radius.clone().set(base.buttons.radius.clone());
-        self.btn_border_width
-            .clone()
-            .set(base.buttons.border_width.clone());
-        self.btn_text_transform
-            .clone()
-            .set(base.buttons.text_transform.clone());
-
-        self.body_font_stack
-            .clone()
-            .set(base.typography.body_font_stack.clone());
-        self.heading_font_stack
-            .clone()
-            .set(base.typography.heading_font_stack.clone());
-        self.mono_font_stack
-            .clone()
-            .set(base.typography.mono_font_stack.clone());
-        self.base_size
-            .clone()
-            .set(base.typography.base_size.clone());
-        self.scale_ratio
-            .clone()
-            .set(base.typography.scale_ratio.clone());
-        self.line_height
-            .clone()
-            .set(base.typography.line_height.clone());
-        self.heading_weight
-            .clone()
-            .set(base.typography.heading_weight.clone());
-        self.scrollbar_width
-            .clone()
-            .set(base.scrollbar_width.clone());
-        self.scrollbar_track_color
-            .clone()
-            .set(base.scrollbar_track_color.clone());
-        self.scrollbar_thumb_color
-            .clone()
-            .set(base.scrollbar_thumb_color.clone());
-        self.scrollbar_thumb_hover_color
-            .clone()
-            .set(base.scrollbar_thumb_hover_color.clone());
-    }
-
+    /// Apply a saved/imported config to every signal.
     pub fn apply_config(&self, config: &ThemeConfig) {
-        self.bg_base.clone().set(config.colors.bg_base.clone());
-        self.bg_panel.clone().set(config.colors.bg_panel.clone());
-        self.bg_elevated
-            .clone()
-            .set(config.colors.bg_elevated.clone());
-        self.fg_base.clone().set(config.colors.fg_base.clone());
-        self.fg_muted.clone().set(config.colors.fg_muted.clone());
-        self.accent.clone().set(config.colors.accent.clone());
-        self.border.clone().set(config.colors.border.clone());
-
-        self.panel_border_width
-            .clone()
-            .set(config.colors.panel_border_width.clone());
-        self.glow_spread
-            .clone()
-            .set(config.colors.glow_spread.clone());
-        self.hover_scale
-            .clone()
-            .set(config.colors.hover_scale.clone());
-        self.panel_border_image_url
-            .clone()
-            .set(config.colors.panel_border_image_url.clone());
-        self.panel_border_image_slice
-            .clone()
-            .set(config.colors.panel_border_image_slice.clone());
-        self.panel_border_image_repeat
-            .clone()
-            .set(config.colors.panel_border_image_repeat.clone());
+        self.set_colors(&config.colors);
+        self.set_buttons(&config.buttons);
+        self.set_typography(&config.typography);
+        self.set_scrollbars(config);
+        self.set_site(&config.site);
+        self.set_seo(&config.seo);
+        self.set_menu(&config.menu_links);
+        self.set_footer(&config.footer);
 
         self.background.clone().set(config.background.clone());
         self.icons.clone().set(config.icons.clone());
-
         self.template_pack.clone().set(config.template_pack.clone());
-        self.enable_image_borders
-            .clone()
-            .set(config.enable_image_borders);
-        self.custom_border_url
-            .clone()
-            .set(config.custom_border_url.clone());
-        self.svg_border_slice
-            .clone()
-            .set(config.svg_border_slice.clone());
-        self.image_border_width
-            .clone()
-            .set(config.image_border_width.clone());
-        self.target_sidebars.clone().set(config.target_sidebars);
-        self.target_canvas.clone().set(config.target_canvas);
-        self.glow_color
-            .clone()
-            .set(config.colors.glow_color.clone());
-        self.glow_logo_color
-            .clone()
-            .set(config.colors.glow_logo_color.clone());
-        self.glow_title_color
-            .clone()
-            .set(config.colors.glow_title_color.clone());
-        self.glow_toc_color
-            .clone()
-            .set(config.colors.glow_toc_color.clone());
-        self.glow_sidebar_color
-            .clone()
-            .set(config.colors.glow_sidebar_color.clone());
-        self.glow_logo.clone().set(config.colors.glow_logo);
-        self.glow_title.clone().set(config.colors.glow_title);
-        self.glow_toc.clone().set(config.colors.glow_toc);
-        self.glow_sidebar.clone().set(config.colors.glow_sidebar);
-        self.glow_text.clone().set(config.colors.glow_text);
-        self.glow_containers
-            .clone()
-            .set(config.colors.glow_containers);
-        self.glow_icons.clone().set(config.colors.glow_icons);
-        self.glow_text_color
-            .clone()
-            .set(config.colors.glow_text_color.clone());
-        self.glow_containers_color
-            .clone()
-            .set(config.colors.glow_containers_color.clone());
-        self.glow_icons_color
-            .clone()
-            .set(config.colors.glow_icons_color.clone());
-        self.scrollbar_width
-            .clone()
-            .set(config.scrollbar_width.clone());
-        self.scrollbar_track_color
-            .clone()
-            .set(config.scrollbar_track_color.clone());
-        self.scrollbar_thumb_color
-            .clone()
-            .set(config.scrollbar_thumb_color.clone());
-        self.scrollbar_thumb_hover_color
-            .clone()
-            .set(config.scrollbar_thumb_hover_color.clone());
-        self.apply_config_except_palette(config);
-        self.preset_css.clone().set(config.preset_css.clone());
-    }
-
-    pub fn apply_preset_css(&self, preset: &Preset) {
-        self.preset_css.clone().set(preset.preset_css.to_string());
-    }
-
-    fn apply_config_except_palette(&self, config: &ThemeConfig) {
-        self.site_title.clone().set(config.site.site_title.clone());
-        self.site_subtitle
-            .clone()
-            .set(config.site.site_subtitle.clone());
-        self.header_logo_url
-            .clone()
-            .set(config.site.header_logo_url.clone());
-        self.home_url.clone().set(config.site.home_url.clone());
-
-        self.btn_radius.clone().set(config.buttons.radius.clone());
-        self.btn_border_width
-            .clone()
-            .set(config.buttons.border_width.clone());
-        self.btn_text_transform
-            .clone()
-            .set(config.buttons.text_transform.clone());
-
-        self.body_font_stack
-            .clone()
-            .set(config.typography.body_font_stack.clone());
-        self.heading_font_stack
-            .clone()
-            .set(config.typography.heading_font_stack.clone());
-        self.mono_font_stack
-            .clone()
-            .set(config.typography.mono_font_stack.clone());
-        self.base_size
-            .clone()
-            .set(config.typography.base_size.clone());
-        self.scale_ratio
-            .clone()
-            .set(config.typography.scale_ratio.clone());
-        self.line_height
-            .clone()
-            .set(config.typography.line_height.clone());
-        self.heading_weight
-            .clone()
-            .set(config.typography.heading_weight.clone());
-
-        self.favicon_url
-            .clone()
-            .set(config.assets.favicon_url.clone());
+        self.favicon_url.clone().set(config.assets.favicon_url.clone());
         self.social_card_image_url
             .clone()
             .set(config.assets.social_card_image_url.clone());
-
-        self.meta_description
-            .clone()
-            .set(config.seo.meta_description.clone());
-        self.meta_keywords
-            .clone()
-            .set(config.seo.meta_keywords.clone());
-        self.custom_robots
-            .clone()
-            .set(config.seo.custom_robots.clone());
-        self.license_url.clone().set(config.seo.license_url.clone());
-        self.author_name.clone().set(config.seo.author_name.clone());
-
-        let menu_pairs = [
-            (self.menu_1_label, self.menu_1_url),
-            (self.menu_2_label, self.menu_2_url),
-            (self.menu_3_label, self.menu_3_url),
-            (self.menu_4_label, self.menu_4_url),
-        ];
-
-        for (i, (mut label_sig, mut url_sig)) in menu_pairs.into_iter().enumerate() {
-            let (label, url) = config
-                .menu_links
-                .get(i)
-                .map(|menu| (menu.label.clone(), menu.url.clone()))
-                .unwrap_or_default();
-
-            label_sig.set(label);
-            url_sig.set(url);
-        }
-
-        self.footer_text
-            .clone()
-            .set(config.footer.footer_text.clone());
-        self.footer_license_label
-            .clone()
-            .set(config.footer.footer_license_label.clone());
-        self.footer_license_url
-            .clone()
-            .set(config.footer.footer_license_url.clone());
-
         self.custom_js.clone().set(config.plugins.custom_js.clone());
+        self.preset_css.clone().set(config.preset_css.clone());
         self.static_pages.clone().set(config.static_pages.clone());
         self.ads.clone().set(config.ads.clone());
         self.scripts.clone().set(config.scripts.clone());
@@ -622,20 +349,32 @@ impl ThemeSignals {
         self.target_sidebars.clone().set(config.target_sidebars);
         self.target_canvas.clone().set(config.target_canvas);
         self.cursor_style.clone().set(config.cursor_style.clone());
-        self.scrollbar_width
-            .clone()
-            .set(config.scrollbar_width.clone());
-        self.scrollbar_track_color
-            .clone()
-            .set(config.scrollbar_track_color.clone());
-        self.scrollbar_thumb_color
-            .clone()
-            .set(config.scrollbar_thumb_color.clone());
-        self.scrollbar_thumb_hover_color
-            .clone()
-            .set(config.scrollbar_thumb_hover_color.clone());
     }
 
+    /// Apply a preset: visual theme only (colors, typography, buttons,
+    /// scrollbars, icons) — leaves site content (title, menu, SEO…) untouched.
+    pub fn apply_preset(&self, preset: &Preset) {
+        let is_dark = *self.is_dark_mode.read();
+        let palette = if is_dark { &preset.dark } else { &preset.light };
+
+        self.set_colors(&palette.colors);
+        self.background.clone().set(palette.background.clone());
+
+        let base = &preset.base_config;
+        self.set_buttons(&base.buttons);
+        self.set_typography(&base.typography);
+        self.set_scrollbars(base);
+        self.icons.clone().set(base.icons.clone());
+        self.apply_preset_css(preset);
+    }
+
+    pub fn apply_preset_css(&self, preset: &Preset) {
+        self.preset_css.clone().set(preset.preset_css.to_string());
+    }
+
+    /// Dark/light toggle: swaps only the palette-varying colors plus the
+    /// background, deliberately leaving structural fields (border widths,
+    /// glow toggles, hover scale) in place. Narrower than [`set_colors`].
     pub fn swap_palette(&self, palette: &PresetPalette) {
         self.bg_base.clone().set(palette.colors.bg_base.clone());
         self.bg_panel.clone().set(palette.colors.bg_panel.clone());
@@ -677,5 +416,132 @@ impl ThemeSignals {
             .set(palette.colors.glow_icons_color.clone());
 
         self.background.clone().set(palette.background.clone());
+    }
+
+    // --- private domain setters -------------------------------------------
+    // Each signal is assigned in exactly one of these. apply_config and
+    // apply_preset compose them instead of re-listing fields, so adding a
+    // theme field means touching one setter, not three methods.
+
+    fn set_colors(&self, c: &ColorConfig) {
+        self.bg_base.clone().set(c.bg_base.clone());
+        self.bg_panel.clone().set(c.bg_panel.clone());
+        self.bg_elevated.clone().set(c.bg_elevated.clone());
+        self.fg_base.clone().set(c.fg_base.clone());
+        self.fg_muted.clone().set(c.fg_muted.clone());
+        self.accent.clone().set(c.accent.clone());
+        self.border.clone().set(c.border.clone());
+        self.panel_border_width
+            .clone()
+            .set(c.panel_border_width.clone());
+        self.glow_spread.clone().set(c.glow_spread.clone());
+        self.hover_scale.clone().set(c.hover_scale.clone());
+        self.panel_border_image_url
+            .clone()
+            .set(c.panel_border_image_url.clone());
+        self.panel_border_image_slice
+            .clone()
+            .set(c.panel_border_image_slice.clone());
+        self.panel_border_image_repeat
+            .clone()
+            .set(c.panel_border_image_repeat.clone());
+        self.glow_color.clone().set(c.glow_color.clone());
+        self.glow_logo.clone().set(c.glow_logo);
+        self.glow_title.clone().set(c.glow_title);
+        self.glow_toc.clone().set(c.glow_toc);
+        self.glow_sidebar.clone().set(c.glow_sidebar);
+        self.glow_logo_color.clone().set(c.glow_logo_color.clone());
+        self.glow_title_color
+            .clone()
+            .set(c.glow_title_color.clone());
+        self.glow_toc_color.clone().set(c.glow_toc_color.clone());
+        self.glow_sidebar_color
+            .clone()
+            .set(c.glow_sidebar_color.clone());
+        self.glow_text.clone().set(c.glow_text);
+        self.glow_containers.clone().set(c.glow_containers);
+        self.glow_icons.clone().set(c.glow_icons);
+        self.glow_text_color.clone().set(c.glow_text_color.clone());
+        self.glow_containers_color
+            .clone()
+            .set(c.glow_containers_color.clone());
+        self.glow_icons_color
+            .clone()
+            .set(c.glow_icons_color.clone());
+    }
+
+    fn set_buttons(&self, b: &ButtonConfig) {
+        self.btn_radius.clone().set(b.radius.clone());
+        self.btn_border_width.clone().set(b.border_width.clone());
+        self.btn_text_transform.clone().set(b.text_transform.clone());
+    }
+
+    fn set_typography(&self, t: &TypographyConfig) {
+        self.body_font_stack.clone().set(t.body_font_stack.clone());
+        self.heading_font_stack
+            .clone()
+            .set(t.heading_font_stack.clone());
+        self.mono_font_stack.clone().set(t.mono_font_stack.clone());
+        self.base_size.clone().set(t.base_size.clone());
+        self.scale_ratio.clone().set(t.scale_ratio.clone());
+        self.line_height.clone().set(t.line_height.clone());
+        self.heading_weight.clone().set(t.heading_weight.clone());
+    }
+
+    fn set_scrollbars(&self, c: &ThemeConfig) {
+        self.scrollbar_width.clone().set(c.scrollbar_width.clone());
+        self.scrollbar_track_color
+            .clone()
+            .set(c.scrollbar_track_color.clone());
+        self.scrollbar_thumb_color
+            .clone()
+            .set(c.scrollbar_thumb_color.clone());
+        self.scrollbar_thumb_hover_color
+            .clone()
+            .set(c.scrollbar_thumb_hover_color.clone());
+    }
+
+    fn set_site(&self, s: &SiteConfig) {
+        self.site_title.clone().set(s.site_title.clone());
+        self.site_subtitle.clone().set(s.site_subtitle.clone());
+        self.header_logo_url.clone().set(s.header_logo_url.clone());
+        self.home_url.clone().set(s.home_url.clone());
+    }
+
+    fn set_seo(&self, s: &SeoConfig) {
+        self.meta_description.clone().set(s.meta_description.clone());
+        self.meta_keywords.clone().set(s.meta_keywords.clone());
+        self.custom_robots.clone().set(s.custom_robots.clone());
+        self.license_url.clone().set(s.license_url.clone());
+        self.author_name.clone().set(s.author_name.clone());
+    }
+
+    fn set_footer(&self, f: &FooterConfig) {
+        self.footer_text.clone().set(f.footer_text.clone());
+        self.footer_license_label
+            .clone()
+            .set(f.footer_license_label.clone());
+        self.footer_license_url
+            .clone()
+            .set(f.footer_license_url.clone());
+    }
+
+    fn set_menu(&self, links: &[MenuLink]) {
+        let menu_pairs = [
+            (self.menu_1_label, self.menu_1_url),
+            (self.menu_2_label, self.menu_2_url),
+            (self.menu_3_label, self.menu_3_url),
+            (self.menu_4_label, self.menu_4_url),
+        ];
+
+        for (i, (mut label_sig, mut url_sig)) in menu_pairs.into_iter().enumerate() {
+            let (label, url) = links
+                .get(i)
+                .map(|menu| (menu.label.clone(), menu.url.clone()))
+                .unwrap_or_default();
+
+            label_sig.set(label);
+            url_sig.set(url);
+        }
     }
 }

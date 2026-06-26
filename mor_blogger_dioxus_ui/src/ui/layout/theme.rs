@@ -288,6 +288,9 @@ pub const MOR_CSS: &str = r#"
   min-width: 380px;
   max-width: 620px;
   font-family: var(--mor-font);
+  /* Column layout so the body fills/scrolls when the modal is resized. */
+  display: flex;
+  flex-direction: column;
 }
 
 .mor-modal-header {
@@ -300,6 +303,10 @@ pub const MOR_CSS: &str = r#"
   font-size: var(--mor-font-size);
   font-weight: 500;
   letter-spacing: 0.3px;
+  /* Drag handle for moving the dialog. */
+  cursor: move;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .mor-modal-close {
@@ -316,7 +323,9 @@ pub const MOR_CSS: &str = r#"
   padding: calc(var(--mor-padding) * 2.5);
   font-size: var(--mor-font-size);
   line-height: 1.5;
-  max-height: 65vh;
+  /* Fill the resizable modal and scroll internally instead of a fixed cap. */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 

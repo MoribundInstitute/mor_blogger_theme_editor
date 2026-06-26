@@ -43,6 +43,8 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                 ("Copy Raw XML", keys!(copy_raw_xml, "Ctrl+C")),
                 ("Toggle Left Dock", keys!(toggle_left_dock, "Ctrl+B")),
                 ("Toggle Right Dock", keys!(toggle_right_dock, "Ctrl+E")),
+                ("Close Left Pane", keys!(close_left_dock, "Ctrl+Shift+Left")),
+                ("Close Right Pane", keys!(close_right_dock, "Ctrl+Shift+Right")),
                 ("Reset Zoom", keys!(reset_zoom, "Ctrl+0")),
             ],
         ),
@@ -84,6 +86,8 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                                                 "Copy Raw XML"      => sc.copy_raw_xml = val,
                                                 "Toggle Left Dock"  => sc.toggle_left_dock = val,
                                                 "Toggle Right Dock" => sc.toggle_right_dock = val,
+                                                "Close Left Pane"   => sc.close_left_dock = val,
+                                                "Close Right Pane"  => sc.close_right_dock = val,
                                                 "User Preferences"  => sc.user_prefs = val,
                                                 "Theme Diagnostics" => sc.theme_diagnostics = val,
                                                 "Toggle Preview"    => sc.toggle_preview = val,
@@ -123,6 +127,16 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                                 value: "Alt+Right / K",
                             }
                             div { class: "mor-action-label", "Next File Tab" }
+                        }
+
+                        div { class: "mor-shortcut-row",
+                            input {
+                                class: "mor-input",
+                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
+                                readonly: true,
+                                value: "Ctrl+Shift+1…9",
+                            }
+                            div { class: "mor-action-label", "Toggle Pinned Dock (activity-bar order)" }
                         }
                     }
                 }

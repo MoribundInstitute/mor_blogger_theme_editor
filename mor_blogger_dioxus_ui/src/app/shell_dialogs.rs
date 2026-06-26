@@ -64,6 +64,8 @@ pub fn MorDialogs(props: MorDialogsProps) -> Element {
         AdvancedTypographyDialog {
             open_signal: theme.show_advanced_typography,
         }
+
+        crate::ui::components::activity_icon_picker::ActivityIconPicker {}
     }
 }
 
@@ -135,13 +137,36 @@ pub fn EditorSettingsDialog(mut open: Signal<bool>, active_theme_toml: Signal<St
 
 #[component]
 fn GeneralSettings(active_theme_toml: Signal<String>) -> Element {
+    let mut minimap = use_context::<crate::ui::components::code_editor::MinimapSetting>().0;
+
     rsx! {
         div {
             style: "display: flex; flex-direction: column; gap: 24px;",
             div {
                 h3 {
                     style: "margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 600;",
-                    "General"
+                    "Editor"
+                }
+                p {
+                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
+                    "Code editor behavior. Changes apply immediately and persist to editor_prefs.toml."
+                }
+                div {
+                    style: "display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
+                    crate::ui::components::form::MorCheckbox {
+                        label: "Show code minimap by default (toggle per editor with the corner button)".to_string(),
+                        checked: minimap(),
+                        onchange: move |val: bool| {
+                            minimap.set(val);
+                            crate::app::config_bridge::EditorPrefs::update_minimap(val);
+                        }
+                    }
+                }
+            }
+            div {
+                h3 {
+                    style: "margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 600;",
+                    "Workspace Theme"
                 }
                 p {
                     style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
@@ -206,7 +231,7 @@ fn QuickLaunchSettings() -> Element {
                 }
                 p {
                     style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
-                    "Choose which tools appear in the activity bar. Hidden items remain available from the menu."
+                    "Pin tools to the activity bar. Unpinned tools still open from the Docks/Tools menus and appear temporarily while open."
                 }
                 div {
                     style: "display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
@@ -215,8 +240,8 @@ fn QuickLaunchSettings() -> Element {
                             key: "{dock_id}",
                             label,
                             icon,
-                            visible: layout.is_quick_launch_visible(dock_id),
-                            on_change: move |visible| layout.set_quick_launch_visible(dock_id, visible),
+                            visible: layout.is_dock_pinned(dock_id),
+                            on_change: move |_| layout.toggle_pinned_dock(dock_id),
                         }
                     }
                 }

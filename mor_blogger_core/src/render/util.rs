@@ -24,11 +24,6 @@ pub(super) fn escape_attr(s: &str) -> String {
         .replace('\'', "&#39;")
 }
 
-/// Builds Google Fonts `<link>` tags from ThemeConfig typography stacks.
-pub(super) fn build_google_fonts_link(stacks: &[&str]) -> String {
-    crate::config::fonts::build_google_font_imports(stacks)
-}
-
 /// Returns the primary string if it contains text, otherwise returns the fallback.
 pub fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
     if primary.trim().is_empty() {

@@ -94,13 +94,6 @@ impl EditorPrefs {
         let _ = prefs.save();
     }
 
-    #[allow(dead_code)] // reserved for CSS token builder button-color hook
-    pub fn update_custom_btn(btn: String) {
-        let mut prefs = Self::load();
-        prefs.custom_editor_colors.btn = Some(btn);
-        let _ = prefs.save();
-    }
-
     pub fn update_default_template_pack(pack: mor_blogger_core::config::TemplatePackConfig) {
         let mut prefs = Self::load();
         prefs.default_template_pack = Some(pack);

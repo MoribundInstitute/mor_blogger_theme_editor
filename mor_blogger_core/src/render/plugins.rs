@@ -1,22 +1,12 @@
-//! Moribund Client OS - Modular Plugin Architecture
-//! This establishes the core trait for all native plugins.
-//! Disabled plugins incur zero memory or payload overhead.
+//! Native plugins: each contributes CSS, XML widgets, and/or JS to the
+//! rendered Blogger layout. Disabled plugins are simply not added to the
+//! active list, so they cost nothing during rendering.
 
 use crate::render::xml_generator::XmlNode;
 
-/// The strict contract that all modular features must agree to.
-/// Using static string references ensures that plugins that are toggled off
-/// cost absolutely zero memory overhead during the rendering pipeline.
+/// The contract every renderable plugin implements. All hooks are optional;
+/// a plugin overrides only the ones it needs.
 pub trait MorBloggerPlugin: Send + Sync {
-    /// A unique, machine-readable text identifier (e.g., "os_chameleon").
-    fn id(&self) -> &'static str;
-
-    /// The human-readable name shown to the user in the Plugin Manager.
-    fn display_name(&self) -> &'static str;
-
-    /// The semantic version of the plugin (e.g., "1.0.0").
-    fn version(&self) -> &'static str;
-
     /// Optional: Generates standard CSS to inject into the Blogger layout.
     fn inject_css(&self) -> Option<String> {
         None
@@ -31,12 +21,6 @@ pub trait MorBloggerPlugin: Send + Sync {
     fn inject_js(&self) -> Option<&'static str> {
         None
     }
-
-    /// Optional: Analyzes the current layout and returns a plain-English warning
-    /// if a missing tag or optimization issue is detected.
-    fn run_diagnostics(&self) -> Option<String> {
-        None
-    }
 }
 
 // =========================================================================
@@ -47,18 +31,6 @@ pub trait MorBloggerPlugin: Send + Sync {
 pub struct OsChameleonPlugin;
 
 impl MorBloggerPlugin for OsChameleonPlugin {
-    fn id(&self) -> &'static str {
-        "os_chameleon"
-    }
-
-    fn display_name(&self) -> &'static str {
-        "OS Chameleon (Dark Mode)"
-    }
-
-    fn version(&self) -> &'static str {
-        "1.0.0"
-    }
-
     fn inject_js(&self) -> Option<&'static str> {
         Some(
             r##"
@@ -85,18 +57,6 @@ impl MorBloggerPlugin for OsChameleonPlugin {
 pub struct DeweyIndexerPlugin;
 
 impl MorBloggerPlugin for DeweyIndexerPlugin {
-    fn id(&self) -> &'static str {
-        "dewey_indexer"
-    }
-
-    fn display_name(&self) -> &'static str {
-        "Dewey Indexer (Auto-TOC)"
-    }
-
-    fn version(&self) -> &'static str {
-        "1.1.0"
-    }
-
     fn inject_js(&self) -> Option<&'static str> {
         Some(
             r##"
@@ -145,18 +105,6 @@ impl MorBloggerPlugin for DeweyIndexerPlugin {
 pub struct WorkspaceDocksPlugin;
 
 impl MorBloggerPlugin for WorkspaceDocksPlugin {
-    fn id(&self) -> &'static str {
-        "workspace_docks"
-    }
-
-    fn display_name(&self) -> &'static str {
-        "Workspace Docks (Collapsible Sidebars)"
-    }
-
-    fn version(&self) -> &'static str {
-        "1.0.0"
-    }
-
     fn inject_js(&self) -> Option<&'static str> {
         Some(
             r##"

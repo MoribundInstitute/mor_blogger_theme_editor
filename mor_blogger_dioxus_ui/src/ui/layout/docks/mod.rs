@@ -1,4 +1,5 @@
 pub mod asset_editor_dock;
+pub mod shared;
 pub mod css_dock;
 pub mod js_dock;
 pub mod site_data_dock;

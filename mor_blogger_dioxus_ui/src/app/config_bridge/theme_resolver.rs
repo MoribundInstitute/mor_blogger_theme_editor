@@ -1,6 +1,5 @@
 use super::models::CustomEditorColors;
 use crate::ui::layout::theme::MorTheme;
-use mor_blogger_core::config::ThemeConfig;
 
 pub fn resolve_effective_theme(base: MorTheme, overrides: &CustomEditorColors) -> MorTheme {
     macro_rules! apply {
@@ -28,27 +27,7 @@ pub fn resolve_effective_theme(base: MorTheme, overrides: &CustomEditorColors) -
         destructive: apply!(destructive),
         success: apply!(success),
         warning: apply!(warning),
-        enable_image_borders: base.enable_image_borders,
-        custom_border_url: base.custom_border_url.clone(),
-        svg_border_slice: base.svg_border_slice.clone(),
-        image_border_width: base.image_border_width.clone(),
-        target_sidebars: base.target_sidebars,
-        target_canvas: base.target_canvas,
+        // All non-overridable fields pass through from base unchanged.
+        ..base
     }
-}
-
-pub fn menu_label(config: &ThemeConfig, index: usize) -> String {
-    config
-        .menu_links
-        .get(index)
-        .map(|link| link.label.clone())
-        .unwrap_or_default()
-}
-
-pub fn menu_url(config: &ThemeConfig, index: usize) -> String {
-    config
-        .menu_links
-        .get(index)
-        .map(|link| link.url.clone())
-        .unwrap_or_default()
 }

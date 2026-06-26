@@ -3,7 +3,7 @@
 //! produces uploadable Blogger XML.
 
 use super::tracking::{menu_link_anchor, widget_title_h2};
-use super::util::{build_google_fonts_link, escape_attr, escape_html};
+use super::util::{escape_attr, escape_html};
 use crate::config::prefs::RenderPrefs;
 use crate::config::{BackgroundMode, BlogPost, ThemeConfig};
 use std::collections::HashMap;
@@ -237,7 +237,7 @@ pub fn render_preview_html(
         ),
     };
 
-    let google_fonts_link = build_google_fonts_link(&[
+    let google_fonts_link = crate::config::fonts::build_google_font_imports(&[
         &config.typography.body_font_stack,
         &config.typography.heading_font_stack,
         &config.typography.mono_font_stack,

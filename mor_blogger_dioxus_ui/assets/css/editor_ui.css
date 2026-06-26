@@ -1276,6 +1276,105 @@ html {
   box-shadow: none;
 }
 
+.preview-device-frame-resizing {
+  transition: none;
+}
+
+/* Drag-to-resize handle on the frame's right edge */
+.preview-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 16px;
+  height: 100%;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+}
+
+.preview-resize-handle-grip {
+  width: 4px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--editor-border);
+  transition: background 0.15s, height 0.15s;
+}
+
+.preview-resize-handle:hover .preview-resize-handle-grip {
+  background: #3b82f6;
+  height: 72px;
+}
+
+/* Transparent capture layer shown only during a drag */
+.preview-resize-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  cursor: ew-resize;
+}
+
+/* Activity-bar buttons: wrap holds the launch button + a running-dot overlay */
+.activity-btn-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.activity-running-dot {
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--editor-accent, #3b82f6);
+  pointer-events: none;
+}
+.activity-emoji {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.activity-raw-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.activity-raw-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Per-workspace minimap toggle, floating in the editor's top-right corner */
+.cm-minimap-toggle {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 20;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--editor-muted, #9aa);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--editor-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.15s, color 0.15s;
+}
+.cm-host-wrap:hover .cm-minimap-toggle { opacity: 0.8; }
+.cm-minimap-toggle:hover { opacity: 1; color: #3b82f6; }
+
 .preview-iframe {
   width: 100%;
   height: 100%;
@@ -1699,17 +1798,3 @@ body.editor-floating-dragging * {
   text-align: center;
   font-size: 0.8rem;
 }
-
-/* Reset syntect's wrapper <pre> so the highlight paint layer aligns
-   byte-for-byte with the transparent textarea (no UA 1em margin drift). */
-.pure-rust-editor-paint pre {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent !important;
-  font: inherit;
-  line-height: inherit;
-  white-space: pre;
-  tab-size: 4;
-}
-.pure-rust-editor-ghost { tab-size: 4; }

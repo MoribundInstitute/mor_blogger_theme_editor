@@ -1,8 +1,35 @@
+use crate::app::config_bridge::EditorPrefs;
 use dioxus::prelude::*;
-use std::rc::Rc;
-use syntect::highlighting::ThemeSet;
-use syntect::html::highlighted_html_for_string;
-use syntect::parsing::SyntaxSet;
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+/// CodeMirror 6 bundle (exposes `window.morCM`). Inject once per webview root via
+/// `script { dangerous_inner_html: "{CM6_BUNDLE_JS}" }` — done in the main shell and
+/// in each isolated pop-out editor window, since those are separate webviews.
+pub const CM6_BUNDLE_JS: &str = include_str!("../../../assets/js/cm6.bundle.js");
+
+/// Global minimap default (Editor Settings), used by editors with no per-workspace
+/// override. Provided as context so editors react live. Absent = treated as on.
+#[derive(Clone, Copy)]
+pub struct MinimapSetting(pub Signal<bool>);
+
+/// Per-workspace minimap overrides keyed by `minimap_key`. Takes precedence over the
+/// global default. Provided as context (seeded from prefs) so toggles apply live.
+#[derive(Clone, Copy)]
+pub struct MinimapOverrides(pub Signal<HashMap<String, bool>>);
+
+/// Effective minimap state: per-workspace override > per-editor default > global.
+/// Reads the signals, so call it inside a reactive scope (render or effect) to track.
+fn resolve_minimap(
+    global: Option<MinimapSetting>,
+    overrides: Option<MinimapOverrides>,
+    key: &str,
+    default: Option<bool>,
+) -> bool {
+    let g = global.map(|s| (s.0)()).unwrap_or(true);
+    let ov = overrides.and_then(|o| (o.0)().get(key).copied());
+    ov.unwrap_or(default.unwrap_or(g))
+}
 
 #[derive(Props, Clone, PartialEq)]
 pub struct CodeEditorProps {
@@ -13,131 +40,159 @@ pub struct CodeEditorProps {
     pub id: Option<String>,
     #[props(default = false)]
     pub read_only: bool,
+    /// Soft-wrap long lines instead of horizontal scrolling.
+    #[props(default = false)]
+    pub wrap: bool,
+    /// Per-editor minimap default: `None` follows the global Editor Settings default;
+    /// `Some(false)` means off by default for this workspace (e.g. module workbench).
+    #[props(default = None)]
+    pub minimap: Option<bool>,
+    /// Stable key for persisting this editor's minimap on/off across sessions.
+    /// Defaults to the (ephemeral) DOM id, so session-only without a key.
+    #[props(default = None)]
+    pub minimap_key: Option<String>,
 }
 
+/// Code editor backed by CodeMirror 6 (bundle injected once in `shell.rs`).
+///
+/// The Rust side owns the buffer via `value`/`on_change`; the JS `window.morCM`
+/// API owns rendering, highlighting, undo/redo, search, etc. Edits flow JS -> Rust
+/// through the eval channel; external buffer changes (file load, format, hot-reload)
+/// flow Rust -> JS via `setValue`, tagged so they don't echo back.
 #[component]
 pub fn CodeEditor(props: CodeEditorProps) -> Element {
-    let ss = use_hook(|| Rc::new(SyntaxSet::load_defaults_newlines()));
-    let ts = use_hook(|| Rc::new(ThemeSet::load_defaults()));
-    let theme = &ts.themes["base16-ocean.dark"];
+    // Stable DOM id: caller-provided (some docs target it by id) or auto-generated.
+    let host_id = use_hook(|| {
+        static N: AtomicU64 = AtomicU64::new(0);
+        props
+            .id
+            .clone()
+            .unwrap_or_else(|| format!("cm-editor-{}", N.fetch_add(1, Ordering::Relaxed)))
+    });
+    // Persistence key for this editor's minimap toggle.
+    let minimap_key = use_hook(|| props.minimap_key.clone().unwrap_or_else(|| host_id.clone()));
 
-    // FIX: Map internal string flags to exact Syntect definitions
-    let effective_mode = match props.mode.as_str() {
-        "toml" => "ini",
-        "javascript" | "js" => "js",
-        "xml" | "html" => "html",
-        "css" => "css",
-        other => other,
-    };
-    
-    let syntax = ss
-        .find_syntax_by_extension(effective_mode)
-        .unwrap_or_else(|| ss.find_syntax_plain_text());
+    // Last value we know JS holds — gates the Rust->JS push so we never re-send an
+    // edit that originated in the editor.
+    let mut last_synced = use_signal(|| props.value.clone());
 
-    // TEMP DEBUG: byte length of the buffer CodeEditor actually reads, at mount.
-    {
-        let m = props.mode.clone();
-        let n = props.value.len();
-        let id = props.id.clone().unwrap_or_default();
-        use_hook(move || eprintln!("[CodeEditor mount] mode={m} id={id} value_bytes={n}"));
-    }
+    // Effective minimap: per-workspace override > per-editor default > global default.
+    let minimap_default = props.minimap;
+    let global = try_consume_context::<MinimapSetting>();
+    let overrides = try_consume_context::<MinimapOverrides>();
+    let minimap_on = resolve_minimap(global, overrides, &minimap_key, minimap_default);
 
-    let mut local_val = use_signal(|| props.value.clone());
-    // TEMP DEBUG: confirm typing reaches this buffer (and what it held just before).
-    let mut logged_first_input = use_signal(|| false);
+    // Apply minimap changes live (toggle / settings change) without remounting.
+    let minimap_fx_id = host_id.clone();
+    let minimap_fx_key = minimap_key.clone();
+    use_effect(move || {
+        let on = resolve_minimap(global, overrides, &minimap_fx_key, minimap_default);
+        let id = minimap_fx_id.clone();
+        spawn(async move {
+            let eval = dioxus::document::eval(
+                "const c = await dioxus.recv(); if (window.morCM) window.morCM.setMinimap(c.id, c.on);",
+            );
+            let _ = eval.send(serde_json::json!({ "id": id, "on": on }));
+        });
+    });
 
-    // The textarea binds its value to `seed`, NOT to the live `local_val`. Rewriting the
-    // textarea value on every keystroke makes it a fully controlled input, which wipes the
-    // webview's native undo stack and leaves Ctrl+Z nothing to undo. `seed` is re-derived
-    // only on non-typing buffer changes (file load, format, hot-reload); our own keystroke
-    // echo round-trips through props.value but never re-seeds, so the native undo/redo stack
-    // survives. We tell the two apart with `last_emitted`: a non-typing change differs from
-    // the last value our oninput sent, an echo matches. Browser undo/redo also emit input
-    // events, so local_val / on_change stay in sync after an undo.
-    let mut seed = use_signal(|| props.value.clone());
-    let mut last_emitted = use_signal(|| props.value.clone());
-
-    // Reconcile external content into the local buffer from an effect (never during render),
-    // and only when props.value actually changes (a load) — use_reactive is the change-gate,
-    // so typing via on_change is never clobbered mid-keystroke. on_change owns the buffer
-    // between loads.
+    // Push external buffer changes into the editor (skips our own echoed edits).
     let external_val = props.value.clone();
+    let effect_id = host_id.clone();
     use_effect(use_reactive!(|external_val| {
-        local_val.set(external_val.clone());
-        // Only re-seed the textarea for changes we did not type, so typing keeps the
-        // native undo stack intact.
-        if *last_emitted.peek() != external_val {
-            seed.set(external_val);
+        if *last_synced.peek() != external_val {
+            last_synced.set(external_val.clone());
+            let id = effect_id.clone();
+            let v = external_val.clone();
+            spawn(async move {
+                let eval = dioxus::document::eval(
+                    "const c = await dioxus.recv(); if (window.morCM) window.morCM.setValue(c.id, c.v);",
+                );
+                let _ = eval.send(serde_json::json!({ "id": id, "v": v }));
+            });
         }
     }));
 
-    // FIX: Replace breaking space hack with a strict newline boundary
-    let mut text_to_highlight = local_val().clone();
-    if text_to_highlight.ends_with('\n') || text_to_highlight.is_empty() {
-        text_to_highlight.push('\n'); 
+    // Tear down the CM view when this component unmounts (dock closed).
+    {
+        let id = host_id.clone();
+        use_drop(move || {
+            let id = id.clone();
+            spawn(async move {
+                let eval = dioxus::document::eval(
+                    "const c = await dioxus.recv(); if (window.morCM) window.morCM.destroy(c.id);",
+                );
+                let _ = eval.send(serde_json::json!({ "id": id }));
+            });
+        });
     }
 
-    let highlighted_html =
-        highlighted_html_for_string(&text_to_highlight, &ss, syntax, theme)
-            .unwrap_or_else(|_| format!("<pre><code>{}</code></pre>", text_to_highlight));
+    // Toggle handler: flip this editor's effective state and persist it by key.
+    let toggle_key = minimap_key.clone();
+    let toggle = move |_| {
+        let new_state = !minimap_on;
+        if let Some(o) = overrides {
+            let mut sig = o.0;
+            sig.write().insert(toggle_key.clone(), new_state);
+        }
+        EditorPrefs::update_minimap_override(toggle_key.clone(), new_state);
+    };
 
-    let mut scroll_y = use_signal(|| 0.0);
-    let mut scroll_x = use_signal(|| 0.0);
-
-    let line_count = local_val().matches('\n').count() + 1;
-    let line_numbers = (1..=line_count).map(|n| n.to_string()).collect::<Vec<_>>().join("\n");
+    let mount_id = host_id.clone();
+    let mount_doc = props.value.clone();
+    let mount_mode = props.mode.clone();
+    let read_only = props.read_only;
+    let wrap = props.wrap;
+    let minimap = minimap_on;
+    let on_change = props.on_change;
 
     rsx! {
         div {
-            class: "pure-rust-editor-container",
-            style: "position: relative; width: 100%; height: 100%; overflow: hidden; background: #2b303b; display: flex; flex-direction: row;",
-            
-            // GUTTER LAYER
-            div {
-                class: "pure-rust-editor-gutter",
-                style: "position: relative; width: 40px; background: #232831; color: #65737e; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 16px 8px 16px 0; text-align: right; user-select: none; border-right: 1px solid #343d46; overflow: hidden; flex-shrink: 0; z-index: 10;",
-                div {
-                    style: "transform: translate3d(0, -{scroll_y}px, 0); white-space: pre;",
-                    "{line_numbers}"
-                }
+            // Wrapper owns the toggle button; the inner `cm-host` is left child-free
+            // so Dioxus never reconciles (and clobbers) CodeMirror's appended DOM.
+            class: "cm-host-wrap",
+            style: "position: relative; width: 100%; height: 100%; overflow: hidden;",
+
+            // Per-workspace minimap toggle, top-right above the editor.
+            button {
+                class: "cm-minimap-toggle",
+                title: if minimap_on { "Hide minimap" } else { "Show minimap" },
+                onclick: toggle,
+                if minimap_on { "▦" } else { "▢" }
             }
 
-            // PAINT LAYER
             div {
-                class: "pure-rust-editor-paint",
-                style: "position: absolute; top: 0; left: 0; transform: translate3d(-{scroll_x}px, -{scroll_y}px, 0); pointer-events: none; margin: 0; padding: 16px 16px 16px 48px; min-width: 100%; font-family: monospace; font-size: 13px; line-height: 1.5; color: #c0c5ce;",
-                dangerous_inner_html: "{highlighted_html}"
-            }
-
-            // GHOST LAYER
-            textarea {
-                class: "pure-rust-editor-ghost",
-                id: props.id.clone().unwrap_or_default(),
-                value: "{seed}",
-                readonly: props.read_only,
-                spellcheck: "false", // FIX: Prevent native squiggly lines from breaking metrics
-                style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding: 16px 16px 16px 48px; background: transparent; color: transparent; caret-color: #fff; font-family: monospace; font-size: 13px; line-height: 1.5; border: none; outline: none; resize: none; overflow: auto; white-space: pre; box-sizing: border-box;",
-                oninput: move |evt| {
-                    if !props.read_only {
-                        let new_val = evt.value();
-                        if !*logged_first_input.peek() {
-                            eprintln!(
-                                "[CodeEditor first input] mode={} prev_bytes={} new_bytes={}",
-                                props.mode,
-                                local_val.peek().len(),
-                                new_val.len()
-                            );
-                            logged_first_input.set(true);
-                        }
-                        local_val.set(new_val.clone());
-                        last_emitted.set(new_val.clone());
-                        props.on_change.call(new_val);
+            class: "cm-host",
+            id: "{host_id}",
+            style: "width: 100%; height: 100%; overflow: hidden;",
+            onmounted: move |_| {
+                let cfg = serde_json::json!({
+                    "id": mount_id.clone(),
+                    "doc": mount_doc.clone(),
+                    "lang": mount_mode.clone(),
+                    "readOnly": read_only,
+                    "wrap": wrap,
+                    "minimap": minimap,
+                });
+                spawn(async move {
+                    let mut eval = dioxus::document::eval(
+                        r#"
+                        const cfg = await dioxus.recv();
+                        function ready(cb) { window.morCM ? cb() : setTimeout(() => ready(cb), 30); }
+                        ready(() => window.morCM.mount(cfg.id, {
+                            doc: cfg.doc, lang: cfg.lang, readOnly: cfg.readOnly, wrap: cfg.wrap,
+                            minimap: cfg.minimap,
+                            onChange: (v) => dioxus.send(v),
+                        }));
+                        "#,
+                    );
+                    let _ = eval.send(cfg);
+                    while let Ok(v) = eval.recv::<String>().await {
+                        last_synced.set(v.clone());
+                        on_change.call(v);
                     }
-                },
-                onscroll: move |evt| {
-                    scroll_y.set(evt.data().scroll_top() as f64);
-                    scroll_x.set(evt.data().scroll_left() as f64);
-                }
+                });
+            },
             }
         }
     }

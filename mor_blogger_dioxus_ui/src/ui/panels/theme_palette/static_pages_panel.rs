@@ -5,7 +5,8 @@ use crate::utils::clipboard::copy_to_clipboard;
 use mor_blogger_core::config::pages::StaticPagesConfig;
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
-    generate_course_catalog_html, generate_portfolio_html, generate_syllabus_html,
+    generate_course_catalog_html, generate_my_courses_html, generate_portfolio_html,
+    generate_syllabus_html,
 };
 
 // (tab id, button label)
@@ -15,6 +16,7 @@ const TABS: &[(&str, &str)] = &[
     ("About", "About Me"),
     ("Portfolio", "Portfolio"),
     ("LMS", "Courses"),
+    ("MyCourses", "My Courses"),
     ("Community", "Pasteboard"), // <-- NEW TAB ADDED HERE
 ];
 
@@ -25,6 +27,7 @@ fn preview_html_for_tab(id: &str, pages: &StaticPagesConfig) -> String {
         "Portfolio" => generate_portfolio_html(&pages.portfolio),
         "About" => generate_about_html(&pages.about),
         "LMS" => generate_course_catalog_html(&pages.lms),
+        "MyCourses" => generate_my_courses_html(&pages.lms),
         _ => String::new(),
     }
 }
@@ -213,6 +216,20 @@ pub fn StaticPagesPanel(
                 },
                 "About" => rsx! { AboutBuilder { config: pages, status } },
                 "LMS" => rsx! { LmsBuilder { config: pages, status } },
+                "MyCourses" => rsx! {
+                    div { class: "editor-field-group",
+                        h4 { "My Courses Dashboard" }
+                        div { class: "editor-help-text",
+                            "A local-first student dashboard. Progress and stats hydrate from the visitor's own localStorage on page load — no server required."
+                        }
+                        CopyButton {
+                            html: generate_my_courses_html(&pages().lms),
+                            status,
+                            copied_msg: "My Courses dashboard HTML copied to clipboard!",
+                            label: "Copy My Courses HTML",
+                        }
+                    }
+                },
                 "Community" => rsx! {
                     div { class: "editor-field-group",
                         h4 { "Decentralized Layouts" }

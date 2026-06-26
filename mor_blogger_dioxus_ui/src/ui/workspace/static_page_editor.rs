@@ -6,7 +6,7 @@ use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use dioxus::prelude::*;
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
-    generate_course_catalog_html, generate_portfolio_html,
+    generate_course_catalog_html, generate_my_courses_html, generate_portfolio_html,
 };
 use mor_blogger_core::utils::fs_bridge;
 
@@ -34,6 +34,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                 "Portfolio" => generate_portfolio_html(&pages.portfolio),
                 "About" => generate_about_html(&pages.about),
                 "LMS" => generate_course_catalog_html(&pages.lms),
+                "MyCourses" => generate_my_courses_html(&pages.lms),
                 _ => String::new(),
             };
             raw_html_signal.set(default_html.clone());

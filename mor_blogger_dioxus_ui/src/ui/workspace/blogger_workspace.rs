@@ -3,7 +3,7 @@ use crate::app::state::{
 };
 use mor_blogger_core::render::pages::{
     generate_about_html, generate_archive_html, generate_categories_html,
-    generate_course_catalog_html, generate_portfolio_html,
+    generate_course_catalog_html, generate_my_courses_html, generate_portfolio_html,
 };
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
@@ -337,7 +337,7 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
         button {
             class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
             onclick: move |_| layout.enter_workspace(CenterView::Export),
-            "Export XML"
+            "Export"
         }
         button {
             class: if center_view() == CenterView::ModuleWorkbench {
@@ -661,6 +661,7 @@ fn ExportResultView(
                                 "Portfolio" => generate_portfolio_html(&pages.portfolio),
                                 "About" => generate_about_html(&pages.about),
                                 "LMS" => generate_course_catalog_html(&pages.lms),
+                                "MyCourses" => generate_my_courses_html(&pages.lms),
                                 _ => String::new(),
                             };
                             if html.is_empty() {

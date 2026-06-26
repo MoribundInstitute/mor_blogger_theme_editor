@@ -209,7 +209,29 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     h3 { style: "margin: 0; font-size: 1.1rem; color: var(--fg-base);", "Static Page Editor" }
                     p {
                         style: "margin: 0; font-size: 0.85rem; max-width: 420px; line-height: 1.5;",
-                        "Select a static page layout from the Left Dock (Theme Palette > Static Pages) to start editing its raw HTML content live."
+                        "Pick a page to start editing its raw HTML live."
+                    }
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 480px;",
+                        for (id, label) in crate::ui::panels::theme_palette::static_pages_panel::TABS.iter().copied() {
+                            button {
+                                key: "{id}",
+                                class: "editor-button",
+                                onclick: move |_| layout.active_static_page.set(Some(id.to_string())),
+                                "{label}"
+                            }
+                        }
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        style: "margin-top: 4px;",
+                        title: "Open the community hub in your browser to browse more layouts",
+                        onclick: move |_| {
+                            let _ = std::process::Command::new("xdg-open")
+                                .arg(crate::ui::panels::theme_palette::static_pages_panel::COMMUNITY_HUB_URL)
+                                .spawn();
+                        },
+                        "Browse Community Hub ↗"
                     }
                 }
             } else {

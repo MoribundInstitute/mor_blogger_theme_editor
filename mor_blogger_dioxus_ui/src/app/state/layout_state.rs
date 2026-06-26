@@ -20,6 +20,7 @@ pub fn normalize_dock_key(key: &str) -> String {
         "JS Builder" => "js_builder",
         "Template Modules" => "template_modules",
         "Code Nav" => "code_nav",
+        "Static Pages" => "static_pages",
         other => other,
     }
     .to_string()
@@ -78,6 +79,7 @@ pub struct LayoutState {
     pub js_builder_pos: Signal<DockPosition>,
     pub template_modules_pos: Signal<DockPosition>,
     pub code_nav_pos: Signal<DockPosition>,
+    pub static_pages_pos: Signal<DockPosition>,
     /// Shared TOML/XML toggle for the Code Editor, so the Code Nav dock knows
     /// which buffer is showing (false = TOML, true = compiled XML).
     pub code_show_xml: Signal<bool>,
@@ -117,6 +119,7 @@ impl LayoutState {
             js_builder_pos: use_signal(|| DockPosition::Hidden),
             template_modules_pos: use_signal(|| DockPosition::Hidden),
             code_nav_pos: use_signal(|| DockPosition::Hidden),
+            static_pages_pos: use_signal(|| DockPosition::Hidden),
             code_show_xml: use_signal(|| false),
             active_workbench_module: use_signal(|| None),
 
@@ -211,6 +214,12 @@ impl LayoutState {
             CenterView::CodeEditor => DockPosition::mor_panel_left,
             _ => DockPosition::Hidden,
         });
+        // Static Pages rides along with the Static Page Editor, since that view
+        // hides the Theme Palette where the page builder otherwise lives.
+        self.static_pages_pos.set(match ws {
+            CenterView::StaticPageEditor => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
         // Only Preview is about theme/content editing, so the Theme Palette and
         // Site Data docks default to visible there; every other workspace hides
         // them (Module Workbench drives its own Template Modules dock instead).
@@ -244,6 +253,7 @@ impl LayoutState {
             "js_builder" => self.js_builder_pos,
             "template_modules" => self.template_modules_pos,
             "code_nav" => self.code_nav_pos,
+            "static_pages" => self.static_pages_pos,
             _ => return None,
         })
     }
@@ -290,6 +300,7 @@ impl LayoutState {
             "js_builder" => &self.js_builder_pos,
             "template_modules" => &self.template_modules_pos,
             "code_nav" => &self.code_nav_pos,
+            "static_pages" => &self.static_pages_pos,
             _ => return,
         };
 
@@ -316,6 +327,7 @@ impl LayoutState {
                 &self.js_builder_pos,
                 &self.template_modules_pos,
                 &self.code_nav_pos,
+                &self.static_pages_pos,
             ];
 
             let is_occupied = |zone: DockPosition| -> bool {

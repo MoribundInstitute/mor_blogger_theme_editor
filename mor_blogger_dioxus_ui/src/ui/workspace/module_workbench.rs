@@ -428,7 +428,7 @@ pub fn ModuleWorkbench(
                 div {
                     style: "
                         flex: 1; min-height: 0; overflow: auto;
-                        display: flex; align-items: flex-start; justify-content: center;
+                        display: flex; align-items: stretch; justify-content: center;
                         padding: 32px;
                         background-color: var(--bg-base);
                         background-image:

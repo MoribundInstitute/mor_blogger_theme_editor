@@ -10,7 +10,7 @@ use mor_blogger_core::render::pages::{
 };
 
 // (tab id, button label)
-const TABS: &[(&str, &str)] = &[
+pub const TABS: &[(&str, &str)] = &[
     ("Archive", "Archive"),
     ("Directory", "Directory"),
     ("About", "About Me"),
@@ -30,6 +30,75 @@ fn preview_html_for_tab(id: &str, pages: &StaticPagesConfig) -> String {
         "MyCourses" => generate_my_courses_html(&pages.lms),
         _ => String::new(),
     }
+}
+
+// Community hub: the app ships the templates above as defaults and links out
+// here for layouts the community published. The Blogger JSON feed *is* the
+// hub index — each published post is one static page (title + raw HTML body).
+pub const COMMUNITY_HUB_URL: &str = "https://morpages.blogspot.com/";
+const COMMUNITY_FEED_URL: &str =
+    "https://morpages.blogspot.com/feeds/posts/default?alt=json&max-results=150";
+
+/// One community-contributed static page pulled from the hub.
+#[derive(Clone, PartialEq)]
+pub struct CommunityPage {
+    pub title: String,
+    pub html: String,
+}
+
+#[derive(serde::Deserialize)]
+struct FeedRoot {
+    feed: FeedBody,
+}
+#[derive(serde::Deserialize)]
+struct FeedBody {
+    #[serde(default)]
+    entry: Vec<FeedEntry>,
+}
+#[derive(serde::Deserialize)]
+struct FeedEntry {
+    title: FeedText,
+    content: Option<FeedText>,
+}
+#[derive(serde::Deserialize)]
+struct FeedText {
+    #[serde(rename = "$t")]
+    t: String,
+}
+
+/// Fetch the community static-page catalog from the Blogger JSON feed.
+/// Empty Ok(vec) means the hub has nothing published yet.
+pub async fn fetch_community_pages(url: &str) -> Result<Vec<CommunityPage>, String> {
+    let resp = reqwest::get(url)
+        .await
+        .map_err(|e| format!("request failed: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("HTTP {}", resp.status()));
+    }
+    let body = resp.text().await.map_err(|e| format!("read failed: {e}"))?;
+    let root: FeedRoot = serde_json::from_str(&body).map_err(|e| format!("bad feed: {e}"))?;
+    Ok(root
+        .feed
+        .entry
+        .into_iter()
+        .filter_map(|e| {
+            e.content.map(|c| CommunityPage {
+                title: e.title.t,
+                html: c.t,
+            })
+        })
+        .collect())
+}
+
+/// Fetch a single raw HTML page from any URL (a community repo file, gist, etc.).
+pub async fn fetch_raw_page(url: &str) -> Result<String, String> {
+    let resp = reqwest::get(url)
+        .await
+        .map_err(|e| format!("request failed: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("HTTP {}", resp.status()));
+    }
+    resp.text().await.map_err(|e| format!("read failed: {e}"))
 }
 
 #[component]
@@ -84,6 +153,11 @@ pub fn StaticPagesPanel(
 
     // State specifically for the Community Pasteboard
     let mut custom_html = use_signal(|| String::new());
+
+    // Community hub catalog fetched from the Blogger feed (lazily loaded).
+    let mut community_index = use_signal(Vec::<CommunityPage>::new);
+    let mut fetch_status = use_signal(String::new);
+    let mut remote_url = use_signal(String::new);
 
     // Wrap the selected static page inside the active generated theme preview.
     // This keeps the iframe CSS/fonts/colors intact and mocks Blogger feed calls offline.
@@ -232,9 +306,80 @@ pub fn StaticPagesPanel(
                 },
                 "Community" => rsx! {
                     div { class: "editor-field-group",
-                        h4 { "Decentralized Layouts" }
+                        h4 { "Community Hub" }
                         div { class: "editor-help-text",
-                            "Paste raw HTML from any community repository here. The engine will instantly wrap it in your active theme's CSS variables."
+                            "Import a static page from the hub, a URL, or by pasting raw HTML below. The engine wraps it in your active theme's CSS variables."
+                        }
+
+                        // Import any raw HTML page by URL (community repo file, gist, blog post).
+                        div { class: "editor-field-group",
+                            label { class: "editor-field-label", "Remote HTML URL" }
+                            div { class: "editor-row-stretch",
+                                input {
+                                    class: "editor-field editor-flex-1", r#type: "text",
+                                    placeholder: "https://.../page.html", value: "{remote_url}",
+                                    oninput: move |evt| remote_url.set(evt.value()),
+                                }
+                                button {
+                                    class: "editor-button",
+                                    onclick: move |_| async move {
+                                        // Reuse the theme importer's normalizer so a plain
+                                        // github.com/.../blob/... link resolves to its raw file.
+                                        let url = crate::ui::panels::theme_palette::presets::importers::normalize_preset_url(&remote_url());
+                                        if url.is_empty() { fetch_status.set("Paste a URL first.".to_string()); return; }
+                                        fetch_status.set("Importing…".to_string());
+                                        match fetch_raw_page(&url).await {
+                                            Ok(html) => { custom_html.set(html); fetch_status.set("Imported page from URL.".to_string()); }
+                                            Err(e) => fetch_status.set(format!("Import failed: {e}")),
+                                        }
+                                    },
+                                    "Import URL"
+                                }
+                            }
+                        }
+
+                        div { style: "display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;",
+                            button {
+                                class: "editor-button editor-button-small",
+                                onclick: move |_| async move {
+                                    fetch_status.set("Loading…".to_string());
+                                    match fetch_community_pages(COMMUNITY_FEED_URL).await {
+                                        Ok(pages) if pages.is_empty() => {
+                                            community_index.set(Vec::new());
+                                            fetch_status.set("No community pages published yet.".to_string());
+                                        }
+                                        Ok(pages) => {
+                                            fetch_status.set(format!("{} community page(s).", pages.len()));
+                                            community_index.set(pages);
+                                        }
+                                        Err(e) => fetch_status.set(format!("Fetch failed: {e}")),
+                                    }
+                                },
+                                "Load Community Pages"
+                            }
+                            button {
+                                class: "editor-button editor-button-small",
+                                title: "Open the static-page compendium (Blogger) in your browser",
+                                onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMMUNITY_HUB_URL).spawn(); },
+                                "Static Page Compendium (Blogger) ↗"
+                            }
+                        }
+
+                        if !fetch_status().is_empty() {
+                            div { class: "editor-help-text", style: "margin-bottom: 8px;", "{fetch_status}" }
+                        }
+
+                        for page in community_index() {
+                            button {
+                                key: "{page.title}",
+                                class: "editor-button editor-button-small",
+                                style: "display: block; width: 100%; text-align: left; margin-bottom: 4px;",
+                                onclick: {
+                                    let html = page.html.clone();
+                                    move |_| custom_html.set(html.clone())
+                                },
+                                "{page.title}"
+                            }
                         }
 
                         textarea {
@@ -490,15 +635,27 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
 
     let template_html = format!(
         r#"
+    <!-- Static-page mode: a Blogger Page renders as focused content, not the
+         blog's sidebar layout. Collapse the workspace to a single full-width
+         column so the page reads like a real static page. -->
+    <style id="mor-static-page-mode">
+        #panel-left, #panel-right {{ display: none !important; }}
+        .mor-workspace {{ display: block !important; }}
+        .canvas-core {{ width: 100% !important; max-width: 100% !important; }}
+    </style>
     <template id="mor-static-injector">
         {}
     </template>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {{
-        const target = document.getElementById('mor-content-target');
-        const template = document.getElementById('mor-static-injector');
+    (function injectStaticPage() {{
+        // The iframe reloads fresh HTML each time, but if DOMContentLoaded has
+        // already fired by the time this runs, the listener never triggers.
+        // Run now if the DOM is ready, otherwise wait for it.
+        const run = () => {{
+            const target = document.querySelector('.canvas-content');
+            const template = document.getElementById('mor-static-injector');
+            if (!target || !template) return;
 
-        if (target && template) {{
             target.innerHTML = '';
             target.appendChild(template.content.cloneNode(true));
 
@@ -509,18 +666,61 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
                 newScript.appendChild(document.createTextNode(oldScript.innerHTML));
                 oldScript.parentNode.replaceChild(newScript, oldScript);
             }});
-
-            // Adjust the surrounding card headers so they make sense for a static page
-            const titleTarget = document.getElementById('mor-title-target');
-            const kickerTarget = document.getElementById('mor-kicker-target');
-            if (titleTarget) titleTarget.innerText = "Static Page Preview";
-            if (kickerTarget) kickerTarget.innerText = "Layout Preview";
+        }};
+        if (document.readyState === 'loading') {{
+            document.addEventListener('DOMContentLoaded', run);
+        }} else {{
+            run();
         }}
-    }});
+    }})();
     </script>
     "#,
         static_html
     );
 
     head_injected.replace("</body>", &format!("{}\n</body>", template_html))
+}
+
+#[cfg(test)]
+mod community_feed_tests {
+    use super::*;
+
+    fn parse(body: &str) -> Vec<CommunityPage> {
+        let root: FeedRoot = serde_json::from_str(body).unwrap();
+        root.feed
+            .entry
+            .into_iter()
+            .filter_map(|e| e.content.map(|c| CommunityPage { title: e.title.t, html: c.t }))
+            .collect()
+    }
+
+    #[test]
+    fn empty_feed_has_no_entry_key() {
+        // Blogger omits "entry" entirely when 0 posts — must not error.
+        assert!(parse(r#"{"feed":{}}"#).is_empty());
+    }
+
+    #[test]
+    fn inject_targets_real_content_container() {
+        // The injector must target the element that actually exists in the
+        // preview (.canvas-content), not the long-dead #mor-content-target id,
+        // or the static page silently never renders.
+        let out = inject_static_page("<html><head></head><body></body></html>", "<p>HELLO</p>");
+        assert!(out.contains(".canvas-content"), "must target the real container");
+        assert!(!out.contains("mor-content-target"), "dead target id must be gone");
+        assert!(out.contains("<p>HELLO</p>"), "static html must be embedded");
+    }
+
+    #[test]
+    fn populated_feed_maps_title_and_html() {
+        let body = r#"{"feed":{"entry":[
+            {"title":{"$t":"Gallery"},"content":{"$t":"<div>art</div>"}},
+            {"title":{"$t":"NoBody"}}
+        ]}}"#;
+        let pages = parse(body);
+        // entry without content is dropped
+        assert_eq!(pages.len(), 1);
+        assert_eq!(pages[0].title, "Gallery");
+        assert_eq!(pages[0].html, "<div>art</div>");
+    }
 }

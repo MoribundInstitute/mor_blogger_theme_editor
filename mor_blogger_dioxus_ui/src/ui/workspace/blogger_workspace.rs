@@ -335,11 +335,6 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             "Code Editor"
         }
         button {
-            class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-            onclick: move |_| layout.enter_workspace(CenterView::Export),
-            "Export"
-        }
-        button {
             class: if center_view() == CenterView::ModuleWorkbench {
                 "editor-mini-button editor-mini-button-active"
             } else {
@@ -355,6 +350,12 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
             onclick: move |_| layout.enter_workspace(CenterView::StaticPageEditor),
             "Static Pages"
+        }
+        // Export is the terminal pipeline step, so it sits at the far right.
+        button {
+            class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            onclick: move |_| layout.enter_workspace(CenterView::Export),
+            "Export"
         }
     }
 }

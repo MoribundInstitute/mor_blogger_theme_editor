@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PluginState {
@@ -94,11 +95,16 @@ impl Default for ShortcutPrefs {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LayoutPrefs {
+    /// Dock IDs pinned to the activity bar, in display order.
     #[serde(default)]
     pub pinned_docks: Vec<String>,
     /// Dock IDs hidden from the activity / quick-launch bar (e.g. "js_editor").
     #[serde(default)]
     pub quick_launch_hidden: Vec<String>,
+    /// Per-dock activity-bar icon overrides, keyed by dock ID. Value is a tagged
+    /// string: "emoji:🎨", "svg:palette", or "raw:<svg…>". Absent = built-in default.
+    #[serde(default)]
+    pub activity_icons: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -117,4 +123,12 @@ pub struct EditorPrefs {
     pub default_template_pack: Option<mor_blogger_core::config::TemplatePackConfig>,
     #[serde(default)]
     pub pinned_docks: Vec<String>,
+    /// VS Code-style code minimap: global default for editors with no per-workspace
+    /// override. Unset = on.
+    #[serde(default)]
+    pub show_minimap: Option<bool>,
+    /// Per-workspace minimap overrides, keyed by editor/workspace id. Takes
+    /// precedence over `show_minimap` for that editor.
+    #[serde(default)]
+    pub minimap_overrides: HashMap<String, bool>,
 }

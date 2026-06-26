@@ -47,6 +47,7 @@ impl LayoutPrefs {
         let prefs = Self {
             pinned_docks: legacy_pins,
             quick_launch_hidden: Vec::new(),
+            activity_icons: std::collections::HashMap::new(),
         };
         let _ = prefs.save();
         prefs
@@ -78,6 +79,18 @@ impl EditorPrefs {
     pub fn update_workspace_theme(theme: String) {
         let mut prefs = Self::load();
         prefs.workspace_theme = Some(theme);
+        let _ = prefs.save();
+    }
+
+    pub fn update_minimap(show: bool) {
+        let mut prefs = Self::load();
+        prefs.show_minimap = Some(show);
+        let _ = prefs.save();
+    }
+
+    pub fn update_minimap_override(key: String, show: bool) {
+        let mut prefs = Self::load();
+        prefs.minimap_overrides.insert(key, show);
         let _ = prefs.save();
     }
 

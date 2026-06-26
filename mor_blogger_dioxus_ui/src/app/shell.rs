@@ -11,6 +11,7 @@ use super::shell_file_actions;
 use super::shell_layout::{DockLocalSignals, FloatingWindowManager, MorLayoutChrome};
 
 const EDITOR_UI_CSS: &str = include_str!("../../assets/css/editor_ui.css");
+use crate::ui::components::code_editor::CM6_BUNDLE_JS;
 
 fn fallback_compendium() -> Vec<CompendiumManifest> {
     vec![CompendiumManifest {
@@ -53,6 +54,13 @@ pub fn render_app_shell(
     let show_docs = use_signal(|| false);
 
     let prefs = use_signal(|| EditorPrefs::load());
+
+    // Editor minimap: global default (Editor Settings → General) plus per-workspace
+    // overrides, both seeded from prefs and provided as context so toggles apply live.
+    let minimap_setting = use_signal(|| prefs().show_minimap.unwrap_or(true));
+    provide_context(crate::ui::components::code_editor::MinimapSetting(minimap_setting));
+    let minimap_overrides = use_signal(|| prefs().minimap_overrides.clone());
+    provide_context(crate::ui::components::code_editor::MinimapOverrides(minimap_overrides));
     let launch_plugins = use_signal(|| prefs().plugins.clone());
     let current_plugins = use_signal(|| prefs().plugins.clone());
     let mut compendium_registry = use_signal(|| Vec::<CompendiumManifest>::new());
@@ -152,6 +160,7 @@ pub fn render_app_shell(
 
     rsx! {
         script { dangerous_inner_html: "document.addEventListener('contextmenu', event => event.preventDefault());" }
+        script { dangerous_inner_html: "{CM6_BUNDLE_JS}" }
         MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
 

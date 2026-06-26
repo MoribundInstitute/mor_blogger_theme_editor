@@ -35,3 +35,32 @@
   color: var(--editor-accent);
   background: color-mix(in srgb, var(--editor-accent) 10%, transparent);
 }
+
+/* Segmented control: mutually-exclusive mini-buttons sharing one border. */
+.editor-segmented {
+  display: inline-flex;
+  align-items: center;
+}
+.editor-segmented .editor-mini-button {
+  border-radius: 0;
+  border-right-width: 0;
+}
+.editor-segmented .editor-mini-button:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+.editor-segmented .editor-mini-button:last-child {
+  border-right-width: 1px;
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+/* Active segment's accent border must win over the collapsed neighbour edge. */
+.editor-segmented .editor-mini-button-active {
+  border-right-width: 1px;
+  margin-right: -1px;
+  position: relative;
+  z-index: 1;
+}
+.editor-segmented .editor-mini-button-active:last-child {
+  margin-right: 0;
+}

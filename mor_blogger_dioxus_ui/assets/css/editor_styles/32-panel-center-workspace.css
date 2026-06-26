@@ -63,6 +63,14 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+.preview-toolbar-divider {
+  align-self: stretch;
+  width: 1px;
+  min-height: 20px;
+  background: var(--editor-border);
+  margin: 0 2px;
+}
+
 .preview-width-control {
   display: inline-flex; 
   align-items: center; 

@@ -367,6 +367,8 @@ fn ViewportToolbar(
     mut is_xray_active: Signal<bool>,
 ) -> Element {
     rsx! {
+        // One pill: X-Ray toggle, then the device controls. Keeping X-Ray in its
+        // own bordered+shadowed pill was wasted chrome for a single button.
         div {
             class: "preview-toolbar-group",
             style: "margin: 0;",
@@ -376,34 +378,36 @@ fn ViewportToolbar(
                 onclick: move |_| is_xray_active.set(!is_xray_active()),
                 "X-Ray"
             }
-        }
-        div {
-            class: "preview-toolbar-group",
-            style: "margin: 0;",
-            button {
-                class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
-                "Desktop"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
-                "Laptop"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
-                "Tablet"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
-                "Phone"
-            }
-            button {
-                class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
-                "Fit"
+            div { class: "preview-toolbar-divider" }
+            // Desktop/Laptop/Tablet/Phone/Fit are one mutually-exclusive choice,
+            // so render them as a single segmented control rather than 5 pills.
+            div {
+                class: "editor-segmented",
+                button {
+                    class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
+                    "Desktop"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
+                    "Laptop"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
+                    "Tablet"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
+                    "Phone"
+                }
+                button {
+                    class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
+                    "Fit"
+                }
             }
             button {
                 class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },

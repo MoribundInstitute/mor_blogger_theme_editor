@@ -56,6 +56,10 @@ pub struct ShortcutPrefs {
     pub toggle_left_dock: Option<String>,
     pub toggle_right_dock: Option<String>,
     #[serde(default)]
+    pub close_left_dock: Option<String>,
+    #[serde(default)]
+    pub close_right_dock: Option<String>,
+    #[serde(default)]
     pub user_prefs: Option<String>,
     #[serde(default)]
     pub theme_diagnostics: Option<String>,
@@ -81,6 +85,8 @@ impl Default for ShortcutPrefs {
             copy_raw_xml: Some("Ctrl+C".to_string()),
             toggle_left_dock: Some("Ctrl+B".to_string()),
             toggle_right_dock: Some("Ctrl+E".to_string()),
+            close_left_dock: Some("Ctrl+Shift+Left".to_string()),
+            close_right_dock: Some("Ctrl+Shift+Right".to_string()),
             user_prefs: Some("Ctrl+P".to_string()),
             theme_diagnostics: Some("Ctrl+D".to_string()),
             toggle_preview: Some("F9".to_string()),

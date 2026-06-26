@@ -254,6 +254,16 @@ pub fn render_preview_html(
 
     let site_title = escape_html(&config.site.site_title);
     let site_subtitle = escape_html(&config.site.site_subtitle);
+    // Mirror the export header: a set logo URL replaces the title text.
+    let branding_inner = if config.site.header_logo_url.trim().is_empty() {
+        format!(r#"<span class="institute-title" data-field-path="site.site_title">{site_title}</span>"#)
+    } else {
+        format!(
+            r#"<img alt="{} logo" class="institute-logo" src="{}"/>"#,
+            escape_attr(&config.site.site_title),
+            escape_attr(&config.site.header_logo_url)
+        )
+    };
     let footer_text = escape_html(&config.footer.footer_text);
     let label_title = widget_title_h2(
         "Label1",
@@ -322,7 +332,7 @@ pub fn render_preview_html(
             <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
         </div>
         <a class="branding branding-link">
-            <span class="institute-title" data-field-path="site.site_title">{site_title}</span>
+            {branding_inner}
         </a>
         <div class="header-side-controls right-controls">
             <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode (Use Editor UI to switch)" data-edit-target="colors.accent">
@@ -377,7 +387,6 @@ pub fn render_preview_html(
         </div>
     </aside>
 </div>"##,
-        site_title = site_title,
         site_subtitle = site_subtitle,
         menu_links = menu_links,
         footer_text = footer_text,
@@ -415,4 +424,31 @@ html, body {{ overflow: hidden; }}
         body_markup = body_markup,
         true_js = true_js
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // The preview header used to be hardcoded to the site title and ignored
+    // header_logo_url; this guards that a set logo renders an <img>, mirroring export.
+    #[test]
+    fn logo_url_renders_img_in_preview_header() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+
+        // Empty logo -> title text, no logo img.
+        config.site.header_logo_url = String::new();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="institute-title""#));
+        // `.institute-logo` appears in the injected CSS regardless; the <img>
+        // is what we must not emit, so match the class *attribute* form.
+        assert!(!html.contains(r#"class="institute-logo""#));
+
+        // Set logo -> img with the url, title text dropped from the brand.
+        config.site.header_logo_url = "https://example.com/logo.png".to_string();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="institute-logo""#));
+        assert!(html.contains("https://example.com/logo.png"));
+    }
 }

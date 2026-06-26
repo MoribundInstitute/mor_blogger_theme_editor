@@ -10,9 +10,9 @@ use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
 use crate::ui::panels::theme_palette::cursor_panel::CursorPanel;
 use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
 use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
+use crate::ui::panels::theme_palette::logo_panel::LogoPanel;
 use crate::ui::panels::theme_palette::presets;
 use crate::ui::panels::theme_palette::scrollbar_panel::ScrollbarPanel;
-use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesPanel;
 use crate::ui::panels::theme_palette::template_modules::TemplateModulesPanel;
 use crate::ui::panels::theme_palette::typography_panel::TypographyPanel;
 use mor_blogger_core::config::ThemeConfig;
@@ -111,6 +111,10 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                         }
                     }
 
+                    EditorAccordion { id: "Logo", title: "Logo", active: active_tab,
+                        LogoPanel { header_logo_url: signals.header_logo_url }
+                    }
+
                     EditorAccordion { id: "Colors", title: "Color Palette", active: active_tab,
                         ColorsPanel {
                             bg_base: signals.bg_base,
@@ -165,15 +169,6 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                             btn_radius: signals.btn_radius,
                             btn_border_width: signals.btn_border_width,
                             btn_text_transform: signals.btn_text_transform,
-                        }
-                    }
-
-                    EditorAccordion { id: "Pages", title: "Static Pages", active: active_tab,
-                        StaticPagesPanel {
-                            signals,
-                            show_undocked_pages,
-                            preview_html,
-                            base_preview_html,
                         }
                     }
                 }

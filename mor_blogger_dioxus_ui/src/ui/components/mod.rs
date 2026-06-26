@@ -1,4 +1,5 @@
 pub mod accordion;
+pub mod activity_icon_picker;
 pub mod code_editor;
 pub mod dock_chrome;
 pub mod form;

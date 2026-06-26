@@ -116,16 +116,27 @@ pub fn IconContextMenu(props: IconContextMenuProps) -> Element {
                 },
                 "dock" => {
                     let is_pinned = layout.is_dock_pinned(&target_id);
+                    let icon_target = target_id.clone();
                     rsx! {
                         button {
                             class: "editor-mini-button",
-                            style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease;",
+                            style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease; margin-bottom: 8px;",
                             onclick: move |_| {
                                 layout.toggle_pinned_dock(&target_id);
                                 active_context_menu.set(None);
                             },
-                            span { style: "font-size: 12px;", "📌" }
+                            span { style: "font-size: 12px;", if is_pinned { "📌" } else { "📍" } }
                             span { if is_pinned { "Unpin from Activity Bar" } else { "Pin to Activity Bar" } }
+                        }
+                        button {
+                            class: "editor-mini-button",
+                            style: "text-align: left; padding: 8px 12px; font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 4px; background: #232018; border: 1px solid #3d372c; color: #e6e1d5; transition: background 0.15s ease;",
+                            onclick: move |_| {
+                                layout.active_activity_icon_picker.set(Some(icon_target.clone()));
+                                active_context_menu.set(None);
+                            },
+                            span { style: "font-size: 12px;", "✨" }
+                            span { "Change Icon..." }
                         }
                     }
                 },

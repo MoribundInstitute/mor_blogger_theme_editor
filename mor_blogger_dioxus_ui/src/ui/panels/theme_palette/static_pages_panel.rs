@@ -143,7 +143,7 @@ pub fn StaticPagesPanel(
                                 move |_| {
                                     active_tab.set(id);
                                     let mut ls = layout_state;
-                                    ls.center_view.set(crate::app::state::CenterView::StaticPageEditor);
+                                    ls.enter_workspace(crate::app::state::CenterView::StaticPageEditor);
                                     ls.active_static_page.set(Some(id.to_string()));
 
                                     let base = base_preview_html();

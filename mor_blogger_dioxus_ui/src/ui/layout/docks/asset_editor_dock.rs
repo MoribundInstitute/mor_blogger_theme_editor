@@ -128,6 +128,14 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     layout_state: use_context::<crate::app::state::LayoutState>(),
                     theme_state: use_context::<crate::app::state::ThemeState>(),
                     vfs: use_context::<crate::app::vfs::VfsDictionary>(),
+                    minimap_setting: try_consume_context::<
+                        crate::ui::components::code_editor::MinimapSetting,
+                    >()
+                    .map(|m| m.0),
+                    minimap_overrides: try_consume_context::<
+                        crate::ui::components::code_editor::MinimapOverrides,
+                    >()
+                    .map(|m| m.0),
                     tx: tx.clone(),
                 };
 
@@ -524,16 +532,16 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         gap: 6px !important;
     }}
     /* WebKitGTK hides scrollbars by default; child editor windows don't load the
-       global editor CSS, so style the ghost textarea's scrollbar here. */
-    .pure-rust-editor-ghost::-webkit-scrollbar {{ width: 12px; height: 12px; }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-track {{ background: transparent; }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-thumb {{
+       global editor CSS, so style the CodeMirror scroller's scrollbar here. */
+    .cm-scroller::-webkit-scrollbar {{ width: 12px; height: 12px; }}
+    .cm-scroller::-webkit-scrollbar-track {{ background: transparent; }}
+    .cm-scroller::-webkit-scrollbar-thumb {{
         background: var(--editor-border, #555);
         border-radius: 6px;
         border: 2px solid transparent;
         background-clip: padding-box;
     }}
-    .pure-rust-editor-ghost::-webkit-scrollbar-thumb:hover {{
+    .cm-scroller::-webkit-scrollbar-thumb:hover {{
         background: var(--editor-accent, #888);
         background-clip: padding-box;
     }}
@@ -610,6 +618,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                 CodeEditor {
                     value: editor_value,
                     mode: props.mode.to_string(),
+                    minimap_key: Some(format!("asset_{}", props.mode)),
                     on_change: move |new_val: String| {
                         let file = current_file.clone();
                         if file == props.default_file {
@@ -710,6 +719,8 @@ pub struct EditorWindowProps {
     pub layout_state: crate::app::state::LayoutState,
     pub theme_state: crate::app::state::ThemeState,
     pub vfs: crate::app::vfs::VfsDictionary,
+    pub minimap_setting: Option<Signal<bool>>,
+    pub minimap_overrides: Option<Signal<std::collections::HashMap<String, bool>>>,
     pub tx: tokio::sync::mpsc::UnboundedSender<EditorEvent>,
 }
 
@@ -729,10 +740,19 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
     provide_context(props.vfs);
     provide_context(SubWindowMarker);
     provide_context(props.tx.clone());
+    if let Some(sig) = props.minimap_setting {
+        provide_context(crate::ui::components::code_editor::MinimapSetting(sig));
+    }
+    if let Some(sig) = props.minimap_overrides {
+        provide_context(crate::ui::components::code_editor::MinimapOverrides(sig));
+    }
 
     let _tx = use_signal(|| props.tx.clone());
 
     rsx! {
+        // Separate webview: the main shell's bundle/CSS aren't here, so inject the
+        // CodeMirror runtime this window's CodeEditor needs.
+        script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
         style { "html, body {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
         AssetEditorDock {
             is_native_window: true,

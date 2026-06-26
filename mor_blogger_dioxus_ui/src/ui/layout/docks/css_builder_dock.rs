@@ -133,6 +133,7 @@ pub fn CssBuilderDock() -> Element {
                             CodeEditor {
                                 value: css,
                                 mode: "css".to_string(),
+                                minimap_key: Some("css_builder".to_string()),
                                 read_only: true,
                                 on_change: |_| {},
                             }

@@ -228,10 +228,12 @@ pub fn render_app_shell(
                         shell_file_actions::copy_xml();
                     },
                     on_toggle_preview: move |_| {
+                        // Route through enter_workspace so dock state (incl. Code Nav)
+                        // stays consistent however you reach the Code Editor.
                         if center_view() == CenterView::Preview {
-                            center_view.set(CenterView::CodeEditor);
+                            layout.enter_workspace(CenterView::CodeEditor);
                         } else {
-                            center_view.set(CenterView::Preview);
+                            layout.enter_workspace(CenterView::Preview);
                         }
                     },
                     on_toggle_split: move |_| { center_view.set(CenterView::Split); },

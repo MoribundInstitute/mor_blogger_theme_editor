@@ -7,6 +7,7 @@ use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, I
 use crate::ui::layout::docks::{
     CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock, XmlEditorDock,
     DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock, TemplateModulesDock,
+    CodeNavDock,
 };
 use crate::ui::panels::quick_launch_bar::LaunchButton;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
@@ -129,6 +130,7 @@ pub fn ActivityBar() -> Element {
         ("Theme Palette", "theme_palette", layout.theme_palette_pos, "palette"),
         ("Site Data", "site_data", layout.site_data_pos, "emoji:📊"),
         ("Template Modules", "template_modules", layout.template_modules_pos, "emoji:🍱"),
+        ("Code Nav", "code_nav", layout.code_nav_pos, "emoji:🧭"),
         ("CSS Editor", "css_editor", layout.css_editor_pos, "emoji:🖌️"),
         ("JS Editor", "js_editor", layout.js_editor_pos, "emoji:🔧"),
         ("XML Editor", "xml_editor", layout.xml_editor_pos, "emoji:🏗️"),
@@ -185,6 +187,7 @@ pub fn DockZone(position: DockPosition) -> Element {
     };
 
     let show_template_modules = (layout.template_modules_pos)() == position;
+    let show_code_nav = (layout.code_nav_pos)() == position;
     let show_theme_palette = (layout.theme_palette_pos)() == position;
     let show_site_data = (layout.site_data_pos)() == position;
     let show_presets = (layout.presets_pos)() == position;
@@ -200,6 +203,12 @@ pub fn DockZone(position: DockPosition) -> Element {
     if show_template_modules {
         return rsx! {
             TemplateModulesDock {}
+        };
+    }
+
+    if show_code_nav {
+        return rsx! {
+            CodeNavDock {}
         };
     }
 
@@ -330,6 +339,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.css_builder_pos)() == DockPosition::mor_panel_left
             || (layout.js_builder_pos)() == DockPosition::mor_panel_left
             || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+            || (layout.code_nav_pos)() == DockPosition::mor_panel_left
     });
 
     let right_active = use_memo(move || {
@@ -344,6 +354,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.css_builder_pos)() == DockPosition::mor_panel_right
             || (layout.js_builder_pos)() == DockPosition::mor_panel_right
             || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+            || (layout.code_nav_pos)() == DockPosition::mor_panel_right
     });
 
     let grid_style = use_memo(move || {
@@ -410,6 +421,8 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
                             mor_blogger_core::render::pages::generate_about_html(&pages.about)
                         } else if href.contains("portfolio") {
                             mor_blogger_core::render::pages::generate_portfolio_html(&pages.portfolio)
+                        } else if href.contains("my-courses") || href.contains("dashboard") {
+                            mor_blogger_core::render::pages::generate_my_courses_html(&pages.lms)
                         } else if href.contains("catalog") || href.contains("lessons") || href.contains("courses") {
                             mor_blogger_core::render::pages::generate_course_catalog_html(&pages.lms)
                         } else {
@@ -601,7 +614,8 @@ pub fn LeftPanelContainer() -> Element {
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
         || (layout.css_builder_pos)() == DockPosition::mor_panel_left
         || (layout.js_builder_pos)() == DockPosition::mor_panel_left
-        || (layout.template_modules_pos)() == DockPosition::mor_panel_left;
+        || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+        || (layout.code_nav_pos)() == DockPosition::mor_panel_left;
 
     let display_style = if has_left_dock { "display: flex;" } else { "display: none;" };
 
@@ -628,7 +642,8 @@ pub fn RightPanelContainer() -> Element {
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
         || (layout.css_builder_pos)() == DockPosition::mor_panel_right
         || (layout.js_builder_pos)() == DockPosition::mor_panel_right
-        || (layout.template_modules_pos)() == DockPosition::mor_panel_right;
+        || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+        || (layout.code_nav_pos)() == DockPosition::mor_panel_right;
 
     let display_style = if has_right_dock { "display: flex;" } else { "display: none;" };
 

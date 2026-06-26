@@ -7,7 +7,8 @@ use mor_blogger_core::render::pages::{
 };
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
-    apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
+    apply_preview_viewport, clamp_preview_width, is_landscape, rotate_preview_width,
+    PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use dioxus::prelude::*;
@@ -326,13 +327,15 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
     rsx! {
         button {
             class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Preview",
             onclick: move |_| layout.enter_workspace(CenterView::Preview),
-            "Preview"
+            "👁️"
         }
         button {
             class: if center_view() == CenterView::CodeEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Code Editor",
             onclick: move |_| layout.enter_workspace(CenterView::CodeEditor),
-            "Code Editor"
+            "</>"
         }
         button {
             class: if center_view() == CenterView::ModuleWorkbench {
@@ -340,22 +343,25 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             } else {
                 "editor-mini-button"
             },
+            title: "Module Workbench",
             onclick: move |e| {
                 e.stop_propagation();
                 layout.enter_workspace(CenterView::ModuleWorkbench);
             },
-            "Module Workbench"
+            "🛠️ ┳━┳"
         }
         button {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Static Pages",
             onclick: move |_| layout.enter_workspace(CenterView::StaticPageEditor),
-            "Static Pages"
+            "🧊 📄"
         }
         // Export is the terminal pipeline step, so it sits at the far right.
         button {
             class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Export",
             onclick: move |_| layout.enter_workspace(CenterView::Export),
-            "Export"
+            "🚀"
         }
     }
 }
@@ -366,6 +372,20 @@ fn ViewportToolbar(
     mut preview_width: Signal<u32>,
     mut is_xray_active: Signal<bool>,
 ) -> Element {
+    // The "rotate" control is really a portrait <-> landscape toggle for the
+    // device frame (you can't rotate a website). Make the icon show the
+    // orientation it switches TO, and say so in the tooltip.
+    let rotatable = preview_viewport().is_rotatable();
+    let landscape = is_landscape(preview_viewport(), preview_width());
+    let rotate_icon = if landscape { "▯" } else { "▭" };
+    let rotate_title = if !rotatable {
+        "Orientation — pick Tablet, Phone, or Custom first"
+    } else if landscape {
+        "Switch to portrait"
+    } else {
+        "Switch to landscape"
+    };
+
     rsx! {
         // One pill: X-Ray toggle, then the device controls. Keeping X-Ray in its
         // own bordered+shadowed pill was wasted chrome for a single button.
@@ -374,9 +394,9 @@ fn ViewportToolbar(
             style: "margin: 0;",
             button {
                 class: if is_xray_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                title: "Widget map and editable overlay",
+                title: "X-Ray — widget map and editable overlay",
                 onclick: move |_| is_xray_active.set(!is_xray_active()),
-                "X-Ray"
+                "🩻"
             }
             div { class: "preview-toolbar-divider" }
             // Desktop/Laptop/Tablet/Phone/Fit are one mutually-exclusive choice,
@@ -385,35 +405,40 @@ fn ViewportToolbar(
                 class: "editor-segmented",
                 button {
                     class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Desktop",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
-                    "Desktop"
+                    "🖥️"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Laptop",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
-                    "Laptop"
+                    "💻"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Tablet",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
-                    "Tablet"
+                    "📋"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Phone",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
-                    "Phone"
+                    "📱"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Fit to viewport",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
-                    "Fit"
+                    "↔️"
                 }
             }
             button {
-                class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                title: "Rotate tablet, phone, or custom preview width",
+                class: if rotatable { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                title: rotate_title,
                 onclick: move |_| { if preview_viewport().is_rotatable() { preview_width.set(rotate_preview_width(preview_viewport(), preview_width())); } },
-                "Rotate"
+                "{rotate_icon}"
             }
             label {
                 class: "preview-width-control",

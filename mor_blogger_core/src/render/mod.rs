@@ -1,5 +1,6 @@
 pub mod ads;
 pub mod css_builder;
+pub mod cursors;
 pub mod pages;
 pub mod plugins;
 pub mod preview;

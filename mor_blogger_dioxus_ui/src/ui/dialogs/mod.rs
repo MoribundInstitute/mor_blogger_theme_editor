@@ -1,5 +1,6 @@
 pub mod about_dialog;
 pub mod advanced_colors_dialog;
+pub mod advanced_cursors_dialog;
 pub mod advanced_presets_dialog;
 pub mod advanced_typography_dialog;
 pub mod documentation_dialog;

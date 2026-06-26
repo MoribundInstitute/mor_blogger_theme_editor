@@ -451,4 +451,27 @@ mod tests {
         assert!(html.contains(r#"class="institute-logo""#));
         assert!(html.contains("https://example.com/logo.png"));
     }
+
+    // Every shipped preset must define a custom cursor that survives into the
+    // preview CSS (preset_css is appended last in build_master_css). Guards the
+    // theme_presets/*.toml cursor blocks end-to-end.
+    #[test]
+    fn shipped_presets_define_preview_cursors() {
+        let presets = crate::presets::all_presets();
+        if presets.is_empty() {
+            return; // preset dir not resolvable from this cwd; nothing to check.
+        }
+        let vfs = HashMap::new();
+        for p in &presets {
+            let mut cfg = ThemeConfig::default();
+            cfg.preset_css = p.preset_css.to_string();
+            let html =
+                render_preview_html(&cfg, &[], PreviewTemplateMode::default(), true, &vfs);
+            assert!(
+                html.contains("cursor: url("),
+                "preset '{}' has no custom cursor in preview output",
+                p.name
+            );
+        }
+    }
 }

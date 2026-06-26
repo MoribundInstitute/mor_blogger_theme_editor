@@ -99,3 +99,39 @@ pub fn rotate_preview_width(viewport: PreviewViewport, current_width: u32) -> u3
         _ => current_width,
     }
 }
+
+/// Is the device currently at its wider (landscape) width? Mirrors the
+/// portrait/landscape thresholds in [`rotate_preview_width`]. Non-rotatable
+/// viewports have no orientation, so they report `false`.
+pub fn is_landscape(viewport: PreviewViewport, width: u32) -> bool {
+    match viewport {
+        PreviewViewport::Tablet => width > 900,
+        PreviewViewport::Phone => width > 600,
+        PreviewViewport::Custom => width > 700,
+        _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rotate_and_orientation_agree() {
+        // After a rotate, the orientation must have flipped — and flipping again
+        // returns to the start. Guards that is_landscape tracks rotate_preview_width.
+        for vp in [
+            PreviewViewport::Tablet,
+            PreviewViewport::Phone,
+            PreviewViewport::Custom,
+        ] {
+            let portrait = vp.width().unwrap_or(390);
+            let landscape = rotate_preview_width(vp, portrait);
+            assert!(!is_landscape(vp, portrait), "{vp:?} start should be portrait");
+            assert!(is_landscape(vp, landscape), "{vp:?} rotated should be landscape");
+            assert_eq!(rotate_preview_width(vp, landscape), portrait, "{vp:?} rotates back");
+        }
+        // Desktop/Laptop/Fit have no orientation.
+        assert!(!is_landscape(PreviewViewport::Desktop, 1200));
+    }
+}

@@ -51,7 +51,20 @@ struct TomlPreset {
     dark: Option<PresetPalette>,
 
     #[serde(default)]
+    scrollbars: TomlScrollbars,
+
+    #[serde(default)]
     preset_css: String,
+}
+
+/// Optional `[scrollbars]` table. Each field overrides the corresponding
+/// ThemeConfig default only when present, so a preset can tune any subset.
+#[derive(Clone, Debug, Default, Deserialize)]
+struct TomlScrollbars {
+    width: Option<String>,
+    track_color: Option<String>,
+    thumb_color: Option<String>,
+    thumb_hover_color: Option<String>,
 }
 
 impl TomlPreset {
@@ -62,6 +75,20 @@ impl TomlPreset {
         base.background = self.background.clone();
         base.typography = self.typography;
         base.buttons = self.buttons;
+
+        // Scrollbars: override only the fields the preset actually specifies.
+        if let Some(v) = self.scrollbars.width {
+            base.scrollbar_width = v;
+        }
+        if let Some(v) = self.scrollbars.track_color {
+            base.scrollbar_track_color = v;
+        }
+        if let Some(v) = self.scrollbars.thumb_color {
+            base.scrollbar_thumb_color = v;
+        }
+        if let Some(v) = self.scrollbars.thumb_hover_color {
+            base.scrollbar_thumb_hover_color = v;
+        }
 
         let base_pal = PresetPalette {
             colors: self.colors.clone(),
@@ -262,5 +289,44 @@ pub fn gradient(from: &str, to: &str, angle_deg: u16) -> crate::config::SurfaceF
         gradient_from: from.to_string(),
         gradient_to: to.to_string(),
         gradient_angle_deg: angle_deg,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // The preset format must carry scrollbar settings into base_config; overrides
+    // are per-field, unspecified fields keep the ThemeConfig default.
+    #[test]
+    fn toml_scrollbars_map_into_base_config() {
+        let src = "name = \"T\"\n[scrollbars]\nwidth = \"13px\"\nthumb_color = \"#abcdef\"\n";
+        let p: TomlPreset = toml::from_str(src).unwrap();
+        let preset = p.into_preset("t".into());
+        assert_eq!(preset.base_config.scrollbar_width, "13px");
+        assert_eq!(preset.base_config.scrollbar_thumb_color, "#abcdef");
+        let def = crate::config::ThemeConfig::default();
+        assert_eq!(
+            preset.base_config.scrollbar_track_color,
+            def.scrollbar_track_color
+        );
+    }
+
+    // Every shipped preset must actually customize its scrollbar (not leave the
+    // default thumb). Guards the theme_presets/*.toml [scrollbars] tables.
+    #[test]
+    fn shipped_presets_customize_scrollbars() {
+        let presets = all_presets();
+        if presets.is_empty() {
+            return; // preset dir not resolvable from this cwd; nothing to check.
+        }
+        let def = crate::config::ThemeConfig::default().scrollbar_thumb_color;
+        for p in &presets {
+            assert_ne!(
+                p.base_config.scrollbar_thumb_color, def,
+                "preset '{}' does not customize its scrollbar",
+                p.name
+            );
+        }
     }
 }

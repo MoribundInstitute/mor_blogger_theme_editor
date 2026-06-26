@@ -295,6 +295,11 @@ select:focus {
   content: none !important;
   display: none !important;
 }
+
+/* --- Theme cursors (default / pointer / text) --- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 12 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23e8b923' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 [colors]
@@ -354,3 +359,9 @@ color = "#fffaf0"
 
 [light.background.mode.Solid]
 color = "#f5e9d3"
+
+[scrollbars]
+width = "14px"
+track_color = "#2a1a0c"
+thumb_color = "#e8b923"
+thumb_hover_color = "#c0392b"

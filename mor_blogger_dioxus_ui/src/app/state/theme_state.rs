@@ -19,6 +19,7 @@ pub struct ThemeState {
     pub show_advanced_presets: Signal<bool>,
     pub show_advanced_glow: Signal<bool>,
     pub show_advanced_colors: Signal<bool>,
+    pub show_advanced_cursors: Signal<bool>,
     pub show_advanced_typography: Signal<bool>,
     pub history: Signal<ThemeHistory>,
     pub last_imported_gtk: Signal<Option<mor_blogger_core::config::gtk_theme::ImportedGtkPreset>>,
@@ -67,6 +68,7 @@ impl ThemeState {
         let show_advanced_presets = use_signal(|| false);
         let show_advanced_glow = use_signal(|| false);
         let show_advanced_colors = use_signal(|| false);
+        let show_advanced_cursors = use_signal(|| false);
         let show_advanced_typography = use_signal(|| false);
         let history = use_signal(|| ThemeHistory {
             snapshots: vec![None],
@@ -85,6 +87,7 @@ impl ThemeState {
             show_advanced_presets,
             show_advanced_glow,
             show_advanced_colors,
+            show_advanced_cursors,
             show_advanced_typography,
             history,
             last_imported_gtk,

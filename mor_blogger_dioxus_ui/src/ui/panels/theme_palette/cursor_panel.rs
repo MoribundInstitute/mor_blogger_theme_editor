@@ -18,6 +18,12 @@ pub fn CursorPanel() -> Element {
 
     rsx! {
         div { class: "panel-section",
+            button {
+                class: "mor-btn-secondary",
+                style: "width: 100%; margin-bottom: 12px;",
+                onclick: move |_| state.show_advanced_cursors.set(true),
+                "⚙ Advanced Cursor"
+            }
             div { class: "setting-row",
                 label { "Global Cursor" }
                 select {

@@ -4,54 +4,60 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
-pub const GTK4_DARK_TOML: &str = r##"
-bg            = "#242424"
-panel         = "#2d2d2d"
-header        = "#1e1e1e"
-text          = "#deddda"
-text_muted    = "#77767b"
-border        = "#171717"
-border_light  = "#3d3d3d"
-accent        = "#1c71d8"
-accent_hover  = "#3584e4"
-btn           = "#3d3d3d"
-btn_hover     = "#4a4a4a"
-font_family   = "Cantarell, system-ui, sans-serif"
+/// Neutral dark theme — the app's own "Dark Mode" (no longer a GTK clone).
+/// Warm-neutral charcoal surfaces under the shared MorBlogger amber accent so
+/// it reads as the same product as Mor Studio, just calmer.
+pub const DARK_MODE_TOML: &str = r##"
+bg            = "#1a1a1c"
+panel         = "#232325"
+header        = "#141416"
+text          = "#ececed"
+text_muted    = "#9b9b9e"
+border        = "#2e2e31"
+border_light  = "#3c3c40"
+accent        = "#b0571d"
+accent_hover  = "#c2622a"
+btn           = "#2a2a2d"
+btn_hover     = "#343438"
+font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"
 padding_base  = "8px"
-border_radius = "6px"
-destructive   = "#ff5555"
-success       = "#50fa7b"
-warning       = "#f1fa8c"
+border_radius = "7px"
+destructive   = "#f0506b"
+success       = "#46c08a"
+warning       = "#e0a13a"
 "##;
 
-pub const MAC_OS_LIGHT_TOML: &str = r##"
-bg            = "#ececec"
-panel         = "#f5f5f5"
-header        = "#d8d8d8"
-text          = "#1e1e1e"
-text_muted    = "#7a7a7a"
-border        = "#c8c8c8"
-border_light  = "#e0e0e0"
-accent        = "#007aff"
-accent_hover  = "#005bb5"
+/// Light theme — the app's own "Light Mode" (no longer a macOS clone).
+/// Warm off-white surfaces with the same amber accent, tuned darker for the
+/// status colors so they stay legible on a light background.
+pub const LIGHT_MODE_TOML: &str = r##"
+bg            = "#f4f3f1"
+panel         = "#ffffff"
+header        = "#e8e6e2"
+text          = "#1f1e1d"
+text_muted    = "#6b6a67"
+border        = "#d9d6d1"
+border_light  = "#e8e6e2"
+accent        = "#b0571d"
+accent_hover  = "#c2622a"
 btn           = "#ffffff"
-btn_hover     = "#f0f0f0"
-font_family   = "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
+btn_hover     = "#efedea"
+font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"
 padding_base  = "8px"
-border_radius = "8px"
-destructive   = "#ff5555"
-success       = "#50fa7b"
-warning       = "#f1fa8c"
+border_radius = "7px"
+destructive   = "#d23651"
+success       = "#2e9e6a"
+warning       = "#b9791f"
 "##;
 
 pub const WIN_11_DARK_TOML: &str = r##"
 bg            = "#202020"
-panel         = "#282828"
-header        = "#181818"
+panel         = "#2b2b2b"
+header        = "#1c1c1c"
 text          = "#ffffff"
 text_muted    = "#a0a0a0"
 border        = "#333333"
@@ -70,11 +76,37 @@ success       = "#50fa7b"
 warning       = "#f1fa8c"
 "##;
 
+/// The app's own identity theme — not an OS clone. Cool blue-charcoal slate
+/// with a warm burnt-amber accent drawn from the MorBlogger brand mark; the
+/// warm/cool tension is the signature. Accent tuned so white button text and
+/// accent-as-indicator both clear WCAG ~4:1 on this background.
+pub const MOR_STUDIO_TOML: &str = r##"
+bg            = "#16181d"
+panel         = "#1f222a"
+header        = "#101217"
+text          = "#e9ebef"
+text_muted    = "#9aa1ad"
+border        = "#282c35"
+border_light  = "#3a3f4b"
+accent        = "#b0571d"
+accent_hover  = "#c2622a"
+btn           = "#232730"
+btn_hover     = "#2d323d"
+font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
+font_size_base= "13px"
+font_size_h1  = "20px"
+padding_base  = "8px"
+border_radius = "7px"
+destructive   = "#f0506b"
+success       = "#46c08a"
+warning       = "#e0a13a"
+"##;
+
 pub fn get_native_os_theme() -> &'static str {
     match std::env::consts::OS {
-        "macos" => MAC_OS_LIGHT_TOML,
+        "macos" => LIGHT_MODE_TOML,
         "windows" => WIN_11_DARK_TOML,
-        "linux" | _ => GTK4_DARK_TOML,
+        "linux" | _ => DARK_MODE_TOML,
     }
 }
 
@@ -595,7 +627,7 @@ pub const MOR_CSS: &str = r#"
 
 #[component]
 pub fn MorStyleProvider(
-    #[props(default = GTK4_DARK_TOML.to_string())] theme_toml: String,
+    #[props(default = MOR_STUDIO_TOML.to_string())] theme_toml: String,
 ) -> Element {
     let base = MorTheme::from_toml(&theme_toml).unwrap_or_default();
     let prefs = crate::app::config_bridge::EditorPrefs::load();

@@ -1,6 +1,8 @@
 use crate::app::config_bridge::EditorPrefs;
 use crate::ui::dialogs::modal::Modal;
-use crate::ui::layout::theme::{get_native_os_theme, MorTheme, GTK4_DARK_TOML, MAC_OS_LIGHT_TOML};
+use crate::ui::layout::theme::{
+    get_native_os_theme, MorTheme, DARK_MODE_TOML, LIGHT_MODE_TOML, MOR_STUDIO_TOML,
+};
 use dioxus::prelude::*;
 
 fn apply_workspace_theme(mut active_theme_toml: Signal<String>, toml_str: String) {
@@ -12,8 +14,9 @@ fn apply_workspace_theme(mut active_theme_toml: Signal<String>, toml_str: String
 #[component]
 pub fn WorkspaceThemePresets(active_theme_toml: Signal<String>) -> Element {
     let current = active_theme_toml();
-    let is_dark = current == GTK4_DARK_TOML;
-    let is_light = current == MAC_OS_LIGHT_TOML;
+    let is_studio = current == MOR_STUDIO_TOML;
+    let is_dark = current == DARK_MODE_TOML;
+    let is_light = current == LIGHT_MODE_TOML;
     let is_sys = current == get_native_os_theme();
 
     rsx! {
@@ -22,8 +25,9 @@ pub fn WorkspaceThemePresets(active_theme_toml: Signal<String>) -> Element {
             label { class: "editor-field-label", "Workspace Theme Preset" }
             div {
                 style: "display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;",
-                ThemeBtn { active: is_dark, label: "GTK4 Dark", theme: GTK4_DARK_TOML, active_theme_toml }
-                ThemeBtn { active: is_light, label: "macOS Light", theme: MAC_OS_LIGHT_TOML, active_theme_toml }
+                ThemeBtn { active: is_studio, label: "Mor Studio", theme: MOR_STUDIO_TOML, active_theme_toml }
+                ThemeBtn { active: is_dark, label: "Dark Mode", theme: DARK_MODE_TOML, active_theme_toml }
+                ThemeBtn { active: is_light, label: "Light Mode", theme: LIGHT_MODE_TOML, active_theme_toml }
                 ThemeBtn { active: is_sys, label: "System Default", theme: get_native_os_theme(), active_theme_toml }
             }
         }

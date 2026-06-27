@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use super::state::{CenterView, LayoutState, PluginManagerContext, RenderState, ThemeState};
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
 use crate::ui::layout::menu_bar::AppMenuBar;
-use crate::ui::layout::theme::{get_native_os_theme, MorStyleProvider};
+use crate::ui::layout::theme::MorStyleProvider;
 use crate::ui::layout::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 
 use super::shell_dialogs::MorDialogs;
@@ -125,7 +125,7 @@ pub fn render_app_shell(
         prefs()
             .workspace_theme
             .clone()
-            .unwrap_or_else(|| get_native_os_theme().to_string())
+            .unwrap_or_else(|| crate::ui::layout::theme::MOR_STUDIO_TOML.to_string())
     });
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";

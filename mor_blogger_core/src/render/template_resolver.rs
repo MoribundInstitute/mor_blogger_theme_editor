@@ -68,6 +68,19 @@ pub const HEADER_REGISTRY: &[ComponentManifest] = &[
         js_deps: &[],
     },
     ComponentManifest {
+        id: "mor_search_center",
+        category: ComponentCategory::Header,
+        xml_content: include_str!("../template_parts/headers/mor_header_search.xml"),
+        css_deps: &[
+            "04-Main-Header.css",
+            "05-Branding.css",
+            "06-Main-Navigation.css",
+            "08-Command-Line-Search.css",
+            "08b-Search-Centered.css",
+        ],
+        js_deps: &[],
+    },
+    ComponentManifest {
         id: "gtk_headerbar",
         category: ComponentCategory::Header,
         xml_content: include_str!("../template_parts/headers/gtk_headerbar.xml"),
@@ -249,6 +262,9 @@ pub fn fetch_default_css(filename: &str) -> &'static str {
         }
         "08-Command-Line-Search.css" => {
             include_str!("../template_parts/css/headers/08-Command-Line-Search.css")
+        }
+        "08b-Search-Centered.css" => {
+            include_str!("../template_parts/css/headers/08b-Search-Centered.css")
         }
 
         // Layouts

@@ -324,9 +324,17 @@ pub fn render_preview_html(
 
     let posts_html = format_posts_for_preview(posts, &config.template_pack.content_variant);
 
+    // The "Mor — Centered Search" header variant is a CSS modifier on the same
+    // .main-header markup, so the preview can reflect it by toggling the class.
+    let header_extra_class = if config.template_pack.header_variant == "mor_search_center" {
+        " search-centered"
+    } else {
+        ""
+    };
+
     let body_markup = format!(
         r##"
-<header class="main-header" data-edit-target="colors.bg_elevated">
+<header class="main-header{header_extra_class}" data-edit-target="colors.bg_elevated">
     <div class="header-top-row">
         <div class="header-side-controls left-controls">
             <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
@@ -388,6 +396,7 @@ pub fn render_preview_html(
     </aside>
 </div>"##,
         site_subtitle = site_subtitle,
+        header_extra_class = header_extra_class,
         menu_links = menu_links,
         footer_text = footer_text,
         label_title = label_title,
@@ -411,7 +420,7 @@ html, body {{ overflow: hidden; }}
 .canvas-core {{ overflow-y: auto; overflow-x: hidden; }}
 </style>
 </head>
-<body style="{background_tile_css}">
+<body class="{header_extra_class}" style="{background_tile_css}">
     {body_markup}
     {true_js}
 </body>
@@ -450,6 +459,26 @@ mod tests {
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
         assert!(html.contains(r#"class="institute-logo""#));
         assert!(html.contains("https://example.com/logo.png"));
+    }
+
+    // The "Mor — Centered Search" header variant is a CSS modifier on the
+    // preview's .main-header. Selecting it must add the class AND bundle the
+    // centering CSS, otherwise the preview won't reflect the variant.
+    #[test]
+    fn centered_search_variant_reflects_in_preview() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+
+        // Default header: no modifier class.
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="main-header""#));
+        assert!(!html.contains("main-header search-centered"));
+
+        // Centered-search variant: modifier class on the header + centering CSS.
+        config.template_pack.header_variant = "mor_search_center".to_string();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains("main-header search-centered"));
+        assert!(html.contains(".search-centered .header-bottom-row"));
     }
 
     // Every shipped preset must define a custom cursor that survives into the

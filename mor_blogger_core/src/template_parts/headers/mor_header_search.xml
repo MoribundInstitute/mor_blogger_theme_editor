@@ -1,0 +1,26 @@
+<header class="main-header search-centered" data-edit-target="colors.bg_elevated">
+    <div class="header-top-row">
+        <div class="header-side-controls left-controls">
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left" aria-label="Open Browse Panel"><span class="visually-hidden">Browse</span></button>
+        </div>
+        <a class="branding branding-link" href="{{SITE_HOME_URL_ATTR}}">
+            {{HEADER_BRANDING}}
+        </a>
+        <div class="header-side-controls right-controls">
+            <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode" data-edit-target="colors.accent">
+               <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
+               <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
+            </button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right" aria-label="Open Contents Panel"><span class="visually-hidden">Contents</span></button>
+        </div>
+    </div>
+    <div class="header-bottom-row">
+        <nav class="mor-nav">{{MAIN_NAV_LINKS}}</nav>
+        <div class="mor-search">
+            <form action="{{SEARCH_ACTION_URL_ATTR}}" method="get" role="search">
+                <input type="text" name="q" placeholder="{{SEARCH_PLACEHOLDER_ATTR}}" aria-label="Search"/>
+                <button type="submit" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button>
+            </form>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,96 @@
+/* =========================================================
+   08b-Search-Centered.css
+   Header variant modifier: a centered, rounded, slightly
+   larger search bar. Layers on top of 08-Command-Line-Search.css
+   and only applies when the header carries `.search-centered`
+   (the "Mor — Centered Search" header variant, and the preview
+   when that variant is active).
+   ========================================================= */
+
+/* Dead-center the search in the header's bottom row regardless of how
+   wide the (optional) nav is: a 1fr | auto | 1fr grid puts the nav in
+   the left track and the search in the centre track, flanked by equal
+   columns. A plain justify-content:center would only center the
+   nav+search group, leaving the search off to one side. */
+.search-centered .header-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 15px;
+}
+.search-centered .mor-nav {
+  grid-column: 1;
+  justify-self: start;
+  min-width: 0;
+}
+.search-centered .mor-search {
+  grid-column: 2;
+  justify-self: center;
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  flex: none;
+}
+
+/* Mobile: the responsive sheet stacks the header; keep the search full-width. */
+@media screen and (max-width: 900px) {
+  .search-centered .header-bottom-row { grid-template-columns: 1fr; }
+  .search-centered .mor-nav,
+  .search-centered .mor-search {
+    grid-column: 1;
+    justify-self: stretch;
+    max-width: none;
+  }
+}
+
+/* Rounded pill wrapper around the input + icon button. */
+.search-centered .mor-search form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px 4px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-base) 40%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.search-centered .mor-search form:focus-within {
+  border-color: var(--fg-base);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* The command-line prompt has no place in the clean centered look. */
+.search-centered .mor-search .prompt { display: none; }
+
+/* Slightly bigger input — fills the pill, no underline (the pill IS the border). */
+.search-centered .mor-search input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: none;
+  color: var(--fg-base);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  padding: 9px 4px;
+  outline: none;
+}
+
+/* Override 08's focus width/underline animation (irrelevant in the pill). */
+.search-centered .mor-search input:focus {
+  width: auto;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+/* Slightly bigger, fully round icon button. */
+.search-centered .mor-search button.icon-search-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  -webkit-mask-size: 22px 22px;
+}

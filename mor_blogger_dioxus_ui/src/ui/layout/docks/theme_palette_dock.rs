@@ -53,7 +53,12 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
     let pos = (layout.theme_palette_pos)();
 
     use_effect(move || {
-        if active_tab() != "Pages" && !show_undocked_pages() {
+        // The Static Page editor owns the preview while it's the active center
+        // view (it injects the page). Resetting to the base here would clobber
+        // it on every base re-render (e.g. dark/light toggle).
+        let static_page_active =
+            *layout.center_view.read() == crate::app::state::CenterView::StaticPageEditor;
+        if active_tab() != "Pages" && !show_undocked_pages() && !static_page_active {
             preview_html.set(base_preview_html());
         }
     });

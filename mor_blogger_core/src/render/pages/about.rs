@@ -217,5 +217,5 @@ pub fn generate_about_html(config: &AboutPageConfig) -> String {
         links = links_html
     ));
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }

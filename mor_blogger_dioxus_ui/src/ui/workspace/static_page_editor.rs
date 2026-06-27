@@ -191,6 +191,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     preview_viewport: layout.preview_viewport,
                     preview_width: layout.preview_width,
                     preview_html: preview_html(),
+                    on_toggle_dark_mode: move |_| theme.perform_dark_mode_toggle(),
                 }
             }
         } else {
@@ -322,6 +323,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
                         preview_html: preview_html(),
+                    on_toggle_dark_mode: move |_| theme.perform_dark_mode_toggle(),
                     }
                 }
             }

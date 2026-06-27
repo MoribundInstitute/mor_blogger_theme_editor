@@ -33,5 +33,5 @@ pub fn generate_archive_html(config: &ArchivePageConfig) -> String {
     let js_template = include_str!("../../html_page_stencils/archive_script.js");
     html.push_str(&js_template.replace("{{MAX_RESULTS}}", &config.max_results.to_string()));
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }

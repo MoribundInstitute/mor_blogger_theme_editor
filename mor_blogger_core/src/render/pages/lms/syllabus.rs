@@ -140,5 +140,5 @@ pub fn generate_syllabus_html(config: &LmsConfig) -> String {
         lessons = lessons_html
     ));
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }

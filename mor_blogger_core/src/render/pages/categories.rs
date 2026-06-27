@@ -177,5 +177,5 @@ h3.post-title.entry-title, h1.post-title.entry-title { display: none !important;
     let js_template = include_str!("../../html_page_stencils/categories_script.js");
     html.push_str(js_template);
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }

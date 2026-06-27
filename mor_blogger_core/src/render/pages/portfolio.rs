@@ -1,5 +1,5 @@
-pub fn generate_portfolio_html<T>(_config: &T) -> String {
-    r##"
+pub fn generate_portfolio_html(config: &crate::config::pages::PortfolioPageConfig) -> String {
+    let body = r##"
     <style>
         .mor-portfolio-container {
             max-width: 1200px;
@@ -198,5 +198,6 @@ pub fn generate_portfolio_html<T>(_config: &T) -> String {
         </div>
     </div>
     "##
-    .to_string()
+    .to_string();
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), body)
 }

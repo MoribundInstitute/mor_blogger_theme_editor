@@ -2,7 +2,7 @@ use crate::config::pages::LmsConfig;
 
 /// Emits the "My Courses" dashboard.
 /// Designed for Local-First hydration (LocalStorage or Browser Extension).
-pub fn generate_my_courses_html(_config: &LmsConfig) -> String {
+pub fn generate_my_courses_html(config: &LmsConfig) -> String {
     let mut html = String::new();
 
     // 1. Dashboard CSS
@@ -260,5 +260,5 @@ document.addEventListener("DOMContentLoaded", function() {
 "##,
     );
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }

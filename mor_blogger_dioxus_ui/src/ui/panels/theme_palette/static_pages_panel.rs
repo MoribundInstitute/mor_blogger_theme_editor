@@ -149,7 +149,17 @@ pub fn StaticPagesPanel(
     let layout_state = use_context::<crate::app::state::LayoutState>();
     let mut pages = signals.static_pages;
     let status = use_signal(String::new);
-    let mut active_tab = use_signal(|| "Archive");
+    // Active page is the single source of truth (shared with the workspace
+    // editor via LayoutState), so the panel tab, the Layout & Chrome controls,
+    // and the preview always target the same page.
+    let active_tab = use_memo(move || {
+        layout_state
+            .active_static_page
+            .read()
+            .as_deref()
+            .and_then(|s| TABS.iter().find(|(id, _)| *id == s).map(|(id, _)| *id))
+            .unwrap_or("Archive")
+    });
 
     // State specifically for the Community Pasteboard
     let mut custom_html = use_signal(|| String::new());
@@ -218,7 +228,7 @@ pub fn StaticPagesPanel(
                             onclick: {
                                 let id = id;
                                 move |_| {
-                                    active_tab.set(id);
+                                    // Set the shared active page; active_tab (a memo) follows it.
                                     let mut ls = layout_state;
                                     ls.enter_workspace(crate::app::state::CenterView::StaticPageEditor);
                                     ls.active_static_page.set(Some(id.to_string()));
@@ -411,11 +421,132 @@ pub fn StaticPagesPanel(
                 _ => rsx! {}
             }
 
+            // Per-page Layout & Chrome overrides (skip the raw-paste Community page).
+            match active_tab() {
+                "Archive" => rsx! { LayoutControls { config: pages, page: "archive".to_string() } },
+                "Directory" => rsx! { LayoutControls { config: pages, page: "categories".to_string() } },
+                "Portfolio" => rsx! { LayoutControls { config: pages, page: "portfolio".to_string() } },
+                "About" => rsx! { LayoutControls { config: pages, page: "about".to_string() } },
+                "LMS" | "MyCourses" => rsx! { LayoutControls { config: pages, page: "lms".to_string() } },
+                _ => rsx! {},
+            }
+
             if !status().is_empty() {
                 div {
                     class: "export-status",
                     style: "margin-top: 15px; color: #3fb950; font-weight: bold;",
                     "{status}"
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------
+// Per-page Layout & Chrome overrides
+// ---------------------------------------------------------
+
+fn read_layout(c: &StaticPagesConfig, page: &str) -> mor_blogger_core::config::pages::PageLayout {
+    match page {
+        "archive" => c.archive.layout.clone(),
+        "categories" => c.categories.layout.clone(),
+        "about" => c.about.layout.clone(),
+        "portfolio" => c.portfolio.layout.clone(),
+        "lms" => c.lms.layout.clone(),
+        "analytics" => c.analytics.layout.clone(),
+        _ => mor_blogger_core::config::pages::PageLayout::default(),
+    }
+}
+
+fn write_layout(c: &mut StaticPagesConfig, page: &str, l: mor_blogger_core::config::pages::PageLayout) {
+    match page {
+        "archive" => c.archive.layout = l,
+        "categories" => c.categories.layout = l,
+        "about" => c.about.layout = l,
+        "portfolio" => c.portfolio.layout = l,
+        "lms" => c.lms.layout = l,
+        "analytics" => c.analytics.layout = l,
+        _ => {}
+    }
+}
+
+/// Flip one boolean field of a page's layout. Signal is Copy, so we take it by
+/// value (each handler gets its own copy) — avoids a shared FnMut closure.
+fn apply_toggle(
+    mut config: Signal<StaticPagesConfig>,
+    page: &str,
+    set: fn(&mut mor_blogger_core::config::pages::PageLayout, bool),
+    v: bool,
+) {
+    let mut c = config();
+    let mut layout = read_layout(&c, page);
+    set(&mut layout, v);
+    write_layout(&mut c, page, layout);
+    config.set(c);
+}
+
+fn apply_width(mut config: Signal<StaticPagesConfig>, page: &str, w: String) {
+    let mut c = config();
+    let mut layout = read_layout(&c, page);
+    layout.width = w;
+    write_layout(&mut c, page, layout);
+    config.set(c);
+}
+
+/// Toggles that hide theme chrome (sidebars/header/footer/search) and set the
+/// content width for THIS page only — written into the page's generated HTML.
+#[component]
+fn LayoutControls(config: Signal<StaticPagesConfig>, page: String) -> Element {
+    let config = config;
+    let l = read_layout(&config(), &page);
+
+    let cb_style = "display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 4px 0;";
+
+    rsx! {
+        div { class: "editor-field-group", style: "margin-top: 14px; border-top: 1px solid var(--editor-border-soft); padding-top: 12px;",
+            h4 { style: "margin: 0 0 8px;", "Layout & Chrome" }
+            div { class: "editor-help-text", style: "margin-bottom: 8px;",
+                "Hide site chrome on this page only (e.g. drop sidebars on About). Applied via scoped CSS in the page's HTML."
+            }
+
+            label { style: "{cb_style}",
+                input { r#type: "checkbox", checked: l.hide_left_sidebar,
+                    onchange: { let p = page.clone(); move |e: Event<FormData>| apply_toggle(config, &p, |x, v| x.hide_left_sidebar = v, e.checked()) } }
+                " Hide left sidebar (and its toggle)"
+            }
+            label { style: "{cb_style}",
+                input { r#type: "checkbox", checked: l.hide_right_sidebar,
+                    onchange: { let p = page.clone(); move |e: Event<FormData>| apply_toggle(config, &p, |x, v| x.hide_right_sidebar = v, e.checked()) } }
+                " Hide right sidebar (and its toggle)"
+            }
+            label { style: "{cb_style}",
+                input { r#type: "checkbox", checked: l.hide_header,
+                    onchange: { let p = page.clone(); move |e: Event<FormData>| apply_toggle(config, &p, |x, v| x.hide_header = v, e.checked()) } }
+                " Hide header"
+            }
+            label { style: "{cb_style}",
+                input { r#type: "checkbox", checked: l.hide_footer,
+                    onchange: { let p = page.clone(); move |e: Event<FormData>| apply_toggle(config, &p, |x, v| x.hide_footer = v, e.checked()) } }
+                " Hide footer"
+            }
+            label { style: "{cb_style}",
+                input { r#type: "checkbox", checked: l.hide_search,
+                    onchange: { let p = page.clone(); move |e: Event<FormData>| apply_toggle(config, &p, |x, v| x.hide_search = v, e.checked()) } }
+                " Hide search"
+            }
+
+            div { class: "editor-field-group", style: "margin-top: 8px;",
+                label { class: "editor-field-label", "Content width" }
+                select {
+                    class: "editor-select",
+                    value: if l.width.is_empty() { "default".to_string() } else { l.width.clone() },
+                    onchange: {
+                        let p = page.clone();
+                        move |e: Event<FormData>| apply_width(config, &p, e.value())
+                    },
+                    option { value: "default", selected: l.width.is_empty() || l.width == "default", "Default (theme)" }
+                    option { value: "full", selected: l.width == "full", "Full width" }
+                    option { value: "centered", selected: l.width == "centered", "Centered article" }
                 }
             }
         }
@@ -633,52 +764,34 @@ pub fn inject_static_page(base_html: &str, static_html: &str) -> String {
 
     let head_injected = base_html.replace("<head>", &format!("<head>\n{}", mock_fetch));
 
-    let template_html = format!(
-        r#"
-    <!-- Static-page mode: a Blogger Page renders as focused content, not the
-         blog's sidebar layout. Collapse the workspace to a single full-width
-         column so the page reads like a real static page. -->
-    <style id="mor-static-page-mode">
-        #panel-left, #panel-right {{ display: none !important; }}
-        .mor-workspace {{ display: block !important; }}
-        .canvas-core {{ width: 100% !important; max-width: 100% !important; }}
-    </style>
-    <template id="mor-static-injector">
-        {}
-    </template>
-    <script>
-    (function injectStaticPage() {{
-        // The iframe reloads fresh HTML each time, but if DOMContentLoaded has
-        // already fired by the time this runs, the listener never triggers.
-        // Run now if the DOM is ready, otherwise wait for it.
-        const run = () => {{
-            const target = document.querySelector('.canvas-content');
-            const template = document.getElementById('mor-static-injector');
-            if (!target || !template) return;
-
-            target.innerHTML = '';
-            target.appendChild(template.content.cloneNode(true));
-
-            // cloneNode does not execute script tags. Recreate them manually.
-            target.querySelectorAll('script').forEach(oldScript => {{
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }});
-        }};
-        if (document.readyState === 'loading') {{
-            document.addEventListener('DOMContentLoaded', run);
-        }} else {{
-            run();
-        }}
-    }})();
-    </script>
-    "#,
-        static_html
-    );
-
-    head_injected.replace("</body>", &format!("{}\n</body>", template_html))
+    // Bake the static page directly into `.canvas-content` (server-side) instead
+    // of injecting it client-side via a <template> + script. The preview iframe
+    // morphs in-place for incremental updates (e.g. a dark/light toggle that
+    // re-renders the base): a client-side injection gets clobbered by that morph
+    // because the script only re-runs on a full reload. Baking it into the
+    // source means the page survives both morph and reload, and chrome overrides
+    // (sidebars/header/width) ride along with it. Scripts in the page execute on
+    // reload (document.write), which is when the feed-mocking pages need them.
+    const OPEN: &str = "<div class=\"canvas-content\">";
+    let head_anchor = head_injected.find(OPEN);
+    let footer_anchor = head_injected.find("<footer class=\"mor-footer\"");
+    if let (Some(start), Some(footer)) = (head_anchor, footer_anchor) {
+        let open_end = start + OPEN.len();
+        // canvas-content closes with the last </div> before the footer.
+        if let Some(close_rel) = head_injected[open_end..footer].rfind("</div>") {
+            let close_abs = open_end + close_rel;
+            let mut out = String::with_capacity(head_injected.len() + static_html.len());
+            out.push_str(&head_injected[..open_end]);
+            out.push('\n');
+            out.push_str(static_html);
+            out.push('\n');
+            out.push_str(&head_injected[close_abs..]);
+            return out;
+        }
+    }
+    // ponytail: structure not found (unexpected) -> return base unchanged rather
+    // than silently dropping the page into nowhere.
+    head_injected
 }
 
 #[cfg(test)]
@@ -701,14 +814,27 @@ mod community_feed_tests {
     }
 
     #[test]
-    fn inject_targets_real_content_container() {
-        // The injector must target the element that actually exists in the
-        // preview (.canvas-content), not the long-dead #mor-content-target id,
-        // or the static page silently never renders.
-        let out = inject_static_page("<html><head></head><body></body></html>", "<p>HELLO</p>");
-        assert!(out.contains(".canvas-content"), "must target the real container");
-        assert!(!out.contains("mor-content-target"), "dead target id must be gone");
+    fn inject_bakes_page_into_canvas_content() {
+        // The page must be baked directly inside .canvas-content (server-side) so
+        // it survives the preview's in-place morph on a dark/light re-render — a
+        // client-side <template>/script injection got clobbered by that morph.
+        let base = "<html><head></head><body><main class=\"canvas-core\"><div class=\"canvas-content\">OLD</div><footer class=\"mor-footer\">f</footer></main></body></html>";
+        let out = inject_static_page(base, "<p>HELLO</p>");
         assert!(out.contains("<p>HELLO</p>"), "static html must be embedded");
+        assert!(!out.contains("OLD"), "base content must be replaced");
+        assert!(!out.contains("<template"), "no client-side template injection");
+        // The page sits inside .canvas-content, before the footer.
+        let content_pos = out.find("<p>HELLO</p>").unwrap();
+        let footer_pos = out.find("<footer class=\"mor-footer\"").unwrap();
+        assert!(content_pos < footer_pos, "page must be inside canvas-content");
+    }
+
+    #[test]
+    fn inject_returns_base_when_no_canvas_content() {
+        // Defensive: unknown structure -> base unchanged, page not dropped into
+        // a nonexistent container.
+        let out = inject_static_page("<html><head></head><body></body></html>", "<p>X</p>");
+        assert!(!out.contains("<p>X</p>"));
     }
 
     #[test]

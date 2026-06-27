@@ -8,6 +8,7 @@ import { EditorView, basicSetup } from "codemirror";
 import { EditorState, Annotation, Compartment } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
+import { search } from "@codemirror/search";
 import { StreamLanguage } from "@codemirror/language";
 import { oneDark } from "@codemirror/theme-one-dark";
 
@@ -27,6 +28,8 @@ const External = Annotation.define();
 // Compartment lets the minimap be toggled live (settings change) without
 // rebuilding the whole editor / losing cursor + undo history.
 const minimapComp = new Compartment();
+// Live word-wrap toggle without losing cursor/undo (same pattern as minimap).
+const wrapComp = new Compartment();
 
 function minimapExt() {
   return showMinimap.compute([], () => ({
@@ -65,6 +68,7 @@ function mount(id, opts) {
 
   const extensions = [
     basicSetup,
+    search({ top: true }), // Ctrl+F find/replace panel anchored at the top
     keymap.of([indentWithTab]),
     langExtension(opts.lang),
     oneDark,
@@ -72,7 +76,7 @@ function mount(id, opts) {
     EditorState.readOnly.of(!!opts.readOnly),
     EditorView.editable.of(!opts.readOnly),
   ];
-  if (opts.wrap) extensions.push(EditorView.lineWrapping);
+  extensions.push(wrapComp.of(opts.wrap ? EditorView.lineWrapping : []));
   extensions.push(minimapComp.of(opts.minimap ? minimapExt() : []));
   if (typeof opts.onChange === "function") {
     extensions.push(
@@ -121,6 +125,12 @@ function setMinimap(id, on) {
   view.dispatch({ effects: minimapComp.reconfigure(on ? minimapExt() : []) });
 }
 
+function setWrap(id, on) {
+  const view = registry.get(id);
+  if (!view) return;
+  view.dispatch({ effects: wrapComp.reconfigure(on ? EditorView.lineWrapping : []) });
+}
+
 function destroy(id) {
   const view = registry.get(id);
   if (view) {
@@ -129,4 +139,4 @@ function destroy(id) {
   }
 }
 
-window.morCM = { mount, setValue, reveal, setMinimap, destroy };
+window.morCM = { mount, setValue, reveal, setMinimap, setWrap, destroy };

@@ -226,16 +226,6 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
-                    label: format!("XML Editor {}", if (layout.xml_editor_pos)() != DockPosition::Hidden { "✓" } else { "" }),
-                    on_action: move |_| {
-                        if (layout.xml_editor_pos)() == DockPosition::Hidden {
-                            layout.xml_editor_pos.set(DockPosition::mor_panel_left);
-                        } else {
-                            layout.xml_editor_pos.set(DockPosition::Hidden);
-                        }
-                    }
-                }
-                MenuItem {
                     label: format!("CSS Editor {}", if (layout.css_editor_pos)() != DockPosition::Hidden { "✓" } else { "" }),
                     on_action: move |_| {
                         if (layout.css_editor_pos)() == DockPosition::Hidden {

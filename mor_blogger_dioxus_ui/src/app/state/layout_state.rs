@@ -12,7 +12,6 @@ pub fn normalize_dock_key(key: &str) -> String {
         "Site Data" => "site_data",
         "CSS Editor" => "css_editor",
         "JS Editor" => "js_editor",
-        "XML Editor" => "xml_editor",
         "Presets" => "presets",
         "Plugin Manager" => "plugin_manager",
         "Diagnostics" => "diagnostics",
@@ -74,7 +73,6 @@ pub struct LayoutState {
     pub diagnostics_pos: Signal<DockPosition>,
     pub plugin_manager_pos: Signal<DockPosition>,
     pub presets_pos: Signal<DockPosition>,
-    pub xml_editor_pos: Signal<DockPosition>,
     pub css_builder_pos: Signal<DockPosition>,
     pub js_builder_pos: Signal<DockPosition>,
     pub template_modules_pos: Signal<DockPosition>,
@@ -114,7 +112,6 @@ impl LayoutState {
             diagnostics_pos: use_signal(|| DockPosition::Hidden),
             plugin_manager_pos: use_signal(|| DockPosition::Hidden),
             presets_pos: use_signal(|| DockPosition::Hidden),
-            xml_editor_pos: use_signal(|| DockPosition::Hidden),
             css_builder_pos: use_signal(|| DockPosition::Hidden),
             js_builder_pos: use_signal(|| DockPosition::Hidden),
             template_modules_pos: use_signal(|| DockPosition::Hidden),
@@ -142,7 +139,7 @@ impl LayoutState {
                 // activity bar isn't blank. ponytail: re-seeds if you unpin everything;
                 // add a "configured" flag if that ever annoys.
                 if seen.is_empty() {
-                    ["theme_palette", "site_data", "xml_editor", "css_editor", "js_editor", "presets"]
+                    ["theme_palette", "site_data", "css_editor", "js_editor", "presets"]
                         .iter()
                         .map(|s| s.to_string())
                         .collect()
@@ -245,7 +242,6 @@ impl LayoutState {
             "site" | "site_data" => self.site_data_pos,
             "css" | "css_editor" => self.css_editor_pos,
             "js" | "js_editor" => self.js_editor_pos,
-            "xml" | "xml_editor" => self.xml_editor_pos,
             "diagnostics" => self.diagnostics_pos,
             "plugin_manager" => self.plugin_manager_pos,
             "presets" => self.presets_pos,
@@ -292,7 +288,6 @@ impl LayoutState {
             "site" | "site_data" => &self.site_data_pos,
             "css" | "css_editor" => &self.css_editor_pos,
             "js" | "js_editor" => &self.js_editor_pos,
-            "xml" | "xml_editor" => &self.xml_editor_pos,
             "diagnostics" => &self.diagnostics_pos,
             "plugin_manager" => &self.plugin_manager_pos,
             "presets" => &self.presets_pos,
@@ -319,7 +314,6 @@ impl LayoutState {
                 &self.site_data_pos,
                 &self.css_editor_pos,
                 &self.js_editor_pos,
-                &self.xml_editor_pos,
                 &self.diagnostics_pos,
                 &self.plugin_manager_pos,
                 &self.presets_pos,

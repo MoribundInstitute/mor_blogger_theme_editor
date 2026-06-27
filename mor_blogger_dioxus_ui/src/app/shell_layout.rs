@@ -5,7 +5,7 @@ use crate::app::state::{
 use crate::ui::components::icon_context_menu::IconContextMenu;
 use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, IconPreset, IconSiteData, IconXml};
 use crate::ui::layout::docks::{
-    CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock, XmlEditorDock,
+    CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock,
     DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock, TemplateModulesDock,
     CodeNavDock, StaticPagesDock,
 };
@@ -134,7 +134,6 @@ pub fn ActivityBar() -> Element {
         ("Static Pages", "static_pages", layout.static_pages_pos, "emoji:📄"),
         ("CSS Editor", "css_editor", layout.css_editor_pos, "emoji:🖌️"),
         ("JS Editor", "js_editor", layout.js_editor_pos, "emoji:🔧"),
-        ("XML Editor", "xml_editor", layout.xml_editor_pos, "emoji:🏗️"),
         ("Presets", "presets", layout.presets_pos, "preset"),
         ("Plugin Manager", "plugin_manager", layout.plugin_manager_pos, "plugin"),
         ("Diagnostics", "diagnostics", layout.diagnostics_pos, "bug"),
@@ -195,7 +194,6 @@ pub fn DockZone(position: DockPosition) -> Element {
     let show_presets = (layout.presets_pos)() == position;
     let show_css_editor = (layout.css_editor_pos)() == position;
     let show_js_editor = (layout.js_editor_pos)() == position;
-    let show_xml_editor = (layout.xml_editor_pos)() == position;
     let show_diagnostics = (layout.diagnostics_pos)() == position;
     let show_plugin_manager = (layout.plugin_manager_pos)() == position;
     let show_css_builder = (layout.css_builder_pos)() == position;
@@ -234,12 +232,6 @@ pub fn DockZone(position: DockPosition) -> Element {
     if show_js_editor {
         return rsx! {
             JsEditorPanel {}
-        };
-    }
-
-    if show_xml_editor {
-        return rsx! {
-            XmlEditorDock {}
         };
     }
 
@@ -345,7 +337,6 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.site_data_pos)() == DockPosition::mor_panel_left
             || (layout.css_editor_pos)() == DockPosition::mor_panel_left
             || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-            || (layout.xml_editor_pos)() == DockPosition::mor_panel_left
             || (layout.presets_pos)() == DockPosition::mor_panel_left
             || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
@@ -361,7 +352,6 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.site_data_pos)() == DockPosition::mor_panel_right
             || (layout.css_editor_pos)() == DockPosition::mor_panel_right
             || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-            || (layout.xml_editor_pos)() == DockPosition::mor_panel_right
             || (layout.presets_pos)() == DockPosition::mor_panel_right
             || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
@@ -546,12 +536,6 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
                 }
             }
 
-            if (layout.xml_editor_pos)() == DockPosition::Floating {
-                div { style: "pointer-events: auto;",
-                    XmlEditorDock {}
-                }
-            }
-
             if (layout.diagnostics_pos)() == DockPosition::Floating {
                 div { style: "pointer-events: auto;",
                     DiagnosticsDock {}
@@ -634,7 +618,6 @@ pub fn LeftPanelContainer() -> Element {
         || (layout.site_data_pos)() == DockPosition::mor_panel_left
         || (layout.css_editor_pos)() == DockPosition::mor_panel_left
         || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-        || (layout.xml_editor_pos)() == DockPosition::mor_panel_left
         || (layout.presets_pos)() == DockPosition::mor_panel_left
         || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
@@ -663,7 +646,6 @@ pub fn RightPanelContainer() -> Element {
         || (layout.site_data_pos)() == DockPosition::mor_panel_right
         || (layout.css_editor_pos)() == DockPosition::mor_panel_right
         || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-        || (layout.xml_editor_pos)() == DockPosition::mor_panel_right
         || (layout.presets_pos)() == DockPosition::mor_panel_right
         || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_right

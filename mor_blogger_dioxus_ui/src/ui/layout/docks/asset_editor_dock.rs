@@ -148,7 +148,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     .with_window(
                         dioxus::desktop::WindowBuilder::new()
                             .with_title(format!("MorBlogger - {}", title))
-                            .with_inner_size(dioxus::desktop::LogicalSize::new(800.0, 600.0)),
+                            // Roomy default for second-monitor editing.
+                            .with_inner_size(dioxus::desktop::LogicalSize::new(1100.0, 820.0)),
                     );
                 let pending_ctx = dioxus::desktop::window().new_window(dom, cfg);
 
@@ -557,6 +558,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     }}
     /* WebKitGTK hides scrollbars by default; child editor windows don't load the
        global editor CSS, so style the CodeMirror scroller's scrollbar here. */
+    /* Scroll-past-end: let the last lines rise into comfortable view. */
+    .cm-content {{ padding-bottom: 40vh; }}
     .cm-scroller::-webkit-scrollbar {{ width: 12px; height: 12px; }}
     .cm-scroller::-webkit-scrollbar-track {{ background: transparent; }}
     .cm-scroller::-webkit-scrollbar-thumb {{
@@ -810,7 +813,10 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
         // Separate webview: the main shell's bundle/CSS aren't here, so inject the
         // CodeMirror runtime this window's CodeEditor needs.
         script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
-        style { "html, body {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
+        // Include the Dioxus mount root (#main/#root): this window doesn't load
+        // editor_ui.css, so without height:100% here the root collapses to content
+        // height and the editor's height:100% chain breaks (scroll cut off).
+        style { "html, body, #main, #root {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
         AssetEditorDock {
             is_native_window: true,
             ..props.dock_props

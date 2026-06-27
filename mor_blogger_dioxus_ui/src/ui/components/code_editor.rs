@@ -82,6 +82,10 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
     let overrides = try_consume_context::<MinimapOverrides>();
     let minimap_on = resolve_minimap(global, overrides, &minimap_key, minimap_default);
 
+    // Per-editor word-wrap toggle (session-scoped).
+    // ponytail: not persisted; add a prefs override like minimap if users want it to stick.
+    let mut wrap_on = use_signal(|| props.wrap);
+
     // Apply minimap changes live (toggle / settings change) without remounting.
     let minimap_fx_id = host_id.clone();
     let minimap_fx_key = minimap_key.clone();
@@ -91,6 +95,19 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
         spawn(async move {
             let eval = dioxus::document::eval(
                 "const c = await dioxus.recv(); if (window.morCM) window.morCM.setMinimap(c.id, c.on);",
+            );
+            let _ = eval.send(serde_json::json!({ "id": id, "on": on }));
+        });
+    });
+
+    // Apply word-wrap changes live (toggle) without remounting.
+    let wrap_fx_id = host_id.clone();
+    use_effect(move || {
+        let on = wrap_on();
+        let id = wrap_fx_id.clone();
+        spawn(async move {
+            let eval = dioxus::document::eval(
+                "const c = await dioxus.recv(); if (window.morCM) window.morCM.setWrap(c.id, c.on);",
             );
             let _ = eval.send(serde_json::json!({ "id": id, "on": on }));
         });
@@ -145,6 +162,11 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
     let wrap = props.wrap;
     let minimap = minimap_on;
     let on_change = props.on_change;
+    let wrap_border = if wrap_on() {
+        "var(--editor-accent, #c2622a)"
+    } else {
+        "var(--editor-border, #444)"
+    };
 
     rsx! {
         div {
@@ -153,9 +175,18 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
             class: "cm-host-wrap",
             style: "position: relative; width: 100%; height: 100%; overflow: hidden;",
 
-            // Per-workspace minimap toggle, top-right above the editor.
+            // Overlay toggles, top-right. Absolute so they don't consume layout
+            // height (in-flow buttons were clipping the editor's bottom rows).
+            button {
+                class: "cm-wrap-toggle",
+                style: "position: absolute; top: 6px; right: 36px; z-index: 6; width: 26px; height: 24px; padding: 0; font-size: 13px; line-height: 1; border-radius: 4px; cursor: pointer; background: var(--editor-panel, #2a2a2a); color: var(--editor-text, #ddd); border: 1px solid {wrap_border};",
+                title: if wrap_on() { "Disable word wrap" } else { "Enable word wrap" },
+                onclick: move |_| { let v = !wrap_on(); wrap_on.set(v); },
+                "↩"
+            }
             button {
                 class: "cm-minimap-toggle",
+                style: "position: absolute; top: 6px; right: 6px; z-index: 6; width: 26px; height: 24px; padding: 0; font-size: 13px; line-height: 1; border-radius: 4px; cursor: pointer; background: var(--editor-panel, #2a2a2a); color: var(--editor-text, #ddd); border: 1px solid var(--editor-border, #444);",
                 title: if minimap_on { "Hide minimap" } else { "Show minimap" },
                 onclick: toggle,
                 if minimap_on { "▦" } else { "▢" }

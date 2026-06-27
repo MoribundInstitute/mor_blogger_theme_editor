@@ -1,5 +1,6 @@
 use crate::app::state::{LayoutState, ThemeState};
 use crate::ui::dialogs::about_dialog::AboutDialog;
+use crate::ui::dialogs::advanced_buttons_dialog::AdvancedButtonsDialog;
 use crate::ui::dialogs::advanced_colors_dialog::AdvancedColorsDialog;
 use crate::ui::dialogs::advanced_cursors_dialog::AdvancedCursorsDialog;
 use crate::ui::dialogs::advanced_presets_dialog::AdvancedPresetsDialog;
@@ -64,6 +65,10 @@ pub fn MorDialogs(props: MorDialogsProps) -> Element {
 
         AdvancedCursorsDialog {
             open_signal: theme.show_advanced_cursors,
+        }
+
+        AdvancedButtonsDialog {
+            open_signal: theme.show_advanced_buttons,
         }
 
         AdvancedTypographyDialog {

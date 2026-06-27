@@ -329,4 +329,22 @@ mod tests {
             );
         }
     }
+
+    // The themed [buttons] fields must reach base_config (TOML -> ButtonConfig).
+    #[test]
+    fn shipped_presets_have_themed_buttons() {
+        let presets = all_presets();
+        if presets.is_empty() {
+            return;
+        }
+        let has = |pred: fn(&crate::config::ButtonConfig) -> bool| {
+            presets.iter().any(|p| pred(&p.base_config.buttons))
+        };
+        // Presets now express their button looks through varied fills/effects.
+        assert!(has(|b| b.fill == "gradient"), "no preset uses gradient fill");
+        assert!(has(|b| b.fill == "glass"), "no preset uses glass fill");
+        assert!(has(|b| b.fill == "neon"), "no preset uses neon fill");
+        assert!(has(|b| !b.box_shadow.is_empty()), "no preset sets a custom box-shadow");
+        assert!(has(|b| b.hover_effect == "glow"), "no preset uses glow hover");
+    }
 }

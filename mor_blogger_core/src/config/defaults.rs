@@ -120,6 +120,7 @@ pub fn default_theme_config() -> ThemeConfig {
             radius: "14px".to_string(),
             border_width: "1px".to_string(),
             text_transform: "none".to_string(),
+            ..ButtonConfig::default()
         },
         background: dark_background_config(),
         assets: AssetConfig::default(),

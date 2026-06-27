@@ -256,40 +256,6 @@ body::before {
   border-bottom: 2px solid var(--fg-base) !important;
   text-shadow: none !important;
 }
-
-/* Buttons in the navigation: small caps, no fill, hairline border.
-   Hover swaps to a solid black plate (ink stamp feel). */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: transparent !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--fg-base) !important;
-  border-radius: 0 !important;
-  padding: 6px 14px !important;
-  font-family: var(--font-body) !important;
-  font-variant: small-caps !important;
-  font-weight: 700 !important;
-  font-size: 0.85rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: var(--fg-base) !important;
-  color: var(--bg-base) !important;
-}
-
 /* The footer becomes a colophon: tiny, centered, in small caps. */
 .mor-footer {
   background: var(--bg-panel) !important;
@@ -348,7 +314,16 @@ heading_weight = "700"
 [buttons]
 radius = "0px"
 border_width = "1px"
+border_color = "var(--fg-base)"
 text_transform = "uppercase"
+letter_spacing = "0.14em"
+font_weight = "700"
+font_size = "0.85rem"
+padding_x = "14px"
+padding_y = "6px"
+fill = "outline"
+hover_effect = "none"
+transition_ms = "120ms"
 
 [dark.colors]
 bg_base = "#1a1814"

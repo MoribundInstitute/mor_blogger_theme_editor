@@ -31,9 +31,7 @@ pub struct ThemeSignals {
     pub panel_border_image_slice: Signal<String>,
     pub panel_border_image_repeat: Signal<String>,
 
-    pub btn_radius: Signal<String>,
-    pub btn_border_width: Signal<String>,
-    pub btn_text_transform: Signal<String>,
+    pub buttons: Signal<ButtonConfig>,
 
     pub body_font_stack: Signal<String>,
     pub heading_font_stack: Signal<String>,
@@ -126,9 +124,7 @@ impl ThemeSignals {
             panel_border_image_slice: Signal::new(config.colors.panel_border_image_slice.clone()),
             panel_border_image_repeat: Signal::new(config.colors.panel_border_image_repeat.clone()),
 
-            btn_radius: Signal::new(config.buttons.radius.clone()),
-            btn_border_width: Signal::new(config.buttons.border_width.clone()),
-            btn_text_transform: Signal::new(config.buttons.text_transform.clone()),
+            buttons: Signal::new(config.buttons.clone()),
 
             body_font_stack: Signal::new(config.typography.body_font_stack.clone()),
             heading_font_stack: Signal::new(config.typography.heading_font_stack.clone()),
@@ -237,11 +233,7 @@ impl ThemeSignals {
                 ..Default::default()
             },
             icons: self.icons.read().clone(),
-            buttons: ButtonConfig {
-                radius: self.btn_radius.read().clone(),
-                border_width: self.btn_border_width.read().clone(),
-                text_transform: self.btn_text_transform.read().clone(),
-            },
+            buttons: self.buttons.read().clone(),
             typography: TypographyConfig {
                 body_font_stack: self.body_font_stack.read().clone(),
                 heading_font_stack: self.heading_font_stack.read().clone(),
@@ -471,9 +463,7 @@ impl ThemeSignals {
     }
 
     fn set_buttons(&self, b: &ButtonConfig) {
-        self.btn_radius.clone().set(b.radius.clone());
-        self.btn_border_width.clone().set(b.border_width.clone());
-        self.btn_text_transform.clone().set(b.text_transform.clone());
+        self.buttons.clone().set(b.clone());
     }
 
     fn set_typography(&self, t: &TypographyConfig) {

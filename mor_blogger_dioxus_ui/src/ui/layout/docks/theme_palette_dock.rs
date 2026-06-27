@@ -165,11 +165,7 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                     }
 
                     EditorAccordion { id: "Buttons", title: "Button Styles", active: active_tab,
-                        ButtonsPanel {
-                            btn_radius: signals.btn_radius,
-                            btn_border_width: signals.btn_border_width,
-                            btn_text_transform: signals.btn_text_transform,
-                        }
+                        ButtonsPanel {}
                     }
                 }
             }

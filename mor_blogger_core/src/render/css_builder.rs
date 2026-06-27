@@ -181,6 +181,12 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
     result.push_str("\n\n");
     result.push_str(&combined_css);
 
+    // Generated button styling, emitted AFTER all core CSS so it is the
+    // authoritative button layer (beats base rules in 13-Pagination, 18-Footer,
+    // 07-Catalog, etc.). Sits before preset_css so any unavoidable preset-
+    // specific button CSS can still override. Replaced in render_css_sockets.
+    result.push_str("\n\n/* --- Generated buttons (config-driven) --- */\n{{BUTTON_STYLES}}\n");
+
     if !config.icons.custom_icons.is_empty() {
         result.push_str("\n/* --- Custom Icon Utilities --- */\n");
         for (key, value) in &config.icons.custom_icons {

@@ -71,29 +71,6 @@ preset_css = '''
   background: transparent !important;
   color: var(--accent) !important;
 }
-
-/* Buttons = classic 90s system buttons */
-button,
-.panel-toggle,
-.pager-btn,
-.mor-post button {
-  background: color-mix(in srgb, var(--bg-panel) 70%, var(--fg-base)) !important;
-  color: var(--fg-base) !important;
-  border: 3px outset var(--border-color) !important;
-  border-radius: 0 !important;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: bold;
-}
-
-button:active,
-.panel-toggle:active,
-.pager-btn:active,
-.mor-post button:active {
-  border-style: inset !important;
-  background: var(--bg-panel) !important;
-}
-
 /* ============================================================
    FOOTER
    ============================================================ */
@@ -202,7 +179,14 @@ heading_weight = "700"
 [buttons]
 radius = "0px"
 border_width = "3px"
+border_style = "outset"
+border_color = "var(--border-color)"
 text_transform = "none"
+font_weight = "bold"
+fill = "solid"
+bg_color = "color-mix(in srgb, var(--bg-panel) 70%, var(--fg-base))"
+text_color = "var(--fg-base)"
+pressed_feedback = true
 
 [dark.colors]
 bg_base = "#1a1a2e"

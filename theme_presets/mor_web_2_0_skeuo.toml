@@ -79,61 +79,6 @@ h1, h2, h3, h4,
   color: var(--accent) !important;
   text-decoration: underline !important;
 }
-
-/* The classic Web 2.0 Button — glossy gradient, rounded, inset highlight, drop shadow. */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-elevated) 60%, white) 0%,
-    color-mix(in srgb, var(--bg-elevated) 20%, white) 48%,
-    color-mix(in srgb, var(--bg-elevated) 10%, black) 52%,
-    color-mix(in srgb, var(--bg-elevated) 40%, white) 100%
-  ) !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 14px !important;
-  padding: 6px 16px !important;
-  font-weight: 600 !important;
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 20%, transparent),
-    0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  cursor: pointer;
-  transition: all 120ms ease !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-elevated) 80%, white) 0%,
-    color-mix(in srgb, var(--bg-elevated) 40%, white) 48%,
-    color-mix(in srgb, var(--bg-elevated) 5%, black) 52%,
-    color-mix(in srgb, var(--bg-elevated) 60%, white) 100%
-  ) !important;
-  border-color: var(--accent) !important;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 25%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.15) !important;
-}
-
-.pager-btn:active,
-.panel-toggle:active,
-.toc-jump-link:active,
-.back-to-top-btn:active,
-.mor-catalog-trigger:active {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 15%, black) 0%, var(--bg-elevated) 100%) !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(1px) !important;
-}
-
 /* Base links */
 .mor-post .post-body a,
 .panel-content a {
@@ -274,9 +219,20 @@ line_height = "1.55"
 heading_weight = "700"
 
 [buttons]
-radius = "12px"
+radius = "14px"
 border_width = "1px"
 text_transform = "none"
+padding_x = "16px"
+padding_y = "6px"
+font_weight = "600"
+fill = "gradient"
+gradient_from = "color-mix(in srgb, var(--bg-elevated) 55%, white)"
+gradient_to = "color-mix(in srgb, var(--bg-elevated) 15%, black)"
+gradient_angle = "180deg"
+box_shadow = "inset 0 1px 0 color-mix(in srgb, var(--fg-base) 20%, transparent), 0 1px 3px rgba(0,0,0,0.1)"
+hover_effect = "brighten"
+pressed_feedback = true
+transition_ms = "120ms"
 
 [dark.colors]
 bg_base = "#0f172a"

@@ -3,3 +3,4 @@ button:hover, button:focus { background: var(--fg-base); color: var(--bg-base); 
 button:focus-visible { box-shadow: 0 0 0 2px var(--fg-dim); }
 .panel-toggle { min-width: 92px; text-align: center; white-space: nowrap; }
 .panel-header .panel-toggle { min-width: auto; padding: 2px 7px; }
+

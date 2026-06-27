@@ -1,4 +1,5 @@
 pub mod about_dialog;
+pub mod advanced_buttons_dialog;
 pub mod advanced_colors_dialog;
 pub mod advanced_cursors_dialog;
 pub mod advanced_presets_dialog;
@@ -6,6 +7,7 @@ pub mod advanced_typography_dialog;
 pub mod documentation_dialog;
 pub mod modal;
 pub mod shortcuts_dialog;
+pub mod toml_quick_edit;
 pub mod template_grid_dialog;
 pub mod user_preferences_dialog;
 pub mod workspace_settings_dialog;

@@ -66,41 +66,6 @@ body::after {
     0 0 22px rgba(0, 255, 255, 0.55),
     inset 0 0 32px rgba(0, 255, 255, 0.12);
 }
-
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: 0;
-  padding: 6px 14px;
-  font-family: var(--font-mono, monospace);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  box-shadow:
-    0 0 6px rgba(255, 0, 255, 0.4),
-    inset 0 0 6px rgba(255, 0, 255, 0.2);
-  text-shadow: 0 0 4px var(--accent);
-  cursor: pointer;
-  transition: all 180ms ease;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: var(--accent);
-  color: var(--bg-base);
-  text-shadow: none;
-  box-shadow:
-    0 0 14px var(--accent),
-    0 0 24px var(--accent);
-}
-
 .mor-post .post-body a,
 .panel-content a {
   color: var(--accent);
@@ -195,6 +160,14 @@ heading_weight = "700"
 radius = "0px"
 border_width = "1px"
 text_transform = "uppercase"
+letter_spacing = "0.12em"
+padding_x = "14px"
+padding_y = "6px"
+fill = "neon"
+glow_color = "#ff2bd6"
+glow_strength = "8px"
+hover_effect = "glow"
+transition_ms = "180ms"
 
 [light.colors]
 bg_base = "#f0f0f5"

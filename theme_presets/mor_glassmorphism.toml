@@ -206,46 +206,6 @@ html::after {
   padding: 14px 22px !important;
   color: var(--fg-muted) !important;
 }
-
-/* ---- Buttons: pill capsules ---------------------------------
-   Only round shape that's appropriate everywhere — pills are
-   inherently pill-shaped. No tension with the "stop rounding
-   everything" critique. */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: var(--glass-medium) !important;
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 999px !important;
-  color: var(--fg-base) !important;
-  padding: 6px 14px !important;
-  font-weight: 500 !important;
-  font-size: 0.875rem !important;
-  text-transform: none !important;
-  cursor: pointer;
-  transition: background 150ms ease, transform 150ms ease !important;
-  box-shadow: inset 0 1px 0 var(--glass-rim) !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: var(--glass-strong) !important;
-  transform: translateY(-1px);
-}
-
-.pager-btn:active,
-.panel-toggle:active {
-  background: var(--glass-subtle) !important;
-  transform: translateY(0);
-}
-
 .header-panel-toggle.panel-toggle,
 .header-top-row > .panel-toggle {
   width: 36px !important;
@@ -391,9 +351,18 @@ line_height = "1.6"
 heading_weight = "600"
 
 [buttons]
-radius = "14px"
+radius = "999px"
 border_width = "1px"
 text_transform = "none"
+padding_x = "14px"
+padding_y = "6px"
+font_weight = "500"
+font_size = "0.875rem"
+fill = "glass"
+glass_blur = "10px"
+glass_opacity = "0.45"
+hover_effect = "lift"
+transition_ms = "150ms"
 
 [light.colors]
 bg_base = "#e8efff"

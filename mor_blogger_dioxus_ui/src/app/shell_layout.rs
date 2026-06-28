@@ -7,7 +7,7 @@ use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, I
 use crate::ui::layout::docks::{
     CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock,
     DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock, TemplateModulesDock,
-    CodeNavDock, StaticPagesDock,
+    CodeNavDock, StaticPagesDock, WidgetsDock,
 };
 use crate::ui::panels::quick_launch_bar::LaunchButton;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
@@ -130,6 +130,7 @@ pub fn ActivityBar() -> Element {
         ("Theme Palette", "theme_palette", layout.theme_palette_pos, "palette"),
         ("Site Data", "site_data", layout.site_data_pos, "emoji:📊"),
         ("Template Modules", "template_modules", layout.template_modules_pos, "emoji:🍱"),
+        ("Widgets", "widgets", layout.widgets_pos, "emoji:🧩"),
         ("Code Nav", "code_nav", layout.code_nav_pos, "emoji:🧭"),
         ("Static Pages", "static_pages", layout.static_pages_pos, "emoji:📄"),
         ("CSS Editor", "css_editor", layout.css_editor_pos, "emoji:🖌️"),
@@ -187,6 +188,7 @@ pub fn DockZone(position: DockPosition) -> Element {
     };
 
     let show_template_modules = (layout.template_modules_pos)() == position;
+    let show_widgets = (layout.widgets_pos)() == position;
     let show_code_nav = (layout.code_nav_pos)() == position;
     let show_static_pages = (layout.static_pages_pos)() == position;
     let show_theme_palette = (layout.theme_palette_pos)() == position;
@@ -203,6 +205,12 @@ pub fn DockZone(position: DockPosition) -> Element {
     if show_template_modules {
         return rsx! {
             TemplateModulesDock {}
+        };
+    }
+
+    if show_widgets {
+        return rsx! {
+            WidgetsDock {}
         };
     }
 
@@ -343,6 +351,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.css_builder_pos)() == DockPosition::mor_panel_left
             || (layout.js_builder_pos)() == DockPosition::mor_panel_left
             || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+            || (layout.widgets_pos)() == DockPosition::mor_panel_left
             || (layout.code_nav_pos)() == DockPosition::mor_panel_left
             || (layout.static_pages_pos)() == DockPosition::mor_panel_left
     });
@@ -358,6 +367,7 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.css_builder_pos)() == DockPosition::mor_panel_right
             || (layout.js_builder_pos)() == DockPosition::mor_panel_right
             || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+            || (layout.widgets_pos)() == DockPosition::mor_panel_right
             || (layout.code_nav_pos)() == DockPosition::mor_panel_right
             || (layout.static_pages_pos)() == DockPosition::mor_panel_right
     });
@@ -624,6 +634,7 @@ pub fn LeftPanelContainer() -> Element {
         || (layout.css_builder_pos)() == DockPosition::mor_panel_left
         || (layout.js_builder_pos)() == DockPosition::mor_panel_left
         || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+        || (layout.widgets_pos)() == DockPosition::mor_panel_left
         || (layout.code_nav_pos)() == DockPosition::mor_panel_left
         || (layout.static_pages_pos)() == DockPosition::mor_panel_left;
 
@@ -652,6 +663,7 @@ pub fn RightPanelContainer() -> Element {
         || (layout.css_builder_pos)() == DockPosition::mor_panel_right
         || (layout.js_builder_pos)() == DockPosition::mor_panel_right
         || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+        || (layout.widgets_pos)() == DockPosition::mor_panel_right
         || (layout.code_nav_pos)() == DockPosition::mor_panel_right
         || (layout.static_pages_pos)() == DockPosition::mor_panel_right;
 

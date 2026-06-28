@@ -5,4 +5,5 @@
     <nav class="mor-main-navigation">
         <!-- Minimal flexbox navigation link row -->
     </nav>
+    {{PLUGIN_WIDGET_HEADER}}
 </header>

@@ -23,6 +23,8 @@
         </div>
     </nav>
 
+    {{PLUGIN_WIDGET_HEADER}}
+
     <button class="panel-toggle right-panel-toggle" data-target="panel-right" aria-label="Open Contents Panel">
         {{RIGHT_PANEL_OPEN_LABEL}}
     </button>

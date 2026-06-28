@@ -1,4 +1,5 @@
 <footer class='mor-footer'>
+  <b:section class='footer-gadget-area' id='footer-gadgets' maxwidgets='3' showaddelement='yes'>{{SOCKET_FOOTER}}</b:section>
   <div class='footer-grid'>
 
     <div class='footer-col'>

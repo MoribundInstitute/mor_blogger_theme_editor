@@ -226,6 +226,13 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
+                    label: format!("Widgets {}", if (layout.widgets_pos)() != DockPosition::Hidden { "✓" } else { "" }),
+                    on_action: move |_| {
+                        // Arbitrated toggle: drops into a free zone, bumping any conflict.
+                        layout.toggle_dock_by_id("widgets");
+                    }
+                }
+                MenuItem {
                     label: format!("CSS Editor {}", if (layout.css_editor_pos)() != DockPosition::Hidden { "✓" } else { "" }),
                     on_action: move |_| {
                         if (layout.css_editor_pos)() == DockPosition::Hidden {

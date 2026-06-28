@@ -30,6 +30,9 @@ pub fn light_color_config() -> ColorConfig {
         glow_title: false,
         glow_toc: false,
         glow_sidebar: false,
+        glow_footer: false,
+        glow_header: false,
+        glow_main: false,
         glow_logo_color: String::new(),
         glow_title_color: String::new(),
         glow_toc_color: String::new(),
@@ -37,6 +40,9 @@ pub fn light_color_config() -> ColorConfig {
         glow_text_color: String::new(),
         glow_containers_color: String::new(),
         glow_icons_color: String::new(),
+        glow_footer_color: String::new(),
+        glow_header_color: String::new(),
+        glow_main_color: String::new(),
     }
 }
 
@@ -64,6 +70,9 @@ pub fn dark_color_config() -> ColorConfig {
         glow_title: false,
         glow_toc: false,
         glow_sidebar: false,
+        glow_footer: false,
+        glow_header: false,
+        glow_main: false,
         glow_logo_color: String::new(),
         glow_title_color: String::new(),
         glow_toc_color: String::new(),
@@ -71,6 +80,9 @@ pub fn dark_color_config() -> ColorConfig {
         glow_text_color: String::new(),
         glow_containers_color: String::new(),
         glow_icons_color: String::new(),
+        glow_footer_color: String::new(),
+        glow_header_color: String::new(),
+        glow_main_color: String::new(),
     }
 }
 

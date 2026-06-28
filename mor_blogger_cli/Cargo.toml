@@ -9,7 +9,7 @@ clap = { version = "4.5", features = ["derive"] }
 anyhow = "1.0"
 colored = "2.1"
 toml = "0.8"
-roxmltree = "0.21.1"
+roxmltree.workspace = true
 
 [[bin]]
 name = "mbt"

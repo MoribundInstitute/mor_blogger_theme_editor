@@ -263,8 +263,10 @@ mod tests {
         assert!(!out.contains("{{HEADER_BRANDING}}"));
         assert!(!out.contains("{{SITE_HOME_URL_ATTR}}"));
         assert!(!out.contains("{{SEARCH_PLACEHOLDER_ATTR}}"));
-        // No stray template tokens left anywhere in the rendered header.
-        assert!(!out.contains("{{"), "unsubstituted placeholder remains: {out}");
+        // No stray template tokens left — except plugin-widget sockets, which are
+        // resolved downstream in xml_generator after the full template is assembled.
+        let residual = out.replace("{{PLUGIN_WIDGET_HEADER}}", "");
+        assert!(!residual.contains("{{"), "unsubstituted placeholder remains: {residual}");
     }
 
     #[test]

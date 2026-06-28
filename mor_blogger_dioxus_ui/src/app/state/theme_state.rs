@@ -238,6 +238,12 @@ impl ThemeState {
                     glow_text_color: signals.glow_text_color.read().clone(),
                     glow_containers_color: signals.glow_containers_color.read().clone(),
                     glow_icons_color: signals.glow_icons_color.read().clone(),
+                    glow_footer: *signals.glow_footer.read(),
+                    glow_header: *signals.glow_header.read(),
+                    glow_main: *signals.glow_main.read(),
+                    glow_footer_color: signals.glow_footer_color.read().clone(),
+                    glow_header_color: signals.glow_header_color.read().clone(),
+                    glow_main_color: signals.glow_main_color.read().clone(),
                     ..Default::default()
                 };
                 let inv = cur.inverted_contrast();

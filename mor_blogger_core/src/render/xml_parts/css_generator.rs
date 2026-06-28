@@ -106,6 +106,42 @@ fn generate_background_value(bg: &BackgroundMode) -> String {
     }
 }
 
+/// Per-target glow CSS driven by the Advanced Glow toggles. Each enabled target
+/// gets a box/text-shadow using its own color (falling back to the global glow
+/// color, then the accent). Appended last so it overrides the base rules.
+fn build_target_glow_css(config: &ThemeConfig) -> String {
+    let c = &config.colors;
+    let spread = first_non_empty(&c.glow_spread, "8px");
+    let global = if c.glow_color.trim().is_empty() {
+        c.accent.as_str()
+    } else {
+        c.glow_color.as_str()
+    };
+    let rule = |on: bool, color: &str, sel: &str, prop: &str| -> String {
+        if !on {
+            return String::new();
+        }
+        let col = first_non_empty(color, global);
+        format!("{sel} {{ {prop}: 0 0 {spread} {col} !important; }}\n")
+    };
+    let mut out = String::new();
+    out.push_str(&rule(c.glow_logo, &c.glow_logo_color, ".institute-logo, .footer-logo", "box-shadow"));
+    out.push_str(&rule(c.glow_title, &c.glow_title_color, ".post-title a, .post-title", "text-shadow"));
+    out.push_str(&rule(c.glow_toc, &c.glow_toc_color, ".mor-toc-container, .mor-toc-list a", "text-shadow"));
+    out.push_str(&rule(c.glow_sidebar, &c.glow_sidebar_color, ".mor-panel .widget, .sidebar-section .widget", "box-shadow"));
+    out.push_str(&rule(c.glow_text, &c.glow_text_color, ".post-body, .post-body p, .post-body h2, .post-body h3", "text-shadow"));
+    out.push_str(&rule(c.glow_containers, &c.glow_containers_color, ".widget, .mor-panel, .mor-post", "box-shadow"));
+    out.push_str(&rule(c.glow_icons, &c.glow_icons_color, ".icon-search-btn, .mor-nav a, .header-panel-toggle, .back-to-top-btn", "box-shadow"));
+    out.push_str(&rule(c.glow_footer, &c.glow_footer_color, ".mor-footer, .mor-footer-mega, .mor-footer-social, .mor-footer-compact", "box-shadow"));
+    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .mor-header-baseline, .mor-header-minimal, .gtk-headerbar", "box-shadow"));
+    out.push_str(&rule(c.glow_main, &c.glow_main_color, ".canvas-core, .canvas-content", "box-shadow"));
+    if out.is_empty() {
+        String::new()
+    } else {
+        format!("\n/* ===== Per-target glow (Advanced Glow) ===== */\n{out}")
+    }
+}
+
 pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let (light_palette, dark_palette) =
         resolve_palette_pair(config.active_preset_id.as_deref(), config);
@@ -466,6 +502,8 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         &escape_attr(&config.buttons.radius),
     );
     xml = xml.replace("{{SITE_TITLE_SIZE_SMALL}}", "0.8rem");
+
+    xml.push_str(&build_target_glow_css(config));
 
     xml
 }

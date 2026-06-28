@@ -12,6 +12,7 @@ pub mod smart_code_dock;
 pub mod template_editor_dock;
 pub mod code_nav_dock;
 pub mod static_pages_dock;
+pub mod widgets_dock;
 
 pub use asset_editor_dock::{
     resolve_theme_dependencies, resolve_workbench_dependencies, AssetEditorDock,
@@ -27,3 +28,4 @@ pub use js_builder_dock::JsBuilderDock;
 pub use template_editor_dock::TemplateModulesDock;
 pub use code_nav_dock::CodeNavDock;
 pub use static_pages_dock::StaticPagesDock;
+pub use widgets_dock::WidgetsDock;

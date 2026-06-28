@@ -154,7 +154,10 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         custom_vars.push_str(&format!("\n  --icon-{safe_key}: {svg_data};"));
     }
 
-    if config.enable_image_borders && config.custom_border_url.is_some() {
+    let frame_on = config.enable_image_borders && config.custom_border_url.is_some();
+    // Sidebars consume --mor-border-image (see 10-Side-Panels.css). Honor the
+    // "Apply to Sidebars" toggle instead of always framing them.
+    if frame_on && config.target_sidebars {
         let url = config.custom_border_url.as_ref().unwrap();
         custom_vars.push_str(&format!(
             "\n  --mor-border-image: url(\"{}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};",
@@ -169,6 +172,18 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
     }
 
     custom_vars.push_str("\n}\n");
+
+    // Main canvas frame — the canvas has no --mor-border-image hook of its own, so
+    // emit a dedicated rule, gated on "Apply to Main Canvas".
+    if frame_on && config.target_canvas {
+        let url = config.custom_border_url.as_ref().unwrap();
+        custom_vars.push_str(&format!(
+            ".canvas-core {{ border-style: solid; border-width: {}; border-image-source: url(\"{}\"); border-image-slice: {}; border-image-repeat: round; }}\n",
+            escape_attr(&config.image_border_width),
+            escape_attr(url),
+            escape_attr(&config.svg_border_slice),
+        ));
+    }
 
     /* Widget header icons via CSS mask (scoped per widget ID/class for .widget h2::before) */
     custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");

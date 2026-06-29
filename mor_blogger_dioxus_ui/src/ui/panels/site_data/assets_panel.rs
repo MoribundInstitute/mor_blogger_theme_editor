@@ -28,6 +28,12 @@ pub fn AssetsPanel(
                 input_type: "text".to_string(),
                 placeholder: "https://example.com/social-card.png".to_string()
             }
+
+            div { class: "editor-help-text", style: "margin-top: 8px; line-height: 1.45;",
+                "Paste a "
+                b { "public image URL" }
+                " (the app links to images, it does not host them). Both are baked into the theme XML as a visual override, so the favicon ships with the theme and needs no Blogger upload. If you also set a favicon in Blogger's dashboard, the dashboard one can win, so leave it blank there to let the theme drive it."
+            }
         }
     }
 }

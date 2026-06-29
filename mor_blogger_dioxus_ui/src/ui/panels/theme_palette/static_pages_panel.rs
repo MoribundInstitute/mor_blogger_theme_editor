@@ -36,6 +36,9 @@ fn preview_html_for_tab(id: &str, pages: &StaticPagesConfig) -> String {
 // here for layouts the community published. The Blogger JSON feed *is* the
 // hub index — each published post is one static page (title + raw HTML body).
 pub const COMMUNITY_HUB_URL: &str = "https://morpages.blogspot.com/";
+/// Source repo behind the static-page hub (browse / contribute layouts).
+pub const COMMUNITY_REPO_URL: &str =
+    "https://github.com/MoribundInstitute/mor-blogger-static-page-compendium";
 const COMMUNITY_FEED_URL: &str =
     "https://morpages.blogspot.com/feeds/posts/default?alt=json&max-results=150";
 
@@ -367,12 +370,6 @@ pub fn StaticPagesPanel(
                                 },
                                 "Load Community Pages"
                             }
-                            button {
-                                class: "editor-button editor-button-small",
-                                title: "Open the static-page compendium (Blogger) in your browser",
-                                onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMMUNITY_HUB_URL).spawn(); },
-                                "Static Page Compendium (Blogger) ↗"
-                            }
                         }
 
                         if !fetch_status().is_empty() {
@@ -436,6 +433,34 @@ pub fn StaticPagesPanel(
                     class: "export-status",
                     style: "margin-top: 15px; color: #3fb950; font-weight: bold;",
                     "{status}"
+                }
+            }
+
+            // Always-visible footer: local folder + the online compendium links.
+            div {
+                style: "margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;",
+                button {
+                    class: "editor-button",
+                    title: "Open the static-pages folder in your file manager",
+                    onclick: move |_| {
+                        match mor_blogger_core::utils::fs_bridge::open_pages_folder() {
+                            Ok(()) => fetch_status.set("Static pages folder opened.".to_string()),
+                            Err(e) => fetch_status.set(format!("Could not open folder: {e}")),
+                        }
+                    },
+                    "Open Static Pages Folder"
+                }
+                button {
+                    class: "editor-button editor-button-small",
+                    title: "Browse the static-page compendium gallery",
+                    onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMMUNITY_HUB_URL).spawn(); },
+                    "Browse Static Page Compendium ↗"
+                }
+                button {
+                    class: "editor-button editor-button-small",
+                    title: "View the static-page compendium source on GitHub",
+                    onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMMUNITY_REPO_URL).spawn(); },
+                    "Source on GitHub ↗"
                 }
             }
         }

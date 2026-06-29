@@ -360,6 +360,58 @@ pub fn preview_footer_html(config: &ThemeConfig) -> String {
     )
 }
 
+/// Render a SINGLE widget, by Blogger type, with representative dummy data,
+/// wrapped in the theme's widget markup so it picks up the live CSS. Used by the
+/// Widget Workbench's master-canvas preview for dynamic widgets that have no
+/// static HTML of their own. Unknown types fall back to a generic gadget card.
+pub fn preview_widget_html(
+    config: &ThemeConfig,
+    w_type: &str,
+    title: &str,
+    posts: &[BlogPost],
+) -> String {
+    // Content-area widgets render inside the main canvas with real post cards.
+    if matches!(w_type, "Blog" | "FeaturedPost") {
+        return format!(
+            r#"<main class="canvas-core" style="max-width:760px;margin:0 auto;">{}</main>"#,
+            preview_content_html(config, posts)
+        );
+    }
+
+    let id = format!("{w_type}1");
+    let label = if title.trim().is_empty() {
+        match w_type {
+            "BlogArchive" => "Archive",
+            "Label" | "Labels" => "Labels",
+            "PageList" => "Pages",
+            "Profile" => "About",
+            "Subscribe" => "Subscribe To",
+            _ => w_type,
+        }
+    } else {
+        title
+    };
+    let head = widget_title_h2(&id, label);
+    let content = match w_type {
+        "BlogArchive" => r##"<ul class="archive-list"><li><a href="#">October 2026 <span class="post-count">(12)</span></a></li><li><a href="#">September 2026 <span class="post-count">(8)</span></a></li><li><a href="#">August 2026 <span class="post-count">(5)</span></a></li></ul>"##.to_string(),
+        "Label" | "Labels" => r##"<ul class="label-list"><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li><li><a href="#">Architecture</a></li></ul>"##.to_string(),
+        "PageList" => r##"<ul class="page-list"><li><a href="#">Home</a></li><li><a href="#">About</a></li><li><a href="#">Archive</a></li><li><a href="#">Contact</a></li></ul>"##.to_string(),
+        "Profile" => r#"<p>A short author bio renders here on the live blog, pulled from your Blogger profile.</p>"#.to_string(),
+        "Subscribe" => r##"<ul class="subscribe-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;"><li class="subscribe-wrapper" style="display:flex;align-items:center;gap:8px;"><span class="feed-icon">📡</span> Posts <a href="#">Atom</a></li><li class="subscribe-wrapper" style="display:flex;align-items:center;gap:8px;"><span class="feed-icon">💬</span> Comments <a href="#">Atom</a></li></ul>"##.to_string(),
+        "Wikipedia" => r#"<form class="wikipedia-search-form" onsubmit="return false;" style="display:flex;gap:6px;align-items:center;"><img class="wikipedia-icon" src="https://resources.blogblog.com/img/widgets/icon_wikipedia_w.png" style="width:24px;height:24px;flex:0 0 auto;"/><input class="wikipedia-search-input" type="text" placeholder="Search Wikipedia…" style="flex:1;min-width:0;"/><input class="wikipedia-search-button" type="submit" value="Go"/></form>"#.to_string(),
+        "Translate" => r#"<div id="google_translate_element"><label style="display:flex;gap:6px;align-items:center;">🌐 <select><option>Select language</option><option>English</option><option>Español</option><option>Français</option><option>Deutsch</option></select></label></div>"#.to_string(),
+        "ContactForm" => r#"<form><input type="text" placeholder="Name"><input type="email" placeholder="Email"><textarea placeholder="Message"></textarea><button type="button">Send</button></form>"#.to_string(),
+        "HTML" => r#"<p>Custom HTML gadget — add markup in the Code tab to see it rendered here.</p>"#.to_string(),
+        _ => format!("<p>{} widget — renders live on Blogger.</p>", escape_html(w_type)),
+    };
+
+    format!(
+        r#"<div class="sidebar-section" style="max-width:340px;margin:0 auto;"><div class="widget {wt}" id="{id}" data-block-id="{id}">{head}<div class="widget-content">{content}</div></div></div>"#,
+        wt = escape_attr(w_type),
+        id = escape_attr(&id),
+    )
+}
+
 /// The full workspace shell: left panel + main (content + footer) + right panel.
 pub fn preview_workspace_html(config: &ThemeConfig, posts: &[BlogPost]) -> String {
     format!(
@@ -506,6 +558,21 @@ html, body {{ overflow: hidden; }}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preview_widget_renders_by_type() {
+        let config = ThemeConfig::default();
+        // Content widget → main canvas with post markup.
+        let blog = preview_widget_html(&config, "Blog", "", &[]);
+        assert!(blog.contains("canvas-core"));
+        // Sidebar widget → themed gadget block with a type-specific list.
+        let archive = preview_widget_html(&config, "BlogArchive", "", &[]);
+        assert!(archive.contains(r#"class="widget BlogArchive""#));
+        assert!(archive.contains("archive-list"));
+        // Unknown type → generic gadget card, never empty.
+        let unknown = preview_widget_html(&config, "Weird", "", &[]);
+        assert!(unknown.contains("renders live on Blogger"));
+    }
 
     // The preview header used to be hardcoded to the site title and ignored
     // header_logo_url; this guards that a set logo renders an <img>, mirroring export.

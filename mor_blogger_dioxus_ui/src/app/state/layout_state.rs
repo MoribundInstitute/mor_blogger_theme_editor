@@ -32,6 +32,8 @@ pub enum CenterView {
     Split,
     Export,
     ModuleWorkbench,
+    WidgetWorkbench,
+    JsWorkbench,
     StaticPageEditor,
 }
 
@@ -219,6 +221,12 @@ impl LayoutState {
             CenterView::StaticPageEditor => DockPosition::mor_panel_left,
             _ => DockPosition::Hidden,
         });
+        // The Widgets library rides along with the Widget Workbench, the way
+        // Template Modules does for the Module Workbench.
+        self.widgets_pos.set(match ws {
+            CenterView::WidgetWorkbench => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
         // Only Preview is about theme/content editing, so the Theme Palette and
         // Site Data docks default to visible there; every other workspace hides
         // them (Module Workbench drives its own Template Modules dock instead).
@@ -230,7 +238,9 @@ impl LayoutState {
             CenterView::CodeEditor
             | CenterView::Export
             | CenterView::StaticPageEditor
-            | CenterView::ModuleWorkbench => {
+            | CenterView::ModuleWorkbench
+            | CenterView::WidgetWorkbench
+            | CenterView::JsWorkbench => {
                 self.theme_palette_pos.set(DockPosition::Hidden);
                 self.site_data_pos.set(DockPosition::Hidden);
             }

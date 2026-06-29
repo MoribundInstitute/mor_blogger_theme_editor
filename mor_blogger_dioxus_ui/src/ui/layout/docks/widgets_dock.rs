@@ -10,6 +10,10 @@ use crate::ui::workspace::widget_layout;
 // Seed XML for a freshly created blueprint (a blank HTML gadget).
 const NEW_WIDGET_XML: &str = "<b:widget id='HTML1' type='HTML' title='New Widget' visible='true'>\n  <b:includable id='main'>\n    <![CDATA[<div class='mor-widget'>New widget content</div>]]>\n  </b:includable>\n</b:widget>\n";
 
+// Online widget library: the public gallery to browse, and the GitHub repo (source / contribute).
+const COMPENDIUM_SITE_URL: &str = "https://mor-widgets-compendium.blogspot.com/";
+const COMPENDIUM_REPO_URL: &str = "https://github.com/MoribundInstitute/mor-blogger-widget-compendium";
+
 /// Slug → friendly label (title-case on `-`/`_`).
 fn pretty(slug: &str) -> String {
     slug.split(['-', '_'])
@@ -95,7 +99,7 @@ pub fn WidgetsDock() -> Element {
                                         name: name.clone(),
                                         xml: NEW_WIDGET_XML.to_string(),
                                     }));
-                                    layout.center_view.set(CenterView::ModuleWorkbench);
+                                    layout.center_view.set(CenterView::WidgetWorkbench);
                                 }
                                 Err(e) => status.set(format!("Create failed: {e}")),
                             }
@@ -158,7 +162,7 @@ pub fn WidgetsDock() -> Element {
                                                 title: "Edit this widget in the workbench",
                                                 onclick: move |_| {
                                                     edit_state.edit_widget_request.set(Some(bp_edit.clone()));
-                                                    layout.center_view.set(CenterView::ModuleWorkbench);
+                                                    layout.center_view.set(CenterView::WidgetWorkbench);
                                                 },
                                                 "Edit"
                                             }
@@ -184,7 +188,7 @@ pub fn WidgetsDock() -> Element {
                     }
 
                     div {
-                        style: "margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-color);",
+                        style: "margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;",
                         button {
                             class: "editor-button",
                             title: "Open the widget blueprints directory in the system file manager",
@@ -195,6 +199,18 @@ pub fn WidgetsDock() -> Element {
                                 }
                             },
                             "Open Widgets Folder"
+                        }
+                        button {
+                            class: "editor-button editor-button-small",
+                            title: "Browse the online Widget Compendium gallery",
+                            onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMPENDIUM_SITE_URL).spawn(); },
+                            "Browse Widget Compendium ↗"
+                        }
+                        button {
+                            class: "editor-button editor-button-small",
+                            title: "View the Widget Compendium source on GitHub",
+                            onclick: move |_| { let _ = std::process::Command::new("xdg-open").arg(COMPENDIUM_REPO_URL).spawn(); },
+                            "Source on GitHub ↗"
                         }
                     }
                 }

@@ -570,6 +570,12 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
                 }
             }
 
+            if (layout.widgets_pos)() == DockPosition::Floating {
+                div { style: "pointer-events: auto;",
+                    WidgetsDock {}
+                }
+            }
+
             // ADD THIS BLOCK: Rescue Presets from the void
             if (layout.presets_pos)() == DockPosition::Floating {
                 div { style: "pointer-events: auto;",

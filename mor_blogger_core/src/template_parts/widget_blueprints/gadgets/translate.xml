@@ -1,0 +1,22 @@
+<b:widget id='Translate1' locked='false' title='Translate' type='Translate'>
+  <b:widget-settings>
+    <b:widget-setting name='displayMode' data-mor-field='text|Display mode|VERTICAL,HORIZONTAL,SIMPLE'>VERTICAL</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main'>
+  <b:if cond='data:title != &quot;&quot;'>
+    <h2 class='title'><span data-field-path='widget.Translate1.title'><data:title/></span></h2>
+  </b:if>
+  <div id='google_translate_element'/>
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: &#39;<data:pageLanguage/>&#39;,
+        autoDisplay: &#39;true&#39;,
+        layout: google.translate.TranslateElement.InlineLayout.<data:layout/>
+      }, &#39;google_translate_element&#39;);
+    }
+  </script>
+  <script src='//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'/>
+  <b:include name='quickedit'/>
+</b:includable>
+</b:widget>

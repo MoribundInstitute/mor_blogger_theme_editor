@@ -126,6 +126,179 @@ pub fn remove(xml: &str, index: usize) -> String {
     out
 }
 
+// ─── Editable fields (Widget Workbench "Settings" form) ─────────────────────────
+//
+// A blueprint marks a user-customizable value with `data-mor-field='<attr>|<label>'`
+// on the element whose attribute holds it (a link's `href`, an `img`'s `src`, …).
+// The Widget Workbench surfaces these as labeled inputs; an edit rewrites the literal
+// value in the buffer, so the customized XML is what gets inserted and exported. The
+// marker itself is stripped from the exported theme (core `theme::render_theme`).
+
+const FIELD_MARK: &str = "data-mor-field=";
+
+/// One editable field surfaced from a `data-mor-field` marker.
+/// `options` non-empty → render as a dropdown instead of a free-text input.
+#[derive(Clone, PartialEq)]
+pub struct WidgetField {
+    pub label: String,
+    pub value: String,
+    pub options: Vec<String>,
+}
+
+/// A parsed marker: `<attr>|<label>[|opt,opt,…]`. `attr` is an attribute name on
+/// the enclosing element, or `text` for the element's text content.
+struct FieldMark {
+    attr: String,
+    label: String,
+    options: Vec<String>,
+    /// Byte range (`lt..=gt`) of the enclosing start tag.
+    lt: usize,
+    gt: usize,
+}
+
+/// Parse one `data-mor-field` occurrence at `marker_pos`.
+fn field_at(xml: &str, marker_pos: usize) -> Option<FieldMark> {
+    let after = &xml[marker_pos + FIELD_MARK.len()..];
+    let q = after.chars().next()?;
+    if q != '\'' && q != '"' {
+        return None;
+    }
+    let vstart = q.len_utf8();
+    let vend_rel = after[vstart..].find(q)?;
+    let spec = &after[vstart..vstart + vend_rel];
+    let mut it = spec.splitn(3, '|');
+    let attr = it.next()?.trim().to_string();
+    let label = it.next().unwrap_or("").trim().to_string();
+    let options = it
+        .next()
+        .map(|s| {
+            s.split(',')
+                .map(|o| o.trim().to_string())
+                .filter(|o| !o.is_empty())
+                .collect()
+        })
+        .unwrap_or_default();
+    let lt = xml[..marker_pos].rfind('<')?;
+    let gt = xml[marker_pos..].find('>').map(|i| marker_pos + i)?;
+    Some(FieldMark { attr, label, options, lt, gt })
+}
+
+/// Current value of a marked field: an attribute value, or (for `text`) the
+/// element's text content up to its first child/close tag (plain text only).
+fn field_value(xml: &str, m: &FieldMark) -> String {
+    if m.attr == "text" {
+        let text_start = m.gt + 1;
+        let end = xml[text_start..]
+            .find('<')
+            .map(|i| text_start + i)
+            .unwrap_or(xml.len());
+        xml[text_start..end].trim().to_string()
+    } else {
+        attr(&xml[m.lt..=m.gt], &m.attr).unwrap_or("").to_string()
+    }
+}
+
+/// Escape a value for use as element text content.
+fn escape_text(v: &str) -> String {
+    v.replace('&', "&amp;").replace('<', "&lt;")
+}
+
+/// Escape a value for insertion into a quoted attribute (preserving the quote char).
+fn escape_attr_value(v: &str, q: char) -> String {
+    let s = v.replace('&', "&amp;").replace('<', "&lt;");
+    match q {
+        '\'' => s.replace('\'', "&#39;"),
+        _ => s.replace('"', "&quot;"),
+    }
+}
+
+/// Replace `name`'s quoted value in a start tag, escaping for the quote in use.
+fn replace_attr(tag: &str, name: &str, value: &str) -> Option<String> {
+    for q in ['\'', '"'] {
+        let pat = format!("{name}={q}");
+        if let Some(p) = tag.find(&pat) {
+            let vstart = p + pat.len();
+            let e = tag[vstart..].find(q)?;
+            let esc = escape_attr_value(value, q);
+            return Some(format!("{}{}{}", &tag[..vstart], esc, &tag[vstart + e..]));
+        }
+    }
+    None
+}
+
+/// Every editable field in document order, with its current value.
+pub fn parse_fields(xml: &str) -> Vec<WidgetField> {
+    let mut out = Vec::new();
+    let mut search = 0;
+    while let Some(rel) = xml[search..].find(FIELD_MARK) {
+        let pos = search + rel;
+        if let Some(m) = field_at(xml, pos) {
+            out.push(WidgetField {
+                label: m.label.clone(),
+                value: field_value(xml, &m),
+                options: m.options.clone(),
+            });
+            search = m.gt + 1;
+        } else {
+            search = pos + FIELD_MARK.len();
+        }
+    }
+    out
+}
+
+/// Rewrite the `index`-th editable field's value in the buffer.
+pub fn set_field(xml: &str, index: usize, value: &str) -> String {
+    let mut search = 0;
+    let mut i = 0;
+    while let Some(rel) = xml[search..].find(FIELD_MARK) {
+        let pos = search + rel;
+        let Some(m) = field_at(xml, pos) else {
+            search = pos + FIELD_MARK.len();
+            continue;
+        };
+        if i == index {
+            if m.attr == "text" {
+                let text_start = m.gt + 1;
+                let end = xml[text_start..]
+                    .find('<')
+                    .map(|x| text_start + x)
+                    .unwrap_or(xml.len());
+                return format!("{}{}{}", &xml[..text_start], escape_text(value), &xml[end..]);
+            }
+            return match replace_attr(&xml[m.lt..=m.gt], &m.attr, value) {
+                Some(new_tag) => format!("{}{}{}", &xml[..m.lt], new_tag, &xml[m.gt + 1..]),
+                None => xml.to_string(),
+            };
+        }
+        i += 1;
+        search = m.gt + 1;
+    }
+    xml.to_string()
+}
+
+/// Set the `title` attribute on the blueprint's widget (the first `<b:widget>`),
+/// inserting one if absent. This is what makes a widget title customizable on
+/// export (the `widget_titles` config override is preview-only).
+pub fn set_widget_title(xml: &str, value: &str) -> String {
+    let Some(start) = find_widget_open(xml, 0) else {
+        return xml.to_string();
+    };
+    let te = tag_end(xml, start, xml.len());
+    let tag = &xml[start..te];
+    let new_tag = match attr(tag, "title") {
+        Some(_) => match replace_attr(tag, "title", value) {
+            Some(t) => t,
+            None => return xml.to_string(),
+        },
+        None => tag.replacen(
+            OPEN,
+            &format!("{OPEN} title='{}'", escape_attr_value(value, '\'')),
+            1,
+        ),
+    };
+    format!("{}{}{}", &xml[..start], new_tag, &xml[te..])
+}
+
 // ─── Full structural parts ────────────────────────────────────────────────────
 //
 // A template module is more than its literal `<b:widget>` blocks: sidebars/layouts
@@ -373,6 +546,41 @@ mod tests {
     fn toggle_visibility_flips_attr() {
         let out = set_visible(&doc(), 0, false);
         assert!(parse_slots(&out)[0].visible == false);
+    }
+
+    #[test]
+    fn parses_and_rewrites_marked_fields() {
+        let xml = "<b:widget id='W1' type='Wikipedia' title='Wiki'><a href='https://wikipedia.org/wiki/' data-mor-field='href|Wiki base URL'>x</a></b:widget>";
+        let fields = parse_fields(xml);
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].label, "Wiki base URL");
+        assert_eq!(fields[0].value, "https://wikipedia.org/wiki/");
+
+        let out = set_field(xml, 0, "https://de.wikipedia.org/wiki/");
+        assert!(out.contains("href='https://de.wikipedia.org/wiki/'"));
+        // marker survives in the buffer (stripped only on export)
+        assert!(out.contains("data-mor-field='href|Wiki base URL'"));
+    }
+
+    #[test]
+    fn parses_and_rewrites_text_enum_field() {
+        let xml = "<b:widget-settings><b:widget-setting name='displayMode' data-mor-field='text|Display mode|VERTICAL,HORIZONTAL,SIMPLE'>VERTICAL</b:widget-setting></b:widget-settings>";
+        let fields = parse_fields(xml);
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].label, "Display mode");
+        assert_eq!(fields[0].value, "VERTICAL");
+        assert_eq!(fields[0].options, vec!["VERTICAL", "HORIZONTAL", "SIMPLE"]);
+
+        let out = set_field(xml, 0, "HORIZONTAL");
+        assert!(out.contains(">HORIZONTAL</b:widget-setting>"));
+        assert!(!out.contains(">VERTICAL<"));
+    }
+
+    #[test]
+    fn set_widget_title_rewrites_attr() {
+        let xml = "<b:widget id='W1' type='HTML' title='Old'></b:widget>";
+        let out = set_widget_title(xml, "New & Shiny");
+        assert!(out.contains("title='New &amp; Shiny'"));
     }
 
     #[test]

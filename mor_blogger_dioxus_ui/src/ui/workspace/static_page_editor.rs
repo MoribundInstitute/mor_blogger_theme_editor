@@ -234,6 +234,17 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                         },
                         "Browse Community Hub ↗"
                     }
+                    button {
+                        class: "editor-mini-button",
+                        style: "margin-top: 4px;",
+                        title: "View the static-page compendium source on GitHub",
+                        onclick: move |_| {
+                            let _ = std::process::Command::new("xdg-open")
+                                .arg(crate::ui::panels::theme_palette::static_pages_panel::COMMUNITY_REPO_URL)
+                                .spawn();
+                        },
+                        "Source on GitHub ↗"
+                    }
                 }
             } else {
                 // Split Editor View

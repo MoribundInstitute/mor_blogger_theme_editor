@@ -487,8 +487,14 @@ pub fn resolve_template_parts(
         || pack.script_variant == "mor_collapsible_sidebars"
         || pack.script_variant == "magazine_grid_logic"
     {
-        for file in CORE_JS_FILES {
-            unique_js.insert(*file);
+        // Core helpers always ship; the optional behaviors ship only when enabled,
+        // so disabling them in the JS workspace actually trims bytes from the export.
+        unique_js.insert("01-Core-Helpers.js");
+        if config.scripts.enable_theme_toggle {
+            unique_js.insert("07-Theme-Toggler.js");
+        }
+        if config.scripts.enable_share_actions {
+            unique_js.insert("08-Share-Actions.js");
         }
     }
 

@@ -41,7 +41,6 @@ pub fn MorDock(props: MorDockProps) -> Element {
     let mut dragging = use_signal(|| false);
     let mut start_offset = use_signal(|| (0.0, 0.0));
 
-    #[cfg(not(target_arch = "wasm32"))]
     let window = dioxus::desktop::use_window();
 
     let container_style = if props.is_native_window {
@@ -55,14 +54,11 @@ pub fn MorDock(props: MorDockProps) -> Element {
         )
     };
 
-    #[cfg(not(target_arch = "wasm32"))]
     let window_mousedown = window.clone();
-    #[cfg(not(target_arch = "wasm32"))]
     let window_close = window.clone();
 
     let onmousedown = move |e: MouseEvent| {
         if props.is_native_window {
-            #[cfg(not(target_arch = "wasm32"))]
             window_mousedown.drag();
         } else if e.trigger_button() == Some(dioxus::html::input_data::MouseButton::Primary) {
             let coords = e.client_coordinates();
@@ -154,7 +150,6 @@ pub fn MorDock(props: MorDockProps) -> Element {
                             if let Some(ref handler) = props.on_close {
                                 handler.call(evt);
                             } else {
-                                #[cfg(not(target_arch = "wasm32"))]
                                 window_close.close();
                             }
                         },
@@ -260,7 +255,6 @@ pub fn StandardNativeWindow(props: StandardNativeWindowProps) -> Element {
     let mut dragging = use_signal(|| false);
     let mut start_offset = use_signal(|| (0.0, 0.0));
 
-    #[cfg(not(target_arch = "wasm32"))]
     let window = dioxus::desktop::use_window();
 
     let container_style = if props.is_native_window {
@@ -274,12 +268,10 @@ pub fn StandardNativeWindow(props: StandardNativeWindowProps) -> Element {
         )
     };
 
-    #[cfg(not(target_arch = "wasm32"))]
     let window_mousedown = window.clone();
 
     let onmousedown = move |e: MouseEvent| {
         if props.is_native_window {
-            #[cfg(not(target_arch = "wasm32"))]
             window_mousedown.drag();
         } else if e.trigger_button() == Some(dioxus::html::input_data::MouseButton::Primary) {
             let coords = e.client_coordinates();

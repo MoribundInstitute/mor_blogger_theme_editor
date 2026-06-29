@@ -243,12 +243,16 @@ pub fn PluginManagerDock() -> Element {
                             {
                                 let mut final_path = file_path.clone();
                                 let mut copy_success = false;
-                                if let Some(config_dir) = dirs::config_dir() {
-                                    let mcp_dir = config_dir.join("mor_blogger/mcp_servers");
-                                    if let Ok(_) = std::fs::create_dir_all(&mcp_dir) {
+                                // Reuse core's canonical MCP location (parent of the daemon registry)
+                                // instead of re-deriving the OS config dir.
+                                if let Some(mcp_dir) = crate::utils::mcp_installer::mcp_daemon_registry_path()
+                                    .parent()
+                                    .map(std::path::Path::to_path_buf)
+                                {
+                                    if std::fs::create_dir_all(&mcp_dir).is_ok() {
                                         if let Some(file_name) = file_path.file_name() {
                                             let dest_path = mcp_dir.join(file_name);
-                                            if let Ok(_) = std::fs::copy(&file_path, &dest_path) {
+                                            if std::fs::copy(&file_path, &dest_path).is_ok() {
                                                 final_path = dest_path;
                                                 copy_success = true;
                                             }

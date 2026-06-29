@@ -1,0 +1,19 @@
+<b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='showSnippets'>true</b:widget-setting>
+    <b:widget-setting name='showThumbnails'>true</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main' var='this'>
+    <b:if cond='data:post'>
+      <article class='mor-featured-post'>
+        <b:if cond='data:post.featuredImage'>
+          <img class='post-thumbnail' expr:alt='data:post.title' expr:src='data:post.featuredImage'/>
+        </b:if>
+        <h2 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h2>
+        <b:if cond='data:post.snippet'>
+          <p class='post-snippet'><data:post.snippet/></p>
+        </b:if>
+      </article>
+    </b:if>
+  </b:includable>
+</b:widget>

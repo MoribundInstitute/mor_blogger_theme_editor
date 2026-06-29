@@ -97,32 +97,6 @@ body {
   margin-top: 0.55rem;
   background: linear-gradient(90deg, var(--accent), transparent);
 }
-
-.pager-btn, .panel-toggle, .toc-jump-link, .back-to-top-btn, .mor-catalog-trigger {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-panel) 82%, var(--fg-base)) 0%,
-    color-mix(in srgb, var(--bg-panel) 86%, var(--bg-base)) 100%
-  ) !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 8px !important;
-  padding: 0.55rem 0.9rem !important;
-  font-family: var(--font-body) !important;
-  font-weight: 650 !important;
-  box-shadow:
-    0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset,
-    0 8px 22px color-mix(in srgb, var(--bg-base) 14%, transparent) !important;
-  cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 160ms ease, box-shadow 160ms ease !important;
-}
-
-.pager-btn:hover, .panel-toggle:hover, .toc-jump-link:hover, .back-to-top-btn:hover, .mor-catalog-trigger:hover {
-  transform: translateY(-1px) !important;
-  color: var(--accent) !important;
-  border-color: color-mix(in srgb, var(--accent) 70%, var(--border-color)) !important;
-}
-
 input[type='text']:focus, textarea:focus {
   outline: none !important;
   border-color: var(--accent) !important;
@@ -130,6 +104,11 @@ input[type='text']:focus, textarea:focus {
     0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent),
     0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset !important;
 }
+
+/* --- Theme cursors (default / pointer / text) --- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%2305a581' stroke='%2306231d' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%2305a581' stroke='%2306231d' stroke-width='1'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%2305a581' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 [colors]
@@ -172,6 +151,16 @@ heading_weight = "700"
 radius = "8px"
 border_width = "1px"
 text_transform = "none"
+padding_x = "0.9rem"
+padding_y = "0.55rem"
+font_weight = "650"
+fill = "gradient"
+gradient_from = "color-mix(in srgb, var(--bg-panel) 82%, var(--fg-base))"
+gradient_to = "color-mix(in srgb, var(--bg-panel) 86%, var(--bg-base))"
+gradient_angle = "180deg"
+box_shadow = "0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset, 0 8px 22px color-mix(in srgb, var(--bg-base) 14%, transparent)"
+hover_effect = "lift"
+transition_ms = "160ms"
 
 [light.colors]
 bg_base = "#f0f5f9"
@@ -199,3 +188,9 @@ gradient_angle_deg = 180
 
 [light.background.mode.Solid]
 color = "#f0f5f9"
+
+[scrollbars]
+width = "10px"
+track_color = "#101923"
+thumb_color = "#05a581"
+thumb_hover_color = "#2fd0a8"

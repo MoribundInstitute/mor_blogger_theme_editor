@@ -1,4 +1,4 @@
-use crate::config::{BackgroundMode, ThemeConfig};
+use crate::config::{BackgroundMode, ButtonConfig, ThemeConfig};
 use crate::presets::resolve_palette_pair;
 use crate::render::css_builder::{
     icon_or_default, DEFAULT_ICON_MENU, DEFAULT_ICON_PANEL_CLOSE, DEFAULT_ICON_SEARCH,
@@ -103,6 +103,42 @@ fn generate_background_value(bg: &BackgroundMode) -> String {
         ),
         BackgroundMode::Tile { url } if url.trim().is_empty() => "none".to_string(),
         BackgroundMode::Tile { url } => format!("url('{}')", escape_attr(url)),
+    }
+}
+
+/// Per-target glow CSS driven by the Advanced Glow toggles. Each enabled target
+/// gets a box/text-shadow using its own color (falling back to the global glow
+/// color, then the accent). Appended last so it overrides the base rules.
+fn build_target_glow_css(config: &ThemeConfig) -> String {
+    let c = &config.colors;
+    let spread = first_non_empty(&c.glow_spread, "8px");
+    let global = if c.glow_color.trim().is_empty() {
+        c.accent.as_str()
+    } else {
+        c.glow_color.as_str()
+    };
+    let rule = |on: bool, color: &str, sel: &str, prop: &str| -> String {
+        if !on {
+            return String::new();
+        }
+        let col = first_non_empty(color, global);
+        format!("{sel} {{ {prop}: 0 0 {spread} {col} !important; }}\n")
+    };
+    let mut out = String::new();
+    out.push_str(&rule(c.glow_logo, &c.glow_logo_color, ".institute-logo, .footer-logo", "box-shadow"));
+    out.push_str(&rule(c.glow_title, &c.glow_title_color, ".post-title a, .post-title", "text-shadow"));
+    out.push_str(&rule(c.glow_toc, &c.glow_toc_color, ".mor-toc-container, .mor-toc-list a", "text-shadow"));
+    out.push_str(&rule(c.glow_sidebar, &c.glow_sidebar_color, ".mor-panel .widget, .sidebar-section .widget", "box-shadow"));
+    out.push_str(&rule(c.glow_text, &c.glow_text_color, ".post-body, .post-body p, .post-body h2, .post-body h3", "text-shadow"));
+    out.push_str(&rule(c.glow_containers, &c.glow_containers_color, ".widget, .mor-panel, .mor-post", "box-shadow"));
+    out.push_str(&rule(c.glow_icons, &c.glow_icons_color, ".icon-search-btn, .mor-nav a, .header-panel-toggle, .back-to-top-btn", "box-shadow"));
+    out.push_str(&rule(c.glow_footer, &c.glow_footer_color, ".mor-footer, .mor-footer-mega, .mor-footer-social, .mor-footer-compact", "box-shadow"));
+    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .mor-header-baseline, .mor-header-minimal, .gtk-headerbar", "box-shadow"));
+    out.push_str(&rule(c.glow_main, &c.glow_main_color, ".canvas-core, .canvas-content", "box-shadow"));
+    if out.is_empty() {
+        String::new()
+    } else {
+        format!("\n/* ===== Per-target glow (Advanced Glow) ===== */\n{out}")
     }
 }
 
@@ -361,6 +397,10 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         "{{BTN_TEXT_TRANSFORM}}",
         &escape_attr(&config.buttons.text_transform),
     );
+    // Computed button styling block (fill/elevation/hover need conditional CSS
+    // that token replacement can't express). Sits in core CSS so presets can
+    // still override it via preset_css.
+    xml = xml.replace("{{BUTTON_STYLES}}", &render_button_styles(&config.buttons, ""));
 
     xml = xml.replace("{{PANEL_BORDER_WIDTH}}", &escape_attr(panel_border_width));
     xml = xml.replace(
@@ -463,5 +503,383 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     );
     xml = xml.replace("{{SITE_TITLE_SIZE_SMALL}}", "0.8rem");
 
+    xml.push_str(&build_target_glow_css(config));
+
     xml
+}
+
+/// Text buttons in the rendered theme. Icon toggles (`.panel-toggle`) are
+/// excluded so their square hit-areas aren't restyled.
+const BTN_PARTS: [&str; 9] = [
+    "button:not(.panel-toggle)",
+    ".pager-btn",
+    ".back-to-top-btn",
+    ".toc-jump-link",
+    ".mor-catalog-trigger",
+    ".read-more",
+    ".comment-form-submit",
+    "input[type='submit']",
+    "input[type='button']",
+];
+
+/// Join the button selectors, optionally prefixed by a scope (e.g. a preview
+/// container class) so the same rules can style just one region.
+fn scoped_sel(scope: &str) -> String {
+    let scope = scope.trim();
+    if scope.is_empty() {
+        BTN_PARTS.join(", ")
+    } else {
+        BTN_PARTS
+            .iter()
+            .map(|p| format!("{scope} {p}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+}
+
+/// Build the full button rule set from [`ButtonConfig`]. Handles the fill,
+/// elevation, and hover variants that can't be expressed as flat token swaps.
+/// Empty color fields derive from the active theme vars. `scope` is "" for the
+/// global theme output, or a container selector to scope a preview.
+pub fn render_button_styles(b: &ButtonConfig, scope: &str) -> String {
+    let sel = scoped_sel(scope);
+
+    // Effect parameters for glass / neon / glow.
+    let gc = if b.glow_color.trim().is_empty() {
+        "var(--accent)".to_string()
+    } else {
+        b.glow_color.clone()
+    };
+    let g = if b.glow_strength.trim().is_empty() {
+        "12px".to_string()
+    } else {
+        b.glow_strength.clone()
+    };
+    let blur = if b.glass_blur.trim().is_empty() {
+        "12px".to_string()
+    } else {
+        b.glass_blur.clone()
+    };
+    let op = {
+        let v: f32 = b.glass_opacity.trim().parse().unwrap_or(0.4);
+        (v.clamp(0.0, 1.0) * 100.0).round() as i32
+    };
+    let op_hi = (op + 18).min(100);
+
+    let g_angle = if b.gradient_angle.trim().is_empty() {
+        "180deg".to_string()
+    } else {
+        b.gradient_angle.clone()
+    };
+    let g_from = if b.gradient_from.trim().is_empty() {
+        "var(--bg-panel)".to_string()
+    } else {
+        b.gradient_from.clone()
+    };
+    let g_to = if b.gradient_to.trim().is_empty() {
+        "var(--bg-base)".to_string()
+    } else {
+        b.gradient_to.clone()
+    };
+    let gradient = format!("linear-gradient({g_angle}, {g_from}, {g_to})");
+
+    // (bg, text, border, default-hover-bg) per fill style.
+    let (mut bg, mut fg, mut border, hover_bg_default) = match b.fill.as_str() {
+        "solid" => (
+            "var(--accent)".to_string(),
+            "var(--bg-base)".to_string(),
+            "var(--accent)".to_string(),
+            "color-mix(in srgb, var(--accent) 85%, #000)".to_string(),
+        ),
+        "soft" => (
+            "color-mix(in srgb, var(--accent) 16%, transparent)".to_string(),
+            "var(--accent)".to_string(),
+            "transparent".to_string(),
+            "color-mix(in srgb, var(--accent) 28%, transparent)".to_string(),
+        ),
+        "ghost" => (
+            "transparent".to_string(),
+            "var(--fg-base)".to_string(),
+            "transparent".to_string(),
+            "color-mix(in srgb, var(--fg-base) 12%, transparent)".to_string(),
+        ),
+        "glass" => (
+            format!("color-mix(in srgb, var(--bg-base) {op}%, transparent)"),
+            "var(--fg-base)".to_string(),
+            "color-mix(in srgb, var(--fg-base) 14%, transparent)".to_string(),
+            format!("color-mix(in srgb, var(--bg-base) {op_hi}%, transparent)"),
+        ),
+        "neon" => (
+            "transparent".to_string(),
+            gc.clone(),
+            gc.clone(),
+            format!("color-mix(in srgb, {gc} 16%, transparent)"),
+        ),
+        "glossy" => (
+            "var(--accent)".to_string(),
+            "#ffffff".to_string(),
+            "color-mix(in srgb, var(--fg-base) 12%, transparent)".to_string(),
+            "color-mix(in srgb, var(--accent) 88%, #000)".to_string(),
+        ),
+        "gradient" => (
+            gradient.clone(),
+            "var(--fg-base)".to_string(),
+            "var(--border-color)".to_string(),
+            gradient.clone(),
+        ),
+        // "outline" / default — neutral bordered button (historical look).
+        _ => (
+            "transparent".to_string(),
+            "var(--fg-base)".to_string(),
+            "var(--border-color)".to_string(),
+            "var(--fg-base)".to_string(),
+        ),
+    };
+    // Outline inverts text on hover; other fills keep their text color.
+    let mut hover_fg = if b.fill == "outline" || b.fill.is_empty() {
+        "var(--bg-base)".to_string()
+    } else {
+        fg.clone()
+    };
+
+    if !b.bg_color.trim().is_empty() {
+        bg = b.bg_color.clone();
+    }
+    if !b.text_color.trim().is_empty() {
+        fg = b.text_color.clone();
+        hover_fg = fg.clone();
+    }
+    if !b.border_color.trim().is_empty() {
+        border = b.border_color.clone();
+    }
+    let hover_bg = if b.hover_bg_color.trim().is_empty() {
+        hover_bg_default
+    } else {
+        b.hover_bg_color.clone()
+    };
+
+    let shadow = match b.elevation.as_str() {
+        "subtle" => "0 1px 2px rgba(0,0,0,0.18)",
+        "raised" => "0 2px 5px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+        _ => "none",
+    };
+
+    // Surface effects: extra declarations layered after the base (so they win).
+    let effect_extra = match b.fill.as_str() {
+        "glass" => format!(
+            "  backdrop-filter: blur({blur}) saturate(140%);\n  -webkit-backdrop-filter: blur({blur}) saturate(140%);\n  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 16%, transparent);\n"
+        ),
+        "neon" => format!(
+            "  box-shadow: 0 0 {g} {gc}, inset 0 0 calc({g} / 2) color-mix(in srgb, {gc} 35%, transparent);\n  text-shadow: 0 0 6px {gc};\n"
+        ),
+        "glossy" => {
+            let base = if b.bg_color.trim().is_empty() {
+                "var(--accent)".to_string()
+            } else {
+                b.bg_color.clone()
+            };
+            format!(
+                "  background-image: linear-gradient(180deg, color-mix(in srgb, {base} 80%, #fff), {base});\n  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 3px rgba(0,0,0,0.3);\n"
+            )
+        }
+        _ => String::new(),
+    };
+
+    let mut decls = String::new();
+    if !b.font_size.trim().is_empty() {
+        decls.push_str(&format!("  font-size: {};\n", b.font_size));
+    }
+    if !b.font_weight.trim().is_empty() {
+        decls.push_str(&format!("  font-weight: {};\n", b.font_weight));
+    }
+    if !b.letter_spacing.trim().is_empty() {
+        decls.push_str(&format!("  letter-spacing: {};\n", b.letter_spacing));
+    }
+    if b.full_width {
+        decls.push_str("  width: 100%;\n");
+    }
+    let transition = if b.transition_ms.trim().is_empty() || b.transition_ms.trim() == "0ms" {
+        String::new()
+    } else {
+        format!("  transition: all {} ease;\n", b.transition_ms)
+    };
+
+    let hover_extra = match b.hover_effect.as_str() {
+        "lift" => "  transform: translateY(-2px);\n  box-shadow: 0 4px 10px rgba(0,0,0,0.3);\n".to_string(),
+        "grow" => "  transform: scale(1.04);\n".to_string(),
+        "brighten" => "  filter: brightness(1.12);\n".to_string(),
+        // Customizable glow, also intensifies neon on hover.
+        "glow" => format!("  box-shadow: 0 0 {g} {gc}, 0 0 calc({g} * 2) color-mix(in srgb, {gc} 50%, transparent);\n"),
+        _ => String::new(),
+    };
+    let pressed = if b.pressed_feedback {
+        // Outset borders flip to inset on press for the classic 3D button feel.
+        let bevel = if b.border_style == "outset" {
+            " border-style: inset;"
+        } else {
+            ""
+        };
+        format!("{sel}:active {{ transform: translateY(1px) scale(0.99);{bevel} }}\n")
+    } else {
+        String::new()
+    };
+    let focus_color = if b.focus_ring_color.trim().is_empty() {
+        "var(--fg-dim)".to_string()
+    } else {
+        b.focus_ring_color.clone()
+    };
+
+    // Raw box-shadow override wins over elevation + effect shadows when set.
+    let shadow_override = if b.box_shadow.trim().is_empty() {
+        String::new()
+    } else {
+        format!("  box-shadow: {};\n", b.box_shadow)
+    };
+    // Gradient/glossy/glass keep their surface on hover (rely on hover_effect)
+    // unless an explicit hover color is given.
+    let keeps_surface = matches!(b.fill.as_str(), "gradient" | "glossy" | "glass")
+        && b.hover_bg_color.trim().is_empty();
+    let hover_bg_decl = if keeps_surface {
+        String::new()
+    } else {
+        format!("  background: {};\n", hover_bg)
+    };
+
+    format!(
+        "/* --- Computed button styles --- */\n\
+{sel} {{\n  background: {bg};\n  color: {fg};\n  border: {bw} {bstyle} {border};\n  border-radius: {radius};\n  padding: {py} {px};\n  text-transform: {tt};\n  box-shadow: {shadow};\n{decls}{transition}{effect_extra}{shadow_override}}}\n\
+{sel}:hover, {sel}:focus {{\n{hover_bg_decl}  color: {hover_fg};\n{hover_extra}}}\n\
+{sel}:focus-visible {{ outline: none; box-shadow: 0 0 0 {fw} {focus_color}; }}\n\
+{pressed}",
+        sel = sel,
+        bg = bg,
+        fg = fg,
+        bw = b.border_width,
+        bstyle = b.border_style,
+        border = border,
+        radius = b.radius,
+        py = b.padding_y,
+        px = b.padding_x,
+        tt = b.text_transform,
+        shadow = shadow,
+        decls = decls,
+        transition = transition,
+        effect_extra = effect_extra,
+        shadow_override = shadow_override,
+        hover_bg_decl = hover_bg_decl,
+        hover_fg = hover_fg,
+        hover_extra = hover_extra,
+        fw = b.focus_ring_width,
+        focus_color = focus_color,
+        pressed = pressed,
+    )
+}
+
+#[cfg(test)]
+mod button_tests {
+    use super::*;
+
+    #[test]
+    fn button_styles_cover_variants() {
+        // Default (outline) reproduces the neutral bordered look.
+        let css = render_button_styles(&ButtonConfig::default(), "");
+        assert!(css.contains("background: transparent;"));
+        assert!(css.contains("color: var(--fg-base);"));
+        assert!(css.contains("box-shadow: none;")); // flat elevation
+
+        // Solid + raised + lift + override emits the expected pieces.
+        let mut b = ButtonConfig::default();
+        b.fill = "solid".into();
+        b.elevation = "raised".into();
+        b.hover_effect = "lift".into();
+        b.bg_color = "#c2622a".into();
+        b.transition_ms = "150ms".into();
+        let css = render_button_styles(&b, "");
+        assert!(css.contains("background: #c2622a;")); // override wins
+        assert!(css.contains("inset 0 1px 0")); // raised shadow
+        assert!(css.contains("translateY(-2px)")); // lift hover
+        assert!(css.contains("transition: all 150ms ease;"));
+    }
+
+    #[test]
+    fn effect_fills_emit_their_css() {
+        let mut b = ButtonConfig::default();
+        b.fill = "glass".into();
+        b.glass_blur = "20px".into();
+        let glass = render_button_styles(&b, "");
+        assert!(glass.contains("backdrop-filter: blur(20px)"));
+
+        b.fill = "neon".into();
+        b.glow_color = "#00eaff".into();
+        b.glow_strength = "14px".into();
+        let neon = render_button_styles(&b, "");
+        assert!(neon.contains("text-shadow: 0 0 6px #00eaff"));
+        assert!(neon.contains("box-shadow: 0 0 14px #00eaff"));
+
+        b.fill = "glossy".into();
+        let glossy = render_button_styles(&b, "");
+        assert!(glossy.contains("linear-gradient(180deg"));
+    }
+
+    #[test]
+    fn gradient_bevel_and_shadow_override() {
+        let mut b = ButtonConfig::default();
+        b.fill = "gradient".into();
+        b.gradient_from = "#aaa".into();
+        b.gradient_to = "#333".into();
+        b.gradient_angle = "180deg".into();
+        b.box_shadow = "inset 1px 1px 0 #fff".into();
+        let css = render_button_styles(&b, "");
+        assert!(css.contains("background: linear-gradient(180deg, #aaa, #333)"));
+        assert!(css.contains("box-shadow: inset 1px 1px 0 #fff;")); // override
+        // Gradient keeps its surface on hover: hover rule has no background reset.
+        assert!(css.contains(":focus {\n  color:"), "hover should not reset background");
+
+        // Outset border flips to inset on press.
+        let mut w = ButtonConfig::default();
+        w.border_style = "outset".into();
+        w.pressed_feedback = true;
+        let wcss = render_button_styles(&w, "");
+        assert!(wcss.contains("border: 1px outset"));
+        assert!(wcss.contains("border-style: inset;"));
+    }
+
+    #[test]
+    fn scope_prefixes_selectors_for_preview() {
+        let scoped = render_button_styles(&ButtonConfig::default(), ".mor-btn-preview");
+        assert!(scoped.contains(".mor-btn-preview .pager-btn"));
+        assert!(scoped.contains(".mor-btn-preview button:not(.panel-toggle)"));
+        // The global (export) form must NOT carry the preview scope.
+        let global = render_button_styles(&ButtonConfig::default(), "");
+        assert!(!global.contains(".mor-btn-preview"));
+    }
+
+    #[test]
+    fn button_styles_socket_is_replaced() {
+        let cfg = ThemeConfig::default();
+        let out = render_css_sockets("a {{BUTTON_STYLES}} b".to_string(), &cfg);
+        assert!(!out.contains("{{BUTTON_STYLES}}"), "token left unreplaced");
+        assert!(out.contains("Computed button styles"), "block not injected");
+    }
+
+    // End-to-end: in the full assembled stylesheet the config-driven block is
+    // present, the token is gone, and it lands AFTER the base .pager-btn CSS so
+    // the config is authoritative.
+    #[test]
+    fn generated_block_follows_base_button_css() {
+        use crate::render::template_resolver::resolve_template_parts;
+        use std::collections::HashMap;
+        let mut cfg = ThemeConfig::default();
+        cfg.buttons.fill = "gradient".into();
+        cfg.buttons.gradient_from = "#abc".into();
+        cfg.buttons.gradient_to = "#123".into();
+        let parts = resolve_template_parts(&cfg, &HashMap::new());
+        let css = render_css_sockets(parts.css, &cfg);
+        assert!(!css.contains("{{BUTTON_STYLES}}"), "socket not replaced");
+        assert!(css.contains("Generated buttons (config-driven)"));
+        assert!(css.contains("linear-gradient(180deg, #abc, #123)"));
+        let block = css.find("Generated buttons (config-driven)").unwrap();
+        let base = css.find(".pager-btn").unwrap();
+        assert!(block > base, "generated block must follow base button CSS");
+    }
 }

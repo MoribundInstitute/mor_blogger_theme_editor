@@ -12,7 +12,6 @@ pub fn normalize_dock_key(key: &str) -> String {
         "Site Data" => "site_data",
         "CSS Editor" => "css_editor",
         "JS Editor" => "js_editor",
-        "XML Editor" => "xml_editor",
         "Presets" => "presets",
         "Plugin Manager" => "plugin_manager",
         "Diagnostics" => "diagnostics",
@@ -33,6 +32,8 @@ pub enum CenterView {
     Split,
     Export,
     ModuleWorkbench,
+    WidgetWorkbench,
+    JsWorkbench,
     StaticPageEditor,
 }
 
@@ -74,10 +75,10 @@ pub struct LayoutState {
     pub diagnostics_pos: Signal<DockPosition>,
     pub plugin_manager_pos: Signal<DockPosition>,
     pub presets_pos: Signal<DockPosition>,
-    pub xml_editor_pos: Signal<DockPosition>,
     pub css_builder_pos: Signal<DockPosition>,
     pub js_builder_pos: Signal<DockPosition>,
     pub template_modules_pos: Signal<DockPosition>,
+    pub widgets_pos: Signal<DockPosition>,
     pub code_nav_pos: Signal<DockPosition>,
     pub static_pages_pos: Signal<DockPosition>,
     /// Shared TOML/XML toggle for the Code Editor, so the Code Nav dock knows
@@ -114,10 +115,10 @@ impl LayoutState {
             diagnostics_pos: use_signal(|| DockPosition::Hidden),
             plugin_manager_pos: use_signal(|| DockPosition::Hidden),
             presets_pos: use_signal(|| DockPosition::Hidden),
-            xml_editor_pos: use_signal(|| DockPosition::Hidden),
             css_builder_pos: use_signal(|| DockPosition::Hidden),
             js_builder_pos: use_signal(|| DockPosition::Hidden),
             template_modules_pos: use_signal(|| DockPosition::Hidden),
+            widgets_pos: use_signal(|| DockPosition::Hidden),
             code_nav_pos: use_signal(|| DockPosition::Hidden),
             static_pages_pos: use_signal(|| DockPosition::Hidden),
             code_show_xml: use_signal(|| false),
@@ -142,7 +143,7 @@ impl LayoutState {
                 // activity bar isn't blank. ponytail: re-seeds if you unpin everything;
                 // add a "configured" flag if that ever annoys.
                 if seen.is_empty() {
-                    ["theme_palette", "site_data", "xml_editor", "css_editor", "js_editor", "presets"]
+                    ["theme_palette", "site_data", "css_editor", "js_editor", "presets"]
                         .iter()
                         .map(|s| s.to_string())
                         .collect()
@@ -220,6 +221,12 @@ impl LayoutState {
             CenterView::StaticPageEditor => DockPosition::mor_panel_left,
             _ => DockPosition::Hidden,
         });
+        // The Widgets library rides along with the Widget Workbench, the way
+        // Template Modules does for the Module Workbench.
+        self.widgets_pos.set(match ws {
+            CenterView::WidgetWorkbench => DockPosition::mor_panel_left,
+            _ => DockPosition::Hidden,
+        });
         // Only Preview is about theme/content editing, so the Theme Palette and
         // Site Data docks default to visible there; every other workspace hides
         // them (Module Workbench drives its own Template Modules dock instead).
@@ -231,7 +238,9 @@ impl LayoutState {
             CenterView::CodeEditor
             | CenterView::Export
             | CenterView::StaticPageEditor
-            | CenterView::ModuleWorkbench => {
+            | CenterView::ModuleWorkbench
+            | CenterView::WidgetWorkbench
+            | CenterView::JsWorkbench => {
                 self.theme_palette_pos.set(DockPosition::Hidden);
                 self.site_data_pos.set(DockPosition::Hidden);
             }
@@ -245,13 +254,13 @@ impl LayoutState {
             "site" | "site_data" => self.site_data_pos,
             "css" | "css_editor" => self.css_editor_pos,
             "js" | "js_editor" => self.js_editor_pos,
-            "xml" | "xml_editor" => self.xml_editor_pos,
             "diagnostics" => self.diagnostics_pos,
             "plugin_manager" => self.plugin_manager_pos,
             "presets" => self.presets_pos,
             "css_builder" => self.css_builder_pos,
             "js_builder" => self.js_builder_pos,
             "template_modules" => self.template_modules_pos,
+            "widgets" => self.widgets_pos,
             "code_nav" => self.code_nav_pos,
             "static_pages" => self.static_pages_pos,
             _ => return None,
@@ -292,13 +301,13 @@ impl LayoutState {
             "site" | "site_data" => &self.site_data_pos,
             "css" | "css_editor" => &self.css_editor_pos,
             "js" | "js_editor" => &self.js_editor_pos,
-            "xml" | "xml_editor" => &self.xml_editor_pos,
             "diagnostics" => &self.diagnostics_pos,
             "plugin_manager" => &self.plugin_manager_pos,
             "presets" => &self.presets_pos,
             "css_builder" => &self.css_builder_pos,
             "js_builder" => &self.js_builder_pos,
             "template_modules" => &self.template_modules_pos,
+            "widgets" => &self.widgets_pos,
             "code_nav" => &self.code_nav_pos,
             "static_pages" => &self.static_pages_pos,
             _ => return,
@@ -319,13 +328,13 @@ impl LayoutState {
                 &self.site_data_pos,
                 &self.css_editor_pos,
                 &self.js_editor_pos,
-                &self.xml_editor_pos,
                 &self.diagnostics_pos,
                 &self.plugin_manager_pos,
                 &self.presets_pos,
                 &self.css_builder_pos,
                 &self.js_builder_pos,
                 &self.template_modules_pos,
+                &self.widgets_pos,
                 &self.code_nav_pos,
                 &self.static_pages_pos,
             ];

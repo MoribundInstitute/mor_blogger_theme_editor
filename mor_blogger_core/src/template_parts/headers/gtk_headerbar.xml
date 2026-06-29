@@ -12,6 +12,7 @@
   </div>
 
   <div class='headerbar-end'>
+    {{PLUGIN_WIDGET_HEADER}}
     <div class='gtk-search-wrap'>
       <form action="{{SEARCH_ACTION_URL_ATTR}}" method='get'>
         <input name='q' placeholder="Search..." type='text' class="gtk-search-input"/>

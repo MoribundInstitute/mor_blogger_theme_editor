@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use super::state::{CenterView, LayoutState, PluginManagerContext, RenderState, ThemeState};
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
 use crate::ui::layout::menu_bar::AppMenuBar;
-use crate::ui::layout::theme::{get_native_os_theme, MorStyleProvider};
+use crate::ui::layout::theme::MorStyleProvider;
 use crate::ui::layout::window_frame::{MorHeaderBar, MorShell, MorWindowTitle};
 
 use super::shell_dialogs::MorDialogs;
@@ -14,15 +14,26 @@ const EDITOR_UI_CSS: &str = include_str!("../../assets/css/editor_ui.css");
 use crate::ui::components::code_editor::CM6_BUNDLE_JS;
 
 fn fallback_compendium() -> Vec<CompendiumManifest> {
-    vec![CompendiumManifest {
-        id: "os_chameleon".to_string(),
-        display_name: "OS Chameleon (Dark Mode)".to_string(),
-        version: "1.0.0".to_string(),
-        description:
-            "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)"
-                .to_string(),
-        payload_url: "".to_string(),
-    }]
+    vec![
+        CompendiumManifest {
+            id: "os_chameleon".to_string(),
+            display_name: "OS Chameleon (Dark Mode)".to_string(),
+            version: "1.0.0".to_string(),
+            description:
+                "Automatically toggles dark mode based on the user's OS preference. (Offline Fallback)"
+                    .to_string(),
+            payload_url: "".to_string(),
+        },
+        CompendiumManifest {
+            id: "notification_bell".to_string(),
+            display_name: "Notification Bell (Newest Post)".to_string(),
+            version: "1.0.0".to_string(),
+            description:
+                "A header bell that opens a dropdown previewing your newest post. Colors follow the active theme."
+                    .to_string(),
+            payload_url: "".to_string(),
+        },
+    ]
 }
 
 #[derive(Clone, Copy)]
@@ -30,6 +41,17 @@ pub struct WorkbenchEditState {
     pub edited_xml: Signal<String>,
     pub module_xml_signal: Signal<String>,
     pub workbench_status: Signal<String>,
+    /// Set by the Widgets dock to ask the workbench to open a blueprint for editing.
+    /// The workbench consumes it (loads the buffer) and resets it to None.
+    pub edit_widget_request:
+        Signal<Option<mor_blogger_core::utils::fs_bridge::WidgetBlueprint>>,
+    /// Set by the Widgets dock to insert a blueprint into the active module. The
+    /// workbench consumes it and resets to None.
+    pub add_widget_request:
+        Signal<Option<mor_blogger_core::utils::fs_bridge::WidgetBlueprint>>,
+    /// Where an added gadget lands: Some(socket_key) → that slot; None → appended
+    /// to the active module buffer. Set by the workbench's "+ Add" buttons.
+    pub add_target: Signal<Option<String>>,
 }
 
 pub fn render_app_shell(
@@ -125,7 +147,7 @@ pub fn render_app_shell(
         prefs()
             .workspace_theme
             .clone()
-            .unwrap_or_else(|| get_native_os_theme().to_string())
+            .unwrap_or_else(|| crate::ui::layout::theme::MOR_STUDIO_TOML.to_string())
     });
     let show_window_buttons = active_ui_mode == "frameless";
     let show_custom_title = active_ui_mode != "native";
@@ -150,6 +172,9 @@ pub fn render_app_shell(
         edited_xml,
         module_xml_signal,
         workbench_status,
+        edit_widget_request: use_signal(|| None),
+        add_widget_request: use_signal(|| None),
+        add_target: use_signal(|| None),
     });
 
     provide_context(DockLocalSignals {

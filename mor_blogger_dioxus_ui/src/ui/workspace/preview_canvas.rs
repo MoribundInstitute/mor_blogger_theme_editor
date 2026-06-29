@@ -170,6 +170,13 @@ pub fn PreviewCanvas(
                                         // <script> tags (plugin JS) actually execute on (re)load.
                                         function reload(doc, html) {
                                             doc.open(); doc.write(html); doc.close();
+                                            // document.write() wipes the document's event listeners, but the
+                                            // _inst guard set on the document object survives it — so without
+                                            // clearing it, setup() bails and never re-attaches the click /
+                                            // edit / drag handlers. That left the preview "stuck" after the
+                                            // first dark/light toggle (which reloads): the toggle button no
+                                            // longer responded. Force a fresh setup on every reload.
+                                            doc._inst = false;
                                             setTimeout(() => setup(doc), 50);
                                         }
 

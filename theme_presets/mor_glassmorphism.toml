@@ -206,46 +206,6 @@ html::after {
   padding: 14px 22px !important;
   color: var(--fg-muted) !important;
 }
-
-/* ---- Buttons: pill capsules ---------------------------------
-   Only round shape that's appropriate everywhere — pills are
-   inherently pill-shaped. No tension with the "stop rounding
-   everything" critique. */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: var(--glass-medium) !important;
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 999px !important;
-  color: var(--fg-base) !important;
-  padding: 6px 14px !important;
-  font-weight: 500 !important;
-  font-size: 0.875rem !important;
-  text-transform: none !important;
-  cursor: pointer;
-  transition: background 150ms ease, transform 150ms ease !important;
-  box-shadow: inset 0 1px 0 var(--glass-rim) !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: var(--glass-strong) !important;
-  transform: translateY(-1px);
-}
-
-.pager-btn:active,
-.panel-toggle:active {
-  background: var(--glass-subtle) !important;
-  transform: translateY(0);
-}
-
 .header-panel-toggle.panel-toggle,
 .header-top-row > .panel-toggle {
   width: 36px !important;
@@ -351,6 +311,11 @@ select:focus {
   }
   body::before, body::after { display: none; }
 }
+
+/* --- Theme cursors (default / pointer / text) --- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23ffffff' fill-opacity='0.6' stroke='%238b5cf6' stroke-width='1.2'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23ffffff' fill-opacity='0.6' stroke='%238b5cf6' stroke-width='1.2'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%238b5cf6' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 [colors]
@@ -386,9 +351,18 @@ line_height = "1.6"
 heading_weight = "600"
 
 [buttons]
-radius = "14px"
+radius = "999px"
 border_width = "1px"
 text_transform = "none"
+padding_x = "14px"
+padding_y = "6px"
+font_weight = "500"
+font_size = "0.875rem"
+fill = "glass"
+glass_blur = "10px"
+glass_opacity = "0.45"
+hover_effect = "lift"
+transition_ms = "150ms"
 
 [light.colors]
 bg_base = "#e8efff"
@@ -409,3 +383,9 @@ color = "#f4f6ff"
 from = "#fde8ff"
 to = "#a6e6ff"
 angle_deg = 135
+
+[scrollbars]
+width = "10px"
+track_color = "transparent"
+thumb_color = "rgba(139,92,246,0.45)"
+thumb_hover_color = "rgba(139,92,246,0.8)"

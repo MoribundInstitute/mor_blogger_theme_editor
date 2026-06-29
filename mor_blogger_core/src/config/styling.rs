@@ -21,16 +21,16 @@ pub struct ColorConfig {
     pub panel_border_image_slice: String,
     pub panel_border_image_repeat: String,
 
-    #[serde(default = "default_true")]
     pub glow_text: bool,
-    #[serde(default = "default_true")]
     pub glow_containers: bool,
-    #[serde(default = "default_true")]
     pub glow_icons: bool,
     pub glow_logo: bool,
     pub glow_title: bool,
     pub glow_toc: bool,
     pub glow_sidebar: bool,
+    pub glow_footer: bool,
+    pub glow_header: bool,
+    pub glow_main: bool,
     pub glow_logo_color: String,
     pub glow_title_color: String,
     pub glow_toc_color: String,
@@ -38,6 +38,9 @@ pub struct ColorConfig {
     pub glow_text_color: String,
     pub glow_containers_color: String,
     pub glow_icons_color: String,
+    pub glow_footer_color: String,
+    pub glow_header_color: String,
+    pub glow_main_color: String,
 }
 
 impl Default for ColorConfig {
@@ -58,13 +61,16 @@ impl Default for ColorConfig {
             panel_border_image_url: String::new(),
             panel_border_image_slice: "30%".to_string(),
             panel_border_image_repeat: "stretch".to_string(),
-            glow_text: true,
-            glow_containers: true,
-            glow_icons: true,
+            glow_text: false,
+            glow_containers: false,
+            glow_icons: false,
             glow_logo: false,
             glow_title: false,
             glow_toc: false,
             glow_sidebar: false,
+            glow_footer: false,
+            glow_header: false,
+            glow_main: false,
             glow_logo_color: String::new(),
             glow_title_color: String::new(),
             glow_toc_color: String::new(),
@@ -72,12 +78,11 @@ impl Default for ColorConfig {
             glow_text_color: String::new(),
             glow_containers_color: String::new(),
             glow_icons_color: String::new(),
+            glow_footer_color: String::new(),
+            glow_header_color: String::new(),
+            glow_main_color: String::new(),
         }
     }
-}
-
-fn default_true() -> bool {
-    true
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -252,17 +257,82 @@ impl BackgroundMode {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ButtonConfig {
+    // Geometry
     pub radius: String,
     pub border_width: String,
+    pub border_style: String, // solid | dashed
+    pub padding_x: String,
+    pub padding_y: String,
+    pub full_width: bool,
+    // Type
     pub text_transform: String,
+    pub font_size: String,    // "" = inherit
+    pub font_weight: String,  // "" = inherit
+    pub letter_spacing: String,
+    // Appearance
+    pub fill: String,         // outline | solid | soft | ghost | glass | neon | glossy | gradient
+    pub elevation: String,    // flat | subtle | raised
+    // Effect parameters (used by glass/neon fills and the glow hover)
+    pub glow_color: String,   // "" = derive from accent
+    pub glow_strength: String, // glow/neon spread, e.g. "12px"
+    pub glass_blur: String,   // backdrop blur for glass, e.g. "12px"
+    pub glass_opacity: String, // glass surface alpha 0..1, e.g. "0.4"
+    // Gradient fill (fill = "gradient"). Values may be raw colors or CSS
+    // expressions like color-mix(...)/var(...).
+    pub gradient_from: String,
+    pub gradient_to: String,
+    pub gradient_angle: String, // e.g. "180deg"
+    // Raw box-shadow override ("" = derive from elevation). Escape hatch for
+    // bevels/insets the elevation presets can't express.
+    pub box_shadow: String,
+    // Color overrides ("" = derive from theme)
+    pub bg_color: String,
+    pub text_color: String,
+    pub border_color: String,
+    pub hover_bg_color: String,
+    // Interaction & motion
+    pub hover_effect: String, // none | lift | grow | brighten | glow
+    pub transition_ms: String,
+    pub pressed_feedback: bool,
+    // Focus ring ("" color = derive)
+    pub focus_ring_color: String,
+    pub focus_ring_width: String,
 }
 
 impl Default for ButtonConfig {
     fn default() -> Self {
+        // Defaults reproduce the historical neutral bordered button so existing
+        // themes don't shift until a field is deliberately changed.
         Self {
             radius: "0px".to_string(),
             border_width: "1px".to_string(),
+            border_style: "solid".to_string(),
+            padding_x: "8px".to_string(),
+            padding_y: "4px".to_string(),
+            full_width: false,
             text_transform: "none".to_string(),
+            font_size: String::new(),
+            font_weight: String::new(),
+            letter_spacing: String::new(),
+            fill: "outline".to_string(),
+            elevation: "flat".to_string(),
+            glow_color: String::new(),
+            glow_strength: "12px".to_string(),
+            glass_blur: "12px".to_string(),
+            glass_opacity: "0.4".to_string(),
+            gradient_from: String::new(),
+            gradient_to: String::new(),
+            gradient_angle: "180deg".to_string(),
+            box_shadow: String::new(),
+            bg_color: String::new(),
+            text_color: String::new(),
+            border_color: String::new(),
+            hover_bg_color: String::new(),
+            hover_effect: "none".to_string(),
+            transition_ms: "0ms".to_string(),
+            pressed_feedback: false,
+            focus_ring_color: String::new(),
+            focus_ring_width: "2px".to_string(),
         }
     }
 }

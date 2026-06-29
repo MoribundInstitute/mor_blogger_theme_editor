@@ -35,10 +35,29 @@ impl Default for StaticPagesConfig {
     }
 }
 
+/// Per-page chrome overrides. Emitted as a scoped `<style>` inside the page's
+/// own HTML, so it only affects that page when viewed in Blogger (the style is
+/// part of that page's pasted content). Lets e.g. the About page drop sidebars
+/// while other pages keep them.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct PageLayout {
+    /// Hiding a sidebar also hides its header toggle button (the toggle is
+    /// pointless without the sidebar).
+    pub hide_left_sidebar: bool,
+    pub hide_right_sidebar: bool,
+    pub hide_header: bool,
+    pub hide_footer: bool,
+    pub hide_search: bool,
+    /// "default" | "full" | "centered"
+    pub width: String,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ArchivePageConfig {
     pub include_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -49,6 +68,7 @@ impl Default for ArchivePageConfig {
     fn default() -> Self {
         Self {
             include_in_bundle: false,
+            layout: PageLayout::default(),
             kicker: "THE_MORIBUND_INSTITUTE // ARCHIVE".to_string(),
             title: "Chronological Archive".to_string(),
             description: "A date-sorted index of Institute posts, lessons, wiki walks, commentaries, and assorted textual machinery.".to_string(),
@@ -61,6 +81,7 @@ impl Default for ArchivePageConfig {
 #[serde(default)]
 pub struct AnalyticsDashboardPageConfig {
     pub include_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -75,6 +96,7 @@ impl Default for AnalyticsDashboardPageConfig {
     fn default() -> Self {
         Self {
             include_in_bundle: false,
+            layout: PageLayout::default(),
             kicker: "THE_MORIBUND_INSTITUTE // ANALYTICS".to_string(),
             title: "Analytics Dashboard".to_string(),
             description: "A Blogger HTML page dashboard for public feed activity, category balance, publishing rhythm, and manual analytics metrics.".to_string(),
@@ -91,6 +113,7 @@ impl Default for AnalyticsDashboardPageConfig {
 #[serde(default)]
 pub struct CategoriesPageConfig {
     pub include_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -101,6 +124,7 @@ impl Default for CategoriesPageConfig {
     fn default() -> Self {
         Self {
             include_in_bundle: false,
+            layout: PageLayout::default(),
             kicker: "THE_MORIBUND_INSTITUTE // CATEGORIES".to_string(),
             title: "Browse Categories".to_string(),
             description: "A subject index for Institute posts, lessons, wiki walks, lexicographical rummaging, video commentary, and other classified whatnot.".to_string(),
@@ -124,6 +148,7 @@ impl Default for CategoriesPageConfig {
 #[serde(default)]
 pub struct AboutPageConfig {
     pub include_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub profile_image_url: String,
@@ -136,6 +161,13 @@ impl Default for AboutPageConfig {
     fn default() -> Self {
         Self {
             include_in_bundle: false,
+            // About reads as a focused page: drop sidebars, center the column.
+            layout: PageLayout {
+                hide_left_sidebar: true,
+                hide_right_sidebar: true,
+                width: "centered".to_string(),
+                ..PageLayout::default()
+            },
             kicker: "THE_MORIBUND_INSTITUTE // ABOUT".to_string(),
             title: "About".to_string(),
             profile_image_url: String::new(),
@@ -161,6 +193,7 @@ impl Default for AboutPageConfig {
 #[serde(default)]
 pub struct PortfolioPageConfig {
     pub include_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -172,6 +205,11 @@ impl Default for PortfolioPageConfig {
     fn default() -> Self {
         Self {
             include_in_bundle: false,
+            // Galleries want the whole width.
+            layout: PageLayout {
+                width: "full".to_string(),
+                ..PageLayout::default()
+            },
             kicker: "THE_MORIBUND_INSTITUTE // PORTFOLIO".to_string(),
             title: "Portfolio".to_string(),
             description:
@@ -188,6 +226,7 @@ impl Default for PortfolioPageConfig {
 pub struct LmsConfig {
     pub include_catalog_in_bundle: bool,
     pub include_syllabus_in_bundle: bool,
+    pub layout: PageLayout,
     pub kicker: String,
     pub title: String,
     pub description: String,
@@ -201,6 +240,7 @@ impl Default for LmsConfig {
         Self {
             include_catalog_in_bundle: false,
             include_syllabus_in_bundle: false,
+            layout: PageLayout::default(),
             kicker: "THE_MORIBUND_INSTITUTE // LESSONS".to_string(),
             title: "Learning Hub".to_string(),
             description: "A structured index for lessons, study paths, course notes, and educational machinery.".to_string(),

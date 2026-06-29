@@ -19,6 +19,8 @@ pub struct ThemeState {
     pub show_advanced_presets: Signal<bool>,
     pub show_advanced_glow: Signal<bool>,
     pub show_advanced_colors: Signal<bool>,
+    pub show_advanced_cursors: Signal<bool>,
+    pub show_advanced_buttons: Signal<bool>,
     pub show_advanced_typography: Signal<bool>,
     pub history: Signal<ThemeHistory>,
     pub last_imported_gtk: Signal<Option<mor_blogger_core::config::gtk_theme::ImportedGtkPreset>>,
@@ -67,6 +69,8 @@ impl ThemeState {
         let show_advanced_presets = use_signal(|| false);
         let show_advanced_glow = use_signal(|| false);
         let show_advanced_colors = use_signal(|| false);
+        let show_advanced_cursors = use_signal(|| false);
+        let show_advanced_buttons = use_signal(|| false);
         let show_advanced_typography = use_signal(|| false);
         let history = use_signal(|| ThemeHistory {
             snapshots: vec![None],
@@ -85,6 +89,8 @@ impl ThemeState {
             show_advanced_presets,
             show_advanced_glow,
             show_advanced_colors,
+            show_advanced_cursors,
+            show_advanced_buttons,
             show_advanced_typography,
             history,
             last_imported_gtk,
@@ -232,6 +238,12 @@ impl ThemeState {
                     glow_text_color: signals.glow_text_color.read().clone(),
                     glow_containers_color: signals.glow_containers_color.read().clone(),
                     glow_icons_color: signals.glow_icons_color.read().clone(),
+                    glow_footer: *signals.glow_footer.read(),
+                    glow_header: *signals.glow_header.read(),
+                    glow_main: *signals.glow_main.read(),
+                    glow_footer_color: signals.glow_footer_color.read().clone(),
+                    glow_header_color: signals.glow_header_color.read().clone(),
+                    glow_main_color: signals.glow_main_color.read().clone(),
                     ..Default::default()
                 };
                 let inv = cur.inverted_contrast();

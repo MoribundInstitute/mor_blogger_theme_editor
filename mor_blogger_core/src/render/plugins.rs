@@ -7,11 +7,6 @@ use crate::render::xml_generator::XmlNode;
 /// The contract every renderable plugin implements. All hooks are optional;
 /// a plugin overrides only the ones it needs.
 pub trait MorBloggerPlugin: Send + Sync {
-    /// Optional: Generates standard CSS to inject into the Blogger layout.
-    fn inject_css(&self) -> Option<String> {
-        None
-    }
-
     /// Optional: Generates native Blogger XML widgets to insert into the structure.
     fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
         None
@@ -130,6 +125,97 @@ impl MorBloggerPlugin for WorkspaceDocksPlugin {
 
                 bindToggle(leftToggle,  'mor-dock-left-collapsed',  'mor-dock-left');
                 bindToggle(rightToggle, 'mor-dock-right-collapsed', 'mor-dock-right');
+            })();
+        "##,
+        )
+    }
+}
+
+/// "Notification Bell" — a header bell that opens a dropdown showing the newest
+/// post (via a native `FeaturedPost` widget). Colors follow the active theme via
+/// CSS custom properties (no hardcoded palette). Injects its widget into the
+/// `{{PLUGIN_WIDGET_HEADER}}` socket and the toggle JS into the page.
+pub struct NotificationBellPlugin;
+
+impl MorBloggerPlugin for NotificationBellPlugin {
+    fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
+        Some(vec![XmlNode::new(
+            "{{PLUGIN_WIDGET_HEADER}}",
+            r##"<nav class='mor-notif-container'>
+  <span class='mor-notif-bell' role='button' tabindex='0' aria-label='Newest post'>
+    <svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/><path d='M13.73 21a2 2 0 0 1-3.46 0'/></svg>
+  </span>
+  <div class='mor-notif-dropdown'>
+    <b:section class='mor-notif-section' id='notification-section' maxwidgets='1' showaddelement='yes'>
+      <b:widget id='FeaturedPost99' locked='false' title='Newest Post' type='FeaturedPost' version='1'>
+        <b:widget-settings>
+          <b:widget-setting name='showSnippet'>true</b:widget-setting>
+          <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+          <b:widget-setting name='postId'>0</b:widget-setting>
+          <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+          <b:widget-setting name='useMostRecentPost'>true</b:widget-setting>
+        </b:widget-settings>
+        <b:includable id='main'>
+          <b:include name='content'/>
+          <b:include name='quickedit'/>
+        </b:includable>
+        <b:includable id='content'>
+          <a class='mor-notif-link' expr:href='data:postUrl'>
+            <b:if cond='data:showPostTitle and data:postTitle != &quot;&quot;'>
+              <h3 class='mor-notif-title'><data:postTitle/></h3>
+            </b:if>
+            <b:if cond='data:showFirstImage and data:postFirstImage != &quot;&quot;'>
+              <img class='mor-notif-img' expr:src='data:postFirstImage'/>
+            </b:if>
+            <b:if cond='data:showSnippet and data:postSummary != &quot;&quot;'>
+              <p class='mor-notif-snippet'><data:postSummary/></p>
+            </b:if>
+          </a>
+        </b:includable>
+      </b:widget>
+    </b:section>
+  </div>
+</nav>
+<style>
+.mor-notif-container { position: relative; display: inline-flex; align-items: center; }
+.mor-notif-bell { display: inline-flex; cursor: pointer; color: var(--fg-base, #ececeb); transition: color .2s ease, filter .2s ease; }
+.mor-notif-bell:hover { color: var(--accent, #fff); filter: drop-shadow(0 0 6px var(--glow, rgba(255,255,255,.5))); }
+.mor-notif-dropdown { display: none; position: absolute; top: 130%; right: 0; background: var(--bg-panel, #1c1c1e); color: var(--fg-base, #ececeb); border: 1px solid var(--border-color, rgba(255,255,255,.12)); border-radius: 8px; padding: 10px; min-width: 240px; max-width: 340px; box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0,0,0,.45)); z-index: var(--dropdown-z, 9999); }
+.mor-notif-dropdown.open { display: block; }
+.mor-notif-link { display: block; text-decoration: none; color: inherit; }
+.mor-notif-title { margin: 0 0 6px; font-size: 1rem; font-weight: 700; font-family: var(--font-heading, inherit); color: var(--fg-base, #ececeb); }
+.mor-notif-link:hover .mor-notif-title { color: var(--accent, #fff); text-shadow: 0 0 8px var(--glow, rgba(255,255,255,.4)); }
+.mor-notif-snippet { margin: 6px 0 0; font-size: .85rem; line-height: 1.4; color: var(--fg-muted, #b9b9b8); }
+.mor-notif-img { width: 100%; height: auto; border-radius: 6px; margin-top: 8px; }
+</style>"##,
+        )])
+    }
+
+    fn inject_js(&self) -> Option<&'static str> {
+        Some(
+            r##"
+            (function () {
+                if (window.__morNotifBellInit) return;
+                window.__morNotifBellInit = true;
+                document.addEventListener('click', function (e) {
+                    var menu = document.querySelector('.mor-notif-container .mor-notif-dropdown');
+                    if (!menu) return;
+                    if (e.target.closest('.mor-notif-bell')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        menu.classList.toggle('open');
+                        return;
+                    }
+                    if (!e.target.closest('.mor-notif-dropdown')) {
+                        menu.classList.remove('open');
+                    }
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        var m = document.querySelector('.mor-notif-container .mor-notif-dropdown.open');
+                        if (m) m.classList.remove('open');
+                    }
+                });
             })();
         "##,
         )

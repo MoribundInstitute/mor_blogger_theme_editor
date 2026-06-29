@@ -31,7 +31,7 @@ pub fn TemplateModulesPanel(
 
             // Compact Docked View (Fallback)
             div { style: "display: flex; flex-direction: column; gap: 12px;",
-                CompactSelect { label: "Header Variant", val: pack.header_variant.clone(), options: vec![("mor", "Mor (Default)"), ("gtk_headerbar", "GTK4 Headerbar"), ("minimal", "Minimal Flexbox")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.header_variant = v; f.call(nc); } } }
+                CompactSelect { label: "Header Variant", val: pack.header_variant.clone(), options: vec![("mor", "Mor (Default)"), ("mor_search_center", "Mor — Centered Search"), ("gtk_headerbar", "GTK4 Headerbar"), ("minimal", "Minimal Flexbox")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.header_variant = v; f.call(nc); } } }
                 CompactSelect { label: "Main Canvas", val: pack.main_variant.clone(), options: vec![("sidebars", "Three Column (Sidebars)"), ("single_column", "Single Column"), ("two_column_right", "Two Column Right CSS Grid")], on_change: { let c = current_config.clone(); let f = on_apply_theme.clone(); move |v| { let mut nc = c.clone(); nc.template_pack.main_variant = v; f.call(nc); } } }
 
                 div { class: "editor-card", style: "padding: 8px 12px;",

@@ -1,5 +1,5 @@
-pub fn generate_course_catalog_html<T>(_config: &T) -> String {
-    r#"
+pub fn generate_course_catalog_html(config: &crate::config::pages::LmsConfig) -> String {
+    let body = r#"
     <style>
         /* Scoped CSS for the Course Catalog */
         .mor-lms-container {
@@ -242,5 +242,6 @@ pub fn generate_course_catalog_html<T>(_config: &T) -> String {
         </div>
     </div>
     "#
-    .to_string()
+    .to_string();
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), body)
 }

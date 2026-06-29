@@ -7,7 +7,8 @@ use mor_blogger_core::render::pages::{
 };
 use crate::app::vfs::VfsDictionary;
 use crate::ui::workspace::layout::{
-    apply_preview_viewport, clamp_preview_width, rotate_preview_width, PreviewViewport,
+    apply_preview_viewport, clamp_preview_width, is_landscape, rotate_preview_width,
+    PreviewViewport,
 };
 use crate::ui::workspace::preview_canvas::PreviewCanvas;
 use dioxus::prelude::*;
@@ -15,8 +16,10 @@ use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::diagnostics::DiagnosticResult;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
 
+use super::js_workbench::JsWorkbench;
 use super::module_workbench::ModuleWorkbench;
 use super::static_page_editor::StaticPageEditor;
+use super::widget_workbench::WidgetWorkbench;
 use crate::ui::layout::docks::smart_code_dock::SmartCodeDock;
 use crate::ui::layout::main_pane::MainPane;
 
@@ -307,6 +310,17 @@ pub fn BloggerWorkspace(
                         on_load_theme: on_load_theme.clone(),
                     }
                 },
+                CenterView::WidgetWorkbench => rsx! {
+                    WidgetWorkbench {
+                        config_toml,
+                    }
+                },
+                CenterView::JsWorkbench => rsx! {
+                    JsWorkbench {
+                        config_toml,
+                        on_load_theme: on_load_theme.clone(),
+                    }
+                },
                 CenterView::StaticPageEditor => rsx! {
                     StaticPageEditor {
                         preview_html,
@@ -326,13 +340,15 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
     rsx! {
         button {
             class: if center_view() == CenterView::Preview { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Preview",
             onclick: move |_| layout.enter_workspace(CenterView::Preview),
-            "Preview"
+            "👁️"
         }
         button {
             class: if center_view() == CenterView::CodeEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Code Editor",
             onclick: move |_| layout.enter_workspace(CenterView::CodeEditor),
-            "Code Editor"
+            "</>"
         }
         button {
             class: if center_view() == CenterView::ModuleWorkbench {
@@ -340,22 +356,43 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
             } else {
                 "editor-mini-button"
             },
+            title: "Module Workbench",
             onclick: move |e| {
                 e.stop_propagation();
                 layout.enter_workspace(CenterView::ModuleWorkbench);
             },
-            "Module Workbench"
+            "🛠️ ┳━┳"
+        }
+        button {
+            class: if center_view() == CenterView::WidgetWorkbench { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Widget Workbench",
+            onclick: move |e| {
+                e.stop_propagation();
+                layout.enter_workspace(CenterView::WidgetWorkbench);
+            },
+            "🧩"
+        }
+        button {
+            class: if center_view() == CenterView::JsWorkbench { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "JavaScript Workspace",
+            onclick: move |e| {
+                e.stop_propagation();
+                layout.enter_workspace(CenterView::JsWorkbench);
+            },
+            "JS"
         }
         button {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Static Pages",
             onclick: move |_| layout.enter_workspace(CenterView::StaticPageEditor),
-            "Static Pages"
+            "🧊 📄"
         }
         // Export is the terminal pipeline step, so it sits at the far right.
         button {
             class: if center_view() == CenterView::Export { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+            title: "Export",
             onclick: move |_| layout.enter_workspace(CenterView::Export),
-            "Export"
+            "🚀"
         }
     }
 }
@@ -366,6 +403,20 @@ fn ViewportToolbar(
     mut preview_width: Signal<u32>,
     mut is_xray_active: Signal<bool>,
 ) -> Element {
+    // The "rotate" control is really a portrait <-> landscape toggle for the
+    // device frame (you can't rotate a website). Make the icon show the
+    // orientation it switches TO, and say so in the tooltip.
+    let rotatable = preview_viewport().is_rotatable();
+    let landscape = is_landscape(preview_viewport(), preview_width());
+    let rotate_icon = if landscape { "▯" } else { "▭" };
+    let rotate_title = if !rotatable {
+        "Orientation — pick Tablet, Phone, or Custom first"
+    } else if landscape {
+        "Switch to portrait"
+    } else {
+        "Switch to landscape"
+    };
+
     rsx! {
         // One pill: X-Ray toggle, then the device controls. Keeping X-Ray in its
         // own bordered+shadowed pill was wasted chrome for a single button.
@@ -374,9 +425,9 @@ fn ViewportToolbar(
             style: "margin: 0;",
             button {
                 class: if is_xray_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                title: "Widget map and editable overlay",
+                title: "X-Ray — widget map and editable overlay",
                 onclick: move |_| is_xray_active.set(!is_xray_active()),
-                "X-Ray"
+                "🩻"
             }
             div { class: "preview-toolbar-divider" }
             // Desktop/Laptop/Tablet/Phone/Fit are one mutually-exclusive choice,
@@ -385,35 +436,40 @@ fn ViewportToolbar(
                 class: "editor-segmented",
                 button {
                     class: if preview_viewport() == PreviewViewport::Desktop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Desktop",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Desktop, preview_width); preview_viewport.set(PreviewViewport::Desktop); },
-                    "Desktop"
+                    "🖥️"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Laptop { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Laptop",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Laptop, preview_width); preview_viewport.set(PreviewViewport::Laptop); },
-                    "Laptop"
+                    "💻"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Tablet { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Tablet",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Tablet, preview_width); preview_viewport.set(PreviewViewport::Tablet); },
-                    "Tablet"
+                    "📋"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Phone { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Phone",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Phone, preview_width); preview_viewport.set(PreviewViewport::Phone); },
-                    "Phone"
+                    "📱"
                 }
                 button {
                     class: if preview_viewport() == PreviewViewport::Fit { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                    title: "Fit to viewport",
                     onclick: move |_| { apply_preview_viewport(PreviewViewport::Fit, preview_width); preview_viewport.set(PreviewViewport::Fit); },
-                    "Fit"
+                    "↔️"
                 }
             }
             button {
-                class: if preview_viewport().is_rotatable() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                title: "Rotate tablet, phone, or custom preview width",
+                class: if rotatable { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                title: rotate_title,
                 onclick: move |_| { if preview_viewport().is_rotatable() { preview_width.set(rotate_preview_width(preview_viewport(), preview_width())); } },
-                "Rotate"
+                "{rotate_icon}"
             }
             label {
                 class: "preview-width-control",
@@ -573,6 +629,13 @@ const PAGE_OPTIONS: &[(&str, &str)] = &[
     ("LMS", "Courses"),
 ];
 
+/// Minimal escaping for a value placed inside a double-quoted JSON string.
+/// ponytail: covers backslash/quote/newline — enough for widget names/types, which
+/// don't carry control chars; widen if richer values ever flow through.
+fn json_escape(s: &str) -> String {
+    s.replace('\\', "\\\\").replace('"', "\\\"").replace('\n', " ")
+}
+
 #[component]
 fn ExportResultView(
     export_xml: Memo<String>,
@@ -580,9 +643,17 @@ fn ExportResultView(
     error_count: usize,
     config_toml: ReadSignal<String>,
 ) -> Element {
+    use mor_blogger_core::utils::fs_bridge;
+
     let theme = use_context::<ThemeState>();
     let mut status_msg = use_signal(String::new);
     let mut selected_page = use_signal(|| "Archive".to_string());
+
+    // Custom creations available to package & share (loaded once on entry).
+    let widgets = use_signal(fs_bridge::load_widget_blueprints);
+    let modules = use_signal(fs_bridge::load_modules);
+    let mut sel_widget = use_signal(|| 0usize);
+    let mut sel_module = use_signal(|| 0usize);
 
     rsx! {
         div {
@@ -689,6 +760,122 @@ fn ExportResultView(
                             });
                         },
                         "Export Page HTML"
+                    }
+                }
+            }
+
+            // ── Share creations ─────────────────────────────────────────
+            div {
+                class: "editor-panel",
+                style: "border: 1px solid var(--editor-border); border-radius: var(--radius-md); padding: 16px; background: var(--bg-panel);",
+                h3 { style: "margin: 0 0 4px 0; font-size: 1rem; color: var(--fg-base);", "Share Creations" }
+                p { style: "margin: 0 0 14px 0; font-size: 0.8rem; color: var(--fg-muted); line-height: 1.5;",
+                    "Package a custom widget or template module as a .zip (XML + manifest.json + README) — ready to upload to itch.io or open as a compendium PR."
+                }
+
+                // Widget row
+                div { style: "display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px;",
+                    span { style: "font-size: 0.8rem; color: var(--fg-muted); min-width: 56px;", "Widget" }
+                    select {
+                        class: "editor-input",
+                        style: "max-width: 260px;",
+                        onchange: move |evt| sel_widget.set(evt.value().parse().unwrap_or(0)),
+                        for (i, bp) in widgets().iter().enumerate() {
+                            option { value: "{i}", selected: sel_widget() == i, "{bp.group}/{bp.name}" }
+                        }
+                    }
+                    button {
+                        class: "editor-button editor-button-good",
+                        onclick: move |_| {
+                            let list = widgets();
+                            let Some(bp) = list.get(sel_widget()).cloned() else {
+                                status_msg.set("No widget to export.".to_string());
+                                return;
+                            };
+                            let slots = crate::ui::workspace::widget_layout::parse_slots(&bp.xml);
+                            let (w_type, title) = slots.first().map(|s| (s.w_type.clone(), s.title.clone())).unwrap_or_default();
+                            let name = if title.trim().is_empty() { bp.name.clone() } else { title };
+                            let manifest = format!(
+                                "{{\n  \"name\": \"{}\",\n  \"type\": \"{}\",\n  \"group\": \"{}\",\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
+                                json_escape(&name), json_escape(&w_type), json_escape(&bp.group)
+                            );
+                            let readme = format!(
+                                "# {name}\n\nA custom Blogger widget for the MorBlogger Theme Editor.\n\n## Install\n- Editor: Widgets dock → + New Widget → paste `widget.xml` into the Code tab.\n- Blogger: Layout → Add a Gadget → HTML/JavaScript, or include in your theme XML.\n\n## Customize\nValues marked `data-mor-field` are editable in the Widget Workbench Settings form.\n"
+                            );
+                            let files = vec![
+                                ("widget.xml".to_string(), bp.xml.clone()),
+                                ("manifest.json".to_string(), manifest),
+                                ("README.md".to_string(), readme),
+                            ];
+                            let default_name = format!("{}.zip", bp.name);
+                            let mut status = status_msg;
+                            spawn(async move {
+                                if let Some(handle) = rfd::AsyncFileDialog::new()
+                                    .add_filter("Zip", &["zip"])
+                                    .set_file_name(default_name)
+                                    .save_file()
+                                    .await
+                                {
+                                    match mor_blogger_core::render::theme::write_files_zip(handle.path(), &files) {
+                                        Ok(_) => status.set(format!("Exported widget \u{2192} {}", handle.path().display())),
+                                        Err(e) => status.set(format!("Export failed: {e}")),
+                                    }
+                                }
+                            });
+                        },
+                        "Export Widget (.zip)"
+                    }
+                }
+
+                // Module row
+                div { style: "display: flex; flex-wrap: wrap; align-items: center; gap: 10px;",
+                    span { style: "font-size: 0.8rem; color: var(--fg-muted); min-width: 56px;", "Module" }
+                    select {
+                        class: "editor-input",
+                        style: "max-width: 260px;",
+                        onchange: move |evt| sel_module.set(evt.value().parse().unwrap_or(0)),
+                        for (i, m) in modules().iter().enumerate() {
+                            option { value: "{i}", selected: sel_module() == i, "{m.category}/{m.name}" }
+                        }
+                    }
+                    button {
+                        class: "editor-button editor-button-good",
+                        onclick: move |_| {
+                            let list = modules();
+                            let Some(m) = list.get(sel_module()).cloned() else {
+                                status_msg.set("No module to export.".to_string());
+                                return;
+                            };
+                            let manifest = format!(
+                                "{{\n  \"name\": \"{}\",\n  \"kind\": \"module\",\n  \"category\": \"{}\",\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
+                                json_escape(&m.name), json_escape(&m.category)
+                            );
+                            let readme = format!(
+                                "# {}\n\nA custom Blogger template module ({}) for the MorBlogger Theme Editor.\n\n## Install\nOpen the editor's Module Workbench and import `module.xml`, or drop it into your `workspace/{}/` folder.\n",
+                                m.name, m.category, m.category
+                            );
+                            let files = vec![
+                                ("module.xml".to_string(), m.xml.clone()),
+                                ("manifest.json".to_string(), manifest),
+                                ("README.md".to_string(), readme),
+                            ];
+                            let default_name = format!("{}.zip", m.name);
+                            let mut status = status_msg;
+                            spawn(async move {
+                                if let Some(handle) = rfd::AsyncFileDialog::new()
+                                    .add_filter("Zip", &["zip"])
+                                    .set_file_name(default_name)
+                                    .save_file()
+                                    .await
+                                {
+                                    match mor_blogger_core::render::theme::write_files_zip(handle.path(), &files) {
+                                        Ok(_) => status.set(format!("Exported module \u{2192} {}", handle.path().display())),
+                                        Err(e) => status.set(format!("Export failed: {e}")),
+                                    }
+                                }
+                            });
+                        },
+                        "Export Module (.zip)"
                     }
                 }
             }

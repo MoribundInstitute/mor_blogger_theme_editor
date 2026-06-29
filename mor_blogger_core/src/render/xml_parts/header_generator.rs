@@ -23,8 +23,24 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let menu_3 = menu_link_or_empty(config, 2);
     let menu_4 = menu_link_or_empty(config, 3);
 
+    // Logo if set, otherwise the site title — mirrors the preview's branding so
+    // the centered-search header shows a brand even with no logo configured.
+    let header_branding = if header_logo_img.is_empty() {
+        format!(
+            "<span class='institute-title' data-field-path='site.site_title'>{}</span>",
+            escape_html(&config.site.site_title)
+        )
+    } else {
+        header_logo_img.clone()
+    };
+
     xml = xml.replace("{{MAIN_NAV_LINKS}}", &render_main_nav_links(config));
     xml = xml.replace("{{HEADER_LOGO_IMG}}", &header_logo_img);
+    xml = xml.replace("{{HEADER_BRANDING}}", &header_branding);
+    // These were referenced by gtk_headerbar.xml but never substituted.
+    xml = xml.replace("{{SITE_TITLE}}", &escape_html(&config.site.site_title));
+    xml = xml.replace("{{SITE_TITLE_ATTR}}", &escape_attr(&config.site.site_title));
+    xml = xml.replace("{{SITE_HOME_URL_ATTR}}", &escape_attr(site_home_url));
 
     // FIX: Safely evaluate if the icon is a full SVG string or just a path data string,
     // and inject it directly into the DOM tree instead of hiding it in a style attribute!
@@ -220,6 +236,54 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{PROGRESS_ACTIVITIES_URL}}", "#");
 
     xml
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::ThemeConfig;
+    use crate::render::template_resolver::HEADER_REGISTRY;
+
+    #[test]
+    fn centered_search_header_renders_cleanly() {
+        let cfg = ThemeConfig::default();
+        let raw = HEADER_REGISTRY
+            .iter()
+            .find(|c| c.id == "mor_search_center")
+            .expect("centered-search header registered")
+            .xml_content;
+        let out = render_header_sockets(raw.to_string(), &cfg);
+
+        // Modifier class + search markup present.
+        assert!(out.contains("main-header search-centered"));
+        assert!(out.contains("class=\"mor-search\""));
+        // Branding placeholder substituted (title fallback when no logo).
+        assert!(out.contains("institute-title"));
+        // Previously-unsubstituted placeholders are now filled.
+        assert!(!out.contains("{{HEADER_BRANDING}}"));
+        assert!(!out.contains("{{SITE_HOME_URL_ATTR}}"));
+        assert!(!out.contains("{{SEARCH_PLACEHOLDER_ATTR}}"));
+        // No stray template tokens left — except plugin-widget sockets, which are
+        // resolved downstream in xml_generator after the full template is assembled.
+        let residual = out.replace("{{PLUGIN_WIDGET_HEADER}}", "");
+        assert!(!residual.contains("{{"), "unsubstituted placeholder remains: {residual}");
+    }
+
+    #[test]
+    fn centered_search_css_bundled_when_variant_selected() {
+        use std::collections::HashMap;
+        let mut cfg = ThemeConfig::default();
+        cfg.template_pack.header_variant = "mor_search_center".to_string();
+        let vfs = HashMap::new();
+        let parts = crate::render::template_resolver::resolve_template_parts(&cfg, &vfs);
+        // Both preview and export run css through render_css_sockets(parts.css).
+        let css = crate::render::xml_parts::css_generator::render_css_sockets(parts.css, &cfg);
+        assert!(
+            css.contains(".search-centered"),
+            "centered-search CSS must be bundled when the variant is active"
+        );
+        assert!(parts.header.contains("search-centered"));
+    }
 }
 
 fn render_main_nav_links(config: &ThemeConfig) -> String {

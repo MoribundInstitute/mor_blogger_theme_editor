@@ -20,11 +20,9 @@ pub struct AssetEditorProps {
     pub is_native_window: bool,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 static OPEN_WINDOWS: std::sync::Mutex<Option<std::collections::HashSet<String>>> =
     std::sync::Mutex::new(None);
 
-#[cfg(not(target_arch = "wasm32"))]
 fn is_window_already_open(title: &str) -> bool {
     let mut guard = OPEN_WINDOWS.lock().unwrap();
     let set = guard.get_or_insert_with(std::collections::HashSet::new);
@@ -36,7 +34,6 @@ fn is_window_already_open(title: &str) -> bool {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn mark_window_closed(title: &str) {
     let mut guard = OPEN_WINDOWS.lock().unwrap();
     if let Some(set) = guard.as_mut() {
@@ -56,7 +53,6 @@ struct WindowCleanupInner {
 
 impl Drop for WindowCleanupInner {
     fn drop(&mut self) {
-        #[cfg(not(target_arch = "wasm32"))]
         mark_window_closed(&self.title);
     }
 }
@@ -64,7 +60,6 @@ impl Drop for WindowCleanupInner {
 /// Build the pop-out editor window's menu, replacing the default OS menu.
 /// IDs are namespaced per editor mode (`xml-*`, `css-*`, `js-*`) so several
 /// open windows don't cross-trigger on the global muda event channel.
-#[cfg(not(target_arch = "wasm32"))]
 fn build_editor_menu(mode: &str) -> dioxus::desktop::muda::Menu {
     use dioxus::desktop::muda::{
         accelerator::{Accelerator, Code, Modifiers},
@@ -97,21 +92,14 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
     let theme_state_opt = try_use_context::<ThemeState>();
 
-    #[cfg(not(target_arch = "wasm32"))]
     let mut is_window_open = use_signal(|| false);
-    #[cfg(not(target_arch = "wasm32"))]
     let mut child_window_ref = use_signal(|| Option::<dioxus::desktop::WeakDesktopContext>::None);
 
-    #[cfg(not(target_arch = "wasm32"))]
     let dock_position = props.dock_position;
-    #[cfg(not(target_arch = "wasm32"))]
     let on_save = props.on_save.clone();
-    #[cfg(not(target_arch = "wasm32"))]
     let title_str = props.title.to_string();
-    #[cfg(not(target_arch = "wasm32"))]
     let child_window_props = props.clone();
 
-    #[cfg(not(target_arch = "wasm32"))]
     use_effect(move || {
         if is_sub_window {
             return;
@@ -148,7 +136,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     .with_window(
                         dioxus::desktop::WindowBuilder::new()
                             .with_title(format!("MorBlogger - {}", title))
-                            .with_inner_size(dioxus::desktop::LogicalSize::new(800.0, 600.0)),
+                            // Roomy default for second-monitor editing.
+                            .with_inner_size(dioxus::desktop::LogicalSize::new(1100.0, 820.0)),
                     );
                 let pending_ctx = dioxus::desktop::window().new_window(dom, cfg);
 
@@ -193,7 +182,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     // Menu events arrive on a global channel and every mounted instance's
     // handler sees them, so act only in the native pop-out window and only on
     // this editor's own namespaced IDs.
-    #[cfg(not(target_arch = "wasm32"))]
     {
         let mode = props.mode;
         let is_native = props.is_native_window;
@@ -236,7 +224,6 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         return rsx! {};
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     if pos == DockPosition::Floating && !is_sub_window {
         return rsx! {};
     }
@@ -557,6 +544,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     }}
     /* WebKitGTK hides scrollbars by default; child editor windows don't load the
        global editor CSS, so style the CodeMirror scroller's scrollbar here. */
+    /* Scroll-past-end: let the last lines rise into comfortable view. */
+    .cm-content {{ padding-bottom: 40vh; }}
     .cm-scroller::-webkit-scrollbar {{ width: 12px; height: 12px; }}
     .cm-scroller::-webkit-scrollbar-track {{ background: transparent; }}
     .cm-scroller::-webkit-scrollbar-thumb {{
@@ -762,13 +751,11 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EditorEvent {
     Save,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[derive(Props, Clone)]
 pub struct EditorWindowProps {
     pub dock_props: AssetEditorProps,
@@ -781,14 +768,12 @@ pub struct EditorWindowProps {
     pub tx: tokio::sync::mpsc::UnboundedSender<EditorEvent>,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 impl PartialEq for EditorWindowProps {
     fn eq(&self, other: &Self) -> bool {
         self.dock_props == other.dock_props
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[component]
 pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
     provide_context(props.render_state);
@@ -810,7 +795,10 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
         // Separate webview: the main shell's bundle/CSS aren't here, so inject the
         // CodeMirror runtime this window's CodeEditor needs.
         script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
-        style { "html, body {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
+        // Include the Dioxus mount root (#main/#root): this window doesn't load
+        // editor_ui.css, so without height:100% here the root collapses to content
+        // height and the editor's height:100% chain breaks (scroll cut off).
+        style { "html, body, #main, #root {{ height: 100%; margin: 0; background-color: #16140f; color: #ece7da; overflow: hidden; }}" }
         AssetEditorDock {
             is_native_window: true,
             ..props.dock_props

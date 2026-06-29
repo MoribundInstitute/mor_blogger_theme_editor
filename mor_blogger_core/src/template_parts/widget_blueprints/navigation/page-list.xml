@@ -1,0 +1,11 @@
+<b:widget id='PageList1' locked='false' title='Pages' type='PageList' version='2' visible='true'>
+  <b:includable id='main' var='this'>
+    <nav class='mor-page-list'>
+      <ul>
+        <b:loop index='i' values='data:links' var='link'>
+          <li><a expr:href='data:link.href'><data:link.title/></a></li>
+        </b:loop>
+      </ul>
+    </nav>
+  </b:includable>
+</b:widget>

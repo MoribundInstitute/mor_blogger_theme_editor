@@ -191,6 +191,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                     preview_viewport: layout.preview_viewport,
                     preview_width: layout.preview_width,
                     preview_html: preview_html(),
+                    on_toggle_dark_mode: move |_| theme.perform_dark_mode_toggle(),
                 }
             }
         } else {
@@ -232,6 +233,17 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                                 .spawn();
                         },
                         "Browse Community Hub ↗"
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        style: "margin-top: 4px;",
+                        title: "View the static-page compendium source on GitHub",
+                        onclick: move |_| {
+                            let _ = std::process::Command::new("xdg-open")
+                                .arg(crate::ui::panels::theme_palette::static_pages_panel::COMMUNITY_REPO_URL)
+                                .spawn();
+                        },
+                        "Source on GitHub ↗"
                     }
                 }
             } else {
@@ -322,6 +334,7 @@ pub fn StaticPageEditor(preview_html: Signal<String>) -> Element {
                         preview_viewport: layout.preview_viewport,
                         preview_width: layout.preview_width,
                         preview_html: preview_html(),
+                    on_toggle_dark_mode: move |_| theme.perform_dark_mode_toggle(),
                     }
                 }
             }

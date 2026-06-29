@@ -226,13 +226,10 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
-                    label: format!("XML Editor {}", if (layout.xml_editor_pos)() != DockPosition::Hidden { "✓" } else { "" }),
+                    label: format!("Widgets {}", if (layout.widgets_pos)() != DockPosition::Hidden { "✓" } else { "" }),
                     on_action: move |_| {
-                        if (layout.xml_editor_pos)() == DockPosition::Hidden {
-                            layout.xml_editor_pos.set(DockPosition::mor_panel_left);
-                        } else {
-                            layout.xml_editor_pos.set(DockPosition::Hidden);
-                        }
+                        // Arbitrated toggle: drops into a free zone, bumping any conflict.
+                        layout.toggle_dock_by_id("widgets");
                     }
                 }
                 MenuItem {

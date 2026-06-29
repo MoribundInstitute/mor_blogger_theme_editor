@@ -68,6 +68,19 @@ pub const HEADER_REGISTRY: &[ComponentManifest] = &[
         js_deps: &[],
     },
     ComponentManifest {
+        id: "mor_search_center",
+        category: ComponentCategory::Header,
+        xml_content: include_str!("../template_parts/headers/mor_header_search.xml"),
+        css_deps: &[
+            "04-Main-Header.css",
+            "05-Branding.css",
+            "06-Main-Navigation.css",
+            "08-Command-Line-Search.css",
+            "08b-Search-Centered.css",
+        ],
+        js_deps: &[],
+    },
+    ComponentManifest {
         id: "gtk_headerbar",
         category: ComponentCategory::Header,
         xml_content: include_str!("../template_parts/headers/gtk_headerbar.xml"),
@@ -250,6 +263,9 @@ pub fn fetch_default_css(filename: &str) -> &'static str {
         "08-Command-Line-Search.css" => {
             include_str!("../template_parts/css/headers/08-Command-Line-Search.css")
         }
+        "08b-Search-Centered.css" => {
+            include_str!("../template_parts/css/headers/08b-Search-Centered.css")
+        }
 
         // Layouts
         "09-Workspace-Layout.css" => {
@@ -385,6 +401,24 @@ fn inject_widgets(
     template
 }
 
+/// User override for a module slot, written by the workbench's Save as
+/// `templates/<category>/custom_<module_key>.xml`. When present it replaces the
+/// compiled registry variant for that slot — in the preview AND the export, since
+/// both flow through `resolve_template_parts`.
+pub fn module_override(module_key: &str) -> Option<String> {
+    let category = match module_key {
+        "header_variant" => "headers",
+        "main_variant" => "layouts",
+        "content_variant" => "content",
+        "left_sidebar_variant" | "right_sidebar_variant" => "sidebars",
+        "footer_variant" => "footers",
+        _ => return None,
+    };
+    let path = crate::utils::fs_bridge::category_dir(category)?
+        .join(format!("custom_{module_key}.xml"));
+    std::fs::read_to_string(path).ok()
+}
+
 // =====================================================================
 // RESOLVER
 // =====================================================================
@@ -453,8 +487,14 @@ pub fn resolve_template_parts(
         || pack.script_variant == "mor_collapsible_sidebars"
         || pack.script_variant == "magazine_grid_logic"
     {
-        for file in CORE_JS_FILES {
-            unique_js.insert(*file);
+        // Core helpers always ship; the optional behaviors ship only when enabled,
+        // so disabling them in the JS workspace actually trims bytes from the export.
+        unique_js.insert("01-Core-Helpers.js");
+        if config.scripts.enable_theme_toggle {
+            unique_js.insert("07-Theme-Toggler.js");
+        }
+        if config.scripts.enable_share_actions {
+            unique_js.insert("08-Share-Actions.js");
         }
     }
 
@@ -510,23 +550,29 @@ pub fn resolve_template_parts(
 
     let css_refs: Vec<&str> = css_contents.iter().map(|c| c.as_ref()).collect();
 
-    let header_raw = get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content;
-    let main_raw = get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content;
-    let content_raw = get_comp(CONTENT_REGISTRY, &pack.content_variant).xml_content;
-    let sidebar_left_raw = get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).xml_content;
-    let sidebar_right_raw =
-        get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).xml_content;
-    let footer_raw = get_comp(FOOTER_REGISTRY, &pack.footer_variant).xml_content;
+    // Per-slot: a saved user override wins over the compiled registry variant.
+    let header_raw = module_override("header_variant")
+        .unwrap_or_else(|| get_comp(HEADER_REGISTRY, &pack.header_variant).xml_content.to_string());
+    let main_raw = module_override("main_variant")
+        .unwrap_or_else(|| get_comp(LAYOUT_REGISTRY, &pack.main_variant).xml_content.to_string());
+    let content_raw = module_override("content_variant")
+        .unwrap_or_else(|| get_comp(CONTENT_REGISTRY, &pack.content_variant).xml_content.to_string());
+    let sidebar_left_raw = module_override("left_sidebar_variant")
+        .unwrap_or_else(|| get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant).xml_content.to_string());
+    let sidebar_right_raw = module_override("right_sidebar_variant")
+        .unwrap_or_else(|| get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant).xml_content.to_string());
+    let footer_raw = module_override("footer_variant")
+        .unwrap_or_else(|| get_comp(FOOTER_REGISTRY, &pack.footer_variant).xml_content.to_string());
 
     TemplateParts {
         meta: include_str!("../template_parts/meta/meta.xml"),
         css: build_master_css(&css_refs, config),
         javascript: aggregated_js,
-        header: inject_widgets(header_raw, "header", pack),
-        main: inject_widgets(main_raw, "main", pack),
-        content: inject_widgets(content_raw, "content", pack),
-        sidebar_left: inject_widgets(sidebar_left_raw, "sidebar-left", pack),
-        sidebar_right: inject_widgets(sidebar_right_raw, "sidebar-right", pack),
-        footer: inject_widgets(footer_raw, "footer", pack),
+        header: inject_widgets(&header_raw, "header", pack),
+        main: inject_widgets(&main_raw, "main", pack),
+        content: inject_widgets(&content_raw, "content", pack),
+        sidebar_left: inject_widgets(&sidebar_left_raw, "sidebar-left", pack),
+        sidebar_right: inject_widgets(&sidebar_right_raw, "sidebar-right", pack),
+        footer: inject_widgets(&footer_raw, "footer", pack),
     }
 }

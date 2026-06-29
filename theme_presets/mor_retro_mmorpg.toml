@@ -141,53 +141,6 @@ h1, h2, h3, h4,
   background: color-mix(in srgb, var(--accent) 38%, var(--bg-base)) !important;
   color: var(--fg-base) !important;
 }
-
-/* The classic ember-red interface button */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 72%, var(--bg-panel)) 0%,
-    color-mix(in srgb, var(--accent) 48%, var(--bg-base)) 100%
-  ) !important;
-  color: var(--accent) !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 2px !important;
-  padding: 6px 14px !important;
-  font-weight: bold !important;
-  box-shadow:
-    inset 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent),
-    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
-  cursor: pointer;
-  transition: background 100ms ease, box-shadow 100ms ease !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 82%, var(--bg-panel)) 0%,
-    color-mix(in srgb, var(--accent) 58%, var(--bg-base)) 100%
-  ) !important;
-  color: var(--fg-base) !important;
-}
-
-.pager-btn:active,
-.panel-toggle:active,
-.toc-jump-link:active,
-.back-to-top-btn:active,
-.mor-catalog-trigger:active {
-  background: color-mix(in srgb, var(--accent) 40%, var(--bg-base)) !important;
-  box-shadow: inset 2px 2px 4px color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
-  transform: translateY(1px) !important;
-}
-
 /* Links */
 .mor-post .post-body a,
 .panel-content a {
@@ -295,6 +248,11 @@ select:focus {
   content: none !important;
   display: none !important;
 }
+
+/* --- Theme cursors (default / pointer / text) --- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 12 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23e8b923' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 [colors]
@@ -333,6 +291,18 @@ heading_weight = "700"
 radius = "2px"
 border_width = "2px"
 text_transform = "none"
+padding_x = "14px"
+padding_y = "6px"
+font_weight = "bold"
+text_color = "var(--accent)"
+fill = "gradient"
+gradient_from = "color-mix(in srgb, var(--accent) 72%, var(--bg-panel))"
+gradient_to = "color-mix(in srgb, var(--accent) 48%, var(--bg-base))"
+gradient_angle = "180deg"
+box_shadow = "inset 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent), inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent)"
+hover_effect = "brighten"
+pressed_feedback = true
+transition_ms = "100ms"
 
 [light.colors]
 bg_base = "#f5e9d3"
@@ -354,3 +324,9 @@ color = "#fffaf0"
 
 [light.background.mode.Solid]
 color = "#f5e9d3"
+
+[scrollbars]
+width = "14px"
+track_color = "#2a1a0c"
+thumb_color = "#e8b923"
+thumb_hover_color = "#c0392b"

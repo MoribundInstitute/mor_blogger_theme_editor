@@ -256,40 +256,6 @@ body::before {
   border-bottom: 2px solid var(--fg-base) !important;
   text-shadow: none !important;
 }
-
-/* Buttons in the navigation: small caps, no fill, hairline border.
-   Hover swaps to a solid black plate (ink stamp feel). */
-.pager-btn,
-.panel-toggle,
-.toc-jump-link,
-.back-to-top-btn,
-.mor-catalog-trigger {
-  background: transparent !important;
-  color: var(--fg-base) !important;
-  border: 1px solid var(--fg-base) !important;
-  border-radius: 0 !important;
-  padding: 6px 14px !important;
-  font-family: var(--font-body) !important;
-  font-variant: small-caps !important;
-  font-weight: 700 !important;
-  font-size: 0.85rem !important;
-  letter-spacing: 0.14em !important;
-  text-transform: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease !important;
-}
-
-.pager-btn:hover,
-.panel-toggle:hover,
-.toc-jump-link:hover,
-.back-to-top-btn:hover,
-.mor-catalog-trigger:hover {
-  background: var(--fg-base) !important;
-  color: var(--bg-base) !important;
-}
-
 /* The footer becomes a colophon: tiny, centered, in small caps. */
 .mor-footer {
   background: var(--bg-panel) !important;
@@ -308,6 +274,11 @@ body::before {
 *, *::before, *::after {
   text-shadow: none !important;
 }
+
+/* --- Theme cursors (default / pointer / text) --- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23111111' stroke='%23ffffff' stroke-width='0.5'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23111111' stroke='%23ffffff' stroke-width='0.5'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23111111' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 [colors]
@@ -343,7 +314,16 @@ heading_weight = "700"
 [buttons]
 radius = "0px"
 border_width = "1px"
+border_color = "var(--fg-base)"
 text_transform = "uppercase"
+letter_spacing = "0.14em"
+font_weight = "700"
+font_size = "0.85rem"
+padding_x = "14px"
+padding_y = "6px"
+fill = "outline"
+hover_effect = "none"
+transition_ms = "120ms"
 
 [dark.colors]
 bg_base = "#1a1814"
@@ -362,3 +342,9 @@ color = "#26241e"
 
 [dark.background.mode.Solid]
 color = "#1a1814"
+
+[scrollbars]
+width = "12px"
+track_color = "#efe9da"
+thumb_color = "#222222"
+thumb_hover_color = "#000000"

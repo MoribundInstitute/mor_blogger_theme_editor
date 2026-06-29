@@ -210,6 +210,226 @@ fn format_posts_for_preview(posts: &[BlogPost], content_variant: &str) -> String
     }
 }
 
+// ── Shared preview section builders ─────────────────────────────────────────
+//
+// The live preview and the per-module workbench preview render the SAME markup by
+// calling these, so they can never drift apart. (Both still rely on the real
+// resolved CSS via `render_css_sockets`.)
+
+/// The preview `<header>` (branding, theme toggle, nav, search).
+pub fn preview_header_html(config: &ThemeConfig) -> String {
+    let header_extra_class = if config.template_pack.header_variant == "mor_search_center" {
+        " search-centered"
+    } else {
+        ""
+    };
+    let site_title = escape_html(&config.site.site_title);
+    let branding_inner = if config.site.header_logo_url.trim().is_empty() {
+        format!(r#"<span class="institute-title" data-field-path="site.site_title">{site_title}</span>"#)
+    } else {
+        format!(
+            r#"<img alt="{} logo" class="institute-logo" src="{}"/>"#,
+            escape_attr(&config.site.site_title),
+            escape_attr(&config.site.header_logo_url)
+        )
+    };
+    let menu_links = config
+        .menu_links
+        .iter()
+        .enumerate()
+        .filter(|(_, link)| !link.label.trim().is_empty())
+        .map(|(index, link)| menu_link_anchor(index, &link.url, &link.label))
+        .collect::<Vec<_>>()
+        .join("");
+    format!(
+        r##"<header class="main-header{header_extra_class}" data-edit-target="colors.bg_elevated">
+    <div class="header-top-row">
+        <div class="header-side-controls left-controls">
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
+        </div>
+        <a class="branding branding-link">
+            {branding_inner}
+        </a>
+        <div class="header-side-controls right-controls">
+            <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode (Use Editor UI to switch)" data-edit-target="colors.accent">
+               <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
+               <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
+            </button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right"><span class="visually-hidden">Contents</span></button>
+        </div>
+    </div>
+    <div class="header-bottom-row">
+        <nav class="mor-nav">{menu_links}</nav>
+        <div class="mor-search">
+            <form><span class="prompt" data-edit-target="icons.search">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button></form>
+        </div>
+    </div>
+</header>"##
+    )
+}
+
+/// The left sidebar panel (Labels + Archive sample widgets).
+pub fn preview_left_panel_html(config: &ThemeConfig) -> String {
+    let site_subtitle = escape_html(&config.site.site_subtitle);
+    let label_title = widget_title_h2("Label1", config.template_pack.widget_title("Label1", "Labels"));
+    let archive_title = widget_title_h2(
+        "BlogArchive1",
+        config.template_pack.widget_title("BlogArchive1", "Archive"),
+    );
+    format!(
+        r##"<aside class="mor-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
+        <div class="panel-header">
+            <span data-edit-target="colors.accent">Browse</span>
+            <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
+        </div>
+        <div class="panel-content sidebar-section">
+            <div class="widget Label" id="Label1" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
+            <div class="widget BlogArchive" id="BlogArchive1" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
+        </div>
+    </aside>"##
+    )
+}
+
+/// The right sidebar panel (Table of Contents sample widget).
+pub fn preview_right_panel_html(config: &ThemeConfig) -> String {
+    let toc_title = widget_title_h2(
+        "HTML1",
+        config.template_pack.widget_title("HTML1", "Table of Contents"),
+    );
+    format!(
+        r##"<aside class="mor-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
+        <div class="panel-header">
+            <span data-edit-target="colors.accent">Contents</span>
+            <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
+        </div>
+        <div class="panel-content sidebar-section">
+            <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
+        </div>
+    </aside>"##
+    )
+}
+
+/// The post feed (`canvas-content`) for the active content variant.
+pub fn preview_content_html(config: &ThemeConfig, posts: &[BlogPost]) -> String {
+    let posts_html = format_posts_for_preview(posts, &config.template_pack.content_variant);
+    format!(r##"<div class="canvas-content">
+            {posts_html}
+        </div>"##)
+}
+
+/// The simple site footer (copyright, legal links, back-to-top), preceded by the
+/// optional footer gadget area (widgets dropped into the `{{SOCKET_FOOTER}}` slot).
+pub fn preview_footer_html(config: &ThemeConfig) -> String {
+    let footer_text = escape_html(&config.footer.footer_text);
+    let gadgets: String = config
+        .template_pack
+        .widget_map
+        .get("footer")
+        .map(|ids| {
+            ids.iter()
+                .map(|id| {
+                    let title = config.template_pack.widget_title(id, id);
+                    format!(
+                        r#"<div class="widget" data-block-id="{}" style="padding:6px 12px;">{}</div>"#,
+                        escape_attr(id),
+                        escape_html(title)
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("")
+        })
+        .unwrap_or_default();
+    let gadget_area = if gadgets.is_empty() {
+        String::new()
+    } else {
+        format!(
+            r#"<div class="footer-gadget-area" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:8px 0;">{gadgets}</div>"#
+        )
+    };
+    format!(
+        r##"<footer class="mor-footer" data-edit-target="colors.bg_elevated">
+            {gadget_area}
+            <div class="footer-sys-info">
+                <p class="footer-copyright" data-field-path="footer.footer_text">{footer_text}</p>
+                <div class="footer-legal-links">
+                    <a href="#">Privacy policy</a> | <a href="#">Terms of use</a>
+                </div>
+                <button class="back-to-top-btn" type="button" data-edit-target="buttons.text_transform">Back to Top</button>
+            </div>
+        </footer>"##
+    )
+}
+
+/// Render a SINGLE widget, by Blogger type, with representative dummy data,
+/// wrapped in the theme's widget markup so it picks up the live CSS. Used by the
+/// Widget Workbench's master-canvas preview for dynamic widgets that have no
+/// static HTML of their own. Unknown types fall back to a generic gadget card.
+pub fn preview_widget_html(
+    config: &ThemeConfig,
+    w_type: &str,
+    title: &str,
+    posts: &[BlogPost],
+) -> String {
+    // Content-area widgets render inside the main canvas with real post cards.
+    if matches!(w_type, "Blog" | "FeaturedPost") {
+        return format!(
+            r#"<main class="canvas-core" style="max-width:760px;margin:0 auto;">{}</main>"#,
+            preview_content_html(config, posts)
+        );
+    }
+
+    let id = format!("{w_type}1");
+    let label = if title.trim().is_empty() {
+        match w_type {
+            "BlogArchive" => "Archive",
+            "Label" | "Labels" => "Labels",
+            "PageList" => "Pages",
+            "Profile" => "About",
+            "Subscribe" => "Subscribe To",
+            _ => w_type,
+        }
+    } else {
+        title
+    };
+    let head = widget_title_h2(&id, label);
+    let content = match w_type {
+        "BlogArchive" => r##"<ul class="archive-list"><li><a href="#">October 2026 <span class="post-count">(12)</span></a></li><li><a href="#">September 2026 <span class="post-count">(8)</span></a></li><li><a href="#">August 2026 <span class="post-count">(5)</span></a></li></ul>"##.to_string(),
+        "Label" | "Labels" => r##"<ul class="label-list"><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li><li><a href="#">Architecture</a></li></ul>"##.to_string(),
+        "PageList" => r##"<ul class="page-list"><li><a href="#">Home</a></li><li><a href="#">About</a></li><li><a href="#">Archive</a></li><li><a href="#">Contact</a></li></ul>"##.to_string(),
+        "Profile" => r#"<p>A short author bio renders here on the live blog, pulled from your Blogger profile.</p>"#.to_string(),
+        "Subscribe" => r##"<ul class="subscribe-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;"><li class="subscribe-wrapper" style="display:flex;align-items:center;gap:8px;"><span class="feed-icon">📡</span> Posts <a href="#">Atom</a></li><li class="subscribe-wrapper" style="display:flex;align-items:center;gap:8px;"><span class="feed-icon">💬</span> Comments <a href="#">Atom</a></li></ul>"##.to_string(),
+        "Wikipedia" => r#"<form class="wikipedia-search-form" onsubmit="return false;" style="display:flex;gap:6px;align-items:center;"><img class="wikipedia-icon" src="https://resources.blogblog.com/img/widgets/icon_wikipedia_w.png" style="width:24px;height:24px;flex:0 0 auto;"/><input class="wikipedia-search-input" type="text" placeholder="Search Wikipedia…" style="flex:1;min-width:0;"/><input class="wikipedia-search-button" type="submit" value="Go"/></form>"#.to_string(),
+        "Translate" => r#"<div id="google_translate_element"><label style="display:flex;gap:6px;align-items:center;">🌐 <select><option>Select language</option><option>English</option><option>Español</option><option>Français</option><option>Deutsch</option></select></label></div>"#.to_string(),
+        "ContactForm" => r#"<form><input type="text" placeholder="Name"><input type="email" placeholder="Email"><textarea placeholder="Message"></textarea><button type="button">Send</button></form>"#.to_string(),
+        "HTML" => r#"<p>Custom HTML gadget — add markup in the Code tab to see it rendered here.</p>"#.to_string(),
+        _ => format!("<p>{} widget — renders live on Blogger.</p>", escape_html(w_type)),
+    };
+
+    format!(
+        r#"<div class="sidebar-section" style="max-width:340px;margin:0 auto;"><div class="widget {wt}" id="{id}" data-block-id="{id}">{head}<div class="widget-content">{content}</div></div></div>"#,
+        wt = escape_attr(w_type),
+        id = escape_attr(&id),
+    )
+}
+
+/// The full workspace shell: left panel + main (content + footer) + right panel.
+pub fn preview_workspace_html(config: &ThemeConfig, posts: &[BlogPost]) -> String {
+    format!(
+        r##"<div class="mor-workspace" data-edit-target="colors.bg_base">
+    {left}
+    <main class="canvas-core">
+        {content}
+        {footer}
+    </main>
+    {right}
+</div>"##,
+        left = preview_left_panel_html(config),
+        content = preview_content_html(config, posts),
+        footer = preview_footer_html(config),
+        right = preview_right_panel_html(config),
+    )
+}
+
 pub fn render_preview_html(
     config: &ThemeConfig,
     posts: &[BlogPost],
@@ -243,32 +463,7 @@ pub fn render_preview_html(
         &config.typography.mono_font_stack,
     ]);
 
-    let menu_links = config
-        .menu_links
-        .iter()
-        .enumerate()
-        .filter(|(_, link)| !link.label.trim().is_empty())
-        .map(|(index, link)| menu_link_anchor(index, &link.url, &link.label))
-        .collect::<Vec<_>>()
-        .join("");
-
     let site_title = escape_html(&config.site.site_title);
-    let site_subtitle = escape_html(&config.site.site_subtitle);
-    let footer_text = escape_html(&config.footer.footer_text);
-    let label_title = widget_title_h2(
-        "Label1",
-        config.template_pack.widget_title("Label1", "Labels"),
-    );
-    let archive_title = widget_title_h2(
-        "BlogArchive1",
-        config.template_pack.widget_title("BlogArchive1", "Archive"),
-    );
-    let toc_title = widget_title_h2(
-        "HTML1",
-        config
-            .template_pack
-            .widget_title("HTML1", "Table of Contents"),
-    );
 
     // Fetch the TRUE CSS that will be injected into the final Blogger XML
     let mut parts = crate::render::template_resolver::resolve_template_parts(config, vfs);
@@ -288,6 +483,8 @@ pub fn render_preview_html(
                             .push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
                         "workspace_docks" => active_plugins
                             .push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
+                        "notification_bell" => active_plugins
+                            .push(Box::new(crate::render::plugins::NotificationBellPlugin)),
                         _ => {}
                     }
                 }
@@ -312,79 +509,20 @@ pub fn render_preview_html(
         config,
     );
 
-    let posts_html = format_posts_for_preview(posts, &config.template_pack.content_variant);
+    // The "Mor — Centered Search" header variant is a CSS modifier on the same
+    // .main-header markup, so the preview can reflect it by toggling the class.
+    let header_extra_class = if config.template_pack.header_variant == "mor_search_center" {
+        " search-centered"
+    } else {
+        ""
+    };
 
+    // Compose from the shared section builders so the per-module workbench preview
+    // renders byte-identical markup.
     let body_markup = format!(
-        r##"
-<header class="main-header" data-edit-target="colors.bg_elevated">
-    <div class="header-top-row">
-        <div class="header-side-controls left-controls">
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
-        </div>
-        <a class="branding branding-link">
-            <span class="institute-title" data-field-path="site.site_title">{site_title}</span>
-        </a>
-        <div class="header-side-controls right-controls">
-            <button class="header-panel-toggle theme-toggle-btn" id="mor-theme-toggle" title="Toggle Light/Dark Mode (Use Editor UI to switch)" data-edit-target="colors.accent">
-               <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
-               <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
-            </button>
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right"><span class="visually-hidden">Contents</span></button>
-        </div>
-    </div>
-    <div class="header-bottom-row">
-        <nav class="mor-nav">{menu_links}</nav>
-        <div class="mor-search">
-            <form><span class="prompt" data-edit-target="icons.search">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button></form>
-        </div>
-    </div>
-</header>
- 
-<div class="mor-workspace" data-edit-target="colors.bg_base">
-    <aside class="mor-panel panel-left" id="panel-left" data-edit-target="colors.bg_panel">
-        <div class="panel-header">
-            <span data-edit-target="colors.accent">Browse</span>
-            <button class="panel-toggle" data-target="panel-left" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
-        </div>
-        <div class="panel-content sidebar-section">
-            <div class="widget Label" id="Label1" data-block-id="Label1">{label_title}<div class="widget-content Label" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Typography</a></li><li><a href="#">Design</a></li><li><a href="#">Dev</a></li></ul></div></div>
-            <div class="widget BlogArchive" id="BlogArchive1" data-block-id="BlogArchive1">{archive_title}<div class="widget-content" data-field-path="site.site_subtitle">{site_subtitle}</div></div>
-        </div>
-    </aside>
- 
-    <main class="canvas-core">
-        <div class="canvas-content">
-            {posts_html}
-        </div>
-        <footer class="mor-footer" data-edit-target="colors.bg_elevated">
-            <div class="footer-sys-info">
-                <p class="footer-copyright" data-field-path="footer.footer_text">{footer_text}</p>
-                <div class="footer-legal-links">
-                    <a href="#">Privacy policy</a> | <a href="#">Terms of use</a>
-                </div>
-                <button class="back-to-top-btn" type="button" data-edit-target="buttons.text_transform">Back to Top</button>
-            </div>
-        </footer>
-    </main>
- 
-    <aside class="mor-panel panel-right" id="panel-right" data-edit-target="colors.bg_panel">
-        <div class="panel-header">
-            <span data-edit-target="colors.accent">Contents</span>
-            <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
-        </div>
-        <div class="panel-content sidebar-section">
-            <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
-        </div>
-    </aside>
-</div>"##,
-        site_title = site_title,
-        site_subtitle = site_subtitle,
-        menu_links = menu_links,
-        footer_text = footer_text,
-        label_title = label_title,
-        archive_title = archive_title,
-        toc_title = toc_title,
-        posts_html = posts_html
+        "{header}\n{workspace}",
+        header = preview_header_html(config),
+        workspace = preview_workspace_html(config, posts),
     );
 
     format!(
@@ -402,7 +540,7 @@ html, body {{ overflow: hidden; }}
 .canvas-core {{ overflow-y: auto; overflow-x: hidden; }}
 </style>
 </head>
-<body style="{background_tile_css}">
+<body class="{header_extra_class}" style="{background_tile_css}">
     {body_markup}
     {true_js}
 </body>
@@ -415,4 +553,89 @@ html, body {{ overflow: hidden; }}
         body_markup = body_markup,
         true_js = true_js
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn preview_widget_renders_by_type() {
+        let config = ThemeConfig::default();
+        // Content widget → main canvas with post markup.
+        let blog = preview_widget_html(&config, "Blog", "", &[]);
+        assert!(blog.contains("canvas-core"));
+        // Sidebar widget → themed gadget block with a type-specific list.
+        let archive = preview_widget_html(&config, "BlogArchive", "", &[]);
+        assert!(archive.contains(r#"class="widget BlogArchive""#));
+        assert!(archive.contains("archive-list"));
+        // Unknown type → generic gadget card, never empty.
+        let unknown = preview_widget_html(&config, "Weird", "", &[]);
+        assert!(unknown.contains("renders live on Blogger"));
+    }
+
+    // The preview header used to be hardcoded to the site title and ignored
+    // header_logo_url; this guards that a set logo renders an <img>, mirroring export.
+    #[test]
+    fn logo_url_renders_img_in_preview_header() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+
+        // Empty logo -> title text, no logo img.
+        config.site.header_logo_url = String::new();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="institute-title""#));
+        // `.institute-logo` appears in the injected CSS regardless; the <img>
+        // is what we must not emit, so match the class *attribute* form.
+        assert!(!html.contains(r#"class="institute-logo""#));
+
+        // Set logo -> img with the url, title text dropped from the brand.
+        config.site.header_logo_url = "https://example.com/logo.png".to_string();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="institute-logo""#));
+        assert!(html.contains("https://example.com/logo.png"));
+    }
+
+    // The "Mor — Centered Search" header variant is a CSS modifier on the
+    // preview's .main-header. Selecting it must add the class AND bundle the
+    // centering CSS, otherwise the preview won't reflect the variant.
+    #[test]
+    fn centered_search_variant_reflects_in_preview() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+
+        // Default header: no modifier class.
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains(r#"class="main-header""#));
+        assert!(!html.contains("main-header search-centered"));
+
+        // Centered-search variant: modifier class on the header + centering CSS.
+        config.template_pack.header_variant = "mor_search_center".to_string();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains("main-header search-centered"));
+        assert!(html.contains(".search-centered .header-bottom-row"));
+    }
+
+    // Every shipped preset must define a custom cursor that survives into the
+    // preview CSS (preset_css is appended last in build_master_css). Guards the
+    // theme_presets/*.toml cursor blocks end-to-end.
+    #[test]
+    fn shipped_presets_define_preview_cursors() {
+        let presets = crate::presets::all_presets();
+        if presets.is_empty() {
+            return; // preset dir not resolvable from this cwd; nothing to check.
+        }
+        let vfs = HashMap::new();
+        for p in &presets {
+            let mut cfg = ThemeConfig::default();
+            cfg.preset_css = p.preset_css.to_string();
+            let html =
+                render_preview_html(&cfg, &[], PreviewTemplateMode::default(), true, &vfs);
+            assert!(
+                html.contains("cursor: url("),
+                "preset '{}' has no custom cursor in preview output",
+                p.name
+            );
+        }
+    }
 }

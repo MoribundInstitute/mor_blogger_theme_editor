@@ -15,6 +15,58 @@ const APP_NAME: &str = "MorBloggerThemeEditor";
 /// Category subdirectories that mirror `template_parts/`.
 pub const TEMPLATE_CATEGORIES: &[&str] = &["headers", "footers", "sidebars", "layouts", "content"];
 
+/// Widget blueprint groups (logical classification) seeded under `workspace/widgets/`.
+pub const WIDGET_GROUPS: &[&str] = &["content", "navigation", "archive", "gadgets", "custom"];
+
+/// Default widget blueprints seeded on first run. Tuple: (group, filename, content).
+/// Reuses the existing `<b:widget>` templates plus a couple of new blueprints; the
+/// `mor-blogger-widget-blueprints` repo can grow this library by dropping more files
+/// into the seeded `workspace/widgets/<group>/` tree.
+const WIDGET_BLUEPRINTS: &[(&str, &str, &str)] = &[
+    (
+        "content",
+        "blog.xml",
+        include_str!("../template_parts/widgets/blog1.xml"),
+    ),
+    (
+        "content",
+        "featured-post.xml",
+        include_str!("../template_parts/widget_blueprints/content/featured-post.xml"),
+    ),
+    (
+        "navigation",
+        "labels.xml",
+        include_str!("../template_parts/widgets/label1.xml"),
+    ),
+    (
+        "navigation",
+        "page-list.xml",
+        include_str!("../template_parts/widget_blueprints/navigation/page-list.xml"),
+    ),
+    (
+        "archive",
+        "blog-archive.xml",
+        include_str!("../template_parts/widgets/blogarchive1.xml"),
+    ),
+    (
+        "custom",
+        "html.xml",
+        include_str!("../template_parts/widgets/html1.xml"),
+    ),
+    // Blogger built-in gadgets. Title is tokenized (data-field-path); other knobs
+    // are edited in the Code tab — the app has no per-field override store yet.
+    (
+        "gadgets",
+        "wikipedia.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/wikipedia.xml"),
+    ),
+    (
+        "gadgets",
+        "translate.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/translate.xml"),
+    ),
+];
+
 /// Default modules seeded on first run. Tuple: (category, filename, content).
 const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
     // Headers
@@ -158,6 +210,12 @@ pub fn category_dir(category: &str) -> Option<PathBuf> {
     templates_root().map(|r| r.join(category))
 }
 
+/// Returns the app-scoped widget-blueprints root, e.g.
+/// `~/.local/share/morbloggerthemeeditor/widgets/` on Linux.
+pub fn widgets_root() -> Option<PathBuf> {
+    workspace_root().map(|r| r.join("widgets"))
+}
+
 // ─── Startup init ────────────────────────────────────────────────────────────
 
 /// Create the templates directory tree and seed default modules on first launch.
@@ -222,6 +280,24 @@ pub fn init_template_dirs() -> std::io::Result<()> {
         }
     }
 
+    let widgets = widgets_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    for group in WIDGET_GROUPS {
+        std::fs::create_dir_all(widgets.join(group))?;
+    }
+    for (group, filename, content) in WIDGET_BLUEPRINTS {
+        let dest = widgets.join(group).join(filename);
+        if !dest.exists() {
+            std::fs::write(&dest, content)?;
+            log::info!("[fs_bridge] Seeded widget blueprint: {}/{}", group, filename);
+        }
+    }
+    log::info!("[fs_bridge] Widget blueprints ready at: {}", widgets.display());
+
     log::info!("[fs_bridge] Template dirs ready at: {}", root.display());
     Ok(())
 }
@@ -251,10 +327,208 @@ pub fn save_custom_module(category: &str, name: &str, content: &str) -> std::io:
     Ok(dest)
 }
 
+// ─── Widget blueprints ───────────────────────────────────────────────────────
+
+/// One widget blueprint: its group folder, file stem, and `<b:widget>` XML body.
+#[derive(Clone, Debug, PartialEq)]
+pub struct WidgetBlueprint {
+    pub group: String,
+    pub name: String,
+    pub xml: String,
+}
+
+/// Read every widget blueprint under `workspace/widgets/<group>/*.xml`, sorted by
+/// (group, name). Returns empty if the tree hasn't been seeded yet.
+pub fn load_widget_blueprints() -> Vec<WidgetBlueprint> {
+    let mut out = Vec::new();
+    let Some(root) = widgets_root() else {
+        return out;
+    };
+    let Ok(groups) = std::fs::read_dir(&root) else {
+        return out;
+    };
+    for g in groups.flatten() {
+        if !g.path().is_dir() {
+            continue;
+        }
+        let group = g.file_name().to_string_lossy().to_string();
+        let Ok(files) = std::fs::read_dir(g.path()) else {
+            continue;
+        };
+        for f in files.flatten() {
+            let p = f.path();
+            if p.extension().and_then(|e| e.to_str()) != Some("xml") {
+                continue;
+            }
+            let Ok(xml) = std::fs::read_to_string(&p) else {
+                continue;
+            };
+            let name = p
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("widget")
+                .to_string();
+            out.push(WidgetBlueprint {
+                group: group.clone(),
+                name,
+                xml,
+            });
+        }
+    }
+    out.sort_by(|a, b| (&a.group, &a.name).cmp(&(&b.group, &b.name)));
+    out
+}
+
+/// One template-module file: its category, file stem, and XML.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ModuleFile {
+    pub category: String,
+    pub name: String,
+    pub xml: String,
+}
+
+/// Read every module XML under `<templates_root>/<category>/*.xml` (headers,
+/// footers, sidebars, layouts, content), sorted by (category, name). Mirrors
+/// `load_widget_blueprints` for the "Share Creations" export.
+pub fn load_modules() -> Vec<ModuleFile> {
+    let mut out = Vec::new();
+    for category in TEMPLATE_CATEGORIES {
+        let Some(dir) = category_dir(category) else {
+            continue;
+        };
+        let Ok(files) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for f in files.flatten() {
+            let p = f.path();
+            if p.extension().and_then(|e| e.to_str()) != Some("xml") {
+                continue;
+            }
+            let Ok(xml) = std::fs::read_to_string(&p) else {
+                continue;
+            };
+            let name = p
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("module")
+                .to_string();
+            out.push(ModuleFile {
+                category: category.to_string(),
+                name,
+                xml,
+            });
+        }
+    }
+    out.sort_by(|a, b| (&a.category, &a.name).cmp(&(&b.category, &b.name)));
+    out
+}
+
+/// Write a widget blueprint into `workspace/widgets/<group>/<name>.xml`.
+/// Creates the group folder if absent. Returns the path written.
+pub fn save_widget_blueprint(group: &str, name: &str, content: &str) -> std::io::Result<PathBuf> {
+    let safe_group: String = group
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '_' || *c == '-')
+        .collect();
+    let safe_group = if safe_group.is_empty() {
+        "custom".to_string()
+    } else {
+        safe_group
+    };
+    let dir = widgets_root()
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Cannot determine system data directory",
+            )
+        })?
+        .join(safe_group);
+    std::fs::create_dir_all(&dir)?;
+
+    let safe_name = sanitize_filename(name);
+    let dest = dir.join(&safe_name);
+    std::fs::write(&dest, content)?;
+    log::info!("[fs_bridge] Saved widget blueprint: {}", dest.display());
+    Ok(dest)
+}
+
+/// Delete a saved module override (`templates/<category>/<name>.xml`), e.g. on
+/// Revert. Missing file is treated as success.
+pub fn delete_custom_module(category: &str, name: &str) -> std::io::Result<()> {
+    let Some(path) = category_dir(category).map(|d| d.join(sanitize_filename(name))) else {
+        return Ok(());
+    };
+    match std::fs::remove_file(&path) {
+        Ok(()) => {
+            log::info!("[fs_bridge] Deleted custom module: {}", path.display());
+            Ok(())
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+
+/// Delete a widget blueprint file. Missing file is treated as success.
+pub fn delete_widget_blueprint(group: &str, name: &str) -> std::io::Result<()> {
+    let safe_group: String = group
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '_' || *c == '-')
+        .collect();
+    let safe_group = if safe_group.is_empty() {
+        "custom".to_string()
+    } else {
+        safe_group
+    };
+    let path = widgets_root()
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Cannot determine system data directory",
+            )
+        })?
+        .join(safe_group)
+        .join(sanitize_filename(name));
+    match std::fs::remove_file(&path) {
+        Ok(()) => {
+            log::info!("[fs_bridge] Deleted widget blueprint: {}", path.display());
+            Ok(())
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+
 // ─── Open folder ─────────────────────────────────────────────────────────────
 
 /// Spawn the platform-native file manager focused on the templates root.
 /// Creates the directory first if it does not yet exist.
+/// Open a directory in the platform-native file manager, creating it first.
+fn open_dir(path: PathBuf) -> std::io::Result<()> {
+    std::fs::create_dir_all(&path)?;
+
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open").arg(&path).spawn().map(|_| ())?;
+
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open").arg(&path).spawn().map(|_| ())?;
+
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer").arg(&path).spawn().map(|_| ())?;
+
+    Ok(())
+}
+
+/// Spawn the file manager focused on the static-pages root (`workspace/pages/`).
+pub fn open_pages_folder() -> std::io::Result<()> {
+    let path = pages_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+    open_dir(path)
+}
+
 pub fn open_templates_folder() -> std::io::Result<()> {
     let path = templates_root().ok_or_else(|| {
         std::io::Error::new(
@@ -264,6 +538,39 @@ pub fn open_templates_folder() -> std::io::Result<()> {
     })?;
 
     // Ensure the directory exists before asking the OS to open it.
+    std::fs::create_dir_all(&path)?;
+
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open")
+        .arg(&path)
+        .spawn()
+        .map(|_| ())?;
+
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open")
+        .arg(&path)
+        .spawn()
+        .map(|_| ())?;
+
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer")
+        .arg(&path)
+        .spawn()
+        .map(|_| ())?;
+
+    Ok(())
+}
+
+/// Spawn the platform-native file manager focused on the widgets-blueprint root.
+/// Creates the directory first if it does not yet exist.
+pub fn open_widgets_folder() -> std::io::Result<()> {
+    let path = widgets_root().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Cannot determine system data directory",
+        )
+    })?;
+
     std::fs::create_dir_all(&path)?;
 
     #[cfg(target_os = "linux")]
@@ -525,4 +832,32 @@ pub fn save_custom_page(name: &str, content: &str) -> std::io::Result<PathBuf> {
     std::fs::write(&dest, content)?;
     log::info!("[fs_bridge] Saved custom static page HTML: {}", safe_name);
     Ok(dest)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Round-trips a blueprint through save -> load: verifies group sanitization,
+    // .xml enforcement, and that the dir-walk reads it back. Self-cleaning;
+    // skips when no system data dir is available (e.g. headless CI).
+    #[test]
+    fn widget_blueprint_round_trip() {
+        let Some(root) = widgets_root() else { return };
+        let group = "zz_test_group";
+        let dir = root.join(group);
+        let _ = std::fs::remove_dir_all(&dir); // start clean
+
+        let path = save_widget_blueprint(group, "round/trip", "<b:widget id='X'/>").unwrap();
+        // Path-traversal stripped from the name, .xml appended.
+        assert!(path.ends_with("zz_test_group/round_trip.xml"));
+
+        let found = load_widget_blueprints()
+            .into_iter()
+            .find(|b| b.group == group && b.name == "round_trip")
+            .expect("saved blueprint should load back");
+        assert_eq!(found.xml, "<b:widget id='X'/>");
+
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
 }

@@ -1,5 +1,8 @@
 (() => {
-  document.addEventListener('DOMContentLoaded', () => {
+  // Run on DOM-ready, but also when injected after parse: the editor preview
+  // rewrites the iframe via document.write, after which DOMContentLoaded never
+  // fires again in WebKit — so a plain listener would leave the panel toggle dead.
+  const onReady = () => {
     /* =========================================================
     01. Shared Helpers
     ========================================================= */
@@ -194,5 +197,7 @@
         closeCatalogMenu();
       }
     });
-  });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
+  else onReady();
 })();

@@ -1,6 +1,8 @@
 use crate::app::state::{LayoutState, ThemeState};
 use crate::ui::dialogs::about_dialog::AboutDialog;
+use crate::ui::dialogs::advanced_buttons_dialog::AdvancedButtonsDialog;
 use crate::ui::dialogs::advanced_colors_dialog::AdvancedColorsDialog;
+use crate::ui::dialogs::advanced_cursors_dialog::AdvancedCursorsDialog;
 use crate::ui::dialogs::advanced_presets_dialog::AdvancedPresetsDialog;
 use crate::ui::dialogs::advanced_typography_dialog::AdvancedTypographyDialog;
 use crate::ui::dialogs::documentation_dialog::DocumentationDialog;
@@ -59,6 +61,14 @@ pub fn MorDialogs(props: MorDialogsProps) -> Element {
 
         AdvancedColorsDialog {
             open_signal: theme.show_advanced_colors,
+        }
+
+        AdvancedCursorsDialog {
+            open_signal: theme.show_advanced_cursors,
+        }
+
+        AdvancedButtonsDialog {
+            open_signal: theme.show_advanced_buttons,
         }
 
         AdvancedTypographyDialog {
@@ -209,7 +219,6 @@ const QUICK_LAUNCH_ITEMS: &[(&str, &str, &str)] = &[
     ("site_data", "Site Data", ICON_PAGE),
     ("css_editor", "CSS Editor", ICON_CSS),
     ("js_editor", "JavaScript Config", ICON_JS),
-    ("xml_editor", "XML Structure", ICON_XML),
     ("presets", "Presets", ICON_SETTINGS),
     ("plugin_manager", "Plugin Manager", ICON_SETTINGS),
     ("diagnostics", "Diagnostics", ICON_SETTINGS),

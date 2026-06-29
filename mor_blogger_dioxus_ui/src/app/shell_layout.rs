@@ -5,9 +5,9 @@ use crate::app::state::{
 use crate::ui::components::icon_context_menu::IconContextMenu;
 use crate::ui::components::icons::{IconBug, IconCode, IconPalette, IconPlugin, IconPreset, IconSiteData, IconXml};
 use crate::ui::layout::docks::{
-    CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock, XmlEditorDock,
+    CssEditorPanel, JsEditorPanel, SiteDataDock, ThemePaletteDock,
     DiagnosticsDock, PluginManagerDock, CssBuilderDock, JsBuilderDock, TemplateModulesDock,
-    CodeNavDock, StaticPagesDock,
+    CodeNavDock, StaticPagesDock, WidgetsDock,
 };
 use crate::ui::panels::quick_launch_bar::LaunchButton;
 use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
@@ -130,11 +130,11 @@ pub fn ActivityBar() -> Element {
         ("Theme Palette", "theme_palette", layout.theme_palette_pos, "palette"),
         ("Site Data", "site_data", layout.site_data_pos, "emoji:📊"),
         ("Template Modules", "template_modules", layout.template_modules_pos, "emoji:🍱"),
+        ("Widgets", "widgets", layout.widgets_pos, "emoji:🧩"),
         ("Code Nav", "code_nav", layout.code_nav_pos, "emoji:🧭"),
         ("Static Pages", "static_pages", layout.static_pages_pos, "emoji:📄"),
         ("CSS Editor", "css_editor", layout.css_editor_pos, "emoji:🖌️"),
         ("JS Editor", "js_editor", layout.js_editor_pos, "emoji:🔧"),
-        ("XML Editor", "xml_editor", layout.xml_editor_pos, "emoji:🏗️"),
         ("Presets", "presets", layout.presets_pos, "preset"),
         ("Plugin Manager", "plugin_manager", layout.plugin_manager_pos, "plugin"),
         ("Diagnostics", "diagnostics", layout.diagnostics_pos, "bug"),
@@ -188,6 +188,7 @@ pub fn DockZone(position: DockPosition) -> Element {
     };
 
     let show_template_modules = (layout.template_modules_pos)() == position;
+    let show_widgets = (layout.widgets_pos)() == position;
     let show_code_nav = (layout.code_nav_pos)() == position;
     let show_static_pages = (layout.static_pages_pos)() == position;
     let show_theme_palette = (layout.theme_palette_pos)() == position;
@@ -195,7 +196,6 @@ pub fn DockZone(position: DockPosition) -> Element {
     let show_presets = (layout.presets_pos)() == position;
     let show_css_editor = (layout.css_editor_pos)() == position;
     let show_js_editor = (layout.js_editor_pos)() == position;
-    let show_xml_editor = (layout.xml_editor_pos)() == position;
     let show_diagnostics = (layout.diagnostics_pos)() == position;
     let show_plugin_manager = (layout.plugin_manager_pos)() == position;
     let show_css_builder = (layout.css_builder_pos)() == position;
@@ -205,6 +205,12 @@ pub fn DockZone(position: DockPosition) -> Element {
     if show_template_modules {
         return rsx! {
             TemplateModulesDock {}
+        };
+    }
+
+    if show_widgets {
+        return rsx! {
+            WidgetsDock {}
         };
     }
 
@@ -234,12 +240,6 @@ pub fn DockZone(position: DockPosition) -> Element {
     if show_js_editor {
         return rsx! {
             JsEditorPanel {}
-        };
-    }
-
-    if show_xml_editor {
-        return rsx! {
-            XmlEditorDock {}
         };
     }
 
@@ -345,13 +345,13 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.site_data_pos)() == DockPosition::mor_panel_left
             || (layout.css_editor_pos)() == DockPosition::mor_panel_left
             || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-            || (layout.xml_editor_pos)() == DockPosition::mor_panel_left
             || (layout.presets_pos)() == DockPosition::mor_panel_left
             || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
             || (layout.css_builder_pos)() == DockPosition::mor_panel_left
             || (layout.js_builder_pos)() == DockPosition::mor_panel_left
             || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+            || (layout.widgets_pos)() == DockPosition::mor_panel_left
             || (layout.code_nav_pos)() == DockPosition::mor_panel_left
             || (layout.static_pages_pos)() == DockPosition::mor_panel_left
     });
@@ -361,13 +361,13 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
             || (layout.site_data_pos)() == DockPosition::mor_panel_right
             || (layout.css_editor_pos)() == DockPosition::mor_panel_right
             || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-            || (layout.xml_editor_pos)() == DockPosition::mor_panel_right
             || (layout.presets_pos)() == DockPosition::mor_panel_right
             || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
             || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
             || (layout.css_builder_pos)() == DockPosition::mor_panel_right
             || (layout.js_builder_pos)() == DockPosition::mor_panel_right
             || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+            || (layout.widgets_pos)() == DockPosition::mor_panel_right
             || (layout.code_nav_pos)() == DockPosition::mor_panel_right
             || (layout.static_pages_pos)() == DockPosition::mor_panel_right
     });
@@ -546,12 +546,6 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
                 }
             }
 
-            if (layout.xml_editor_pos)() == DockPosition::Floating {
-                div { style: "pointer-events: auto;",
-                    XmlEditorDock {}
-                }
-            }
-
             if (layout.diagnostics_pos)() == DockPosition::Floating {
                 div { style: "pointer-events: auto;",
                     DiagnosticsDock {}
@@ -573,6 +567,12 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
             if (layout.js_builder_pos)() == DockPosition::Floating {
                 div { style: "pointer-events: auto;",
                     JsBuilderDock {}
+                }
+            }
+
+            if (layout.widgets_pos)() == DockPosition::Floating {
+                div { style: "pointer-events: auto;",
+                    WidgetsDock {}
                 }
             }
 
@@ -634,13 +634,13 @@ pub fn LeftPanelContainer() -> Element {
         || (layout.site_data_pos)() == DockPosition::mor_panel_left
         || (layout.css_editor_pos)() == DockPosition::mor_panel_left
         || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-        || (layout.xml_editor_pos)() == DockPosition::mor_panel_left
         || (layout.presets_pos)() == DockPosition::mor_panel_left
         || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
         || (layout.css_builder_pos)() == DockPosition::mor_panel_left
         || (layout.js_builder_pos)() == DockPosition::mor_panel_left
         || (layout.template_modules_pos)() == DockPosition::mor_panel_left
+        || (layout.widgets_pos)() == DockPosition::mor_panel_left
         || (layout.code_nav_pos)() == DockPosition::mor_panel_left
         || (layout.static_pages_pos)() == DockPosition::mor_panel_left;
 
@@ -663,13 +663,13 @@ pub fn RightPanelContainer() -> Element {
         || (layout.site_data_pos)() == DockPosition::mor_panel_right
         || (layout.css_editor_pos)() == DockPosition::mor_panel_right
         || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-        || (layout.xml_editor_pos)() == DockPosition::mor_panel_right
         || (layout.presets_pos)() == DockPosition::mor_panel_right
         || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
         || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
         || (layout.css_builder_pos)() == DockPosition::mor_panel_right
         || (layout.js_builder_pos)() == DockPosition::mor_panel_right
         || (layout.template_modules_pos)() == DockPosition::mor_panel_right
+        || (layout.widgets_pos)() == DockPosition::mor_panel_right
         || (layout.code_nav_pos)() == DockPosition::mor_panel_right
         || (layout.static_pages_pos)() == DockPosition::mor_panel_right;
 

@@ -39,6 +39,11 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
             desc: "The standard multi-row header with centered navigation.",
         },
         ModuleDef {
+            id: "mor_search_center",
+            name: "Mor — Centered Search",
+            desc: "Multi-row header with a centered, rounded, slightly larger search bar.",
+        },
+        ModuleDef {
             id: "gtk_headerbar",
             name: "GTK4 Headerbar",
             desc: "A compact, desktop-style unified titlebar and navigation row.",

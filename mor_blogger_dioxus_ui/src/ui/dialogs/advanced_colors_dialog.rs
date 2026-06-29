@@ -93,9 +93,9 @@ pub fn AdvancedColorsDialog(mut open_signal: Signal<bool>) -> Element {
                             input {
                                 r#type: "text",
                                 placeholder: "e.g. 4px",
-                                value: "{signals.btn_radius}",
+                                value: "{signals.buttons.read().radius}",
                                 style: "width: 100%; background: #2C2C2E; border: 1px solid #3A3A3C; color: #E5E5EA; padding: 6px; border-radius: 4px; font-size: 12px;",
-                                oninput: move |e| signals.btn_radius.set(e.value()),
+                                oninput: move |e| { signals.buttons.write().radius = e.value(); },
                             }
                         }
                     }

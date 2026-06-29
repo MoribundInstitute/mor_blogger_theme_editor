@@ -16,7 +16,6 @@ pub mod shell_dialogs;
 pub mod shell_file_actions;
 pub mod shell_layout;
 pub mod state;
-#[cfg(not(target_arch = "wasm32"))]
 mod theme_hot_reload;
 pub mod theme_signals;
 pub mod vfs;
@@ -26,7 +25,6 @@ use keyboard::use_keyboard_shortcuts;
 use restore_drop::use_restore_drop_bridge;
 use shell::render_app_shell;
 use state::{LayoutState, RenderState, SiteData, ThemeState};
-#[cfg(not(target_arch = "wasm32"))]
 use theme_hot_reload::use_theme_config_hot_reload;
 
 #[allow(non_snake_case)]
@@ -53,7 +51,6 @@ pub fn App() -> Element {
 
     use_keyboard_shortcuts(layout);
     use_restore_drop_bridge(theme);
-    #[cfg(not(target_arch = "wasm32"))]
     use_theme_config_hot_reload(theme);
 
     render_app_shell(theme, layout, render)

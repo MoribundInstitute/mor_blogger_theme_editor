@@ -1,5 +1,7 @@
 (() => {
-  document.addEventListener('DOMContentLoaded', () => {
+  // readyState-aware: also runs when injected after parse (editor preview's
+  // document.write rewrite, where DOMContentLoaded won't fire again).
+  const onReady = () => {
     /* =========================================================
     08. Share Menu Toggler & Actions
     ========================================================= */
@@ -91,5 +93,7 @@
         });
       }
     });
-  });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
+  else onReady();
 })();

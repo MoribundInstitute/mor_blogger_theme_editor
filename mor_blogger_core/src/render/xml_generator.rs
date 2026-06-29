@@ -64,6 +64,8 @@ pub(super) fn render_template(
                             .push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
                         "workspace_docks" => active_plugins
                             .push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
+                        "notification_bell" => active_plugins
+                            .push(Box::new(crate::render::plugins::NotificationBellPlugin)),
                         _ => {}
                     }
                 }
@@ -72,7 +74,6 @@ pub(super) fn render_template(
     }
 
     let mut plugin_javascript = String::new();
-    let mut plugin_custom_css = String::new();
     let mut plugin_widgets: std::collections::HashMap<&str, String> =
         std::collections::HashMap::new();
 
@@ -80,10 +81,6 @@ pub(super) fn render_template(
         if let Some(js) = plugin.inject_js() {
             plugin_javascript.push_str(&js);
             plugin_javascript.push('\n');
-        }
-        if let Some(css) = plugin.inject_css() {
-            plugin_custom_css.push_str(&css);
-            plugin_custom_css.push('\n');
         }
         if let Some(widgets) = plugin.inject_xml_widgets() {
             for widget in widgets {
@@ -94,13 +91,6 @@ pub(super) fn render_template(
                 current.push('\n');
             }
         }
-    }
-
-    if !plugin_custom_css.is_empty() {
-        parts
-            .css
-            .push_str("\n/* ===== Dynamic Plugin CSS ===== */\n");
-        parts.css.push_str(&plugin_custom_css);
     }
 
     parts.javascript.push('\n');

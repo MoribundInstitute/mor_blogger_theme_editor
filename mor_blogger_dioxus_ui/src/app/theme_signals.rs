@@ -31,9 +31,7 @@ pub struct ThemeSignals {
     pub panel_border_image_slice: Signal<String>,
     pub panel_border_image_repeat: Signal<String>,
 
-    pub btn_radius: Signal<String>,
-    pub btn_border_width: Signal<String>,
-    pub btn_text_transform: Signal<String>,
+    pub buttons: Signal<ButtonConfig>,
 
     pub body_font_stack: Signal<String>,
     pub heading_font_stack: Signal<String>,
@@ -94,6 +92,12 @@ pub struct ThemeSignals {
     pub glow_text_color: Signal<String>,
     pub glow_containers_color: Signal<String>,
     pub glow_icons_color: Signal<String>,
+    pub glow_footer: Signal<bool>,
+    pub glow_header: Signal<bool>,
+    pub glow_main: Signal<bool>,
+    pub glow_footer_color: Signal<String>,
+    pub glow_header_color: Signal<String>,
+    pub glow_main_color: Signal<String>,
     pub cursor_style: Signal<String>,
     pub scrollbar_width: Signal<String>,
     pub scrollbar_track_color: Signal<String>,
@@ -126,9 +130,7 @@ impl ThemeSignals {
             panel_border_image_slice: Signal::new(config.colors.panel_border_image_slice.clone()),
             panel_border_image_repeat: Signal::new(config.colors.panel_border_image_repeat.clone()),
 
-            btn_radius: Signal::new(config.buttons.radius.clone()),
-            btn_border_width: Signal::new(config.buttons.border_width.clone()),
-            btn_text_transform: Signal::new(config.buttons.text_transform.clone()),
+            buttons: Signal::new(config.buttons.clone()),
 
             body_font_stack: Signal::new(config.typography.body_font_stack.clone()),
             heading_font_stack: Signal::new(config.typography.heading_font_stack.clone()),
@@ -189,6 +191,12 @@ impl ThemeSignals {
             glow_text_color: Signal::new(config.colors.glow_text_color.clone()),
             glow_containers_color: Signal::new(config.colors.glow_containers_color.clone()),
             glow_icons_color: Signal::new(config.colors.glow_icons_color.clone()),
+            glow_footer: Signal::new(config.colors.glow_footer),
+            glow_header: Signal::new(config.colors.glow_header),
+            glow_main: Signal::new(config.colors.glow_main),
+            glow_footer_color: Signal::new(config.colors.glow_footer_color.clone()),
+            glow_header_color: Signal::new(config.colors.glow_header_color.clone()),
+            glow_main_color: Signal::new(config.colors.glow_main_color.clone()),
             cursor_style: Signal::new(config.cursor_style.clone()),
             scrollbar_width: Signal::new(config.scrollbar_width.clone()),
             scrollbar_track_color: Signal::new(config.scrollbar_track_color.clone()),
@@ -234,14 +242,16 @@ impl ThemeSignals {
                 glow_text_color: self.glow_text_color.read().clone(),
                 glow_containers_color: self.glow_containers_color.read().clone(),
                 glow_icons_color: self.glow_icons_color.read().clone(),
+                glow_footer: *self.glow_footer.read(),
+                glow_header: *self.glow_header.read(),
+                glow_main: *self.glow_main.read(),
+                glow_footer_color: self.glow_footer_color.read().clone(),
+                glow_header_color: self.glow_header_color.read().clone(),
+                glow_main_color: self.glow_main_color.read().clone(),
                 ..Default::default()
             },
             icons: self.icons.read().clone(),
-            buttons: ButtonConfig {
-                radius: self.btn_radius.read().clone(),
-                border_width: self.btn_border_width.read().clone(),
-                text_transform: self.btn_text_transform.read().clone(),
-            },
+            buttons: self.buttons.read().clone(),
             typography: TypographyConfig {
                 body_font_stack: self.body_font_stack.read().clone(),
                 heading_font_stack: self.heading_font_stack.read().clone(),
@@ -414,6 +424,18 @@ impl ThemeSignals {
         self.glow_icons_color
             .clone()
             .set(palette.colors.glow_icons_color.clone());
+        self.glow_footer.clone().set(palette.colors.glow_footer);
+        self.glow_header.clone().set(palette.colors.glow_header);
+        self.glow_main.clone().set(palette.colors.glow_main);
+        self.glow_footer_color
+            .clone()
+            .set(palette.colors.glow_footer_color.clone());
+        self.glow_header_color
+            .clone()
+            .set(palette.colors.glow_header_color.clone());
+        self.glow_main_color
+            .clone()
+            .set(palette.colors.glow_main_color.clone());
 
         self.background.clone().set(palette.background.clone());
     }
@@ -468,12 +490,20 @@ impl ThemeSignals {
         self.glow_icons_color
             .clone()
             .set(c.glow_icons_color.clone());
+        self.glow_footer.clone().set(c.glow_footer);
+        self.glow_header.clone().set(c.glow_header);
+        self.glow_main.clone().set(c.glow_main);
+        self.glow_footer_color
+            .clone()
+            .set(c.glow_footer_color.clone());
+        self.glow_header_color
+            .clone()
+            .set(c.glow_header_color.clone());
+        self.glow_main_color.clone().set(c.glow_main_color.clone());
     }
 
     fn set_buttons(&self, b: &ButtonConfig) {
-        self.btn_radius.clone().set(b.radius.clone());
-        self.btn_border_width.clone().set(b.border_width.clone());
-        self.btn_text_transform.clone().set(b.text_transform.clone());
+        self.buttons.clone().set(b.clone());
     }
 
     fn set_typography(&self, t: &TypographyConfig) {

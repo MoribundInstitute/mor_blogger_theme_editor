@@ -1,5 +1,7 @@
 (() => {
-  document.addEventListener('DOMContentLoaded', () => {
+  // readyState-aware: also runs when injected after parse (editor preview's
+  // document.write rewrite, where DOMContentLoaded won't fire again).
+  const onReady = () => {
     const feed = document.querySelector('.mor-magazine-feed');
     if (!feed) {
       return;
@@ -41,5 +43,7 @@
     );
 
     gridPosts.forEach((post) => observer.observe(post));
-  });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
+  else onReady();
 })();

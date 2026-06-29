@@ -135,7 +135,7 @@ window.morAnalyticsDashboardConfig = {{
     let js_template = include_str!("../../html_page_stencils/analytics_dashboard_script.js");
     html.push_str(&js_template.replace("{{MAX_RESULTS}}", &config.max_results.to_string()));
 
-    html
+    format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
 }
 /// Compatibility alias for earlier patch attempts.
 pub fn generate_analytics_html(config: &AnalyticsDashboardPageConfig) -> String {

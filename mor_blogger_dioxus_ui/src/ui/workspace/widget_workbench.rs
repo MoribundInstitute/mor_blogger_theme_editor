@@ -52,6 +52,51 @@ fn extract_widget_body(xml: &str) -> (String, bool) {
     (cdata, dynamic)
 }
 
+/// The notification-bell gadget is a FeaturedPost whose markup lives in
+/// `b:includable`s (not CDATA) and is fed by `data:` post fields, so neither the
+/// CDATA path nor the generic by-type card can show it. Recognize it by its
+/// `.mor-bell` class and render the blueprint's own `<style>` plus an *opened*
+/// dropdown with a sample post, so the workbench shows the real thing.
+/// ponytail: reuses the blueprint's CSS verbatim (no drift); sample post stands
+/// in for Blogger's data:post, which only exists on the live blog.
+fn bell_preview_html(widget_xml: &str) -> Option<String> {
+    if !widget_xml.contains("mor-bell") {
+        return None;
+    }
+    let mut styles = String::new();
+    let mut rest = widget_xml;
+    while let Some(s) = rest.find("<style>") {
+        let after = &rest[s + "<style>".len()..];
+        let Some(e) = after.find("</style>") else { break };
+        styles.push_str(&after[..e]);
+        styles.push('\n');
+        rest = &after[e + "</style>".len()..];
+    }
+    Some(format!(
+        r##"<style>{styles}</style>
+<style>
+/* preview-only: the bell sits at the top-left of this isolated canvas, so anchor
+   the floating panel leftward — the blueprint's right:0 (correct on the blog,
+   where the bell is right-aligned) would push the 280px panel off-screen here. */
+.mor-bell-panel {{ right: auto; left: 0; }}
+body {{ min-height: 240px; }}
+</style>
+<div class="mor-bell open">
+  <button class="mor-bell-btn" type="button" aria-label="Recent post">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a6 6 0 0 0-6 6c0 5-2 7-2 7h16s-2-2-2-7a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3z"/></svg>
+  </button>
+  <div class="mor-bell-panel">
+    <h3 class="mor-bell-heading">Newest Post</h3>
+    <a class="mor-bell-post" href="#">
+      <span class="mor-bell-title">Sample: The Newest Post Title</span>
+      <span class="mor-bell-snippet">A preview of the most recent post summary. On the live blog, Blogger fills this with your newest entry.</span>
+      <span class="mor-bell-thumb" style="display:block;height:120px;margin-top:10px;border-radius:8px;background:linear-gradient(135deg,var(--bg-base,#222),var(--accent,#555));opacity:.55;"></span>
+    </a>
+  </div>
+</div>"##
+    ))
+}
+
 /// Render a single widget blueprint to an isolated HTML document, wrapped in the
 /// live theme CSS so it looks the way it will on the blog.
 fn widget_preview_html(
@@ -61,9 +106,14 @@ fn widget_preview_html(
 ) -> String {
     let (body, dynamic) = extract_widget_body(widget_xml);
     let parts = template_resolver::resolve_template_parts(config, vfs);
-    let true_css = render_css_sockets(parts.css, config);
+    // Decode XML entities: this CSS is Blogger-escaped but goes into a browser
+    // <style>, where entities aren't decoded (see unescape_for_style).
+    let true_css =
+        mor_blogger_core::render::util::unescape_for_style(&render_css_sockets(parts.css, config));
 
-    let inner = if body.trim().is_empty() {
+    let inner = if let Some(bell) = bell_preview_html(widget_xml) {
+        bell
+    } else if body.trim().is_empty() {
         // No static HTML (dynamic Blogger widget). Master canvas: render the widget
         // by type with representative dummy data, inside the live theme CSS, so the
         // user sees an approximation of how it lands on the blog.

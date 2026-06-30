@@ -11,6 +11,46 @@
                <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
                <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
             </button>
+            <!-- Notification bell: opens a dropdown previewing the newest post,
+                 mirroring the blog's header bell. Self-contained (markup + style +
+                 script below); Blogger fills the post natively via FeaturedPost,
+                 and colors follow the active theme's CSS vars. -->
+            <nav class="mor-bell">
+              <span class="mor-bell-btn" role="button" tabindex="0" aria-label="Newest post">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              <div class="mor-bell-panel">
+                <b:section class='mor-bell-section' id='header-bell' maxwidgets='1' showaddelement='yes'>
+                  <b:widget id='FeaturedPost2' locked='false' title='Newest Post' type='FeaturedPost' version='1'>
+                    <b:widget-settings>
+                      <b:widget-setting name='showSnippet'>true</b:widget-setting>
+                      <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+                      <b:widget-setting name='postId'>0</b:widget-setting>
+                      <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+                      <b:widget-setting name='useMostRecentPost'>true</b:widget-setting>
+                    </b:widget-settings>
+                    <b:includable id='main'>
+                      <b:include name='content'/>
+                      <b:include name='quickedit'/>
+                    </b:includable>
+                    <b:includable id='content'>
+                      <a class='mor-bell-link' expr:href='data:postUrl'>
+                        <span class='mor-bell-eyebrow'>Latest</span>
+                        <b:if cond='data:showPostTitle and data:postTitle != &quot;&quot;'>
+                          <h3 class='mor-bell-title'><data:postTitle/></h3>
+                        </b:if>
+                        <b:if cond='data:showSnippet and data:postSummary != &quot;&quot;'>
+                          <p class='mor-bell-snippet'><data:postSummary/></p>
+                        </b:if>
+                        <b:if cond='data:showFirstImage and data:postFirstImage != &quot;&quot;'>
+                          <img class='mor-bell-img' expr:src='data:postFirstImage'/>
+                        </b:if>
+                      </a>
+                    </b:includable>
+                  </b:widget>
+                </b:section>
+              </div>
+            </nav>
             {{PLUGIN_WIDGET_HEADER}}
             <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right" aria-label="Open Contents Panel"><span class="visually-hidden">Contents</span></button>
         </div>
@@ -24,4 +64,65 @@
             </form>
         </div>
     </div>
+    <style>
+/* Blog-style hero title: large, centered, glowing. Uses theme vars so any
+   preset controls the color (falls back to a soft white glow). Only the text
+   brand (no logo set) gets the glow; the logo case is untouched. */
+.search-centered .branding { justify-content: center; }
+.search-centered .institute-title {
+  font-family: var(--font-heading, inherit);
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.1;
+  color: var(--fg-base, #ececeb);
+  text-shadow: 0 0 1rem var(--glow, rgba(255,255,255,.35)),
+               0 0 2rem var(--glow, rgba(255,255,255,.22));
+  transition: color .3s ease, text-shadow .3s ease;
+}
+.search-centered .branding-link:hover .institute-title {
+  color: var(--accent, #fff);
+  text-shadow: 0 0 1.5rem var(--glow, rgba(255,255,255,.6)),
+               0 0 3rem var(--glow, rgba(255,255,255,.4));
+}
+.mor-bell { position: relative; display: inline-flex; align-items: center; }
+.mor-bell-btn { display: inline-flex; cursor: pointer; color: var(--fg-base, #ececeb); transition: color .2s ease, filter .2s ease; }
+.mor-bell-btn:hover { color: var(--accent, #fff); filter: drop-shadow(0 0 6px var(--glow, rgba(255,255,255,.5))); }
+/* The bell swings when you reach for it. */
+.mor-bell:hover .mor-bell-btn svg { animation: morBellRing .6s ease; transform-origin: 50% 3px; }
+@keyframes morBellRing { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-11deg); } 60% { transform: rotate(7deg); } 80% { transform: rotate(-4deg); } }
+/* Notification card: a "transmission" from the bell. Fixed radius (never the
+   pill --btn-radius, which turns the panel into an ellipse), caret pointing up
+   to the bell, an accent rail + glowing-dot eyebrow as the signature. Opens with
+   an unfold-from-the-bell motion (animatable opacity/transform, not display). */
+.mor-bell-panel { opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.96); transform-origin: top right; transition: opacity .2s ease, transform .26s cubic-bezier(.34,1.32,.64,1), visibility .26s; position: absolute; top: calc(100% + 12px); right: 0; width: 320px; max-width: min(320px, 84vw); text-align: left; background: var(--bg-panel, #1c1c1e); color: var(--fg-base, #ececeb); border: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); border-radius: 14px; padding: 16px; box-shadow: 0 20px 48px -16px rgba(0,0,0,.75), 0 0 28px -10px var(--glow, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); z-index: 9999; }
+.mor-bell.open .mor-bell-panel { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+.mor-bell-panel::after { content: ""; position: absolute; left: 16px; right: 16px; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent, #6cf), transparent); opacity: .85; }
+.mor-bell-panel::before { content: ""; position: absolute; top: -6px; right: 18px; width: 12px; height: 12px; background: var(--bg-panel, #1c1c1e); border-left: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); border-top: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); transform: rotate(45deg); }
+.mor-bell-link { display: block; text-decoration: none; color: inherit; }
+.mor-bell-eyebrow { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 10px; font-size: .62rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent, #6cf); }
+.mor-bell-eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent, #6cf); box-shadow: 0 0 6px var(--accent, #6cf); animation: morDotPulse 1.8s ease-in-out infinite; }
+@keyframes morDotPulse { 0%,100% { box-shadow: 0 0 4px var(--accent, #6cf); opacity: .8; } 50% { box-shadow: 0 0 12px var(--accent, #6cf); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .mor-bell-panel { transition: opacity .15s ease, visibility .15s; } .mor-bell.open .mor-bell-panel { transform: none; } .mor-bell:hover .mor-bell-btn svg { animation: none; } .mor-bell-eyebrow::before { animation: none; } }
+.mor-bell-title { display: block; margin: 0 0 7px; font-size: 1.05rem; line-height: 1.25; font-weight: 700; font-family: var(--font-heading, inherit); color: var(--fg-base, #fff); transition: color .2s ease, text-shadow .2s ease; }
+.mor-bell-link:hover .mor-bell-title { color: var(--accent, #fff); text-shadow: 0 0 10px var(--glow, rgba(255,255,255,.45)); }
+.mor-bell-snippet { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 0; font-size: .85rem; line-height: 1.5; color: var(--fg-muted, #b9b9b8); }
+.mor-bell-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin: 12px 0 0; display: block; }
+    </style>
+    <script>
+//<![CDATA[
+(function () {
+  if (window.__morHeaderBellInit) return;
+  window.__morHeaderBellInit = true;
+  function bind() {
+    var bell = document.querySelector('.mor-bell');
+    if (!bell) return;
+    var btn = bell.querySelector('.mor-bell-btn');
+    btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); bell.classList.toggle('open'); });
+    btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bell.classList.toggle('open'); } });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.mor-bell')) bell.classList.remove('open'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') bell.classList.remove('open'); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+})();
+//]]>
+    </script>
 </header>

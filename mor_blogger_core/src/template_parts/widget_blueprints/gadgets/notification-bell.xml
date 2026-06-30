@@ -1,0 +1,109 @@
+<b:widget id='FeaturedPost1' locked='false' title='Newest Post' type='FeaturedPost' version='1' visible='true'>
+  <b:widget-settings>
+    <b:widget-setting name='showSnippet'>true</b:widget-setting>
+    <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+    <b:widget-setting name='postId'>0</b:widget-setting>
+    <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+    <b:widget-setting name='useMostRecentPost'>true</b:widget-setting>
+  </b:widget-settings>
+  <b:includable id='main'>
+    <!-- Self-contained notification bell housing the most recent post.
+         Uses the FeaturedPost v1 data model (flat data:postTitle/postSummary/
+         postFirstImage) — the same one the live blog uses, so the post actually
+         renders in the dropdown (no feed URL, no jQuery). Colors come from theme
+         vars (--accent / --bg-panel / --fg-base / …) so any preset reskins it.
+         Layout mirrors the blog: heading, post title, snippet, then image. -->
+    <style>
+      .mor-bell { position: relative; display: inline-block; }
+      .mor-bell-btn {
+        background: transparent; border: none; cursor: pointer; padding: 6px;
+        line-height: 0; color: var(--accent, currentColor);
+        transition: filter .2s ease, transform .2s ease;
+      }
+      .mor-bell-btn:hover {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 6px var(--accent, currentColor));
+      }
+      .mor-bell-btn svg { width: 24px; height: 24px; fill: currentColor; }
+      /* The bell swings when you reach for it. */
+      .mor-bell-btn:hover svg { animation: morBellRing .6s ease; transform-origin: 50% 3px; }
+      @keyframes morBellRing { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-11deg); } 60% { transform: rotate(7deg); } 80% { transform: rotate(-4deg); } }
+      .mor-bell-panel {
+        position: absolute; right: 0; top: calc(100% + 12px);
+        width: 300px; max-width: min(300px, 84vw); padding: 16px; text-align: center;
+        background: var(--bg-panel, #111); color: var(--fg-base, #eee);
+        /* fixed radius — never the pill --btn-radius, which makes the panel an ellipse */
+        border: 1px solid color-mix(in srgb, var(--accent, #888) 30%, transparent);
+        border-radius: 14px;
+        box-shadow: 0 20px 48px -16px rgba(0,0,0,.75), 0 0 28px -10px var(--glow, transparent);
+        -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+        opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.96); transform-origin: top right;
+        transition: opacity .2s ease, transform .26s cubic-bezier(.34,1.32,.64,1), visibility .26s;
+        z-index: 9999;
+      }
+      .mor-bell.open .mor-bell-panel { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+      @media (prefers-reduced-motion: reduce) {
+        .mor-bell-panel { transition: opacity .15s ease, visibility .15s; }
+        .mor-bell.open .mor-bell-panel { transform: none; }
+        .mor-bell-btn:hover svg { animation: none; }
+      }
+      .mor-bell-panel::after { content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent, #6cf), transparent); opacity: .85; }
+      .mor-bell-panel::before { content: ''; position: absolute; top: -6px; right: 18px; width: 12px; height: 12px; background: var(--bg-panel, #111); border-left: 1px solid color-mix(in srgb, var(--accent, #888) 30%, transparent); border-top: 1px solid color-mix(in srgb, var(--accent, #888) 30%, transparent); transform: rotate(45deg); }
+      .mor-bell-heading {
+        margin: 0 0 10px; font-size: 1.1rem; font-weight: 700;
+        font-family: var(--font-heading, inherit); color: var(--fg-base, #eee);
+      }
+      .mor-bell-post { display: block; text-decoration: none; color: inherit; }
+      .mor-bell-title { display: block; font-weight: 700; margin: 0 0 6px; }
+      .mor-bell-title:hover { text-shadow: 0 0 8px var(--accent, currentColor); }
+      .mor-bell-snippet { display: block; font-size: .85rem; line-height: 1.4; opacity: .85; margin: 0; }
+      .mor-bell-thumb {
+        width: 100%; height: auto; border-radius: 8px; margin-top: 10px; display: block;
+      }
+    </style>
+    <div class='mor-bell'>
+      <button class='mor-bell-btn' type='button' aria-label='Newest post'>
+        <svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
+          <path d='M12 2a6 6 0 0 0-6 6c0 5-2 7-2 7h16s-2-2-2-7a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3z'/>
+        </svg>
+      </button>
+      <div class='mor-bell-panel'>
+        <b:if cond='data:title != &quot;&quot;'>
+          <h3 class='mor-bell-heading'><data:title/></h3>
+        </b:if>
+        <b:include name='content'/>
+      </div>
+    </div>
+    <b:include name='quickedit'/>
+    <script>
+      //<![CDATA[
+      (function () {
+        document.querySelectorAll('.mor-bell').forEach(function (bell) {
+          var btn = bell.querySelector('.mor-bell-btn');
+          if (!btn) return;
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            bell.classList.toggle('open');
+          });
+          document.addEventListener('click', function (e) {
+            if (!bell.contains(e.target)) bell.classList.remove('open');
+          });
+        });
+      })();
+      //]]>
+    </script>
+  </b:includable>
+  <b:includable id='content'>
+    <a class='mor-bell-post' expr:href='data:postUrl'>
+      <b:if cond='data:showPostTitle and data:postTitle != &quot;&quot;'>
+        <span class='mor-bell-title'><data:postTitle/></span>
+      </b:if>
+      <b:if cond='data:showSnippet and data:postSummary != &quot;&quot;'>
+        <span class='mor-bell-snippet'><data:postSummary/></span>
+      </b:if>
+      <b:if cond='data:showFirstImage and data:postFirstImage != &quot;&quot;'>
+        <img class='mor-bell-thumb' expr:alt='data:postTitle' expr:src='data:postFirstImage'/>
+      </b:if>
+    </a>
+  </b:includable>
+</b:widget>

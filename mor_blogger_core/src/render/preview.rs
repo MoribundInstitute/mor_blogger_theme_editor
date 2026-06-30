@@ -3,7 +3,7 @@
 //! produces uploadable Blogger XML.
 
 use super::tracking::{menu_link_anchor, widget_title_h2};
-use super::util::{escape_attr, escape_html};
+use super::util::{escape_attr, escape_html, unescape_for_style};
 use crate::config::prefs::RenderPrefs;
 use crate::config::{BackgroundMode, BlogPost, ThemeConfig};
 use std::collections::HashMap;
@@ -241,11 +241,85 @@ pub fn preview_header_html(config: &ThemeConfig) -> String {
         .map(|(index, link)| menu_link_anchor(index, &link.url, &link.label))
         .collect::<Vec<_>>()
         .join("");
+
+    // ponytail: preview mirror of the self-contained bell + glowing title baked
+    // into mor_header_search.xml. The live preview builds its own header and
+    // can't run the module's b:section / inline <style>/<script>, so we restate
+    // them here (newest post = first sample post). Keep in sync with the module.
+    let (bell_html, bell_assets) = if header_extra_class == " search-centered" {
+        let sample = get_default_posts();
+        let (title, snippet, url) = sample
+            .first()
+            .map(|p| {
+                (
+                    escape_html(&p.title),
+                    escape_html(&p.snippet),
+                    escape_attr(&p.url),
+                )
+            })
+            .unwrap_or_default();
+        let bell = format!(
+            r##"<nav class="mor-bell">
+              <span class="mor-bell-btn" role="button" tabindex="0" aria-label="Newest post">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              <div class="mor-bell-panel">
+                <a class="mor-bell-link" href="{url}">
+                  <span class="mor-bell-eyebrow">Latest</span>
+                  <h3 class="mor-bell-title">{title}</h3>
+                  <p class="mor-bell-snippet">{snippet}</p>
+                </a>
+              </div>
+            </nav>"##
+        );
+        let assets = r##"<style>
+.search-centered .branding { justify-content: center; }
+.search-centered .institute-title { font-family: var(--font-heading, inherit); font-size: clamp(2rem, 6vw, 4rem); line-height: 1.1; color: var(--fg-base, #ececeb); text-shadow: 0 0 1rem var(--glow, rgba(255,255,255,.35)), 0 0 2rem var(--glow, rgba(255,255,255,.22)); transition: color .3s ease, text-shadow .3s ease; }
+.search-centered .branding-link:hover .institute-title { color: var(--accent, #fff); text-shadow: 0 0 1.5rem var(--glow, rgba(255,255,255,.6)), 0 0 3rem var(--glow, rgba(255,255,255,.4)); }
+.mor-bell { position: relative; display: inline-flex; align-items: center; }
+.mor-bell-btn { display: inline-flex; cursor: pointer; color: var(--fg-base, #ececeb); transition: color .2s ease, filter .2s ease; }
+.mor-bell-btn:hover { color: var(--accent, #fff); filter: drop-shadow(0 0 6px var(--glow, rgba(255,255,255,.5))); }
+/* The bell swings when you reach for it. */
+.mor-bell:hover .mor-bell-btn svg { animation: morBellRing .6s ease; transform-origin: 50% 3px; }
+@keyframes morBellRing { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-11deg); } 60% { transform: rotate(7deg); } 80% { transform: rotate(-4deg); } }
+.mor-bell-panel { opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.96); transform-origin: top right; transition: opacity .2s ease, transform .26s cubic-bezier(.34,1.32,.64,1), visibility .26s; position: absolute; top: calc(100% + 12px); right: 0; width: 320px; max-width: min(320px, 84vw); text-align: left; background: var(--bg-panel, #1c1c1e); color: var(--fg-base, #ececeb); border: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); border-radius: 14px; padding: 16px; box-shadow: 0 20px 48px -16px rgba(0,0,0,.75), 0 0 28px -10px var(--glow, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); z-index: 9999; }
+/* preview-only: the iframe morpher doesn't run the toggle script, so open on
+   hover/focus too. The exported header keeps the real click-to-toggle JS. */
+.mor-bell.open .mor-bell-panel, .mor-bell:hover .mor-bell-panel, .mor-bell:focus-within .mor-bell-panel { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+.mor-bell-panel::after { content: ""; position: absolute; left: 16px; right: 16px; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent, #6cf), transparent); opacity: .85; }
+.mor-bell-panel::before { content: ""; position: absolute; top: -6px; right: 18px; width: 12px; height: 12px; background: var(--bg-panel, #1c1c1e); border-left: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); border-top: 1px solid color-mix(in srgb, var(--accent, #8aa) 30%, transparent); transform: rotate(45deg); }
+.mor-bell-link { display: block; text-decoration: none; color: inherit; }
+.mor-bell-eyebrow { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 10px; font-size: .62rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent, #6cf); }
+.mor-bell-eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent, #6cf); box-shadow: 0 0 6px var(--accent, #6cf); animation: morDotPulse 1.8s ease-in-out infinite; }
+@keyframes morDotPulse { 0%,100% { box-shadow: 0 0 4px var(--accent, #6cf); opacity: .8; } 50% { box-shadow: 0 0 12px var(--accent, #6cf); opacity: 1; } }
+.mor-bell-title { display: block; margin: 0 0 7px; font-size: 1.05rem; line-height: 1.25; font-weight: 700; font-family: var(--font-heading, inherit); color: var(--fg-base, #fff); transition: color .2s ease, text-shadow .2s ease; }
+.mor-bell-link:hover .mor-bell-title { color: var(--accent, #fff); text-shadow: 0 0 10px var(--glow, rgba(255,255,255,.45)); }
+@media (prefers-reduced-motion: reduce) { .mor-bell-panel { transition: opacity .15s ease, visibility .15s; transform: none; } .mor-bell.open .mor-bell-panel, .mor-bell:hover .mor-bell-panel, .mor-bell:focus-within .mor-bell-panel { transform: none; } .mor-bell:hover .mor-bell-btn svg { animation: none; } .mor-bell-eyebrow::before { animation: none; } }
+.mor-bell-snippet { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 0; font-size: .85rem; line-height: 1.5; color: var(--fg-muted, #b9b9b8); }
+</style>
+<script>
+(function () {
+  if (window.__morHeaderBellInit) return;
+  window.__morHeaderBellInit = true;
+  document.addEventListener('click', function (e) {
+    var bell = document.querySelector('.mor-bell'); if (!bell) return;
+    if (e.target.closest('.mor-bell-btn')) { e.preventDefault(); e.stopPropagation(); bell.classList.toggle('open'); return; }
+    if (!e.target.closest('.mor-bell-panel')) bell.classList.remove('open');
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.querySelector('.mor-bell.open'); if (m) m.classList.remove('open'); } });
+})();
+</script>"##
+        .to_string();
+        (bell, assets)
+    } else {
+        (String::new(), String::new())
+    };
+
     format!(
         r##"<header class="main-header{header_extra_class}" data-edit-target="colors.bg_elevated">
     <div class="header-top-row">
         <div class="header-side-controls left-controls">
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left"><span class="visually-hidden">Browse</span></button>
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-left" id="mor-dock-left-toggle" data-target="panel-left" data-edit-target="icons.sidebar_left"><span class="visually-hidden">Browse</span></button>
         </div>
         <a class="branding branding-link">
             {branding_inner}
@@ -255,15 +329,17 @@ pub fn preview_header_html(config: &ThemeConfig) -> String {
                <svg class='theme-toggle-sun' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zM3 11h2c.55 0 1 .45 1 1s-.45 1-1 1H3c-.55 0-1-.45-1-1s.45-1 1-1zm16 0h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1zM5.64 4.22l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0L4.22 5.64c-.39-.39-.39-1.02 0-1.41s1.03-.4 1.42-.01zm12.02 12.02l1.42 1.42c.39.39.39 1.02 0 1.41s-1.02.39-1.41 0l-1.42-1.42c-.39-.39-.39-1.02 0-1.41s1.02-.39 1.41 0zm1.42-12.02c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.38-.39 1.02-.39 1.41 0zM5.64 17.66c.39.39.39 1.02 0 1.41l-1.42 1.42c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41l1.42-1.42c.39-.39 1.02-.39 1.41 0z' /></svg>
                <svg class='theme-toggle-moon' fill='currentColor' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' /></svg>
             </button>
-            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right"><span class="visually-hidden">Contents</span></button>
+            {bell_html}
+            <button class="panel-toggle header-panel-toggle header-panel-toggle-right" id="mor-dock-right-toggle" data-target="panel-right" data-edit-target="icons.sidebar_right"><span class="visually-hidden">Contents</span></button>
         </div>
     </div>
     <div class="header-bottom-row">
         <nav class="mor-nav">{menu_links}</nav>
         <div class="mor-search">
-            <form><span class="prompt" data-edit-target="icons.search">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="buttons.radius" aria-label="Search"></button></form>
+            <form><span class="prompt">root@moribund:~$</span><input type="text" placeholder="Search..."><button type="button" class="icon-search-btn" data-edit-target="icons.search" aria-label="Search"></button></form>
         </div>
     </div>
+    {bell_assets}
 </header>"##
     )
 }
@@ -465,9 +541,14 @@ pub fn render_preview_html(
 
     let site_title = escape_html(&config.site.site_title);
 
-    // Fetch the TRUE CSS that will be injected into the final Blogger XML
+    // Fetch the TRUE CSS that will be injected into the final Blogger XML, then
+    // decode its XML entities: the exported CSS is escaped for Blogger's b:skin
+    // (XML), but here it goes into a browser <style> where entities are NOT
+    // decoded — leaving `font-family: &#39;…&#39;` invalid and dropped.
     let mut parts = crate::render::template_resolver::resolve_template_parts(config, vfs);
-    let true_css = crate::render::xml_parts::css_generator::render_css_sockets(parts.css, config);
+    let true_css = unescape_for_style(
+        &crate::render::xml_parts::css_generator::render_css_sockets(parts.css, config),
+    );
 
     // Wire up the Plugin Pipeline for the Preview
     let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
@@ -560,6 +641,26 @@ mod tests {
     use super::*;
 
     #[test]
+    fn glow_hover_reaches_preview_with_matching_target() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+        config.colors.glow_title = true; // hover-only is the default trigger
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        // The hover glow rule is injected into the preview CSS...
+        assert!(html.contains(".post-title:hover"));
+        // ...and the element it targets actually exists in the preview DOM, so
+        // :hover fires. (If these drift apart, hover glow silently no-ops.)
+        assert!(html.contains(r#"class="post-title"#));
+        // Default trigger is hover-only: no resting glow on the title.
+        assert!(!html.contains(".post-title a, .post-title { text-shadow"));
+
+        // Switch to always-on: a resting rule appears.
+        config.colors.glow_hover = false;
+        let always = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(always.contains(".post-title a, .post-title { text-shadow"));
+    }
+
+    #[test]
     fn preview_widget_renders_by_type() {
         let config = ThemeConfig::default();
         // Content widget → main canvas with post markup.
@@ -596,6 +697,28 @@ mod tests {
         assert!(html.contains("https://example.com/logo.png"));
     }
 
+    #[test]
+    fn unescape_for_style_reverses_attr_escaping() {
+        let escaped = "font-family: &#39;IM Fell English&#39;, serif; content: &quot;x&quot;;";
+        assert_eq!(
+            super::unescape_for_style(escaped),
+            "font-family: 'IM Fell English', serif; content: \"x\";"
+        );
+    }
+
+    // The preview reuses the Blogger-escaped CSS; if it isn't decoded, the font
+    // stack lands in the <style> as `&#39;…&#39;` (invalid) and the chosen font
+    // never applies in the canvas. Guard that the preview CSS is raw.
+    #[test]
+    fn preview_css_font_family_is_unescaped() {
+        let vfs = HashMap::new();
+        let mut config = ThemeConfig::default();
+        config.typography.body_font_stack = "IM Fell English".to_string();
+        let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
+        assert!(html.contains("'IM Fell English'"));
+        assert!(!html.contains("&#39;IM Fell English&#39;"));
+    }
+
     // The "Mor — Centered Search" header variant is a CSS modifier on the
     // preview's .main-header. Selecting it must add the class AND bundle the
     // centering CSS, otherwise the preview won't reflect the variant.
@@ -608,12 +731,17 @@ mod tests {
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
         assert!(html.contains(r#"class="main-header""#));
         assert!(!html.contains("main-header search-centered"));
+        // No bell on other variants.
+        assert!(!html.contains("mor-bell"));
 
-        // Centered-search variant: modifier class on the header + centering CSS.
+        // Centered-search variant: modifier class on the header + centering CSS,
+        // plus the mirrored notification bell + glowing-title assets.
         config.template_pack.header_variant = "mor_search_center".to_string();
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
         assert!(html.contains("main-header search-centered"));
         assert!(html.contains(".search-centered .header-bottom-row"));
+        assert!(html.contains(r#"class="mor-bell""#));
+        assert!(html.contains(".search-centered .institute-title"));
     }
 
     // Every shipped preset must define a custom cursor that survives into the

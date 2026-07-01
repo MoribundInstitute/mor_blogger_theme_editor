@@ -65,6 +65,21 @@ const WIDGET_BLUEPRINTS: &[(&str, &str, &str)] = &[
         "translate.xml",
         include_str!("../template_parts/widget_blueprints/gadgets/translate.xml"),
     ),
+    (
+        "gadgets",
+        "notification-bell.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/notification-bell.xml"),
+    ),
+    (
+        "gadgets",
+        "gnomenu-launcher.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/gnomenu-launcher.xml"),
+    ),
+    (
+        "gadgets",
+        "safe-script.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/safe-script.xml"),
+    ),
 ];
 
 /// Default modules seeded on first run. Tuple: (category, filename, content).
@@ -105,6 +120,11 @@ const DEFAULT_MODULES: &[(&str, &str, &str)] = &[
         "footers",
         "MorFooterSocial.xml",
         include_str!("../template_parts/footers/MorFooterSocial.xml"),
+    ),
+    (
+        "footers",
+        "MorFooterMegaGno.xml",
+        include_str!("../template_parts/footers/MorFooterMegaGno.xml"),
     ),
     // Sidebars
     (

@@ -43,7 +43,7 @@ editors; CSS builder dock) from the previous plan are done or obsolete.
 
 ---
 
-## 📍 PHASE 16 — Land & Harden (now)
+## ✅ PHASE 16 — Land & Harden (done 2026-07-02)
 
 * **Task 1: Commit the in-flight branch.** ~44 modified files on
   `chore/ponytail-audit-cleanup` (audit cleanup + JS workspace/editor upgrades).
@@ -57,7 +57,7 @@ editors; CSS builder dock) from the previous plan are done or obsolete.
 * **Task 4: Runtime smoke checklist.** One scripted pass (mbt + xdotool-optional)
   covering: preset load, module swap, JS workspace actions, export, editor lint.
 
-## 📍 PHASE 17 — Keybinds & Editor Ergonomics
+## ✅ PHASE 17 — Keybinds & Editor Ergonomics (done 2026-07-02)
 
 * **Task 1: Persist custom keybinds** in `editor_prefs.toml` (carried from old
   Phase 13 — still the only unfinished item from that plan).
@@ -66,7 +66,7 @@ editors; CSS builder dock) from the previous plan are done or obsolete.
 * **Task 3: Editor persistence parity:** word-wrap override per workspace (same
   mechanism as minimap), remembered active tab per editor dock.
 
-## 📍 PHASE 18 — Blogger-Aware Code Intelligence ("the option to code," made serious)
+## 📍 PHASE 18 — Blogger-Aware Code Intelligence (tasks 1–4 done 2026-07-02; importer remains)
 
 The CM6 foundation exists; make it *Blogger-specialized* — the thing no generic
 editor offers:
@@ -81,9 +81,14 @@ editor offers:
   so hand-written JS can follow its module through swaps and exports.
 * **Task 4: Diff & reset:** side-by-side diff of an edited file vs its bundled
   default + one-click reset (the "customized ●" marker already knows).
-* **Task 5: Theme importer.** Open any existing Blogger theme XML and decompose it
-  into workspace modules (grow `utils/rehydration.rs` into a first-class import
-  flow). This is the on-ramp for every existing Blogger user.
+* **Task 5: Theme importer (remaining).** Open any existing Blogger theme XML and
+  decompose it into workspace state. Note: `utils/rehydration.rs` only round-trips
+  *this app's own* exports (embedded workspace payload) — foreign themes are
+  unhandled. Suggested v1 ("salvage import", separate from the existing import
+  action): extract the `<b:skin>` CSS into `preset_css`, inventory sections and
+  widgets into a report, and flag what can't map to the module registry — useful
+  restyling on-ramp without pretending full decomposition. Full module
+  decomposition is v2.
 
 ## 📍 PHASE 19 — The Editor Canvas (structured direct manipulation)
 

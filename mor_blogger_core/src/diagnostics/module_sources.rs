@@ -5,14 +5,7 @@ use crate::render::template_resolver::{
     SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
 };
 
-const REQUIRED_BLOG_INCLUDABLES: &[&str] = &[
-    "main",
-    "post",
-    "postBody",
-    "postTitle",
-    "postCommentsAndAd",
-    "postPagination",
-];
+use super::REQUIRED_BLOG_INCLUDABLES;
 
 struct ActiveModule<'a> {
     slot: &'static str,
@@ -74,6 +67,7 @@ fn module_display_path(slot: &str, variant_id: &str) -> String {
         ("left_sidebar", "gtk_dock_left") => "gtk_dock_left.xml".to_string(),
         ("right_sidebar", "toc_right") => "toc_right.xml".to_string(),
         ("footer", "mega") => "MorFooterMega.xml".to_string(),
+        ("footer", "mega-gno") => "MorFooterMegaGno.xml".to_string(),
         ("footer", "basic") => "MorFooterBasic.xml".to_string(),
         ("footer", "compact") => "MorFooterCompact.xml".to_string(),
         _ => format!("{variant_id}.xml"),

@@ -85,6 +85,9 @@ pub struct LayoutState {
     /// which buffer is showing (false = TOML, true = compiled XML).
     pub code_show_xml: Signal<bool>,
     pub active_workbench_module: Signal<Option<&'static str>>,
+    /// One-shot request: open the JS Editor dock on this file (JS workspace
+    /// behavior cards set it; the dock consumes it and resets to None).
+    pub js_editor_open_file: Signal<Option<String>>,
 
     pub center_view: Signal<CenterView>,
     pub active_static_page: Signal<Option<String>>,
@@ -123,6 +126,7 @@ impl LayoutState {
             static_pages_pos: use_signal(|| DockPosition::Hidden),
             code_show_xml: use_signal(|| false),
             active_workbench_module: use_signal(|| None),
+            js_editor_open_file: use_signal(|| None),
 
             center_view: use_signal(|| CenterView::Preview),
             active_static_page: use_signal(|| None::<String>),

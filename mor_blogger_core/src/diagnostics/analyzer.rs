@@ -20,14 +20,7 @@ struct StructuralFacts {
     has_blog_widget_settings: bool,
 }
 
-const REQUIRED_BLOG_INCLUDABLES: &[&str] = &[
-    "main",
-    "post",
-    "postBody",
-    "postTitle",
-    "postCommentsAndAd",
-    "postPagination",
-];
+use super::REQUIRED_BLOG_INCLUDABLES;
 
 const RECOMMENDED_BLOG_INCLUDABLES: &[&str] = &[
     "comments",
@@ -267,7 +260,7 @@ fn check_panel_toggles(doc: &Document, out: &mut Vec<Warning>) {
 // --- UPDATED REGISTRY MAPPER ---
 fn required_footer_css(footer_variant: &str) -> Option<&'static str> {
     match footer_variant {
-        "mega" => Some("18-Footer-Mega.css"),
+        "mega" | "mega-gno" => Some("18-Footer-Mega.css"),
         "basic" | "compact" => Some("18-Footer-Base.css"),
         _ => None,
     }

@@ -130,7 +130,23 @@ fn main() -> Result<()> {
                 template,
                 path
             );
-            println!("{} Workspace ready.", "✔".green().bold());
+
+            // ponytail: one template ("minimal") = the default config. Add a match
+            // here when a second starter template actually exists.
+            let starter = mor_blogger_core::config::defaults::default_theme_config();
+            let toml_bytes = toml::to_string_pretty(&starter)
+                .context("Failed to serialize starter workspace config")?;
+            if let Some(parent) = target_file.parent() {
+                fs::create_dir_all(parent).ok();
+            }
+            fs::write(&target_file, toml_bytes.as_bytes())
+                .with_context(|| format!("Failed to write {}", target_file.display()))?;
+
+            println!(
+                "{} Workspace ready at {}.",
+                "✔".green().bold(),
+                target_file.display()
+            );
         }
         Commands::Check { input, strict } => {
             println!("{} Reading configuration...", "➔".cyan());

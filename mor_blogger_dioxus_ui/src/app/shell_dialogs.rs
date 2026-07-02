@@ -273,7 +273,7 @@ fn QuickLaunchToggle(
                 r#type: "checkbox",
                 checked: visible,
                 onchange: move |evt| on_change.call(evt.checked()),
-                style: "cursor: pointer; width: 16px; height: 16px; accent-color: #73c991;",
+                style: "cursor: pointer;",
             }
             span { style: "font-size: 18px;", "{icon}" }
             span { style: "font-size: 0.95rem;", "{label}" }

@@ -57,10 +57,14 @@ fn check_unwrapped_scripts(source: &str, out: &mut Vec<Warning>) {
         let Some(close_rel) = lower[body_start..].find("</script>") else { break };
         let body = &masked[body_start..body_start + close_rel];
 
-        // Raw `<` always breaks XML; `&&` / `& ` are the common bare-ampersand cases.
-        // ponytail: heuristic, not a full entity parser — a literal "&amp;" typed in
-        // JS won't false-positive, and any real `<` is caught regardless.
-        if body.contains('<') || body.contains("&&") || body.contains("& ") {
+        // A JS `<` operator (`a < b`) breaks XML; a `<` opening a live Blogger tag
+        // (`<data:post.commentJso/>`, `<b:if …>`) is valid and must NOT be flagged.
+        // Distinguish by the next char: XML tags start with a name char / `/` `!` `?`.
+        // `&&` / `& ` catch bare ampersands while leaving entities (`&#39;`) alone.
+        // ponytail: heuristic, not a full parser — `i<n` (no spaces) reads as a tag
+        // and slips through; the spaced `i < n` style is caught. Ceiling: a real
+        // JS+XML parser if that false-negative ever bites.
+        if has_raw_lt(body) || body.contains("&&") || body.contains("& ") {
             out.push(Warning::error(
                 "SCRIPT_NEEDS_CDATA",
                 "An inline <script> contains a raw '<' or '&' but isn't wrapped in CDATA — Blogger's strict XML parser will reject the whole theme. Wrap the script body in `//<![CDATA[` … `//]]>` (see the 'Safe custom script' gadget for a working skeleton).",
@@ -69,6 +73,17 @@ fn check_unwrapped_scripts(source: &str, out: &mut Vec<Warning>) {
         }
         i = body_start + close_rel + "</script>".len();
     }
+}
+
+/// True if `body` holds a `<` used as a JS operator rather than opening an XML tag.
+/// A well-formed tag's `<` is followed by a name char (or `/` `!` `?`); anything else
+/// (space, `=`, digit, `(`, EOF) means it's an operator that will break the parser.
+fn has_raw_lt(body: &str) -> bool {
+    let b = body.as_bytes();
+    b.iter().enumerate().any(|(i, &c)| {
+        c == b'<'
+            && !matches!(b.get(i + 1), Some(n) if n.is_ascii_alphabetic() || matches!(n, b'/' | b'!' | b'?' | b'_'))
+    })
 }
 
 /// Blank out every `<![CDATA[ … ]]>` region (replace with spaces, keeping newlines)
@@ -99,6 +114,17 @@ mod tests {
         let mut out = Vec::new();
         run_text_checks(src, &mut out);
         assert!(out.iter().any(|w| w.code == "SCRIPT_NEEDS_CDATA"));
+    }
+
+    #[test]
+    fn blogger_data_tags_in_script_are_clean() {
+        // Standard Blogger comment scripts: <data:.../> are live XML tags and &#39; is
+        // a valid entity — neither needs CDATA, so neither may be flagged.
+        let src = "<script>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);\
+                   blogger.initThreadedComments(<data:post.commentJso/>);</script>";
+        let mut out = Vec::new();
+        run_text_checks(src, &mut out);
+        assert!(!out.iter().any(|w| w.code == "SCRIPT_NEEDS_CDATA"));
     }
 
     #[test]

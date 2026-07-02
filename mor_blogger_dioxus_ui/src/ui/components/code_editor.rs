@@ -178,6 +178,24 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
             // Overlay toggles, top-right. Absolute so they don't consume layout
             // height (in-flow buttons were clipping the editor's bottom rows).
             button {
+                class: "cm-search-toggle",
+                style: "position: absolute; top: 6px; right: 66px; z-index: 6; width: 26px; height: 24px; padding: 0; font-size: 13px; line-height: 1; border-radius: 4px; cursor: pointer; background: var(--editor-panel, #2a2a2a); color: var(--editor-text, #ddd); border: 1px solid var(--editor-border, #444);",
+                title: "Find / Replace (Ctrl+F)",
+                onclick: {
+                    let id = host_id.clone();
+                    move |_| {
+                        let id = id.clone();
+                        spawn(async move {
+                            let eval = dioxus::document::eval(
+                                "const c = await dioxus.recv(); if (window.morCM) window.morCM.openSearch(c.id);",
+                            );
+                            let _ = eval.send(serde_json::json!({ "id": id }));
+                        });
+                    }
+                },
+                "\u{1F50D}"
+            }
+            button {
                 class: "cm-wrap-toggle",
                 style: "position: absolute; top: 6px; right: 36px; z-index: 6; width: 26px; height: 24px; padding: 0; font-size: 13px; line-height: 1; border-radius: 4px; cursor: pointer; background: var(--editor-panel, #2a2a2a); color: var(--editor-text, #ddd); border: 1px solid {wrap_border};",
                 title: if wrap_on() { "Disable word wrap" } else { "Enable word wrap" },

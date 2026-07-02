@@ -9,11 +9,14 @@
     height: 36px;
     padding: 0;
     border: none;
-    background-color: var(--fg-base);
-    -webkit-mask-image: var(--icon-search);
-    -webkit-mask-size: 20px 20px;
-    -webkit-mask-position: center;
-    -webkit-mask-repeat: no-repeat;
+    background-color: var(--icon-search-tint, var(--fg-base));
+    background-image: var(--icon-search-bg, none);
+    background-position: center; background-repeat: no-repeat; background-size: 20px 20px;
+    mask-image: var(--icon-search-mask, var(--icon-search));
+    -webkit-mask-image: var(--icon-search-mask, var(--icon-search));
+    mask-size: 20px 20px; -webkit-mask-size: 20px 20px;
+    mask-position: center; -webkit-mask-position: center;
+    mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
     cursor: pointer;
     transition: background-color 0.2s ease, filter 0.2s ease;
 }

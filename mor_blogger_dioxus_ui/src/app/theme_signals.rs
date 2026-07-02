@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 
 use mor_blogger_core::config::{
-    AdsConfig, AssetConfig, BackgroundConfig, ButtonConfig, ColorConfig, FooterConfig, IconConfig,
-    MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, TemplatePackConfig, ThemeConfig,
-    TypographyConfig,
+    AdsConfig, AssetConfig, BackgroundConfig, ButtonConfig, ColorConfig, ElementStyle, FooterConfig,
+    IconConfig, MenuLink, PluginConfig, SeoConfig, SiteConfig, SurfaceFill, TemplatePackConfig,
+    ThemeConfig, TypographyConfig,
 };
 use mor_blogger_core::presets::{Preset, PresetPalette};
 
@@ -27,6 +27,8 @@ pub struct ThemeSignals {
     pub panel_border_width: Signal<String>,
     pub glow_spread: Signal<String>,
     pub hover_scale: Signal<String>,
+    pub glow_intensity: Signal<String>,
+    pub glow_hover: Signal<bool>,
     pub panel_border_image_url: Signal<String>,
     pub panel_border_image_slice: Signal<String>,
     pub panel_border_image_repeat: Signal<String>,
@@ -40,6 +42,7 @@ pub struct ThemeSignals {
     pub scale_ratio: Signal<String>,
     pub line_height: Signal<String>,
     pub heading_weight: Signal<String>,
+    pub type_elements: Signal<Vec<ElementStyle>>,
 
     pub background: Signal<BackgroundConfig>,
     pub favicon_url: Signal<String>,
@@ -126,6 +129,8 @@ impl ThemeSignals {
             panel_border_width: Signal::new(config.colors.panel_border_width.clone()),
             glow_spread: Signal::new(config.colors.glow_spread.clone()),
             hover_scale: Signal::new(config.colors.hover_scale.clone()),
+            glow_intensity: Signal::new(config.colors.glow_intensity.clone()),
+            glow_hover: Signal::new(config.colors.glow_hover),
             panel_border_image_url: Signal::new(config.colors.panel_border_image_url.clone()),
             panel_border_image_slice: Signal::new(config.colors.panel_border_image_slice.clone()),
             panel_border_image_repeat: Signal::new(config.colors.panel_border_image_repeat.clone()),
@@ -139,6 +144,7 @@ impl ThemeSignals {
             scale_ratio: Signal::new(config.typography.scale_ratio.clone()),
             line_height: Signal::new(config.typography.line_height.clone()),
             heading_weight: Signal::new(config.typography.heading_weight.clone()),
+            type_elements: Signal::new(config.typography.elements.clone()),
 
             background: Signal::new(config.background.clone()),
             favicon_url: Signal::new(config.assets.favicon_url.clone()),
@@ -224,6 +230,8 @@ impl ThemeSignals {
                 panel_border_width: self.panel_border_width.read().clone(),
                 glow_spread: self.glow_spread.read().clone(),
                 hover_scale: self.hover_scale.read().clone(),
+                glow_intensity: self.glow_intensity.read().clone(),
+                glow_hover: *self.glow_hover.read(),
                 panel_border_image_url: self.panel_border_image_url.read().clone(),
                 panel_border_image_slice: self.panel_border_image_slice.read().clone(),
                 panel_border_image_repeat: self.panel_border_image_repeat.read().clone(),
@@ -260,6 +268,7 @@ impl ThemeSignals {
                 scale_ratio: self.scale_ratio.read().clone(),
                 line_height: self.line_height.read().clone(),
                 heading_weight: self.heading_weight.read().clone(),
+                elements: self.type_elements.read().clone(),
             },
             background: self.background.read().clone(),
             assets: AssetConfig {
@@ -458,6 +467,8 @@ impl ThemeSignals {
             .set(c.panel_border_width.clone());
         self.glow_spread.clone().set(c.glow_spread.clone());
         self.hover_scale.clone().set(c.hover_scale.clone());
+        self.glow_intensity.clone().set(c.glow_intensity.clone());
+        self.glow_hover.clone().set(c.glow_hover);
         self.panel_border_image_url
             .clone()
             .set(c.panel_border_image_url.clone());
@@ -516,6 +527,7 @@ impl ThemeSignals {
         self.scale_ratio.clone().set(t.scale_ratio.clone());
         self.line_height.clone().set(t.line_height.clone());
         self.heading_weight.clone().set(t.heading_weight.clone());
+        self.type_elements.clone().set(t.elements.clone());
     }
 
     fn set_scrollbars(&self, c: &ThemeConfig) {

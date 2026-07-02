@@ -146,11 +146,11 @@ pub struct MorTheme {
 }
 
 fn default_slice() -> String {
-    "30".to_string()
+    "30%".to_string()
 }
 
 fn default_image_width() -> String {
-    "20px".to_string()
+    "28px".to_string()
 }
 
 fn default_true() -> bool {
@@ -458,36 +458,10 @@ pub const MOR_CSS: &str = r#"
     font-family: var(--mor-font);
 }
 
-.mor-checkbox {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--mor-border);
-    border-radius: 3px;
-    background: var(--mor-bg);
-    cursor: pointer;
-    position: relative;
-    transition: all 0.1s ease;
-    margin: 0;
-}
-
-.mor-checkbox:checked {
-    background: var(--mor-accent-hover);
-    border-color: var(--mor-accent-hover);
-}
-
-.mor-checkbox:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 1px;
-    width: 4px;
-    height: 8px;
-    border: solid var(--mor-bg);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
+/* .mor-checkbox intentionally has no visual rules: it's an <input
+   type="checkbox">, so it inherits the single global themed checkbox style
+   (editor_styles/21-ui-inputs.css). One source of truth = every checkbox
+   matches. */
 
 .mor-select-wrapper {
     display: flex;

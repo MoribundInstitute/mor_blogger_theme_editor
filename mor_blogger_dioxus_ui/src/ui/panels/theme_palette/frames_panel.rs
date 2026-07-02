@@ -6,6 +6,16 @@ pub fn SvgFramesPanel(
     current_config: ThemeConfig,
     on_apply_theme: EventHandler<ThemeConfig>,
 ) -> Element {
+    // Slider position from the stored value's leading digits ("30%", "30",
+    // "30px" all -> 30). Clamped to the slider range; defaults to 30.
+    let slice_pct: u32 = current_config
+        .svg_border_slice
+        .chars()
+        .take_while(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse()
+        .unwrap_or(30)
+        .clamp(1, 50);
     rsx! {
         div { class: "editor-card", style: "padding: 16px; display: flex; flex-direction: column; gap: 16px;",
 
@@ -27,23 +37,8 @@ pub fn SvgFramesPanel(
                 }
             }
 
-            // Toggle Switch / Row
-            div { style: "display: flex; align-items: center; justify-content: space-between;",
-                label { class: "editor-checkbox-label", style: "display: flex; align-items: center; gap: 8px; font-size: 13px;",
-                    input {
-                        r#type: "checkbox",
-                        checked: current_config.enable_image_borders,
-                        onchange: {
-                            let mut cfg = current_config.clone();
-                            let apply = on_apply_theme.clone();
-                            move |_| {
-                                cfg.enable_image_borders = !cfg.enable_image_borders;
-                                apply.call(cfg.clone());
-                            }
-                        }
-                    }
-                    "Enable Custom Image Borders"
-                }
+            p { class: "editor-mini-label", style: "margin: 0;",
+                "Paste a frame image URL to turn the frame on, then choose where it applies below. Clear the URL to remove it."
             }
 
             // Hosted URL Input Section
@@ -85,20 +80,30 @@ pub fn SvgFramesPanel(
             }
 
             div { class: "editor-field-group",
-                label { class: "editor-field-label", "9-Slice Value" }
+                // Slider, not a text box: the right value depends on where the
+                // ornament band sits in YOUR image, and it's near-impossible to
+                // guess blind. Drag and watch the Preview Frame snap into place.
+                // Percentage = resolution-independent (survives Blogger's =sNNNN
+                // rescaling). Leading digits parsed so old px values still seed it.
+                label { class: "editor-field-label", "9-Slice (% of image edge) — {slice_pct}%" }
                 input {
                     class: "editor-input",
-                    r#type: "text",
-                    placeholder: "e.g. 30, 30%",
-                    value: "{current_config.svg_border_slice}",
+                    r#type: "range",
+                    min: "1",
+                    max: "50",
+                    step: "1",
+                    value: "{slice_pct}",
                     oninput: {
                         let mut cfg = current_config.clone();
                         let apply = on_apply_theme.clone();
                         move |evt| {
-                            cfg.svg_border_slice = evt.value();
+                            cfg.svg_border_slice = format!("{}%", evt.value());
                             apply.call(cfg.clone());
                         }
                     }
+                }
+                p { class: "editor-mini-label", style: "margin: 4px 0 0;",
+                    "Low = thin outer edge only. Raise it until the corner ornaments look whole."
                 }
             }
 

@@ -3,7 +3,7 @@
 use crate::config::{LayoutBlock, LayoutBlockType, ThemeConfig};
 use crate::render::template_resolver::generate_widget_xml;
 use crate::render::tracking::widget_title_h2_xml;
-use crate::render::util::escape_attr;
+use crate::render::util::{escape_attr, first_non_empty};
 
 const LAYOUT_BLOCKS_SOCKET: &str = "{{LAYOUT_BLOCKS}}";
 
@@ -187,14 +187,6 @@ fn sanitize_block_id(raw: &str) -> String {
 
 fn sanitize_cdata(raw: &str) -> String {
     raw.replace("]]>", "]]&gt;")
-}
-
-fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
-    if primary.trim().is_empty() {
-        fallback
-    } else {
-        primary
-    }
 }
 
 #[cfg(test)]

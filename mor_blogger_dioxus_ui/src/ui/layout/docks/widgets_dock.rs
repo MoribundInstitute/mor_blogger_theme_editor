@@ -13,6 +13,20 @@ const NEW_WIDGET_XML: &str = "<b:widget id='HTML1' type='HTML' title='New Widget
 // Online widget library: the public gallery to browse, and the GitHub repo (source / contribute).
 const COMPENDIUM_SITE_URL: &str = "https://mor-widgets-compendium.blogspot.com/";
 const COMPENDIUM_REPO_URL: &str = "https://github.com/MoribundInstitute/mor-blogger-widget-compendium";
+const COMPENDIUM_INDEX_URL: &str =
+    "https://cdn.jsdelivr.net/gh/MoribundInstitute/mor-blogger-widget-compendium@main/index.json";
+
+/// One entry from the compendium's `index.json` (only the fields we install with).
+#[derive(serde::Deserialize, Clone, PartialEq)]
+struct RemoteWidget {
+    name: String,
+    #[serde(default)]
+    group: String,
+    #[serde(default)]
+    slug: String,
+    #[serde(default)]
+    xml: String,
+}
 
 /// Slug → friendly label (title-case on `-`/`_`).
 fn pretty(slug: &str) -> String {
@@ -59,6 +73,8 @@ pub fn WidgetsDock() -> Element {
 
     let mut blueprints = use_signal(fs_bridge::load_widget_blueprints);
     let mut status = use_signal(String::new);
+    // Remote widgets fetched from the compendium's index.json (lazily loaded).
+    let mut compendium = use_signal(Vec::<RemoteWidget>::new);
 
     // Fold consecutive (already group/name-sorted) blueprints under one header.
     let mut groups: Vec<(String, Vec<WidgetBlueprint>)> = Vec::new();
@@ -187,6 +203,59 @@ pub fn WidgetsDock() -> Element {
                         }
                     }
 
+                    // ── Compendium install picker (appears once loaded) ──
+                    if !compendium().is_empty() {
+                        div {
+                            style: "margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;",
+                            div {
+                                style: "display: flex; align-items: center; gap: 6px;",
+                                span { style: "flex: 1; color: var(--fg-muted); font-size: 0.64rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em;", "Compendium ({compendium().len()})" }
+                                button {
+                                    class: "editor-mini-button",
+                                    title: "Hide the compendium list",
+                                    onclick: move |_| compendium.set(Vec::new()),
+                                    "×"
+                                }
+                            }
+                            for rw in compendium() {
+                                {
+                                    let rw_install = rw.clone();
+                                    rsx! {
+                                        div {
+                                            key: "{rw.group}-{rw.slug}-{rw.name}",
+                                            style: "display: flex; align-items: center; gap: 6px; padding: 3px 4px; font-size: 0.76rem;",
+                                            span { style: "flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", title: "{rw.group}/{rw.slug}", "{rw.name}" }
+                                            button {
+                                                class: "editor-mini-button editor-mini-button-active",
+                                                title: "Download this widget into your library",
+                                                onclick: move |_| {
+                                                    let rw = rw_install.clone();
+                                                    let mut bps = blueprints;
+                                                    let mut st = status;
+                                                    spawn(async move {
+                                                        st.set(format!("Installing {}…", rw.name));
+                                                        match crate::ui::panels::theme_palette::static_pages_panel::fetch_raw_page(&rw.xml).await {
+                                                            Ok(xml) => {
+                                                                let group = if rw.group.is_empty() { "custom".to_string() } else { rw.group.clone() };
+                                                                let name = if rw.slug.is_empty() { rw.name.clone() } else { rw.slug.clone() };
+                                                                match fs_bridge::save_widget_blueprint(&group, &name, &xml) {
+                                                                    Ok(_) => { bps.set(fs_bridge::load_widget_blueprints()); st.set(format!("Installed {}", rw.name)); }
+                                                                    Err(e) => st.set(format!("Save failed: {e}")),
+                                                                }
+                                                            }
+                                                            Err(e) => st.set(format!("Fetch failed: {e}")),
+                                                        }
+                                                    });
+                                                },
+                                                "Install"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     div {
                         style: "margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;",
                         button {
@@ -199,6 +268,25 @@ pub fn WidgetsDock() -> Element {
                                 }
                             },
                             "Open Widgets Folder"
+                        }
+                        button {
+                            class: "editor-button editor-button-active",
+                            title: "Load the online widget index so you can install widgets directly",
+                            onclick: move |_| {
+                                let mut comp = compendium;
+                                let mut st = status;
+                                spawn(async move {
+                                    st.set("Loading compendium…".to_string());
+                                    match crate::ui::panels::theme_palette::static_pages_panel::fetch_raw_page(COMPENDIUM_INDEX_URL).await {
+                                        Ok(json) => match serde_json::from_str::<Vec<RemoteWidget>>(&json) {
+                                            Ok(list) => { st.set(format!("{} widget(s) available.", list.len())); comp.set(list); }
+                                            Err(e) => st.set(format!("Bad index.json: {e}")),
+                                        },
+                                        Err(e) => st.set(format!("Load failed: {e}")),
+                                    }
+                                });
+                            },
+                            "⬇ Install from Compendium"
                         }
                         button {
                             class: "editor-button editor-button-small",

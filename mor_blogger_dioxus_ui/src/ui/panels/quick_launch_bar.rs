@@ -1,32 +1,5 @@
 use dioxus::prelude::*;
 
-#[derive(PartialEq, Clone, Copy)]
-pub enum LaunchBarSide {
-    Left,
-    Right,
-}
-
-#[derive(Props, PartialEq, Clone)]
-pub struct MorQuickLaunchBarProps {
-    pub side: LaunchBarSide,
-    pub children: Element,
-}
-
-#[component]
-pub fn MorQuickLaunchBar(props: MorQuickLaunchBarProps) -> Element {
-    let side_class = match props.side {
-        LaunchBarSide::Left => "launch-bar-left",
-        LaunchBarSide::Right => "launch-bar-right",
-    };
-
-    rsx! {
-        aside {
-            class: "mor-quick-launch-bar {side_class}",
-            {props.children}
-        }
-    }
-}
-
 #[derive(Props, PartialEq, Clone)]
 pub struct LaunchButtonProps {
     pub is_active: bool,

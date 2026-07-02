@@ -1,0 +1,310 @@
+<footer class='mor-footer mor-footer-mega mor-footer-mega-gno'>
+
+  <!-- Mega footer, remixed with the GnoMenu-style launcher. The launcher markup
+       lives in one CDATA block (it carries its own <style> + <script>, so the
+       footer fragment's raw XML never has to escape its && / < ). Configure the
+       tiles in the MOR_GM_ITEMS array below. Everything else is the standard mega
+       footer, driven by the same {{...}} config tokens. -->
+  <div class='footer-nav-launcher' style='display:flex;justify-content:center;padding:18px 0 6px;'>
+    <![CDATA[
+    <style>
+      .mor-gm { position: relative; display: inline-block; font-family: var(--font-base, inherit); }
+      .mor-gm-trigger {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--bg-panel, #1d1f24); color: var(--fg-base, #eee);
+        border: 1px solid color-mix(in srgb, var(--accent, #888) 30%, transparent);
+        border-radius: var(--btn-radius, 8px); padding: 8px 14px;
+        font: inherit; cursor: pointer; transition: filter .2s ease, transform .15s ease;
+      }
+      .mor-gm-trigger:hover { filter: brightness(1.12); transform: translateY(-1px); }
+      .mor-gm-trigger svg { width: 18px; height: 18px; fill: var(--accent, currentColor); }
+
+      .mor-gm-panel {
+        position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + 12px);
+        width: 540px; max-width: 92vw; height: 380px; max-height: 70vh;
+        display: grid; grid-template-rows: auto 1fr auto;
+        background: var(--bg-panel, #16181d); color: var(--fg-base, #eee);
+        border: 1px solid color-mix(in srgb, var(--accent, #888) 28%, transparent);
+        border-radius: 14px; overflow: hidden;
+        box-shadow: 0 24px 60px -18px rgba(0,0,0,.8), 0 0 30px -12px var(--glow, transparent);
+        -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+        opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(-8px) scale(.98); transform-origin: top center;
+        transition: opacity .18s ease, transform .24s cubic-bezier(.34,1.32,.64,1), visibility .24s;
+        z-index: 9999;
+      }
+      .mor-gm.open .mor-gm-panel { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0) scale(1); }
+      /* Footer placement: flip the panel above the button when there's no room below. */
+      .mor-gm.up .mor-gm-panel { top: auto; bottom: calc(100% + 12px); transform-origin: bottom center; transform: translateX(-50%) translateY(8px) scale(.98); }
+      .mor-gm.up.open .mor-gm-panel { transform: translateX(-50%) translateY(0) scale(1); }
+      @media (prefers-reduced-motion: reduce) {
+        .mor-gm-panel { transition: opacity .12s ease, visibility .12s; }
+        .mor-gm.open .mor-gm-panel { transform: translateX(-50%); }
+      }
+
+      .mor-gm-search { padding: 12px; border-bottom: 1px solid rgba(255,255,255,.07); }
+      .mor-gm-search input {
+        width: 100%; box-sizing: border-box; padding: 9px 12px;
+        background: rgba(0,0,0,.28); color: inherit; font: inherit;
+        border: 1px solid color-mix(in srgb, var(--accent, #888) 22%, transparent);
+        border-radius: 9px; outline: none;
+      }
+      .mor-gm-search input:focus { border-color: var(--accent, #6cf); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #6cf) 30%, transparent); }
+
+      .mor-gm-body { display: grid; grid-template-columns: 150px 1fr; min-height: 0; }
+      .mor-gm-cats { overflow-y: auto; padding: 8px; border-right: 1px solid rgba(255,255,255,.07); }
+      .mor-gm-cat {
+        display: block; width: 100%; text-align: left; box-sizing: border-box;
+        padding: 8px 10px; margin-bottom: 2px; border: none; border-radius: 8px;
+        background: transparent; color: inherit; font: inherit; cursor: pointer;
+        opacity: .8; transition: background .15s ease, opacity .15s ease;
+      }
+      .mor-gm-cat:hover { background: rgba(255,255,255,.06); opacity: 1; }
+      .mor-gm-cat.active { background: color-mix(in srgb, var(--accent, #6cf) 22%, transparent); opacity: 1; font-weight: 600; }
+
+      .mor-gm-grid {
+        overflow-y: auto; padding: 12px;
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 6px; align-content: start;
+      }
+      .mor-gm-tile {
+        display: flex; flex-direction: column; align-items: center; gap: 7px;
+        padding: 12px 6px; border-radius: 10px; text-decoration: none; color: inherit;
+        transition: background .15s ease, transform .12s ease; text-align: center;
+      }
+      .mor-gm-tile:hover, .mor-gm-tile:focus { background: rgba(255,255,255,.08); transform: translateY(-2px); outline: none; }
+      .mor-gm-tile:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #6cf) 45%, transparent); }
+      .mor-gm-ico { font-size: 30px; line-height: 1; width: 44px; height: 44px; display: grid; place-items: center; }
+      .mor-gm-ico img { width: 40px; height: 40px; object-fit: contain; }
+      .mor-gm-name { font-size: .78rem; line-height: 1.2; word-break: break-word; }
+      .mor-gm-empty { grid-column: 1 / -1; text-align: center; opacity: .55; padding: 24px 0; }
+
+      .mor-gm-foot {
+        display: flex; gap: 6px; padding: 8px 12px;
+        border-top: 1px solid rgba(255,255,255,.07); background: rgba(0,0,0,.18);
+      }
+      .mor-gm-sys {
+        margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 12px; border-radius: 8px; text-decoration: none;
+        background: transparent; color: inherit; font: inherit; cursor: pointer;
+        border: 1px solid transparent; opacity: .85; transition: background .15s ease;
+      }
+      .mor-gm-foot .mor-gm-sys:first-child { margin-left: 0; }
+      .mor-gm-sys:hover { background: rgba(255,255,255,.08); opacity: 1; }
+    </style>
+
+    <div class='mor-gm'>
+      <button class='mor-gm-trigger' type='button' aria-haspopup='true' aria-expanded='false'>
+        <svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z'/></svg>
+        <span>Site Menu</span>
+      </button>
+      <div class='mor-gm-panel' role='dialog' aria-label='Site menu'>
+        <div class='mor-gm-search'>
+          <input type='search' autocomplete='off' placeholder='Type to search&#8230;' aria-label='Search the site'/>
+        </div>
+        <div class='mor-gm-body'>
+          <nav class='mor-gm-cats' aria-label='Categories'></nav>
+          <div class='mor-gm-grid'></div>
+        </div>
+        <div class='mor-gm-foot'>
+          <a class='mor-gm-sys' href='/'>Home</a>
+          <a class='mor-gm-sys' href='/search'>All posts</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        // === EDIT YOUR FOOTER MENU HERE =================================
+        // Each item is a tile. `icon` is an emoji, OR an image URL (starts
+        // with http:// , https:// or /). `fav:true` pins it to Favorites.
+        // `cat` groups it in the left rail.
+        var MOR_GM_ITEMS = [
+          { name: 'Home',      cat: 'Places',   url: '/',                         icon: '🏠', fav: true },
+          { name: 'About',     cat: 'Places',   url: '/p/about.html',             icon: '👤', fav: true },
+          { name: 'All Posts', cat: 'Places',   url: '/search',                   icon: '📚' },
+          { name: 'Tech',      cat: 'Topics',   url: '/search/label/tech',        icon: '💻', fav: true },
+          { name: 'Design',    cat: 'Topics',   url: '/search/label/design',      icon: '🎨' },
+          { name: 'Writing',   cat: 'Topics',   url: '/search/label/writing',     icon: '✍️' },
+          { name: 'GitHub',    cat: 'Internet', url: 'https://github.com',        icon: '🐙' },
+          { name: 'Email',     cat: 'Internet', url: 'mailto:you@example.com',    icon: '✉️' },
+          { name: 'RSS',       cat: 'Internet', url: '/feeds/posts/default',      icon: '📡' }
+        ];
+        // ===============================================================
+
+        var root = document.currentScript ? document.currentScript.previousElementSibling : null;
+        // Fallback: bind every launcher on the page (covers Blogger's script hoisting).
+        var roots = root && root.classList && root.classList.contains('mor-gm') ? [root]
+                  : [].slice.call(document.querySelectorAll('.mor-gm'));
+
+        roots.forEach(function (gm) {
+          if (gm.dataset.gmBound) return; gm.dataset.gmBound = '1';
+          var trigger = gm.querySelector('.mor-gm-trigger');
+          var panel   = gm.querySelector('.mor-gm-panel');
+          var input   = gm.querySelector('.mor-gm-search input');
+          var catNav  = gm.querySelector('.mor-gm-cats');
+          var grid    = gm.querySelector('.mor-gm-grid');
+
+          // Categories: Favorites (if any) + each distinct cat in first-seen order.
+          var cats = [];
+          if (MOR_GM_ITEMS.some(function (i) { return i.fav; })) cats.push('Favorites');
+          MOR_GM_ITEMS.forEach(function (i) { if (cats.indexOf(i.cat) < 0) cats.push(i.cat); });
+          var active = cats[0] || 'Favorites';
+
+          function visible(q) {
+            q = (q || '').trim().toLowerCase();
+            return MOR_GM_ITEMS.filter(function (i) {
+              if (q) return (i.name + ' ' + i.cat).toLowerCase().indexOf(q) >= 0; // search ignores category
+              return active === 'Favorites' ? !!i.fav : i.cat === active;
+            });
+          }
+          function isImg(s) { return /^(https?:)?\/\//.test(s) || s.charAt(0) === '/'; }
+
+          function renderCats() {
+            catNav.innerHTML = '';
+            cats.forEach(function (c) {
+              var b = document.createElement('button');
+              b.type = 'button'; b.className = 'mor-gm-cat' + (c === active ? ' active' : '');
+              b.textContent = c;
+              b.addEventListener('click', function () { active = c; input.value = ''; renderCats(); renderGrid(); });
+              catNav.appendChild(b);
+            });
+          }
+          function renderGrid() {
+            var items = visible(input.value);
+            grid.innerHTML = '';
+            if (!items.length) {
+              var e = document.createElement('div'); e.className = 'mor-gm-empty'; e.textContent = 'Nothing here';
+              grid.appendChild(e); return;
+            }
+            items.forEach(function (i) {
+              var a = document.createElement('a');
+              a.className = 'mor-gm-tile'; a.href = i.url;
+              if (/^https?:/.test(i.url)) { a.target = '_blank'; a.rel = 'noopener'; }
+              var ico = document.createElement('span'); ico.className = 'mor-gm-ico';
+              if (isImg(i.icon)) { var im = document.createElement('img'); im.src = i.icon; im.alt = ''; ico.appendChild(im); }
+              else ico.textContent = i.icon || '⬜';
+              var nm = document.createElement('span'); nm.className = 'mor-gm-name'; nm.textContent = i.name;
+              a.appendChild(ico); a.appendChild(nm); grid.appendChild(a);
+            });
+          }
+
+          function open(o) {
+            if (o) {
+              // Flip upward when the button sits low on the page (e.g. in a footer).
+              var r = trigger.getBoundingClientRect();
+              var below = window.innerHeight - r.bottom;
+              gm.classList.toggle('up', below < 400 && r.top > below);
+            }
+            gm.classList.toggle('open', o);
+            trigger.setAttribute('aria-expanded', o ? 'true' : 'false');
+            if (o) { input.value = ''; renderGrid(); setTimeout(function () { input.focus(); }, 30); }
+          }
+          trigger.addEventListener('click', function (e) { e.stopPropagation(); open(!gm.classList.contains('open')); });
+          document.addEventListener('click', function (e) { if (!gm.contains(e.target)) open(false); });
+          input.addEventListener('input', renderGrid);
+          // Keyboard: Esc closes; arrows move focus across the visible tile grid.
+          gm.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { open(false); trigger.focus(); return; }
+            if (e.key.indexOf('Arrow') !== 0) return;
+            var tiles = [].slice.call(grid.querySelectorAll('.mor-gm-tile'));
+            if (!tiles.length) return;
+            var cols = Math.max(1, Math.floor(grid.clientWidth / 102));
+            var idx = tiles.indexOf(document.activeElement);
+            if (idx < 0) { e.preventDefault(); tiles[0].focus(); return; }
+            var next = idx;
+            if (e.key === 'ArrowRight') next = idx + 1;
+            else if (e.key === 'ArrowLeft') next = idx - 1;
+            else if (e.key === 'ArrowDown') next = idx + cols;
+            else if (e.key === 'ArrowUp') next = idx - cols;
+            if (next >= 0 && next < tiles.length) { e.preventDefault(); tiles[next].focus(); }
+          });
+
+          renderCats(); renderGrid();
+        });
+      })();
+    </script>
+    ]]>
+  </div>
+
+  <b:section class='footer-gadget-area' id='footer-gadgets' maxwidgets='3' showaddelement='yes'>{{SOCKET_FOOTER}}</b:section>
+  <div class='footer-mega-grid'>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.0.heading'>{{FOOTER_COL_1_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_1_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.0.links.0.label'>{{FOOTER_1_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.0.links.1.label'>{{FOOTER_1_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.0.links.2.label'>{{FOOTER_1_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.0.links.3.label'>{{FOOTER_1_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_1_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.0.links.4.label'>{{FOOTER_1_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.1.heading'>{{FOOTER_COL_2_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_2_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.1.links.0.label'>{{FOOTER_2_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.1.links.1.label'>{{FOOTER_2_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.1.links.2.label'>{{FOOTER_2_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.1.links.3.label'>{{FOOTER_2_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_2_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.1.links.4.label'>{{FOOTER_2_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.2.heading'>{{FOOTER_COL_3_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_3_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.2.links.0.label'>{{FOOTER_3_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.2.links.1.label'>{{FOOTER_3_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.2.links.2.label'>{{FOOTER_3_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.2.links.3.label'>{{FOOTER_3_LINK_4_LABEL}}</a></li>
+        <li><a href='{{FOOTER_3_LINK_5_URL}}' rel='noopener' data-field-path='footer.columns.2.links.4.label'>{{FOOTER_3_LINK_5_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.3.heading'>{{FOOTER_COL_4_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_4_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.3.links.0.label'>{{FOOTER_4_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.3.links.1.label'>{{FOOTER_4_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.3.links.2.label'>{{FOOTER_4_LINK_3_LABEL}}</a></li>
+        <li><a href='{{FOOTER_4_LINK_4_URL}}' rel='noopener' data-field-path='footer.columns.3.links.3.label'>{{FOOTER_4_LINK_4_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.4.heading'>{{FOOTER_COL_5_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_5_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.4.links.0.label'>{{FOOTER_5_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.4.links.1.label'>{{FOOTER_5_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_5_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.4.links.2.label'>{{FOOTER_5_LINK_3_LABEL}}</a></li>
+      </ul>
+    </div>
+
+    <div class='footer-col'>
+      <h4 data-field-path='footer.columns.5.heading'>{{FOOTER_COL_6_HEADING}}</h4>
+      <ul>
+        <li><a href='{{FOOTER_6_LINK_1_URL}}' rel='noopener' data-field-path='footer.columns.5.links.0.label'>{{FOOTER_6_LINK_1_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_2_URL}}' rel='noopener' data-field-path='footer.columns.5.links.1.label'>{{FOOTER_6_LINK_2_LABEL}}</a></li>
+        <li><a href='{{FOOTER_6_LINK_3_URL}}' rel='noopener' data-field-path='footer.columns.5.links.2.label'>{{FOOTER_6_LINK_3_LABEL}}</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class='footer-brand-center'>
+    <img class='footer-logo' src='{{HEADER_LOGO_URL}}' alt='Logo' />
+    <span class='footer-brand-name' data-field-path='site.site_title'>{{SITE_TITLE}}</span>
+  </div>
+
+  <div class='footer-sys-info'>
+    <p class='footer-copyright'>&#169; 2026 <span data-field-path='site.site_title'>{{SITE_TITLE}}</span> and others</p>
+    <div class='footer-legal-links'>
+      <a href='{{FOOTER_LEGAL_1_URL}}' data-field-path='footer.legal_links.0.label'>{{FOOTER_LEGAL_1_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_2_URL}}' data-field-path='footer.legal_links.1.label'>{{FOOTER_LEGAL_2_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_3_URL}}' data-field-path='footer.legal_links.2.label'>{{FOOTER_LEGAL_3_LABEL}}</a> |
+      <a href='{{FOOTER_LEGAL_4_URL}}' data-field-path='footer.legal_links.3.label'>{{FOOTER_LEGAL_4_LABEL}}</a>
+    </div>
+    <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
+  </div>
+</footer>

@@ -224,6 +224,14 @@ pub const FOOTER_REGISTRY: &[ComponentManifest] = &[
         css_deps: &["18-Footer-Base.css"],
         js_deps: &[],
     },
+    ComponentManifest {
+        // Mega footer remixed with the embedded GnoMenu-style launcher.
+        id: "mega-gno",
+        category: ComponentCategory::Footer,
+        xml_content: include_str!("../template_parts/footers/MorFooterMegaGno.xml"),
+        css_deps: &["18-Footer-Base.css", "18-Footer-Mega.css"],
+        js_deps: &[],
+    },
 ];
 
 // =====================================================================

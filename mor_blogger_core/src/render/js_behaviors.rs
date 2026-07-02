@@ -62,6 +62,45 @@ pub const JS_BEHAVIORS: &[JsBehavior] = &[
     },
 ];
 
+/// The `_MOR_CONFIG` keys `build_master_js` emits, with editor-facing details.
+/// Kept next to the catalog so the editor hints below can't drift far; a test
+/// asserts these match the real preamble.
+const MOR_CONFIG_KEYS: &[(&str, &str)] = &[
+    ("MOBILE_BREAKPOINT", "number — panels auto-collapse below this width (px)"),
+    ("PANELS_COLLAPSED_MOBILE", "bool — sidebars start collapsed on mobile"),
+    ("THEME_TOGGLE", "bool — light/dark toggle behavior enabled"),
+    ("SHARE_ACTIONS", "bool — share menu behavior enabled"),
+];
+
+/// Completion hints for the in-app JS editor: the `_MOR_CONFIG` runtime object
+/// and the DOM hooks each behavior queries. Serialized as the JSON array CM6
+/// autocompletion consumes (`[{label, type, detail}]`), injected once by the
+/// shell as `window.MOR_JS_HINTS`.
+pub fn editor_hints_json() -> String {
+    let mut hints = vec![serde_json::json!({
+        "label": "_MOR_CONFIG",
+        "type": "constant",
+        "detail": "theme runtime settings object",
+    })];
+    for (key, detail) in MOR_CONFIG_KEYS {
+        hints.push(serde_json::json!({
+            "label": format!("_MOR_CONFIG.{key}"),
+            "type": "property",
+            "detail": detail,
+        }));
+    }
+    for b in JS_BEHAVIORS {
+        for hook in b.requires {
+            hints.push(serde_json::json!({
+                "label": hook,
+                "type": "class",
+                "detail": format!("DOM hook — used by {}", b.label),
+            }));
+        }
+    }
+    serde_json::to_string(&hints).expect("static hint data serializes")
+}
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum BehaviorState {
     /// Shipped and its hooks are present — needed.
@@ -72,13 +111,30 @@ pub enum BehaviorState {
     Off,
 }
 
+/// One DOM hook a behavior queries, resolved against the active modules.
+pub struct HookStatus {
+    pub hook: &'static str,
+    /// Which template module renders it (e.g. "header · mor_centered_search"),
+    /// or None when nothing in the current permutation does.
+    pub found_in: Option<String>,
+}
+
 pub struct BehaviorStatus {
     pub file: &'static str,
     pub label: &'static str,
     pub description: &'static str,
-    pub requires: &'static [&'static str],
+    pub hooks: Vec<HookStatus>,
     pub bytes: usize,
     pub state: BehaviorState,
+    /// The codeless setting that gates this behavior, if any — lets the UI
+    /// offer the fix (ship / stop shipping) right on the card.
+    pub setting: Option<JsSetting>,
+}
+
+impl BehaviorStatus {
+    pub fn hooks_present(&self) -> bool {
+        self.hooks.iter().all(|h| h.found_in.is_some())
+    }
 }
 
 /// Whether the core bundle (01/07/08) ships for this script variant.
@@ -94,12 +150,18 @@ fn ships_core(variant: &str) -> bool {
 /// own handler names the selector.
 pub fn analyze_js_usage(config: &ThemeConfig, vfs: &HashMap<String, String>) -> Vec<BehaviorStatus> {
     let parts = resolve_template_parts(config, vfs);
-    let markup = format!(
-        "{}{}{}{}{}{}",
-        parts.header, parts.main, parts.content, parts.sidebar_left, parts.sidebar_right, parts.footer
-    );
-
     let pack = &config.template_pack;
+    // Per-part markup, labeled with the module that produced it, so a hook can
+    // be attributed to a concrete template module rather than "somewhere".
+    let parts_named: [(&str, &String, &String); 6] = [
+        ("header", &pack.header_variant, &parts.header),
+        ("main", &pack.main_variant, &parts.main),
+        ("content", &pack.content_variant, &parts.content),
+        ("left sidebar", &pack.left_sidebar_variant, &parts.sidebar_left),
+        ("right sidebar", &pack.right_sidebar_variant, &parts.sidebar_right),
+        ("footer", &pack.footer_variant, &parts.footer),
+    ];
+
     let core = ships_core(&pack.script_variant);
     let scripts = &config.scripts;
 
@@ -115,7 +177,18 @@ pub fn analyze_js_usage(config: &ThemeConfig, vfs: &HashMap<String, String>) -> 
                 "09-Magazine-Grid-Logic.js" => pack.script_variant == "magazine_grid_logic",
                 _ => core && setting_on,
             };
-            let hooks_present = b.requires.iter().all(|sel| markup.contains(sel));
+            let hooks: Vec<HookStatus> = b
+                .requires
+                .iter()
+                .map(|sel| HookStatus {
+                    hook: sel,
+                    found_in: parts_named
+                        .iter()
+                        .find(|(_, _, markup)| markup.contains(sel))
+                        .map(|(part, variant, _)| format!("{part} · {variant}")),
+                })
+                .collect();
+            let hooks_present = hooks.iter().all(|h| h.found_in.is_some());
             let state = if !shipped {
                 BehaviorState::Off
             } else if hooks_present {
@@ -131,9 +204,10 @@ pub fn analyze_js_usage(config: &ThemeConfig, vfs: &HashMap<String, String>) -> 
                 file: b.file,
                 label: b.label,
                 description: b.description,
-                requires: b.requires,
+                hooks,
                 bytes,
                 state,
+                setting: b.setting,
             }
         })
         .collect()
@@ -156,6 +230,33 @@ mod tests {
         let core = statuses.iter().find(|s| s.file == "01-Core-Helpers.js").unwrap();
         assert_eq!(core.state, BehaviorState::Active);
         assert!(core.bytes > 0);
+
+        // Hook attribution: a shipped-and-Active behavior has every hook traced
+        // to a "part · variant" source; Wasted means at least one is unattributed.
+        for s in &statuses {
+            match s.state {
+                BehaviorState::Active => assert!(s.hooks_present(), "{} active but hook missing", s.file),
+                BehaviorState::Wasted => assert!(!s.hooks_present(), "{} wasted but all hooks found", s.file),
+                BehaviorState::Off => {}
+            }
+            for h in &s.hooks {
+                if let Some(src) = &h.found_in {
+                    assert!(src.contains(" · "), "unlabeled hook source: {src}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn editor_hint_config_keys_match_master_js_preamble() {
+        // The hint list is hand-maintained; make sure every advertised
+        // _MOR_CONFIG key actually exists in the emitted preamble.
+        let preamble =
+            crate::render::xml_parts::javascript_generator::build_master_js("", &Default::default());
+        for (key, _) in MOR_CONFIG_KEYS {
+            assert!(preamble.contains(&format!("{key}:")), "stale hint key {key}");
+        }
+        assert!(editor_hints_json().contains("mor-theme-toggle"));
     }
 
     #[test]

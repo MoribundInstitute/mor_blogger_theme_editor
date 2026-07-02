@@ -160,7 +160,7 @@ pub fn PluginManagerDock() -> Element {
                                     div { style: "display: flex; gap: 8px; align-items: center;",
                                         input {
                                             r#type: "checkbox",
-                                            style: "accent-color: var(--accent); cursor: pointer;",
+                                            style: "cursor: pointer;",
                                             checked: local_plugin.enabled,
                                             onchange: {
                                                 let id = local_plugin.id.to_string();

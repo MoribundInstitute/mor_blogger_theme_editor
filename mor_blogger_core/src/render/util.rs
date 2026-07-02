@@ -24,6 +24,23 @@ pub(super) fn escape_attr(s: &str) -> String {
         .replace('\'', "&#39;")
 }
 
+/// Reverses [`escape_attr`]/[`escape_html`] for use in a browser `<style>`.
+///
+/// The exported Blogger CSS is XML-escaped (`'` → `&#39;`, `"` → `&quot;`, …)
+/// because `b:skin` is XML and Blogger decodes the entities before serving.
+/// The in-editor preview, however, injects that same CSS straight into an HTML
+/// `<style>` element, where character references are NOT decoded — so an escaped
+/// `font-family: &#39;IM Fell English&#39;` is invalid and silently dropped.
+/// Decode it back to raw CSS for the preview only. `&amp;` is decoded last so a
+/// literal `&amp;#39;` isn't mangled into a quote.
+pub fn unescape_for_style(s: &str) -> String {
+    s.replace("&#39;", "'")
+        .replace("&quot;", "\"")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&")
+}
+
 /// Returns the primary string if it contains text, otherwise returns the fallback.
 pub fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
     if primary.trim().is_empty() {

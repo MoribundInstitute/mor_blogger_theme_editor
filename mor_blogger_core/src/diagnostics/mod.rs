@@ -4,6 +4,16 @@ pub mod scanner;
 
 use crate::config::TemplatePackConfig;
 
+/// Blogger `<b:includable>` IDs that must be present for a valid post template.
+pub(crate) const REQUIRED_BLOG_INCLUDABLES: &[&str] = &[
+    "main",
+    "post",
+    "postBody",
+    "postTitle",
+    "postCommentsAndAd",
+    "postPagination",
+];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
     Error,

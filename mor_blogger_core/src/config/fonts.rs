@@ -295,6 +295,29 @@ fn google_family_query(primary: &str) -> String {
     format!("{}:wght@400;500;600;700", primary.replace(' ', "+"))
 }
 
+/// A `fonts.googleapis.com/css2?family=…` URL covering every Google font in
+/// both registries. Used by the editor's Typography panel so the dropdown
+/// previews and live preview render each preset font in its real typeface.
+/// Returns an empty string if no Google fonts are registered.
+pub fn all_registry_google_fonts_url() -> String {
+    let mut families: Vec<String> = Vec::new();
+    for font in FONT_REGISTRY.iter().chain(MONO_FONT_REGISTRY.iter()) {
+        if let Some(name) = font.google_font_name {
+            let query = format!("{}:wght@400;500;600;700", name.replace(' ', "+"));
+            if !families.iter().any(|f| f == &query) {
+                families.push(query);
+            }
+        }
+    }
+    if families.is_empty() {
+        return String::new();
+    }
+    format!(
+        "https://fonts.googleapis.com/css2?family={}&display=swap",
+        families.join("&family=")
+    )
+}
+
 /// Build Google Fonts `<link>` tags for non-system typography stacks.
 pub fn build_google_font_imports(font_stacks: &[&str]) -> String {
     let mut families: Vec<String> = Vec::new();

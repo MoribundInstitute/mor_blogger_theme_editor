@@ -18,6 +18,10 @@ pub struct AssetEditorProps {
     pub on_close: EventHandler<()>,
     pub vfs_signal: Signal<std::collections::HashMap<String, String>>,
     pub is_native_window: bool,
+    /// One-shot "open this file" request (e.g. JS workspace behavior cards).
+    /// The dock consumes it: selects the tab, then resets the signal to None.
+    #[props(default = None)]
+    pub open_file_request: Option<Signal<Option<String>>>,
 }
 
 static OPEN_WINDOWS: std::sync::Mutex<Option<std::collections::HashSet<String>>> =
@@ -91,6 +95,19 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     let mut is_takeover = use_signal(|| false);
     let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
     let theme_state_opt = try_use_context::<ThemeState>();
+
+    // Consume external open-file requests (one-shot: select the tab, clear the
+    // request; the clearing write re-runs the effect once as a no-op).
+    {
+        let request = props.open_file_request;
+        use_effect(move || {
+            let Some(mut req) = request else { return };
+            if let Some(file) = req() {
+                active_tab.set(file);
+                req.set(None);
+            }
+        });
+    }
 
     let mut is_window_open = use_signal(|| false);
     let mut child_window_ref = use_signal(|| Option::<dioxus::desktop::WeakDesktopContext>::None);
@@ -595,6 +612,15 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     for file in props.available_files {
                         {
                             let is_active = file == current_file;
+                            // Customized = VFS override that differs from the bundled
+                            // default (edit-then-undo leaves an identical entry).
+                            let is_edited = file != props.default_file
+                                && vfs.read().get(&file).is_some_and(|c| match props.mode {
+                                    "css" => c != mor_blogger_core::render::template_resolver::fetch_default_css(&file),
+                                    "js" | "javascript" => c != mor_blogger_core::render::template_resolver::fetch_js(&file),
+                                    // ponytail: xml has no single bundled default to diff against
+                                    _ => true,
+                                });
                             let tab_style = if is_active {
                                 "color: var(--fg-base); background: var(--bg-panel); border-bottom: 2px solid var(--accent); opacity: 1.0;"
                             } else {
@@ -610,6 +636,13 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                                         move |_| active_tab.set(f.clone())
                                     },
                                     "{file}"
+                                    if is_edited {
+                                        span {
+                                            style: "margin-left: 4px; color: var(--accent, #c2622a); font-size: 0.6rem; vertical-align: middle;",
+                                            title: "Customized — differs from the bundled default",
+                                            "●"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -795,6 +828,8 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
         // Separate webview: the main shell's bundle/CSS aren't here, so inject the
         // CodeMirror runtime this window's CodeEditor needs.
         script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
+        // Theme-aware JS completions, same as the main shell.
+        script { dangerous_inner_html: "window.MOR_JS_HINTS = {mor_blogger_core::render::js_behaviors::editor_hints_json()};" }
         // Include the Dioxus mount root (#main/#root): this window doesn't load
         // editor_ui.css, so without height:100% here the root collapses to content
         // height and the editor's height:100% chain breaks (scroll cut off).

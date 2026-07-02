@@ -8,8 +8,9 @@ import { EditorView, basicSetup } from "codemirror";
 import { EditorState, Annotation, Compartment } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
-import { search } from "@codemirror/search";
-import { StreamLanguage } from "@codemirror/language";
+import { search, openSearchPanel } from "@codemirror/search";
+import { StreamLanguage, syntaxTree } from "@codemirror/language";
+import { linter, lintGutter } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
 
 import { showMinimap } from "@replit/codemirror-minimap";
@@ -17,7 +18,7 @@ import { showMinimap } from "@replit/codemirror-minimap";
 import { html } from "@codemirror/lang-html";
 import { xml } from "@codemirror/lang-xml";
 import { css } from "@codemirror/lang-css";
-import { javascript } from "@codemirror/lang-javascript";
+import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { toml } from "@codemirror/legacy-modes/mode/toml";
 
@@ -39,13 +40,43 @@ function minimapExt() {
   }));
 }
 
+// Squiggle Lezer parse-error nodes. JS-only: the CSS/XML buffers carry Blogger
+// template syntax ($(var), <b:...>) their parsers would false-positive on.
+const jsSyntaxLinter = linter((view) => {
+  const diagnostics = [];
+  syntaxTree(view.state).cursor().iterate((node) => {
+    if (!node.type.isError) return;
+    diagnostics.push({
+      from: node.from,
+      to: Math.min(Math.max(node.to, node.from + 1), view.state.doc.length),
+      severity: "error",
+      message: "Syntax error",
+    });
+  });
+  return diagnostics;
+});
+
+// Theme-aware completions: _MOR_CONFIG keys + the DOM hooks the shipped
+// behaviors query. The Rust shell injects `window.MOR_JS_HINTS`
+// ([{label, type, detail}]) from the behavior catalog, so this never drifts
+// from the real theme data.
+const themeHints = javascriptLanguage.data.of({
+  autocomplete: (ctx) => {
+    const word = ctx.matchBefore(/[\w$.-]+/);
+    if (!word || (word.from === word.to && !ctx.explicit)) return null;
+    const hints = window.MOR_JS_HINTS || [];
+    if (!hints.length) return null;
+    return { from: word.from, options: hints, validFor: /^[\w$.-]*$/ };
+  },
+});
+
 function langExtension(mode) {
   switch (mode) {
     case "xml": return xml();
     case "html": return html();
     case "css": return css();
     case "js":
-    case "javascript": return javascript();
+    case "javascript": return [javascript(), themeHints, jsSyntaxLinter, lintGutter()];
     case "json": return json();
     case "toml":
     case "ini": return StreamLanguage.define(toml);
@@ -119,6 +150,15 @@ function reveal(id, text) {
   });
 }
 
+// Open the find/replace panel (same one Ctrl+F triggers) — lets the Rust side
+// surface search from a visible button, not just the keyboard shortcut.
+function openSearch(id) {
+  const view = registry.get(id);
+  if (!view) return;
+  view.focus();
+  openSearchPanel(view);
+}
+
 function setMinimap(id, on) {
   const view = registry.get(id);
   if (!view) return;
@@ -139,4 +179,4 @@ function destroy(id) {
   }
 }
 
-window.morCM = { mount, setValue, reveal, setMinimap, setWrap, destroy };
+window.morCM = { mount, setValue, reveal, openSearch, setMinimap, setWrap, destroy };

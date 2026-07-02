@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use super::state::{CenterView, LayoutState, PluginManagerContext, RenderState, ThemeState};
+use super::state::{
+    CenterView, DockPosition, LayoutState, PluginManagerContext, RenderState, ThemeState,
+};
+use mor_blogger_core::diagnostics::Severity;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
 use crate::ui::layout::menu_bar::AppMenuBar;
 use crate::ui::layout::theme::MorStyleProvider;
@@ -39,7 +42,6 @@ fn fallback_compendium() -> Vec<CompendiumManifest> {
 #[derive(Clone, Copy)]
 pub struct WorkbenchEditState {
     pub edited_xml: Signal<String>,
-    pub module_xml_signal: Signal<String>,
     pub workbench_status: Signal<String>,
     /// Set by the Widgets dock to ask the workbench to open a blueprint for editing.
     /// The workbench consumes it (loads the buffer) and resets it to None.
@@ -52,6 +54,54 @@ pub struct WorkbenchEditState {
     /// Where an added gadget lands: Some(socket_key) → that slot; None → appended
     /// to the active module buffer. Set by the workbench's "+ Add" buttons.
     pub add_target: Signal<Option<String>>,
+    /// Set by the Template Modules dock's file picker or a file dropped onto the
+    /// workspace: the XML to load into the active slot's editor buffer (the sender
+    /// also sets `active_workbench_module`). Non-destructive — edits the buffer
+    /// until the user hits Save. The workbench consumes it and resets to None.
+    pub load_module_request: Signal<Option<String>>,
+}
+
+/// VS Code-style bottom status strip. Surfaces the live diagnostics count (already
+/// computed in `RenderState::diag`) and doubles as a click target to open the
+/// Diagnostics dock — same toggle the Tools menu uses.
+#[component]
+fn StatusBar() -> Element {
+    let mut layout = use_context::<LayoutState>();
+    let render = use_context::<RenderState>();
+
+    let result = render.diag.read();
+    let error_count = result.errors.len();
+    let warning_count = result
+        .warnings
+        .iter()
+        .filter(|w| w.severity == Severity::Warning)
+        .count();
+    let clean = error_count == 0 && warning_count == 0;
+
+    rsx! {
+        div {
+            class: "editor-statusbar",
+            style: "flex-shrink: 0; display: flex; align-items: center; height: 24px; padding: 0 8px; font-size: 0.72rem; background: var(--mor-header, #10161f); border-top: 1px solid var(--mor-border, #2a2a2a); color: var(--editor-text, #ddd); user-select: none;",
+            button {
+                class: "statusbar-diagnostics",
+                title: "Theme Diagnostics — click to open panel",
+                style: "display: flex; align-items: center; gap: 12px; background: transparent; border: none; color: inherit; font: inherit; cursor: pointer; padding: 2px 6px; border-radius: 3px;",
+                onclick: move |_| {
+                    if (layout.diagnostics_pos)() == DockPosition::Hidden {
+                        layout.request_exclusive_dock("diagnostics", DockPosition::mor_panel_left);
+                    } else {
+                        layout.diagnostics_pos.set(DockPosition::Hidden);
+                    }
+                },
+                if clean {
+                    span { style: "color: #73c991;", "\u{2713} no problems" }
+                } else {
+                    span { style: "color: #ea8285; font-weight: bold;", "\u{2298} {error_count}" }
+                    span { style: "color: #d29922; font-weight: bold;", "\u{25B3} {warning_count}" }
+                }
+            }
+        }
+    }
 }
 
 pub fn render_app_shell(
@@ -165,16 +215,15 @@ pub fn render_app_shell(
     });
 
     let edited_xml = use_signal(String::new);
-    let module_xml_signal = use_signal(String::new);
     let workbench_status = use_signal(String::new);
 
     provide_context(WorkbenchEditState {
         edited_xml,
-        module_xml_signal,
         workbench_status,
         edit_widget_request: use_signal(|| None),
         add_widget_request: use_signal(|| None),
         add_target: use_signal(|| None),
+        load_module_request: use_signal(|| None),
     });
 
     provide_context(DockLocalSignals {
@@ -186,6 +235,8 @@ pub fn render_app_shell(
     rsx! {
         script { dangerous_inner_html: "document.addEventListener('contextmenu', event => event.preventDefault());" }
         script { dangerous_inner_html: "{CM6_BUNDLE_JS}" }
+        // Theme-aware JS completions (read lazily by the CM6 bundle's js mode).
+        script { dangerous_inner_html: "window.MOR_JS_HINTS = {mor_blogger_core::render::js_behaviors::editor_hints_json()};" }
         MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
 
@@ -273,6 +324,8 @@ pub fn render_app_shell(
                     active_preset,
                     original_toml,
                 }
+
+                StatusBar {}
             }
 
             FloatingWindowManager {

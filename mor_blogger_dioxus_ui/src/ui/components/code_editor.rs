@@ -82,9 +82,15 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
     let overrides = try_consume_context::<MinimapOverrides>();
     let minimap_on = resolve_minimap(global, overrides, &minimap_key, minimap_default);
 
-    // Per-editor word-wrap toggle (session-scoped).
-    // ponytail: not persisted; add a prefs override like minimap if users want it to stick.
-    let mut wrap_on = use_signal(|| props.wrap);
+    // Per-editor word-wrap toggle, persisted by workspace key like minimap.
+    let wrap_key = minimap_key.clone();
+    let mut wrap_on = use_signal(|| {
+        EditorPrefs::load()
+            .wrap_overrides
+            .get(&wrap_key)
+            .copied()
+            .unwrap_or(props.wrap)
+    });
 
     // Apply minimap changes live (toggle / settings change) without remounting.
     let minimap_fx_id = host_id.clone();
@@ -199,7 +205,14 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
                 class: "cm-wrap-toggle",
                 style: "position: absolute; top: 6px; right: 36px; z-index: 6; width: 26px; height: 24px; padding: 0; font-size: 13px; line-height: 1; border-radius: 4px; cursor: pointer; background: var(--editor-panel, #2a2a2a); color: var(--editor-text, #ddd); border: 1px solid {wrap_border};",
                 title: if wrap_on() { "Disable word wrap" } else { "Enable word wrap" },
-                onclick: move |_| { let v = !wrap_on(); wrap_on.set(v); },
+                onclick: {
+                    let key = minimap_key.clone();
+                    move |_| {
+                        let v = !wrap_on();
+                        wrap_on.set(v);
+                        EditorPrefs::update_wrap_override(key.clone(), v);
+                    }
+                },
                 "↩"
             }
             button {

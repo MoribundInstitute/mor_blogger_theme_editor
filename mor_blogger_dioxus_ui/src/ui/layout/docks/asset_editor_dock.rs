@@ -369,11 +369,18 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         let key_str = evt.key().to_string();
         if evt.modifiers().ctrl() && key_str.eq_ignore_ascii_case("s") {
             evt.prevent_default();
+            evt.stop_propagation(); // ours; don't also trigger the global Save Project bind
             if let Some(tx) = &tx_opt_key {
                 let _ = tx.send(EditorEvent::Save);
             } else {
                 on_save_key.call(());
             }
+            return;
+        }
+        // CodeMirror owns undo/redo while typing here — keep the global
+        // theme-level Undo/Redo binds from also firing on the same keys.
+        if evt.modifiers().ctrl() && (key_str.eq_ignore_ascii_case("z") || key_str.eq_ignore_ascii_case("y")) {
+            evt.stop_propagation();
             return;
         }
 

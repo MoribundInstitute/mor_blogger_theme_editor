@@ -1,54 +1,108 @@
+use crate::app::config_bridge::ShortcutPrefs;
 use crate::ui::dialogs::modal::Modal;
+use crate::ui::layout::shortcut::{normalize_combo, ShortcutRegistry};
 use dioxus::prelude::*;
+
+/// One rebindable action: (stable id, display label, group).
+const ACTIONS: &[(&str, &str, &str)] = &[
+    ("user_prefs", "User Preferences", "Global App"),
+    ("theme_diagnostics", "Theme Diagnostics", "Global App"),
+    ("toggle_preview", "Toggle Preview", "Global App"),
+    ("exit_architect", "Exit Architect", "Global App"),
+    ("open_project", "Load Theme (.toml)", "Project & File"),
+    ("save_project", "Save Theme (.toml)", "Project & File"),
+    ("export_xml", "Export Blogger XML", "Project & File"),
+    ("undo", "Undo", "Workspace"),
+    ("redo", "Redo", "Workspace"),
+    ("copy_raw_xml", "Copy Raw XML", "Workspace"),
+    ("toggle_left_dock", "Toggle Left Dock", "Workspace"),
+    ("toggle_right_dock", "Toggle Right Dock", "Workspace"),
+    ("close_left_dock", "Close Left Pane", "Workspace"),
+    ("close_right_dock", "Close Right Pane", "Workspace"),
+    ("reset_zoom", "Reset Zoom", "Workspace"),
+];
+
+fn field_mut<'a>(sc: &'a mut ShortcutPrefs, id: &str) -> Option<&'a mut Option<String>> {
+    Some(match id {
+        "user_prefs" => &mut sc.user_prefs,
+        "theme_diagnostics" => &mut sc.theme_diagnostics,
+        "toggle_preview" => &mut sc.toggle_preview,
+        "exit_architect" => &mut sc.exit_architect,
+        "open_project" => &mut sc.open_project,
+        "save_project" => &mut sc.save_project,
+        "export_xml" => &mut sc.export_xml,
+        "undo" => &mut sc.undo,
+        "redo" => &mut sc.redo,
+        "copy_raw_xml" => &mut sc.copy_raw_xml,
+        "toggle_left_dock" => &mut sc.toggle_left_dock,
+        "toggle_right_dock" => &mut sc.toggle_right_dock,
+        "close_left_dock" => &mut sc.close_left_dock,
+        "close_right_dock" => &mut sc.close_right_dock,
+        "reset_zoom" => &mut sc.reset_zoom,
+        _ => return None,
+    })
+}
+
+fn field(sc: &ShortcutPrefs, id: &str) -> Option<String> {
+    let mut sc = sc.clone();
+    field_mut(&mut sc, id).and_then(|f| f.clone())
+}
+
+/// Turn a captured keydown into the canonical combo, or None while only
+/// modifiers are held.
+fn combo_from_event(evt: &Event<KeyboardData>) -> Option<String> {
+    let key = match evt.key() {
+        dioxus::html::Key::Character(c) => c.to_uppercase(),
+        dioxus::html::Key::Control | dioxus::html::Key::Shift | dioxus::html::Key::Alt => {
+            return None
+        }
+        other => other.to_string().to_uppercase(),
+    };
+    let mut combo = String::new();
+    if evt.modifiers().ctrl() {
+        combo.push_str("Ctrl+");
+    }
+    if evt.modifiers().shift() {
+        combo.push_str("Shift+");
+    }
+    if evt.modifiers().alt() {
+        combo.push_str("Alt+");
+    }
+    combo.push_str(&key);
+    Some(combo)
+}
 
 #[component]
 pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
-    let mut shortcuts = use_signal(|| crate::app::config_bridge::ShortcutPrefs::load());
+    let mut prefs = use_context::<Signal<ShortcutPrefs>>();
+    let registry = try_consume_context::<Signal<ShortcutRegistry>>();
+    // Action id currently capturing its new combo, if any.
+    let mut capturing = use_signal(|| None::<&'static str>);
+    let mut filter = use_signal(String::new);
 
-    macro_rules! keys {
-        ($field:ident, $default:literal) => {
-            shortcuts()
-                .$field
-                .clone()
-                .unwrap_or_else(|| $default.to_string())
-                .split('+')
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>()
-        };
-    }
+    let mut apply = move |id: &'static str, new_combo: String| {
+        let mut sc = prefs.write();
+        let Some(slot) = field_mut(&mut sc, id) else { return };
+        let old = slot.clone();
+        *slot = Some(new_combo.clone());
+        let _ = sc.save();
+        drop(sc);
 
-    let shortcut_groups = vec![
-        (
-            "Global App",
-            vec![
-                ("User Preferences", keys!(user_prefs, "Ctrl+P")),
-                ("Theme Diagnostics", keys!(theme_diagnostics, "Ctrl+D")),
-                ("Toggle Preview", keys!(toggle_preview, "F9")),
-                ("Exit Architect", keys!(exit_architect, "Ctrl+Q")),
-            ],
-        ),
-        (
-            "Project & File",
-            vec![
-                ("Open Project", keys!(open_project, "Ctrl+O")),
-                ("Save Project", keys!(save_project, "Ctrl+S")),
-                ("Export Blogger XML", keys!(export_xml, "Shift+Ctrl+E")),
-            ],
-        ),
-        (
-            "Workspace",
-            vec![
-                ("Undo", keys!(undo, "Ctrl+Z")),
-                ("Redo", keys!(redo, "Ctrl+Y")),
-                ("Copy Raw XML", keys!(copy_raw_xml, "Ctrl+C")),
-                ("Toggle Left Dock", keys!(toggle_left_dock, "Ctrl+B")),
-                ("Toggle Right Dock", keys!(toggle_right_dock, "Ctrl+E")),
-                ("Close Left Pane", keys!(close_left_dock, "Ctrl+Shift+Left")),
-                ("Close Right Pane", keys!(close_right_dock, "Ctrl+Shift+Right")),
-                ("Reset Zoom", keys!(reset_zoom, "Ctrl+0")),
-            ],
-        ),
-    ];
+        // Live-rekey the registry so the change applies without a restart.
+        // (Registrations bind once at mount; the JS dock map re-reads prefs.)
+        if let (Some(mut reg), Some(old)) = (registry, old) {
+            let old_key = normalize_combo(&old);
+            let mut reg = reg.write();
+            if let Some(mut meta) = reg.binds.remove(&old_key) {
+                meta.keys = new_combo.clone();
+                reg.binds.insert(normalize_combo(&new_combo), meta);
+            }
+        }
+    };
+
+    let sc = prefs();
+    let query = filter().to_lowercase();
+    let groups = ["Global App", "Project & File", "Workspace"];
 
     rsx! {
         Modal {
@@ -63,76 +117,81 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                         class: "mor-input",
                         style: "width: 100%; margin-left: 10px;",
                         placeholder: "Search shortcuts...",
+                        value: "{filter}",
+                        oninput: move |e| filter.set(e.value()),
                     }
                 }
 
-                div { class: "mor-shortcuts-grid",
-                    for (group_name, shortcuts_list) in shortcut_groups {
-                        div { class: "mor-shortcut-group",
-                            h4 { class: "mor-shortcut-group-title", "{group_name}" }
+                p { style: "margin: 8px 0 0 0; font-size: 0.75rem; color: var(--fg-muted);",
+                    "Click a key chip, then press the new combination. Esc cancels."
+                }
 
-                            for (action, keys) in shortcuts_list {
-                                div { class: "mor-shortcut-row",
-                                    input {
-                                        class: "mor-input",
-                                        style: "width: 120px; text-align: center; font-family: monospace;",
-                                        value: "{keys.join(\"+\")}",
-                                        oninput: move |evt| {
-                                            let mut sc = shortcuts.write();
-                                            let val = Some(evt.value());
-                                            match action {
-                                                "Undo"              => sc.undo = val,
-                                                "Redo"              => sc.redo = val,
-                                                "Copy Raw XML"      => sc.copy_raw_xml = val,
-                                                "Toggle Left Dock"  => sc.toggle_left_dock = val,
-                                                "Toggle Right Dock" => sc.toggle_right_dock = val,
-                                                "Close Left Pane"   => sc.close_left_dock = val,
-                                                "Close Right Pane"  => sc.close_right_dock = val,
-                                                "User Preferences"  => sc.user_prefs = val,
-                                                "Theme Diagnostics" => sc.theme_diagnostics = val,
-                                                "Toggle Preview"    => sc.toggle_preview = val,
-                                                "Exit Architect"    => sc.exit_architect = val,
-                                                "Open Project"      => sc.open_project = val,
-                                                "Save Project"      => sc.save_project = val,
-                                                "Export Blogger XML"=> sc.export_xml = val,
-                                                "Reset Zoom"        => sc.reset_zoom = val,
-                                                _ => {}
+                div { class: "mor-shortcuts-grid",
+                    for group in groups {
+                        div { class: "mor-shortcut-group",
+                            h4 { class: "mor-shortcut-group-title", "{group}" }
+
+                            for (id, label, _) in ACTIONS.iter().filter(|(id, label, g)| {
+                                *g == group
+                                    && (query.is_empty()
+                                        || label.to_lowercase().contains(&query)
+                                        || field(&sc, id).unwrap_or_default().to_lowercase().contains(&query))
+                            }) {
+                                {
+                                    let id: &'static str = id;
+                                    let is_capturing = capturing() == Some(id);
+                                    let keys = field(&sc, id).unwrap_or_default();
+                                    let display = if is_capturing { "press keys…".to_string() } else { keys };
+                                    rsx! {
+                                        div { class: "mor-shortcut-row", key: "{id}",
+                                            button {
+                                                class: "mor-input",
+                                                style: format!(
+                                                    "width: 150px; text-align: center; font-family: monospace; cursor: pointer; {}",
+                                                    if is_capturing { "outline: 2px solid var(--accent);" } else { "" }
+                                                ),
+                                                onclick: move |_| capturing.set(Some(id)),
+                                                onkeydown: move |evt: Event<KeyboardData>| {
+                                                    if capturing() != Some(id) { return; }
+                                                    evt.prevent_default();
+                                                    evt.stop_propagation();
+                                                    if evt.key() == dioxus::html::Key::Escape {
+                                                        capturing.set(None);
+                                                        return;
+                                                    }
+                                                    if let Some(combo) = combo_from_event(&evt) {
+                                                        apply(id, combo);
+                                                        capturing.set(None);
+                                                    }
+                                                },
+                                                onblur: move |_| {
+                                                    if capturing() == Some(id) { capturing.set(None); }
+                                                },
+                                                "{display}"
                                             }
-                                            let _ = sc.save();
+                                            div { class: "mor-action-label", "{label}" }
                                         }
                                     }
-                                    div { class: "mor-action-label", "{action}" }
                                 }
                             }
                         }
                     }
+
                     div { class: "mor-shortcut-group",
-                        h4 { class: "mor-shortcut-group-title", "Asset Editors" }
-
+                        h4 { class: "mor-shortcut-group-title", "Asset Editors (fixed)" }
                         div { class: "mor-shortcut-row",
                             input {
                                 class: "mor-input",
-                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
+                                style: "width: 150px; text-align: center; font-family: monospace; pointer-events: none;",
                                 readonly: true,
-                                value: "Alt+Left / J",
+                                value: "Alt+Left / Right",
                             }
-                            div { class: "mor-action-label", "Previous File Tab" }
+                            div { class: "mor-action-label", "Previous / Next File Tab" }
                         }
-
                         div { class: "mor-shortcut-row",
                             input {
                                 class: "mor-input",
-                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
-                                readonly: true,
-                                value: "Alt+Right / K",
-                            }
-                            div { class: "mor-action-label", "Next File Tab" }
-                        }
-
-                        div { class: "mor-shortcut-row",
-                            input {
-                                class: "mor-input",
-                                style: "width: 120px; text-align: center; font-family: monospace; pointer-events: none;",
+                                style: "width: 150px; text-align: center; font-family: monospace; pointer-events: none;",
                                 readonly: true,
                                 value: "Ctrl+Shift+1…9",
                             }
@@ -142,7 +201,19 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                 }
 
                 div {
-                    style: "margin-top: 20px; display: flex; justify-content: flex-end;",
+                    style: "margin-top: 20px; display: flex; justify-content: space-between;",
+                    button {
+                        class: "editor-button",
+                        onclick: move |_| {
+                            let defaults = ShortcutPrefs::default();
+                            for (id, _, _) in ACTIONS {
+                                if let Some(d) = field(&defaults, id) {
+                                    apply(id, d);
+                                }
+                            }
+                        },
+                        "Reset All to Defaults"
+                    }
                     button {
                         class: "editor-button",
                         onclick: move |_| {

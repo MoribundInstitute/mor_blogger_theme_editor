@@ -82,7 +82,8 @@ impl Default for ShortcutPrefs {
         Self {
             undo: Some("Ctrl+Z".to_string()),
             redo: Some("Ctrl+Y".to_string()),
-            copy_raw_xml: Some("Ctrl+C".to_string()),
+            // Shift-modified: bare Ctrl+C must stay the system clipboard copy.
+            copy_raw_xml: Some("Ctrl+Shift+C".to_string()),
             toggle_left_dock: Some("Ctrl+B".to_string()),
             toggle_right_dock: Some("Ctrl+E".to_string()),
             close_left_dock: Some("Ctrl+Shift+Left".to_string()),
@@ -137,4 +138,7 @@ pub struct EditorPrefs {
     /// precedence over `show_minimap` for that editor.
     #[serde(default)]
     pub minimap_overrides: HashMap<String, bool>,
+    /// Per-workspace word-wrap overrides, same keying as `minimap_overrides`.
+    #[serde(default)]
+    pub wrap_overrides: HashMap<String, bool>,
 }

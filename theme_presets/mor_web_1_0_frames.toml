@@ -1,158 +1,356 @@
 name = "Web 1.0 Frames"
-description = "Under Construction since 1998"
+description = "A 1998 frameset homepage, restored with care: teal desktop, silver bevelled frames, navy title bars, blue links that turn purple when you have been there. Under construction forever."
 
 preset_css = '''
 /* ============================================================
-   Web 1.0 Frames preset
-   The mid-1990s personal homepage: ridged grey panels, sharp
-   corners, and "best viewed in Netscape" energy.
+   Web 1.0 Frames
+   The mid-90s personal homepage as an affectionate period
+   piece: every region reads as its own <frame> — silver panel,
+   outset bevel edge, navy title bar. Links are unvisited-blue
+   and visited-purple, rules are grooved, fields are sunken,
+   and the footer is a status bar that is still under
+   construction. No glow, no radius, no soft shadows: light
+   comes from bevels, exactly like it used to.
    ============================================================ */
 
-/* Force chunky ridged borders on every major surface */
-.canvas-core,
-.mor-post,
-.mor-panel,
+/* ---- Mode-scoped materials (dark is the :root default) ---- */
+:root {
+  --w1-link: #8ab6ff;
+  --w1-visited: #c7a3e6;
+  --w1-active: #ff6a4d;
+  --w1-bevel-hi: rgba(255, 255, 255, 0.14);
+  --w1-bevel-lo: rgba(0, 0, 0, 0.55);
+  --w1-titlebar-a: #17305e;
+  --w1-titlebar-b: #2d5ba6;
+  --w1-titlebar-fg: #eaf1ff;
+  --w1-field: #1d2027;
+  /* Bevels do the lighting in 1998 — retire the glow system. */
+  --glow: none;
+  --glow-strong: none;
+}
+
+html[data-theme="light"] {
+  --w1-link: #0000cc;
+  --w1-visited: #551a8b;
+  --w1-active: #cc2200;
+  --w1-bevel-hi: rgba(255, 255, 255, 0.85);
+  --w1-bevel-lo: rgba(0, 0, 0, 0.32);
+  --w1-titlebar-a: #000080;
+  --w1-titlebar-b: #1084d0;
+  --w1-titlebar-fg: #ffffff;
+  --w1-field: #ffffff;
+  --glow: none;
+  --glow-strong: none;
+}
+
+/* ============================================================
+   FRAMESET ILLUSION
+   Header, sidebars, canvas and footer each become a "frame":
+   opaque silver surface with a chunky outset divider border.
+   The tiled desktop shows through wherever frames end.
+   ============================================================ */
 .main-header,
-.mor-footer,
-.mor-pager,
-.mor-catalog-dropdown,
-.panel-header {
-  border-style: ridge;
-  border-width: 3px;
-  border-color: var(--border-color);
+.mor-panel,
+.canvas-core,
+.mor-footer {
+  background: var(--bg-panel);
+  border: 2px outset var(--border-color);
   border-radius: 0;
   box-shadow: none;
 }
 
-.main-header {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--accent) 45%, var(--bg-base)) 0%,
-    color-mix(in srgb, var(--accent) 25%, var(--bg-panel)) 100%
-  ) !important;
-  color: var(--fg-base) !important;
-  padding: 0 !important;
-  font-weight: 700;
-  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 55%, var(--bg-base));
-}
-
-.main-header .header-top-row,
-.main-header .header-bottom-row {
-  background: transparent !important;
-  color: var(--fg-base) !important;
-  border-color: color-mix(in srgb, var(--border-color) 55%, var(--bg-base)) !important;
-}
-
-.main-header .header-top-row {
-  padding: 10px 20px 9px !important;
-  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 55%, var(--bg-base)) !important;
-}
-
-.main-header .header-bottom-row {
-  padding: 6px 20px 8px !important;
-  border-top: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-color)) !important;
-}
-
-.main-header .institute-title {
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
-  letter-spacing: 0;
-}
-
-.mor-post .post-title::before {
-  content: "📝 ";
-}
-
-.mor-nav a {
-  color: var(--fg-base) !important;
-  text-decoration: underline;
-}
-
-.mor-nav a:hover {
-  background: transparent !important;
-  color: var(--accent) !important;
-}
-/* ============================================================
-   FOOTER
-   ============================================================ */
-.mor-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 3px outset var(--border-color);
-  border-bottom: 3px outset var(--border-color);
-  font-size: 0.85rem;
-  padding: 8px 12px;
-  background: var(--bg-panel);
-}
-
-.mor-post .post-body a,
-.panel-content a {
-  color: var(--accent);
-  text-decoration: underline;
-}
-
-.mor-post h1,
-.mor-post h2,
-.mor-post h3 {
-  font-family: var(--font-heading);
-  color: var(--fg-base);
-  font-weight: 700;
-}
-
-/* Footer status-bar feel */
-.mor-footer {
-  background: var(--bg-panel);
-  color: var(--fg-base);
-  border-top: 2px solid color-mix(in srgb, var(--fg-base) 22%, var(--bg-panel));
-  border-bottom: 2px solid color-mix(in srgb, var(--border-color) 75%, var(--bg-base));
-  font-family: "MS Sans Serif", Tahoma, sans-serif;
-  font-size: 0.85rem;
-  padding: 4px 8px;
-}
-
-*,
-*::before,
-*::after {
-  text-shadow: none;
-}
-
+/* Sharp corners across the board — 1998 had no border-radius. */
 .mor-post,
-.mor-panel,
-.canvas-core {
+.panel-header,
+.panel-content,
+.mor-pager,
+.mor-catalog-dropdown,
+.mor-bell-panel,
+.mor-gm-panel,
+.post-thumbnail img,
+.avatar-image-container img,
+.author-image img {
+  border-radius: 0;
   box-shadow: none;
 }
 
-.mor-footer .footer-sys-info::after {
-  content: " UNDER CONSTRUCTION";
-  margin-left: 8px;
-  animation: web1-blink 1.2s steps(2, end) infinite;
-  color: color-mix(in srgb, var(--accent) 85%, var(--fg-base));
+/* Floating chrome (mega menu, notification bell) becomes a
+   window: outset bevel + hard offset shadow, no blur. */
+.mor-catalog-dropdown,
+.mor-bell-panel,
+.mor-gm-panel {
+  background: var(--bg-panel);
+  border: 2px outset var(--border-color);
+  box-shadow: 4px 4px 0 var(--w1-bevel-lo);
+}
+
+/* ============================================================
+   HEADER — a window with a real title bar
+   ============================================================ */
+.main-header {
+  padding: 0;
+}
+
+.main-header .header-top-row {
+  background: linear-gradient(90deg, var(--w1-titlebar-a), var(--w1-titlebar-b));
+  color: var(--w1-titlebar-fg);
+  padding: 8px 16px;
+  border-bottom: 2px outset var(--border-color);
+}
+
+.main-header .institute-title {
+  color: var(--w1-titlebar-fg);
+  text-shadow: none;
+  letter-spacing: 1px;
+}
+
+.branding-link:hover .institute-title,
+.branding-link:focus-visible .institute-title {
+  color: var(--w1-titlebar-fg);
+}
+
+.main-header .header-bottom-row {
+  background: transparent;
+  color: var(--fg-base);
+  padding: 4px 12px;
+}
+
+/* Menu-bar navigation: no inverse-video hover, a proper
+   Win95 menu highlight instead. */
+.mor-nav a {
+  color: var(--fg-base);
+  border-bottom: none;
+  padding: 2px 8px;
+}
+
+.mor-nav a:hover,
+.mor-nav a:focus-visible {
+  background: var(--w1-titlebar-a);
+  color: var(--w1-titlebar-fg);
+  text-decoration: none;
+}
+
+/* Search is a sunken entry field. */
+.mor-search input {
+  background: var(--w1-field);
+  border: 2px inset var(--border-color);
+  color: var(--fg-base);
+  padding: 3px 6px;
+}
+
+.mor-search input:focus {
+  border: 2px inset var(--border-color);
+  box-shadow: none;
+  outline: 1px dotted var(--fg-muted);
+  outline-offset: -5px;
+}
+
+/* ============================================================
+   CONTENT — the document frame
+   ============================================================ */
+.mor-post {
+  border-bottom: 3px groove var(--border-color);
+  padding-bottom: 24px;
+}
+
+.post-title {
+  font-size: 1.7rem;
+  letter-spacing: 0.01em;
+  border-bottom: 3px double color-mix(in srgb, var(--fg-base) 45%, transparent);
+  padding-bottom: 6px;
+}
+
+.post-title a:hover,
+.post-title a:focus-visible {
+  text-decoration: underline;
+  text-shadow: none;
+}
+
+/* Byline as a status readout. */
+.post-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+/* The canonical link contract: blue, underlined, purple once
+   visited, red while the mouse button is down. */
+.post-body a,
+.panel-content a,
+.comments a,
+.mor-footer a,
+.post-labels a,
+.sys-tags a {
+  color: var(--w1-link);
+  border-bottom: none;
+  text-decoration: underline;
+}
+
+.post-body a:visited,
+.panel-content a:visited,
+.comments a:visited,
+.mor-footer a:visited {
+  color: var(--w1-visited);
+}
+
+.post-body a:hover,
+.post-body a:focus-visible,
+.panel-content a:hover,
+.panel-content a:focus-visible,
+.comments a:hover,
+.comments a:focus-visible,
+.mor-footer a:hover,
+.mor-footer a:focus-visible,
+.post-labels a:hover,
+.sys-tags a:hover {
+  background: transparent;
+  color: var(--w1-link);
+  text-decoration: underline;
+  text-decoration-style: double;
+}
+
+.post-body a:active,
+.panel-content a:active,
+.comments a:active,
+.mor-footer a:active {
+  color: var(--w1-active);
+}
+
+/* Grooved horizontal rules — the signature divider of the era. */
+.post-body hr {
+  border: 0;
+  border-top: 3px groove var(--border-color);
+  margin: 28px 0;
+}
+
+/* Sunken wells for quoted and preformatted matter. */
+.post-body blockquote {
+  margin: 20px 0;
+  padding: 12px 16px;
+  border: 2px inset var(--border-color);
+  background: color-mix(in srgb, var(--bg-panel) 90%, var(--fg-base));
+  font-style: italic;
+}
+
+.post-body pre {
+  border: 2px inset var(--border-color);
+  background: var(--w1-field);
+}
+
+.post-body code {
+  border: 1px solid var(--border-color);
+  background: var(--w1-field);
+}
+
+/* Images arrive matted and framed, like a photo on a homepage. */
+.post-body img {
+  border: 2px outset var(--border-color);
+  background: var(--bg-panel);
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+/* Pagination is just more links. */
+.pager-btn {
+  color: var(--w1-link);
+  text-decoration: underline;
+}
+
+.pager-btn:hover,
+.pager-btn:focus-visible {
+  background: transparent;
+  color: var(--w1-active);
+}
+
+/* Comment form fields are sunken entries too. */
+.comment-form input,
+.comment-form textarea {
+  background: var(--w1-field);
+  border: 2px inset var(--border-color);
+  color: var(--fg-base);
+}
+
+/* ============================================================
+   SIDEBARS — every panel gets its own little title bar
+   ============================================================ */
+.panel-header {
+  background: linear-gradient(90deg, var(--w1-titlebar-a), var(--w1-titlebar-b));
+  color: var(--w1-titlebar-fg);
+  border-bottom: 2px outset var(--border-color);
+}
+
+/* ============================================================
+   FOOTER — the status bar, still under construction
+   ============================================================ */
+.mor-footer {
+  padding: 18px 20px 12px;
+  border-top: 2px outset var(--border-color);
+}
+
+.footer-sys-info {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  border-top: none;
+  padding-top: 10px;
+}
+
+/* Sunken status-bar cells. */
+.footer-sys-info > * {
+  border: 1px solid;
+  border-color: var(--w1-bevel-lo) var(--w1-bevel-hi) var(--w1-bevel-hi) var(--w1-bevel-lo);
+  padding: 3px 10px;
+}
+
+.footer-sys-info::after {
+  content: "UNDER CONSTRUCTION";
+  border: 1px solid;
+  border-color: var(--w1-bevel-lo) var(--w1-bevel-hi) var(--w1-bevel-hi) var(--w1-bevel-lo);
+  padding: 3px 10px;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--w1-active);
+  animation: w1-blink 1.2s steps(2, end) infinite;
 }
 
-@keyframes web1-blink {
-  50% {
-    opacity: 0;
-  }
+@keyframes w1-blink {
+  50% { opacity: 0; }
 }
 
-.mor-search .prompt {
-  display: none !important;
+@media (prefers-reduced-motion: reduce) {
+  .footer-sys-info::after { animation: none; }
 }
 
-/* --- Theme cursors (default / pointer / text) --- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23c0c0c0' stroke='%23000000' stroke-width='1.6'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23c0c0c0' stroke='%23000000' stroke-width='1.6'/></svg>") 9 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23000000' stroke-width='1.6'/></svg>") 12 12, text !important; }
+/* ============================================================
+   GLOBAL FLOURISHES
+   ============================================================ */
+/* Text selection is a title-bar highlight. */
+::selection {
+  background: var(--w1-titlebar-a);
+  color: var(--w1-titlebar-fg);
+}
+
+/* Keyboard focus: the dotted marching-ants rectangle. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 1px dotted var(--fg-base);
+  outline-offset: 2px;
+}
+
+/* Period cursors: pixel arrow, gloved pointer, chunky I-beam. */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23c0c0c0' stroke='%23000000' stroke-width='1.6'/></svg>") 1 1, auto; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23c0c0c0' stroke='%23000000' stroke-width='1.6'/></svg>") 9 2, pointer; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23000000' stroke-width='1.6'/></svg>") 12 12, text; }
 '''
 
+# Canonical palette: the daylight machine (silver frames on a teal desktop).
 [colors]
 bg_base = "#008080"
-fg_base = "#000000"
-fg_muted = "#404040"
-accent = "#0000ee"
-border = "#dfdfdf"
-panel_border_width = "3px"
+fg_base = "#111111"
+fg_muted = "#4d4a45"
+accent = "#0000cc"
+border = "#9c9a94"
+panel_border_width = "2px"
 glow_spread = "0px"
 hover_scale = "1.0"
 
@@ -162,55 +360,91 @@ color = "#c0c0c0"
 
 [colors.bg_elevated]
 mode = "Solid"
-color = "#dfdfdf"
+color = "#d4d0c8"
 
+# Teal desktop with a woven pixel texture (8x8 SVG tile).
 [background.mode.Tile]
-url = "data:image/gif;base64,R0lGODlhEAAQALMAAAAAAP///wAAAAAAACH5BAEAAAIALAAAAAAQABAAAAQzUMhJq7046yq0/2DAzkUWDGNmhmRnXGWqrigLwzB8x1Hk370P7Pw+Hw+I4w2PxyNyuWw2EwEAOw=="
+url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDgwODAiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMDA2ZTZlIi8+PC9zdmc+"
 
 [typography]
-body_font_stack = "\"Times New Roman\", Times, serif"
-heading_font_stack = "\"Times New Roman\", Times, serif"
-mono_font_stack = "\"Courier New\", Courier, monospace"
-base_size = "16px"
-scale_ratio = "1.15"
-line_height = "1.45"
+body_font_stack = "'Times New Roman', Times, serif"
+heading_font_stack = "'Times New Roman', Times, serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "17px"
+scale_ratio = "1.2"
+line_height = "1.55"
 heading_weight = "700"
 
+# Win95 push button, entirely config-driven: flat silver face,
+# hand-tuned two-step bevel, instant response, dotted focus rect.
 [buttons]
 radius = "0px"
-border_width = "3px"
-border_style = "outset"
-border_color = "var(--border-color)"
+border_width = "1px"
+border_style = "solid"
+border_color = "color-mix(in srgb, var(--fg-base) 55%, var(--bg-panel))"
+padding_x = "14px"
+padding_y = "5px"
 text_transform = "none"
-font_weight = "bold"
+font_weight = "700"
 fill = "solid"
-bg_color = "color-mix(in srgb, var(--bg-panel) 70%, var(--fg-base))"
+elevation = "flat"
+bg_color = "var(--bg-highlight)"
 text_color = "var(--fg-base)"
+box_shadow = "inset -2px -2px 0 var(--w1-bevel-lo), inset 2px 2px 0 var(--w1-bevel-hi)"
+hover_effect = "brighten"
+transition_ms = "0ms"
 pressed_feedback = true
+focus_ring_color = "var(--fg-base)"
+focus_ring_width = "1px"
 
+# ---- Light: the canonical 1998 daylight machine ----
+[light.colors]
+bg_base = "#008080"
+fg_base = "#111111"
+fg_muted = "#4d4a45"
+accent = "#0000cc"
+border = "#9c9a94"
+panel_border_width = "2px"
+glow_spread = "0px"
+hover_scale = "1.0"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#c0c0c0"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#d4d0c8"
+
+[light.background.mode.Tile]
+url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDgwODAiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMDA2ZTZlIi8+PC9zdmc+"
+
+# ---- Dark: the same machine after sunset — midnight-navy
+# desktop, graphite frames, CRT-warm text, dusk-blue title bars.
 [dark.colors]
-bg_base = "#1a1a2e"
-fg_base = "#eaeaea"
-fg_muted = "#a0a0a0"
-accent = "#00aaff"
-border = "#4a4a6a"
-panel_border_width = "3px"
+bg_base = "#10142b"
+fg_base = "#e6e3da"
+fg_muted = "#a39f93"
+accent = "#7fb0ff"
+border = "#565b66"
+panel_border_width = "2px"
 glow_spread = "0px"
 hover_scale = "1.0"
 
 [dark.colors.bg_panel]
 mode = "Solid"
-color = "#2a2a4a"
+color = "#2b2e37"
 
 [dark.colors.bg_elevated]
 mode = "Solid"
-color = "#3a3a5a"
+color = "#363a45"
 
-[dark.background.mode.Solid]
-color = "#1a1a2e"
+[dark.background.mode.Tile]
+url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMxMDE0MmIiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMTgxZDNhIi8+PC9zdmc+"
 
+# Chunky 16px scrollbar; mid greys read correctly on both modes.
 [scrollbars]
 width = "16px"
-track_color = "#dfdfdf"
-thumb_color = "#808080"
-thumb_hover_color = "#404040"
+track_color = "#cdcac3"
+thumb_color = "#8f8c85"
+thumb_hover_color = "#6e6b64"

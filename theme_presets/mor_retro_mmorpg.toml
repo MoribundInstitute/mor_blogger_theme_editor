@@ -1,332 +1,461 @@
 name = "Retro MMORPG"
-description = "Quest board • guild notices • trading post"
+description = "Quest log • guild notices • trading post — gilt-edged panels, engraved gold headings, and an XP bar under the header. Dark mode is a candle-lit guild hall; light mode is the quest board's parchment."
 
 preset_css = '''
 /* ============================================================
-   Retro MMORPG Preset
-   Warm brown panels, ember-red controls, and gold text with
-   chunky shadowing. The goal is an old fantasy-game UI feel
-   without the dead black page backdrop.
+   Retro MMORPG — preset chrome
+   Old fantasy-game UI: every surface is a beveled panel with a
+   gilt filet (layered inset rings, no images), headings are
+   engraved gold, sidebars read as inventory windows, and the
+   header carries an XP-bar strip. Everything routes through the
+   editor palette vars so the dark/light toggle stays coherent.
+   NOTE: --bg-panel may be a gradient; never color-mix() it.
    ============================================================ */
 
-/* Global text shadow for that bitmap-font-engine look */
-body, h1, h2, h3, h4, p, a, span, div, li {
-  text-shadow: 1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)) !important;
+/* ---- Shared tokens ---------------------------------------- */
+:root {
+  --rmm-edge: color-mix(in srgb, var(--bg-base) 55%, #000000);
+  --rmm-gold-hi: color-mix(in srgb, var(--accent) 55%, #fff3d6);
+  --rmm-gold-lo: color-mix(in srgb, var(--accent) 55%, var(--bg-base));
+  --rmm-engrave: 0 1px 0 color-mix(in srgb, var(--bg-base) 55%, #000000);
+  /* Gilt filet: dark line, gold ring, dark line — all inset so it
+     never clips at viewport edges — plus a soft top bevel. */
+  --rmm-chrome:
+    inset 0 0 0 1px var(--rmm-edge),
+    inset 0 0 0 3px color-mix(in srgb, var(--accent) 36%, var(--border-color)),
+    inset 0 0 0 4px var(--rmm-edge),
+    inset 0 5px 8px -4px color-mix(in srgb, var(--fg-base) 16%, transparent);
+  --rmm-parchment: color-mix(in srgb, var(--fg-base) 10%, var(--bg-base));
 }
 
-/* Remove the base theme's vignette/glow */
-body::before {
-  background: none !important;
-  opacity: 0 !important;
-}
-
-/* Warm workspace gradient driven by editor palette */
-html,
-body {
-  background-color: var(--bg-base) !important;
-}
-
+/* ---- Page backdrop: candle-lit hall / lit quest board ------ */
 body {
   background-image:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg-panel) 55%, var(--bg-base)) 0%,
-      var(--bg-base) 42%,
-      color-mix(in srgb, var(--bg-base) 82%, var(--border-color)) 100%
-    ),
-    radial-gradient(
-      circle at top center,
-      color-mix(in srgb, var(--accent) 20%, transparent),
-      transparent 48%
-    ),
-    radial-gradient(
-      circle at bottom center,
-      color-mix(in srgb, var(--border-color) 28%, transparent),
-      transparent 55%
-    ) !important;
+    radial-gradient(ellipse 130% 55% at 50% -12%,
+      color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%),
+    repeating-linear-gradient(45deg,
+      color-mix(in srgb, var(--fg-base) 2%, transparent) 0 1px,
+      transparent 1px 10px),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--border-color) 22%, var(--bg-base)) 0%,
+      var(--bg-base) 45%,
+      color-mix(in srgb, var(--bg-base) 72%, #000000) 100%) !important;
   background-attachment: fixed !important;
 }
 
-/* CONTAINER surfaces */
-.canvas-core,
-.mor-post,
+::selection {
+  background: var(--accent);
+  color: var(--bg-base);
+  text-shadow: none;
+}
+
+/* ---- Panel chrome: header, sidebars, footer, dropdowns ----- */
+.main-header,
 .mor-panel,
-.main-header,
 .mor-footer,
-.mor-catalog-dropdown {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-panel) 72%, var(--accent)) 0%,
-    var(--bg-panel) 100%
-  ) !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 4px !important;
-  box-shadow:
-    inset 1px 1px 0 color-mix(in srgb, var(--fg-base) 8%, transparent),
-    inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 55%, transparent) !important;
-}
-
-/* Make the header itself part of the brown surface instead of floating over black */
-.main-header {
-  margin-bottom: 0 !important;
-  overflow: hidden !important;
-}
-
-.main-header,
-.main-header .header-top-row,
-.main-header .header-bottom-row {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-panel) 80%, var(--accent)) 0%,
-    color-mix(in srgb, var(--bg-panel) 88%, var(--bg-base)) 100%
-  ) !important;
+.mor-catalog-mega-dropdown,
+.mor-bell-panel {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 7%, transparent),
+      transparent 30%),
+    var(--bg-panel) !important;
+  box-shadow: var(--rmm-chrome) !important;
+  border-color: var(--rmm-edge) !important;
 }
 
 .main-header .header-top-row {
-  border-bottom: 2px solid var(--border-color) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border-color)) !important;
 }
 
-.main-header .header-bottom-row {
-  border-top: 1px solid color-mix(in srgb, var(--fg-base) 6%, transparent) !important;
-}
-
-/* CONTENT surfaces inside containers */
-.mor-panel .panel-content,
-.canvas-core .panel-content {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg-panel) 65%, var(--fg-base)) 0%,
-    color-mix(in srgb, var(--bg-panel) 82%, var(--bg-base)) 100%
-  ) !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 2px !important;
-  margin: 6px !important;
-  padding: 12px !important;
-  box-shadow: inset 2px 2px 5px color-mix(in srgb, var(--bg-base) 35%, transparent) !important;
-}
-
-/* Headings (gold/orange) */
-h1, h2, h3, h4,
-.main-header .institute-title,
-.mor-post .post-title,
-.mor-post .post-title a {
-  color: var(--accent) !important;
-  font-weight: bold !important;
-  letter-spacing: 0.5px !important;
-  text-shadow:
-    1px 1px 0 color-mix(in srgb, var(--bg-base) 80%, var(--fg-base)),
-    2px 2px 0 color-mix(in srgb, var(--bg-base) 45%, transparent) !important;
+/* XP bar: hard-stop "progress" fill with tick marks */
+.main-header::after {
+  content: "";
+  display: block;
+  height: 7px;
+  margin: 0 4px;
+  border-top: 1px solid var(--rmm-edge);
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 46px,
+      color-mix(in srgb, var(--bg-base) 65%, #000000) 46px 47px),
+    linear-gradient(180deg, var(--rmm-gold-hi), var(--accent) 45%, var(--rmm-gold-lo)) 0 0 / 62% 100% no-repeat,
+    color-mix(in srgb, var(--accent) 12%, var(--bg-base));
 }
 
 .main-header .branding-link,
 .main-header .branding-link:hover,
 .main-header .branding-link:focus-visible {
   color: var(--accent) !important;
+  background: transparent !important;
+  font-family: var(--font-heading) !important;
+  letter-spacing: 0.06em;
+  text-shadow: var(--rmm-engrave);
 }
 
+/* Nav band: guild-menu entries */
+.mor-nav > a {
+  color: color-mix(in srgb, var(--fg-base) 70%, var(--accent)) !important;
+  letter-spacing: 0.04em;
+}
+.mor-nav > a:hover {
+  background: color-mix(in srgb, var(--accent) 85%, #fff3d6) !important;
+  color: var(--bg-base) !important;
+  text-shadow: none !important;
+}
+
+/* ---- Headings: engraved gold ------------------------------- */
+h1, h2, h3, h4 {
+  color: var(--accent);
+  letter-spacing: 0.045em;
+  text-shadow: var(--rmm-engrave);
+}
+
+/* ---- Posts as quest-log entries ----------------------------- */
+.mor-post {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 6%, transparent),
+      transparent 26%),
+    var(--bg-panel);
+  border: none;
+  border-radius: 3px;
+  box-shadow: var(--rmm-chrome);
+  padding: 22px 26px 18px;
+  margin-bottom: 34px;
+}
+
+.mor-post .post-title,
+.mor-post .post-title a {
+  color: var(--accent);
+  text-shadow: var(--rmm-engrave);
+}
 .mor-post .post-title {
-  border-bottom: 2px solid var(--border-color) !important;
-  padding-bottom: 8px !important;
-  margin-bottom: 12px !important;
+  padding-bottom: 10px;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 35%, transparent) 55%,
+    transparent) 1;
+}
+.mor-post .post-title::before {
+  content: "\2726\0020"; /* four-pointed star, quest marker */
+  color: var(--rmm-gold-hi);
+  text-shadow: none;
+}
+.mor-post .post-title a:hover {
+  color: var(--rmm-gold-hi);
+  background: transparent;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* Main navigation band */
-.mor-nav a,
-.mor-nav button {
-  color: color-mix(in srgb, var(--fg-base) 78%, var(--accent)) !important;
+.post-meta,
+.byline {
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
 }
 
-.mor-nav > a:hover,
-.mor-nav > a:focus-visible {
-  background: color-mix(in srgb, var(--accent) 38%, var(--bg-base)) !important;
-  color: var(--fg-base) !important;
+/* Body links: gold ink with plaque hover */
+.post-body a,
+.panel-content a,
+.footer-col a {
+  color: var(--accent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
-/* Links */
-.mor-post .post-body a,
-.panel-content a {
+.post-body a:hover,
+.panel-content a:hover,
+.footer-col a:hover {
+  background: var(--accent);
+  color: var(--bg-base);
+  border-bottom-color: transparent;
+  text-shadow: none;
+}
+
+/* List markers: quest bullets */
+.post-body ul li::marker {
+  content: "\25C6\0020\0020"; /* black diamond */
+  color: var(--accent);
+  font-size: 0.75em;
+}
+.post-body ol li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Blockquote: parchment tooltip (NPC dialogue) */
+.post-body blockquote {
+  margin: 20px 8px;
+  padding: 14px 18px 14px 40px;
+  position: relative;
+  font-style: italic;
+  background: var(--rmm-parchment);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border-color));
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--bg-base) 45%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.post-body blockquote::before {
+  content: "\275D"; /* heavy quote ornament */
+  position: absolute;
+  left: 12px;
+  top: 6px;
+  font-size: 1.5rem;
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* Code: arcane script on a darker slab */
+.post-body code,
+.post-body pre {
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border-color));
+  background: color-mix(in srgb, var(--bg-base) 80%, #000000);
+  color: color-mix(in srgb, var(--fg-base) 82%, var(--accent));
+}
+
+/* Ornamented divider */
+.post-body hr {
+  border: 0;
+  height: 1px;
+  margin: 28px 0;
+  overflow: visible;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+.post-body hr::after {
+  content: "\2756"; /* black diamond minus white X */
+  display: block;
+  width: max-content;
+  margin: 0 auto;
+  transform: translateY(-0.72em);
+  padding: 0 10px;
+  color: var(--accent);
+  background: var(--bg-panel);
+}
+
+/* Pager: quest navigation (anchors, not buttons) */
+.mor-pager {
+  justify-content: center;
+  gap: 26px;
+}
+.pager-btn {
+  color: var(--accent);
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+.pager-btn:hover {
+  background: var(--accent);
+  color: var(--bg-base);
+  text-shadow: none;
+}
+
+/* ---- Sidebars: inventory / stat windows --------------------- */
+.panel-header {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--accent) 30%, var(--bg-base)),
+    color-mix(in srgb, var(--accent) 14%, var(--bg-base))) !important;
   color: var(--accent) !important;
-  text-decoration: underline !important;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: var(--rmm-engrave);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border-color)) !important;
 }
 
-.mor-post .post-body a:hover,
-.panel-content a:hover {
-  color: var(--fg-base) !important;
+.sidebar-section .widget {
+  background: color-mix(in srgb, var(--fg-base) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border-radius: 2px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg-base) 8%, transparent);
+}
+.sidebar-section .widget h2 {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.8rem;
+  border-bottom-color: color-mix(in srgb, var(--accent) 35%, var(--border-color));
 }
 
-/* Panel headers */
-.panel-header,
-.mor-panel-heading {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 70%, var(--bg-panel)) 0%,
-    color-mix(in srgb, var(--accent) 46%, var(--bg-base)) 100%
-  ) !important;
-  color: var(--accent) !important;
-  font-weight: bold !important;
-  text-align: center !important;
-  padding: 6px 10px !important;
-  border-bottom: 2px solid var(--border-color) !important;
-  border-radius: 2px 2px 0 0 !important;
-  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
+/* Item-count badges: stack counters */
+.sidebar-section .label-count,
+.sidebar-section .post-count {
+  color: var(--bg-base);
+  background: linear-gradient(180deg, var(--rmm-gold-hi), var(--rmm-gold-lo));
+  border: 1px solid var(--rmm-edge);
+  border-radius: 2px;
+  padding: 0 5px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
-/* Search / form fields */
+/* ---- Forms: engraved input slots ----------------------------- */
 input[type='text'],
 input[type='search'],
 input[type='email'],
+input[type='url'],
 textarea,
 select {
-  background: color-mix(in srgb, var(--bg-panel) 55%, var(--fg-base)) !important;
+  background: color-mix(in srgb, var(--bg-base) 82%, #000000) !important;
   color: var(--fg-base) !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  padding: 6px 8px !important;
-  text-shadow: none !important;
-  font-weight: bold !important;
+  border: 1px solid var(--rmm-edge) !important;
+  border-radius: 2px !important;
+  padding: 6px 9px !important;
+  box-shadow: inset 0 2px 5px color-mix(in srgb, #000000 35%, transparent) !important;
 }
-
 input[type='text']:focus,
 input[type='search']:focus,
 input[type='email']:focus,
+input[type='url']:focus,
 textarea:focus,
 select:focus {
-  outline: none !important;
-  background: color-mix(in srgb, var(--bg-panel) 35%, var(--fg-base)) !important;
   border-color: var(--accent) !important;
+  box-shadow:
+    inset 0 2px 5px color-mix(in srgb, #000000 35%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent) !important;
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 14px !important;
+/* ---- Footer: guild ledger ------------------------------------ */
+.mor-footer .footer-col h4 {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.78rem;
+  text-shadow: var(--rmm-engrave);
 }
-::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--bg-panel) 80%, var(--bg-base)) !important;
-  border-left: 2px solid var(--border-color) !important;
-}
-::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--accent) 65%, var(--bg-base)) !important;
-  border: 2px solid var(--border-color) !important;
-  box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--accent) 16%, transparent) !important;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--accent) 78%, var(--bg-panel)) !important;
+.footer-sys-info {
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
 }
 
-/* Header toggle compatibility */
-.header-panel-toggle,
-.header-top-row > .panel-toggle {
-  min-width: 0 !important;
-  width: 36px !important;
-  height: 36px !important;
-  min-height: 36px !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  white-space: normal !important;
-  flex-shrink: 0 !important;
-  color: transparent !important;
-  overflow: hidden !important;
-  position: relative !important;
+/* Magazine hero: featured quest gets the brightest frame */
+.hero-post {
+  box-shadow:
+    var(--rmm-chrome),
+    0 0 26px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
-.header-panel-toggle::before,
-.header-top-row > .panel-toggle::before {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  display: block !important;
-  background-color: color-mix(in srgb, var(--accent) 35%, var(--fg-base)) !important;
-  background-image: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  pointer-events: none !important;
-}
-
-.header-panel-toggle::after,
-.header-top-row > .panel-toggle::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* --- Theme cursors (default / pointer / text) --- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='%23e8b923' stroke='%233a2410' stroke-width='1'/></svg>") 12 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23e8b923' stroke-width='1.6'/></svg>") 12 12, text !important; }
+/* ---- Cursors: gold sword / gauntlet / quill ------------------ */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23e8b74a' stroke='%23281a0c' stroke-width='1.2'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='%23e8b74a' stroke='%23281a0c' stroke-width='1.2'/></svg>") 12 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23e8b74a' stroke-width='1.8'/></svg>") 12 12, text !important; }
 '''
 
+# ---- Base palette (dark: candle-lit guild hall) ----------------
 [colors]
-bg_base = "#24170f"
-fg_base = "#e7dcc0"
-fg_muted = "#b8a88d"
-accent = "#ffae42"
-border = "#22160f"
+bg_base = "#1c130b"
+fg_base = "#f0e3c4"
+fg_muted = "#b39d77"
+accent = "#e8b74a"
+border = "#6b4e29"
 panel_border_width = "1px"
 glow_spread = "10px"
-hover_scale = "1.02"
+hover_scale = "1.01"
 
 [colors.bg_panel]
-mode = "Solid"
-color = "#4f3b2a"
+mode = "Gradient"
+from = "#3b2b1a"
+to = "#291d11"
+angle_deg = 180
 
 [colors.bg_elevated]
 mode = "Solid"
-color = "#5e4732"
+color = "#463320"
 
 [background.mode.Gradient]
-from = "#362317"
-to = "#1b120d"
+from = "#2b1d0f"
+to = "#150e07"
 angle_deg = 180
 
 [typography]
-body_font_stack = "Georgia, 'Times New Roman', Times, serif"
-heading_font_stack = "Georgia, 'Times New Roman', Times, serif"
-mono_font_stack = "'Courier New', Courier, monospace"
+body_font_stack = "'Lora', Georgia, serif"
+heading_font_stack = "'Cinzel', Georgia, serif"
+mono_font_stack = "'Space Mono', 'Courier New', monospace"
 base_size = "16px"
-scale_ratio = "1.2"
-line_height = "1.5"
+scale_ratio = "1.25"
+line_height = "1.65"
 heading_weight = "700"
 
+# ---- Buttons: gold plaques with a chiselled bevel ---------------
 [buttons]
-radius = "2px"
+radius = "3px"
 border_width = "2px"
-text_transform = "none"
-padding_x = "14px"
-padding_y = "6px"
-font_weight = "bold"
-text_color = "var(--accent)"
+border_color = "color-mix(in srgb, var(--accent) 55%, var(--bg-base))"
+padding_x = "16px"
+padding_y = "7px"
+text_transform = "uppercase"
+letter_spacing = "0.06em"
+font_weight = "700"
+font_size = "0.82rem"
+text_color = "var(--bg-base)"
 fill = "gradient"
-gradient_from = "color-mix(in srgb, var(--accent) 72%, var(--bg-panel))"
-gradient_to = "color-mix(in srgb, var(--accent) 48%, var(--bg-base))"
+gradient_from = "color-mix(in srgb, var(--accent) 88%, #fff3d6)"
+gradient_to = "color-mix(in srgb, var(--accent) 68%, var(--bg-base))"
 gradient_angle = "180deg"
-box_shadow = "inset 1px 1px 0 color-mix(in srgb, var(--accent) 18%, transparent), inset -1px -1px 0 color-mix(in srgb, var(--bg-base) 45%, transparent)"
+box_shadow = "inset 0 1px 0 color-mix(in srgb, #ffffff 40%, transparent), inset 0 -2px 0 color-mix(in srgb, var(--bg-base) 45%, transparent), 0 1px 2px color-mix(in srgb, #000000 40%, transparent)"
 hover_effect = "brighten"
 pressed_feedback = true
-transition_ms = "100ms"
+transition_ms = "120ms"
+easing = "ease-out"
+focus_ring_color = "var(--accent)"
 
-[light.colors]
-bg_base = "#f5e9d3"
-fg_base = "#2c2118"
-fg_muted = "#6b5c4a"
-accent = "#8b5a00"
-border = "#c8b8a0"
+# ---- Explicit dark palette (same as base) -----------------------
+[dark.colors]
+bg_base = "#1c130b"
+fg_base = "#f0e3c4"
+fg_muted = "#b39d77"
+accent = "#e8b74a"
+border = "#6b4e29"
 panel_border_width = "1px"
 glow_spread = "10px"
-hover_scale = "1.02"
+hover_scale = "1.01"
+
+[dark.colors.bg_panel]
+mode = "Gradient"
+from = "#3b2b1a"
+to = "#291d11"
+angle_deg = 180
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#463320"
+
+[dark.background.mode.Gradient]
+from = "#2b1d0f"
+to = "#150e07"
+angle_deg = 180
+
+# ---- Light palette: the quest board's parchment ------------------
+[light.colors]
+bg_base = "#eadfc2"
+fg_base = "#33240f"
+fg_muted = "#77613c"
+accent = "#8a5a10"
+border = "#ab8c55"
+panel_border_width = "1px"
+glow_spread = "10px"
+hover_scale = "1.01"
 
 [light.colors.bg_panel]
-mode = "Solid"
-color = "#f8f1e3"
+mode = "Gradient"
+from = "#f7eed7"
+to = "#eee0be"
+angle_deg = 180
 
 [light.colors.bg_elevated]
 mode = "Solid"
-color = "#fffaf0"
+color = "#fdf6e4"
 
-[light.background.mode.Solid]
-color = "#f5e9d3"
+[light.background.mode.Gradient]
+from = "#e4d5ae"
+to = "#d4c095"
+angle_deg = 180
 
+# ---- Scrollbars: brass rail, gold grip ---------------------------
 [scrollbars]
-width = "14px"
-track_color = "#2a1a0c"
-thumb_color = "#e8b923"
-thumb_hover_color = "#c0392b"
+width = "12px"
+track_color = "color-mix(in srgb, var(--bg-base) 75%, #000000)"
+thumb_color = "color-mix(in srgb, var(--accent) 70%, var(--bg-base))"
+thumb_hover_color = "var(--accent)"

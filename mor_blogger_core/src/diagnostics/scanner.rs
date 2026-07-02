@@ -35,6 +35,65 @@ pub fn run_text_checks(source: &str, out: &mut Vec<Warning>) {
 
     // 3. Catch inline <script> blocks that will break Blogger's strict XML parser
     check_unwrapped_scripts(source, out);
+
+    // 4. Catch skin CSS styling classes nothing on the page produces
+    check_selector_drift(source, out);
+}
+
+/// A `.mor-*` class styled inside `<b:skin>` that appears nowhere in the rest of
+/// the document (markup or scripts) is drift — usually a selector that survived a
+/// module rename (the `.mor-catalog-dropdown` → `.mor-catalog-mega-dropdown`
+/// lesson). Scoped to the project's `mor-` namespace, and a bare substring match
+/// on the rest of the document, so dynamic/JS-built classes stay quiet: silence
+/// over false alarms.
+/// Class families rendered outside the theme document (generated static pages),
+/// so their absence from the assembled theme source is expected, not drift.
+/// ponytail: hardcoded prefix list; derive from render/pages if it grows.
+const CROSS_DOCUMENT_PREFIXES: &[&str] = &["mor-analytics-"];
+
+fn check_selector_drift(source: &str, out: &mut Vec<Warning>) {
+    // Split the document into skin CSS vs everything else.
+    let mut skin = String::new();
+    let mut rest = String::with_capacity(source.len());
+    let mut cur = 0;
+    while let Some(open_rel) = source[cur..].find("<b:skin") {
+        let open = cur + open_rel;
+        let Some(close_rel) = source[open..].find("</b:skin>") else { break };
+        let close = open + close_rel;
+        rest.push_str(&source[cur..open]);
+        skin.push_str(&source[open..close]);
+        cur = close;
+    }
+    rest.push_str(&source[cur..]);
+    if skin.is_empty() {
+        return;
+    }
+
+    let mut styled = std::collections::BTreeSet::new();
+    let mut i = 0;
+    while let Some(rel) = skin[i..].find(".mor-") {
+        let start = i + rel + 1; // past the dot
+        let end = skin[start..]
+            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+            .map(|e| start + e)
+            .unwrap_or(skin.len());
+        styled.insert(&skin[start..end]);
+        i = end;
+    }
+
+    for class in styled {
+        if CROSS_DOCUMENT_PREFIXES.iter().any(|p| class.starts_with(p)) {
+            continue;
+        }
+        if !rest.contains(class) {
+            out.push(Warning::warn(
+                "CSS_SELECTOR_DRIFT",
+                format!(
+                    ".{class} is styled in the skin CSS but never rendered by this template permutation's markup or scripts — stale selector, or its module isn't active."
+                ),
+            ));
+        }
+    }
 }
 
 /// Inline `<script>` blocks are spliced into the theme verbatim — only the global
@@ -148,6 +207,26 @@ mod tests {
         let mut out = Vec::new();
         run_text_checks(src, &mut out);
         assert!(out.is_empty());
+    }
+
+    #[test]
+    fn selector_drift_flags_unrendered_class() {
+        let src = "<b:skin>.mor-ghost { color: red; } .mor-real { color: blue; }</b:skin><body class='mor-real'/>";
+        let mut out = Vec::new();
+        check_selector_drift(src, &mut out);
+        let drifted: Vec<_> = out.iter().filter(|w| w.code == "CSS_SELECTOR_DRIFT").collect();
+        assert_eq!(drifted.len(), 1);
+        assert!(drifted[0].message.contains(".mor-ghost"));
+    }
+
+    #[test]
+    fn selector_drift_quiet_for_script_built_classes_and_pages() {
+        // Class named in a script string = produced at runtime; analytics classes
+        // render on a separate generated page. Neither is drift.
+        let src = "<b:skin>.mor-popup{} .mor-analytics-grid{}</b:skin><script>el.className = 'mor-popup';</script>";
+        let mut out = Vec::new();
+        check_selector_drift(src, &mut out);
+        assert!(out.is_empty(), "{:?}", out.iter().map(|w| w.format_line()).collect::<Vec<_>>());
     }
 }
 

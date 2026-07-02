@@ -584,3 +584,29 @@ pub fn resolve_template_parts(
         footer: inject_widgets(&footer_raw, "footer", pack),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Per-module custom JS: a VFS entry keyed by the module's JS filename
+    // replaces the bundled source in the aggregated theme JS. Preview and
+    // export both flow through resolve_template_parts, so this covers both.
+    #[test]
+    fn vfs_js_override_replaces_bundled_module_js() {
+        let config = ThemeConfig::default(); // script_variant ships 01-Core-Helpers.js
+        let mut vfs = HashMap::new();
+        vfs.insert(
+            "01-Core-Helpers.js".to_string(),
+            "/* per-module override */".to_string(),
+        );
+
+        let parts = resolve_template_parts(&config, &vfs);
+        assert!(parts.javascript.contains("/* per-module override */"));
+        assert!(!parts.javascript.contains(fetch_js("01-Core-Helpers.js")));
+
+        // Without the override, the bundled source ships.
+        let parts = resolve_template_parts(&config, &HashMap::new());
+        assert!(parts.javascript.contains(fetch_js("01-Core-Helpers.js")));
+    }
+}

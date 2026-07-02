@@ -783,6 +783,38 @@ pub fn save_custom_js(filename: &str, content: &str) -> std::io::Result<PathBuf>
     Ok(dest)
 }
 
+/// Delete a persisted CSS override (`css/<name>.css`), e.g. on Reset to
+/// default. Missing file is treated as success.
+pub fn delete_custom_css(filename: &str) -> std::io::Result<()> {
+    let Some(path) = css_root().map(|d| d.join(sanitize_css_filename(filename))) else {
+        return Ok(());
+    };
+    match std::fs::remove_file(&path) {
+        Ok(()) => {
+            log::info!("[fs_bridge] Deleted custom CSS: {}", path.display());
+            Ok(())
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+
+/// Delete a persisted JS override (`js/<name>.js`), e.g. on Reset to default.
+/// Missing file is treated as success.
+pub fn delete_custom_js(filename: &str) -> std::io::Result<()> {
+    let Some(path) = js_root().map(|d| d.join(sanitize_js_filename(filename))) else {
+        return Ok(());
+    };
+    match std::fs::remove_file(&path) {
+        Ok(()) => {
+            log::info!("[fs_bridge] Deleted custom JS: {}", path.display());
+            Ok(())
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+
 /// Load all custom JS files from the js directory.
 /// If the directory doesn't exist, returns an empty HashMap.
 pub fn load_all_custom_js() -> std::io::Result<std::collections::HashMap<String, String>> {
@@ -879,5 +911,26 @@ mod tests {
         assert_eq!(found.xml, "<b:widget id='X'/>");
 
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    // Per-module JS override lifecycle: save -> boot-style load -> delete.
+    // This is the disk half of the VFS round trip (the resolver half is
+    // covered in template_resolver::tests). Self-cleaning; skips when no
+    // system data dir is available (e.g. headless CI).
+    #[test]
+    fn custom_js_override_round_trip_and_delete() {
+        if js_root().is_none() {
+            return;
+        }
+        let name = "zz_test_09-Magazine-Grid-Logic.js";
+        save_custom_js(name, "/* zz override */").unwrap();
+
+        let loaded = load_all_custom_js().unwrap();
+        assert_eq!(loaded.get(name).map(String::as_str), Some("/* zz override */"));
+
+        delete_custom_js(name).unwrap();
+        assert!(!load_all_custom_js().unwrap().contains_key(name));
+        // Deleting a missing override is a no-op, not an error.
+        delete_custom_js(name).unwrap();
     }
 }

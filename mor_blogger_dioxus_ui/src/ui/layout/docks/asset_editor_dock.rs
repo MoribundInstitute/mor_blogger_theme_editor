@@ -93,6 +93,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     // Full-viewport focused editing, mirroring the Module Workbench takeover.
     // Not offered in the pop-out OS window (it is already a standalone window).
     let mut is_takeover = use_signal(|| false);
+    // Read-only unified diff of the current file against its bundled default.
+    let mut show_diff = use_signal(|| false);
     let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
     let theme_state_opt = try_use_context::<ThemeState>();
 
@@ -271,6 +273,30 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         active_tab()
     } else {
         props.available_files.first().cloned().unwrap_or_else(|| props.default_file.to_string())
+    };
+
+    // Bundled default for the current file (css/js only; xml has none), used by
+    // the Diff view and the Reset button. Editing writes a VFS override; the
+    // file counts as customized when that override differs from this default.
+    let bundled_default: Option<&'static str> = if current_file == props.default_file {
+        None
+    } else {
+        match props.mode {
+            "css" => Some(mor_blogger_core::render::template_resolver::fetch_default_css(&current_file)),
+            "js" | "javascript" => Some(mor_blogger_core::render::template_resolver::fetch_js(&current_file)),
+            _ => None,
+        }
+    };
+    let current_is_edited = matches!(
+        (bundled_default, vfs.read().get(&current_file)),
+        (Some(d), Some(c)) if c != d
+    );
+    let show_diff_view = show_diff() && current_is_edited;
+    let diff_lines: Vec<(char, String)> = if show_diff_view {
+        let edited = vfs.read().get(&current_file).cloned().unwrap_or_default();
+        crate::utils::line_diff::line_diff(bundled_default.unwrap_or(""), &edited)
+    } else {
+        Vec::new()
     };
 
     let raw_val = if current_file == props.default_file {
@@ -656,6 +682,42 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     }
                 }
 
+                if current_is_edited {
+                    button {
+                        class: if show_diff() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;",
+                        title: "Toggle a read-only diff of this file against the bundled default",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            show_diff.set(!show_diff());
+                        },
+                        "Diff"
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;",
+                        title: "Reset to the bundled default — discards this customization (in-app and the saved copy on disk)",
+                        onclick: {
+                            let file = current_file.clone();
+                            let mode = props.mode;
+                            move |e| {
+                                e.stop_propagation();
+                                vfs.write().remove(&file);
+                                let deleted = if mode == "css" {
+                                    mor_blogger_core::utils::fs_bridge::delete_custom_css(&file)
+                                } else {
+                                    mor_blogger_core::utils::fs_bridge::delete_custom_js(&file)
+                                };
+                                if let Err(err) = deleted {
+                                    log::error!("Failed to delete persisted override {}: {}", file, err);
+                                }
+                                show_diff.set(false);
+                            }
+                        },
+                        "Reset to default"
+                    }
+                }
+
                 if !props.is_native_window {
                     button {
                         class: "editor-mini-button",
@@ -686,6 +748,22 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
 
             div {
                 style: "display: flex; flex-direction: column; flex-grow: 1; width: 100%; min-height: 0;",
+                if show_diff_view {
+                    pre {
+                        style: "flex-grow: 1; margin: 0; padding: 12px 16px; overflow: auto; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; background: var(--bg-panel); color: var(--fg-muted);",
+                        for (idx, (tag, line)) in diff_lines.into_iter().enumerate() {
+                            span {
+                                key: "{idx}",
+                                style: match tag {
+                                    '+' => "color: #7cbf6b;",
+                                    '-' => "color: #d9705f;",
+                                    _ => "",
+                                },
+                                "{tag} {line}\n"
+                            }
+                        }
+                    }
+                } else {
                 CodeEditor {
                     value: editor_value,
                     mode: props.mode.to_string(),
@@ -709,6 +787,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                         sig.set(new_val.clone());
                         last_external_val.set(new_val);
                     }
+                }
                 }
             }
         }

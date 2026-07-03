@@ -345,6 +345,12 @@ pub fn PluginManagerDock() -> Element {
         crate::ui_kit::MorPanelWrapper {
             position: pos,
             default_position: DockPosition::mor_panel_left,
+            floating_class: "floating-landscape",
+            // Self-sufficient when floating: don't depend on another dock
+            // having mounted the shared pane CSS/drag scripts (install-once guards).
+            style { {crate::ui::layout::docks::shared::PANE_CSS} }
+            script { dangerous_inner_html: crate::ui::layout::docks::shared::PANE_DRAG_JS }
+            script { dangerous_inner_html: crate::ui::layout::docks::shared::PANE_RESIZE_JS }
             {inner_content}
         }
     }

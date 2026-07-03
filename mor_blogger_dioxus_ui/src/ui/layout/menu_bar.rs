@@ -296,7 +296,7 @@ pub fn AppMenuBar(
                     on_action: move |_| {
                         let pos = (layout.diagnostics_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("diagnostics", DockPosition::mor_panel_left);
+                            layout.request_dock("diagnostics", DockPosition::mor_panel_left);
                         } else {
                             layout.diagnostics_pos.set(DockPosition::Hidden);
                         }
@@ -307,7 +307,7 @@ pub fn AppMenuBar(
                     on_action: move |_| {
                         let pos = (layout.css_builder_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("css_builder", DockPosition::mor_panel_left);
+                            layout.request_dock("css_builder", DockPosition::mor_panel_left);
                         } else {
                             layout.css_builder_pos.set(DockPosition::Hidden);
                         }
@@ -318,7 +318,7 @@ pub fn AppMenuBar(
                     on_action: move |_| {
                         let pos = (layout.js_builder_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("js_builder", DockPosition::mor_panel_left);
+                            layout.request_dock("js_builder", DockPosition::mor_panel_left);
                         } else {
                             layout.js_builder_pos.set(DockPosition::Hidden);
                         }
@@ -328,12 +328,7 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "Plugin Manager".to_string(),
                     on_action: move |_| {
-                        let pos = (layout.plugin_manager_pos)();
-                        if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("plugin_manager", DockPosition::mor_panel_left);
-                        } else {
-                            layout.plugin_manager_pos.set(DockPosition::Hidden);
-                        }
+                        layout.toggle_dock_by_id("plugin_manager");
                     }
                 }
             }

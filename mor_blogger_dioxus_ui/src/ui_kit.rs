@@ -9,6 +9,9 @@ pub struct MorPanelWrapperProps {
     pub default_position: DockPosition,
     #[props(optional)]
     pub title: Option<&'static str>,
+    /// Extra class applied only while floating (e.g. "floating-landscape").
+    #[props(optional)]
+    pub floating_class: Option<&'static str>,
 }
 
 #[component]
@@ -27,9 +30,13 @@ pub fn MorPanelWrapper(props: MorPanelWrapperProps) -> Element {
             }
         },
         DockPosition::Floating => {
-            let class_name = match props.default_position {
+            let base = match props.default_position {
                 DockPosition::mor_panel_right => "mor_panel_right is-floating",
                 _ => "mor_panel_left is-floating",
+            };
+            let class_name = match props.floating_class {
+                Some(extra) => format!("{base} {extra}"),
+                None => base.to_string(),
             };
             rsx! {
                 aside { class: "{class_name}",

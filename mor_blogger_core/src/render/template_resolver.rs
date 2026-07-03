@@ -24,29 +24,22 @@ pub struct ComponentManifest {
     pub js_deps: &'static [&'static str],
 }
 
-impl ComponentManifest {
-    pub fn inject_js(&self) -> Option<String> {
-        if self.js_deps.is_empty() {
-            return None;
-        }
-        let fragments: Vec<String> = self
-            .js_deps
-            .iter()
-            .filter_map(|dep| {
-                let src = fetch_js(dep);
-                if src.is_empty() {
-                    None
-                } else {
-                    Some(format!("/* --- [{}] {} --- */\n{}", self.id, dep, src))
-                }
-            })
-            .collect();
-        if fragments.is_empty() {
-            None
-        } else {
-            Some(fragments.join("\n\n"))
-        }
+/// The six active module manifests for a pack, falling back to each registry's
+/// first entry on unknown ids (same rule get_comp uses).
+pub fn active_module_manifests(
+    pack: &crate::config::TemplatePackConfig,
+) -> [&'static ComponentManifest; 6] {
+    fn find(registry: &'static [ComponentManifest], id: &str) -> &'static ComponentManifest {
+        registry.iter().find(|c| c.id == id).unwrap_or(&registry[0])
     }
+    [
+        find(HEADER_REGISTRY, &pack.header_variant),
+        find(LAYOUT_REGISTRY, &pack.main_variant),
+        find(CONTENT_REGISTRY, &pack.content_variant),
+        find(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant),
+        find(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant),
+        find(FOOTER_REGISTRY, &pack.footer_variant),
+    ]
 }
 
 // =====================================================================
@@ -87,7 +80,6 @@ pub const HEADER_REGISTRY: &[ComponentManifest] = &[
         css_deps: &[
             "04-Main-Header.css",
             "05-Branding.css",
-            "06-Main-Navigation.css",
         ],
         js_deps: &[],
     },
@@ -145,7 +137,7 @@ pub const CONTENT_REGISTRY: &[ComponentManifest] = &[
         category: ComponentCategory::Content,
         xml_content: include_str!("../template_parts/content/mor_magazine.xml"),
         css_deps: &["30-Content-Magazine.css"],
-        js_deps: &[],
+        js_deps: &[MAGAZINE_GRID_JS],
     },
     ComponentManifest {
         id: "mor_masonry",
@@ -457,14 +449,7 @@ pub fn resolve_template_parts(
             .clone()
     };
 
-    let active_components = vec![
-        get_comp(HEADER_REGISTRY, &pack.header_variant),
-        get_comp(LAYOUT_REGISTRY, &pack.main_variant),
-        get_comp(CONTENT_REGISTRY, &pack.content_variant),
-        get_comp(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant),
-        get_comp(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant),
-        get_comp(FOOTER_REGISTRY, &pack.footer_variant),
-    ];
+    let active_components = active_module_manifests(pack);
 
     let mut unique_css = HashSet::new();
     let mut unique_js = HashSet::new();
@@ -491,6 +476,8 @@ pub fn resolve_template_parts(
         unique_css.insert(css);
     }
 
+    // "magazine_grid_logic" is a legacy alias kept for saved configs; the grid
+    // script itself now ships via the mor_magazine module's js_deps.
     if pack.script_variant == "mor_panels"
         || pack.script_variant == "mor_collapsible_sidebars"
         || pack.script_variant == "magazine_grid_logic"
@@ -504,10 +491,6 @@ pub fn resolve_template_parts(
         if config.scripts.enable_share_actions {
             unique_js.insert("08-Share-Actions.js");
         }
-    }
-
-    if pack.script_variant == "magazine_grid_logic" {
-        unique_js.insert(MAGAZINE_GRID_JS);
     }
 
     for comp in &active_components {
@@ -534,12 +517,6 @@ pub fn resolve_template_parts(
         };
         if !src.is_empty() {
             js_sections.push(format!("/* --- {} --- */\n{}", filename, src));
-        }
-    }
-
-    for comp in &active_components {
-        if let Some(plugin_js) = comp.inject_js() {
-            js_sections.push(plugin_js);
         }
     }
 

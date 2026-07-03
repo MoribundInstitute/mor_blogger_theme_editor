@@ -10,7 +10,9 @@
 use std::collections::HashMap;
 
 use crate::config::ThemeConfig;
-use crate::render::template_resolver::{fetch_js, resolve_template_parts};
+use crate::render::template_resolver::{
+    active_module_manifests, fetch_js, resolve_template_parts, CORE_JS_FILES,
+};
 
 /// One shippable JS behavior.
 pub struct JsBehavior {
@@ -138,6 +140,8 @@ impl BehaviorStatus {
 }
 
 /// Whether the core bundle (01/07/08) ships for this script variant.
+/// "magazine_grid_logic" is a legacy alias for saved configs; the grid script
+/// itself ships via the mor_magazine module's js_deps.
 fn ships_core(variant: &str) -> bool {
     matches!(
         variant,
@@ -164,6 +168,12 @@ pub fn analyze_js_usage(config: &ThemeConfig, vfs: &HashMap<String, String>) -> 
 
     let core = ships_core(&pack.script_variant);
     let scripts = &config.scripts;
+    // JS declared by the active template modules (js_deps) ships regardless of
+    // the behavior profile — the module can't work without it.
+    let module_js: Vec<&str> = active_module_manifests(pack)
+        .iter()
+        .flat_map(|m| m.js_deps.iter().copied())
+        .collect();
 
     JS_BEHAVIORS
         .iter()
@@ -173,9 +183,10 @@ pub fn analyze_js_usage(config: &ThemeConfig, vfs: &HashMap<String, String>) -> 
                 Some(JsSetting::ShareActions) => scripts.enable_share_actions,
                 None => true,
             };
-            let shipped = match b.file {
-                "09-Magazine-Grid-Logic.js" => pack.script_variant == "magazine_grid_logic",
-                _ => core && setting_on,
+            let shipped = if CORE_JS_FILES.contains(&b.file) {
+                core && setting_on
+            } else {
+                module_js.contains(&b.file)
             };
             let hooks: Vec<HookStatus> = b
                 .requires
@@ -257,6 +268,30 @@ mod tests {
             assert!(preamble.contains(&format!("{key}:")), "stale hint key {key}");
         }
         assert!(editor_hints_json().contains("mor-theme-toggle"));
+    }
+
+    #[test]
+    fn module_js_deps_ship_regardless_of_behavior_profile() {
+        // The magazine module declares its grid script via js_deps, so it ships
+        // even with all behavior JS off — and exactly once (no double-append).
+        let mut cfg = ThemeConfig::default();
+        cfg.template_pack.content_variant = "mor_magazine".to_string();
+        cfg.template_pack.script_variant = "vanilla_base".to_string();
+        let vfs = HashMap::new();
+
+        let statuses = analyze_js_usage(&cfg, &vfs);
+        let mag = statuses.iter().find(|s| s.file == "09-Magazine-Grid-Logic.js").unwrap();
+        assert_eq!(mag.state, BehaviorState::Active);
+
+        let parts = resolve_template_parts(&cfg, &vfs);
+        assert_eq!(parts.javascript.matches("09-Magazine-Grid-Logic.js").count(), 1);
+
+        // And a VFS override of a module-declared dep replaces the bundled source.
+        let mut vfs = HashMap::new();
+        vfs.insert("09-Magazine-Grid-Logic.js".to_string(), "/* grid override */".to_string());
+        let parts = resolve_template_parts(&cfg, &vfs);
+        assert!(parts.javascript.contains("/* grid override */"));
+        assert!(!parts.javascript.contains(fetch_js("09-Magazine-Grid-Logic.js")));
     }
 
     #[test]

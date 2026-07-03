@@ -126,7 +126,7 @@ fn apply_loaded_module(name: &str, xml: String, mut layout: LayoutState, mut edi
     }
 }
 
-fn module_key_to_category(key: &str) -> &'static str {
+pub(crate) fn module_key_to_category(key: &str) -> &'static str {
     match key {
         "header_variant" => "headers",
         "main_variant" => "layouts",
@@ -169,7 +169,7 @@ pub fn ModuleWorkbench(
         let mut es = edit_state;
         es.add_target.set(target);
         let mut l = layout;
-        l.request_exclusive_dock("widgets", DockPosition::mor_panel_right);
+        l.request_dock("widgets", DockPosition::mor_panel_right);
     };
 
     // Reactively resolve the active module's XML fragment from the live config.

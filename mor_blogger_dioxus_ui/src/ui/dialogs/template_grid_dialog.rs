@@ -1,5 +1,9 @@
 use crate::app::state::ThemeState;
 use crate::ui::dialogs::modal::Modal;
+use crate::ui::panels::theme_palette::template_modules::{
+    ModuleFileButton, CONTENT_LAYOUTS, FOOTERS, HEADERS, JS_BEHAVIORS, LEFT_SIDEBARS,
+    MAIN_CANVASES, RIGHT_SIDEBARS,
+};
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -13,12 +17,6 @@ enum ModuleCategory {
     Scripts,
 }
 
-struct ModuleDef {
-    id: &'static str,
-    name: &'static str,
-    desc: &'static str,
-}
-
 #[derive(Props, Clone, PartialEq)]
 pub struct TemplateGridDialogProps {
     pub open: Signal<bool>,
@@ -29,104 +27,8 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
     let mut open_signal = props.open;
     let mut theme = use_context::<ThemeState>();
     let mut active_category = use_signal(|| ModuleCategory::Header);
+    let file_status = use_signal(String::new);
     let pack = theme.signals.template_pack.read().clone();
-
-    // Data maps for the visual grid
-    let headers = vec![
-        ModuleDef {
-            id: "mor",
-            name: "Mor Baseline",
-            desc: "The standard multi-row header with centered navigation.",
-        },
-        ModuleDef {
-            id: "mor_search_center",
-            name: "Mor — Centered Search",
-            desc: "Multi-row header with a centered, rounded, slightly larger search bar.",
-        },
-        ModuleDef {
-            id: "gtk_headerbar",
-            name: "GTK4 Headerbar",
-            desc: "A compact, desktop-style unified titlebar and navigation row.",
-        },
-    ];
-    let main_layouts = vec![
-        ModuleDef {
-            id: "sidebars",
-            name: "Three Column (Sidebars)",
-            desc: "Classic blog layout with left and right docking panels.",
-        },
-        ModuleDef {
-            id: "single_column",
-            name: "Single Column",
-            desc: "A focused, distraction-free reading environment without sidebars.",
-        },
-    ];
-    let contents = vec![
-        ModuleDef {
-            id: "standard_feed",
-            name: "Standard Feed",
-            desc: "Chronological vertical list of full posts.",
-        },
-        ModuleDef {
-            id: "mor_magazine",
-            name: "Magazine",
-            desc: "A large featured hero post followed by a structured grid.",
-        },
-        ModuleDef {
-            id: "mor_masonry",
-            name: "Masonry",
-            desc: "A dense, interlocking Pinterest-style grid of post cards.",
-        },
-        ModuleDef {
-            id: "mor_minimal",
-            name: "Minimal",
-            desc: "Stripped-down, text-heavy list for rapid scanning.",
-        },
-    ];
-    let left_bars = vec![ModuleDef {
-        id: "blogger_left",
-        name: "Blogger Widgets",
-        desc: "Native Blogger widget wrappers for Archives and Labels.",
-    }];
-    let right_bars = vec![ModuleDef {
-        id: "toc_right",
-        name: "Table of Contents",
-        desc: "An empty socket ready for the Dewey Indexer plugin to inject the TOC.",
-    }];
-    let footers = vec![
-        ModuleDef {
-            id: "mega",
-            name: "Mega Grid",
-            desc: "Massive 6-column link directory for institutional sites.",
-        },
-        ModuleDef {
-            id: "basic",
-            name: "Basic Columns",
-            desc: "A standard 4-column layout for links and resources.",
-        },
-        ModuleDef {
-            id: "compact",
-            name: "Compact Centered",
-            desc: "A single minimal line for copyright and legal links.",
-        },
-    ];
-    let scripts = vec![
-        ModuleDef {
-            id: "mor_collapsible_sidebars",
-            name: "Mor Collapsible Sidebars",
-            desc: "Includes the core framework for mobile collapsible sidebars.",
-        },
-        ModuleDef {
-            id: "magazine_grid_logic",
-            name: "Magazine Grid Logic",
-            desc: "Adds responsive grid adjustment scripts for magazine layouts.",
-        },
-        ModuleDef {
-            id: "vanilla_base",
-            name: "Vanilla Base",
-            desc: "No panel toggle behaviors. Purely static CSS grids.",
-        },
-    ];
 
     let current_selection = match active_category() {
         ModuleCategory::Header => pack.header_variant.clone(),
@@ -139,13 +41,24 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
     };
 
     let active_list = match active_category() {
-        ModuleCategory::Header => headers,
-        ModuleCategory::MainCanvas => main_layouts,
-        ModuleCategory::Content => contents,
-        ModuleCategory::LeftSidebar => left_bars,
-        ModuleCategory::RightSidebar => right_bars,
-        ModuleCategory::Footer => footers,
-        ModuleCategory::Scripts => scripts,
+        ModuleCategory::Header => HEADERS,
+        ModuleCategory::MainCanvas => MAIN_CANVASES,
+        ModuleCategory::Content => CONTENT_LAYOUTS,
+        ModuleCategory::LeftSidebar => LEFT_SIDEBARS,
+        ModuleCategory::RightSidebar => RIGHT_SIDEBARS,
+        ModuleCategory::Footer => FOOTERS,
+        ModuleCategory::Scripts => JS_BEHAVIORS,
+    };
+
+    // No file override for Scripts: the resolver's module_override doesn't cover script_variant.
+    let (file_slot_key, file_slot_label) = match active_category() {
+        ModuleCategory::Header => (Some("header_variant"), "Header Variant"),
+        ModuleCategory::MainCanvas => (Some("main_variant"), "Main Canvas"),
+        ModuleCategory::Content => (Some("content_variant"), "Content Layout"),
+        ModuleCategory::LeftSidebar => (Some("left_sidebar_variant"), "Left Sidebar"),
+        ModuleCategory::RightSidebar => (Some("right_sidebar_variant"), "Right Sidebar"),
+        ModuleCategory::Footer => (Some("footer_variant"), "Footer Variant"),
+        ModuleCategory::Scripts => (None, "JS Behaviors"),
     };
 
     rsx! {
@@ -201,6 +114,35 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                     style: "flex: 1 1 auto; overflow-y: auto; padding: 18px; background: var(--editor-bg);",
 
                     div {
+                        style: "display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;",
+                        if let Some(slot_key) = file_slot_key {
+                            p { style: "margin: 0; font-size: 0.8rem; color: var(--editor-muted);",
+                                "Pick a built-in variant, or load your own XML from a file."
+                            }
+                            ModuleFileButton {
+                                module_key: slot_key,
+                                label: file_slot_label,
+                                status: file_status,
+                                on_loaded: move |_| {
+                                    // Rewriting the pack forces a preview re-render so the
+                                    // freshly saved custom_<key>.xml override is picked up.
+                                    let pack = theme.signals.template_pack.read().clone();
+                                    theme.signals.template_pack.set(pack);
+                                },
+                            }
+                        } else {
+                            p { style: "margin: 0; font-size: 0.8rem; color: var(--editor-muted);",
+                                "Pick a behavior, or override a bundled script file with your own."
+                            }
+                            JsFileButton { status: file_status }
+                        }
+                    }
+
+                    if !file_status().is_empty() {
+                        div { class: "restore-status", style: "margin-bottom: 14px;", "{file_status}" }
+                    }
+
+                    div {
                         style: "display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;",
                         for module in active_list {
                             div {
@@ -247,6 +189,57 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                     }
                 }
             }
+        }
+    }
+}
+
+/// Native picker for a JS override. Scripts ship as an aggregated bundle of known
+/// filenames, so the picked file must be named after the bundle file it replaces
+/// (e.g. 07-Theme-Toggler.js). It lands in the VFS (instant preview) and the js/
+/// folder on disk (persists), same as saving from the JS Editor.
+#[component]
+fn JsFileButton(status: Signal<String>) -> Element {
+    use mor_blogger_core::render::template_resolver::{CORE_JS_FILES, MAGAZINE_GRID_JS};
+    let vfs = use_context::<crate::app::vfs::VfsDictionary>().0;
+    rsx! {
+        button {
+            class: "editor-mini-button",
+            style: "padding: 2px 8px; min-height: 22px; font-size: 0.75rem;",
+            title: "Load a .js file overriding a bundled script (must keep the bundle filename, e.g. 01-Core-Helpers.js)",
+            onclick: move |_| {
+                let mut status = status;
+                let mut vfs = vfs;
+                let start_dir = mor_blogger_core::utils::fs_bridge::js_root();
+                spawn(async move {
+                    let mut dlg = rfd::AsyncFileDialog::new()
+                        .add_filter("JavaScript", &["js"])
+                        .set_title("Load JS bundle override");
+                    if let Some(dir) = start_dir {
+                        dlg = dlg.set_directory(dir);
+                    }
+                    let Some(handle) = dlg.pick_file().await else { return };
+                    let name = handle.file_name();
+                    if !CORE_JS_FILES.contains(&name.as_str()) && name != MAGAZINE_GRID_JS {
+                        status.set(format!(
+                            "{name} won't ship: JS overrides must be named after a bundled file ({}, {MAGAZINE_GRID_JS}).",
+                            CORE_JS_FILES.join(", ")
+                        ));
+                        return;
+                    }
+                    let content = match std::fs::read_to_string(handle.path()) {
+                        Ok(c) => c,
+                        Err(e) => { status.set(format!("Could not read file: {e}")); return; }
+                    };
+                    match mor_blogger_core::utils::fs_bridge::save_custom_js(&name, &content) {
+                        Ok(_) => {
+                            vfs.write().insert(name.clone(), content);
+                            status.set(format!("{name} loaded — overrides the bundled script. Reset it in the JS Editor."));
+                        }
+                        Err(e) => status.set(format!("Load failed: {e}")),
+                    }
+                });
+            },
+            "📂"
         }
     }
 }

@@ -22,6 +22,15 @@ const COMPENDIUM_REPO_URL: &str = "https://github.com/MoribundInstitute/mor-xml-
 const COMPENDIUM_INDEX_URL: &str =
     "https://raw.githubusercontent.com/MoribundInstitute/mor-xml-compendium/main/registry.json";
 
+/// Human-readable name for a workbench module slot key (used by the status bar).
+pub fn slot_display_name(key: &str) -> &'static str {
+    TEMPLATE_LAYOUTS
+        .iter()
+        .find(|(_, k)| *k == key)
+        .map(|(name, _)| *name)
+        .unwrap_or("Module")
+}
+
 /// Map a workbench module slot to its templates sub-folder (mirrors the workbench).
 fn key_to_category(key: &str) -> &'static str {
     match key {

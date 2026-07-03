@@ -27,7 +27,7 @@ body {
 .mor-panel,
 .main-header,
 .mor-footer,
-.mor-catalog-mega-dropdown,
+.mor-catalog-dropdown,
 .mor-bell-panel,
 .mor-gm-panel {
   background: var(--bg-panel) !important;
@@ -92,8 +92,7 @@ body {
 }
 
 /* The wet floor. Degrades to nothing outside WebKit — that is fine. */
-.branding,
-.mor-header-brand .branding-link {
+.branding {
   font-family: var(--font-heading) !important;
   font-weight: 700 !important;
   letter-spacing: -0.5px !important;

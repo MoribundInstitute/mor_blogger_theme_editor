@@ -23,12 +23,11 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
             if pos != DockPosition::mor_panel_left {
                 button {
                     class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Left",
                     onclick: {
                         let dock_id = dock_id.clone();
                         move |_| {
-                            layout.request_exclusive_dock(&dock_id, DockPosition::mor_panel_left);
+                            layout.request_dock(&dock_id, DockPosition::mor_panel_left);
                         }
                     },
                     IconDockLeft {}
@@ -37,12 +36,11 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
             if pos != DockPosition::mor_panel_right {
                 button {
                     class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
                     title: "Dock Right",
                     onclick: {
                         let dock_id = dock_id.clone();
                         move |_| {
-                            layout.request_exclusive_dock(&dock_id, DockPosition::mor_panel_right);
+                            layout.request_dock(&dock_id, DockPosition::mor_panel_right);
                         }
                     },
                     IconDockRight {}
@@ -51,12 +49,11 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
             if pos != DockPosition::Floating {
                 button {
                     class: "editor-mini-button",
-                    style: "display: flex; align-items: center; padding: 4px;",
                     title: "Float Window",
                     onclick: {
                         let dock_id = dock_id.clone();
                         move |_| {
-                            layout.request_exclusive_dock(&dock_id, DockPosition::Floating);
+                            layout.request_dock(&dock_id, DockPosition::Floating);
                         }
                     },
                     IconFloat {}
@@ -64,7 +61,6 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
             }
             button {
                 class: "editor-mini-button",
-                style: "display: flex; align-items: center; padding: 4px;",
                 title: "Close",
                 onclick: move |_| props.on_close.call(()),
                 IconClose {}
@@ -76,6 +72,7 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
         if pos == DockPosition::Floating {
             div {
                 class: "floating-editor-window-bar",
+                "data-dock-id": props.dock_id.clone(),
                 div {
                     class: "floating-editor-grip-group",
                     span {
@@ -92,6 +89,8 @@ pub fn DockChrome(props: DockChromeProps) -> Element {
             }
         } else {
             div { class: "editor-panel-header",
+                "data-dock-id": props.dock_id.clone(),
+                title: "Drag onto a side panel to tab this dock there",
                 h2 {
                     class: "editor-panel-title",
                     "{props.title}"

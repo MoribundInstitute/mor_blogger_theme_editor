@@ -25,3 +25,12 @@
     background-color: var(--accent);
     filter: drop-shadow(0 0 4px var(--accent));
 }
+
+/* Responsive rules live here (not the global responsive sheets) so search CSS
+   only ships with headers that render .mor-search. */
+@media screen and (max-width: 900px) {
+  .mor-search { width: 100%; }
+  .mor-search form { width: 100%; align-items: stretch; }
+  .mor-search .prompt { display: none; }
+  .mor-search input { width: 100%; flex: 1; padding: 10px; font-size: 1rem; }
+}

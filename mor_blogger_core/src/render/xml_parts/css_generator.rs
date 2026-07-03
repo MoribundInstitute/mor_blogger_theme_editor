@@ -182,7 +182,7 @@ fn build_target_glow_css(config: &ThemeConfig) -> String {
     out.push_str(&rule(c.glow_containers, &c.glow_containers_color, ".mor-post, .mor-catalog-dropdown", "box-shadow"));
     out.push_str(&rule(c.glow_icons, &c.glow_icons_color, ".icon-search-btn, .mor-nav a, .header-panel-toggle, .back-to-top-btn", "box-shadow"));
     out.push_str(&rule(c.glow_footer, &c.glow_footer_color, ".mor-footer, .mor-footer-mega, .mor-footer-social, .mor-footer-compact", "box-shadow"));
-    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .mor-header-baseline, .mor-header-minimal, .gtk-headerbar", "box-shadow"));
+    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .gtk-headerbar", "box-shadow"));
     out.push_str(&rule(c.glow_main, &c.glow_main_color, ".canvas-core, .canvas-content", "box-shadow"));
     if out.is_empty() {
         String::new()

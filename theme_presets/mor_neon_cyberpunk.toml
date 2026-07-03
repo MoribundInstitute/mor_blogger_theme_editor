@@ -58,7 +58,7 @@ body::after {
 .mor-panel,
 .main-header,
 .mor-footer,
-.mor-catalog-mega-dropdown {
+.mor-catalog-dropdown {
   background: var(--bg-panel);
   border: var(--panel-border-width) solid var(--border-color);
   border-radius: 0;

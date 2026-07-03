@@ -250,6 +250,18 @@ fn sample_style(
         if let Some(v) = nz(&o.color) {
             s.push_str(&format!(" color: {};", v));
         }
+        if let Some(v) = nz(&o.background) {
+            s.push_str(&format!(" background: {};", v));
+        }
+        if let Some(v) = nz(&o.padding) {
+            s.push_str(&format!(" padding: {};", v));
+        }
+        if let Some(v) = nz(&o.border_radius) {
+            s.push_str(&format!(" border-radius: {};", v));
+        }
+        if let Some(v) = nz(&o.text_align) {
+            s.push_str(&format!(" text-align: {};", v));
+        }
         if o.italic {
             s.push_str(" font-style: italic;");
         }
@@ -335,6 +347,44 @@ fn ElementStyleEditor(elements: Signal<Vec<ElementStyle>>) -> Element {
                     oninput: move |e| update_element(elements, selector, |s| s.letter_spacing = e.value()),
                 }
             }
+            // Box treatment: turns a heading into a "plaque" (chip background,
+            // padding, rounded corners, centering) — no preset CSS needed.
+            div { class: "editor-field-group", style: "margin: 0;",
+                label { class: "editor-field-label", "Background" }
+                input {
+                    r#type: "text", class: "editor-field",
+                    value: "{cur.background}", placeholder: "color or gradient",
+                    oninput: move |e| update_element(elements, selector, |s| s.background = e.value()),
+                }
+            }
+            div { class: "editor-field-group", style: "margin: 0;",
+                label { class: "editor-field-label", "Padding" }
+                input {
+                    r#type: "text", class: "editor-field",
+                    value: "{cur.padding}", placeholder: "e.g. 20px",
+                    oninput: move |e| update_element(elements, selector, |s| s.padding = e.value()),
+                }
+            }
+            div { class: "editor-field-group", style: "margin: 0;",
+                label { class: "editor-field-label", "Corner Radius" }
+                input {
+                    r#type: "text", class: "editor-field",
+                    value: "{cur.border_radius}", placeholder: "e.g. 8px",
+                    oninput: move |e| update_element(elements, selector, |s| s.border_radius = e.value()),
+                }
+            }
+            div { class: "editor-field-group", style: "margin: 0;",
+                label { class: "editor-field-label", "Text Align" }
+                select {
+                    class: "editor-select",
+                    value: "{cur.text_align}",
+                    onchange: move |e| update_element(elements, selector, |s| s.text_align = e.value()),
+                    option { value: "", selected: cur.text_align.is_empty(), "Inherit" }
+                    for align in ["left", "center", "right"] {
+                        option { value: "{align}", selected: cur.text_align == align, "{align}" }
+                    }
+                }
+            }
         }
 
         div { style: "display: flex; gap: 8px; align-items: center; margin-top: 8px;",
@@ -386,6 +436,10 @@ fn update_element(
         && entry.line_height.trim().is_empty()
         && entry.letter_spacing.trim().is_empty()
         && entry.color.trim().is_empty()
+        && entry.background.trim().is_empty()
+        && entry.padding.trim().is_empty()
+        && entry.border_radius.trim().is_empty()
+        && entry.text_align.trim().is_empty()
         && !entry.italic;
 
     match idx {

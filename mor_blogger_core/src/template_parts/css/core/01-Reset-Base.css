@@ -53,9 +53,8 @@ video {
   .mor-post, 
   .mor-panel, 
   .main-header, 
-  .mor-footer, 
-  .mor-catalog-dropdown,
-  button, 
+  .mor-footer,
+  button,
   input {
     background: var(--bg-base) !important;
     box-shadow: none !important;

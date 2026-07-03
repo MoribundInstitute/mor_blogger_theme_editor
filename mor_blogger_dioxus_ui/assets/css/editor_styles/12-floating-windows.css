@@ -30,7 +30,8 @@
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  flex-shrink: 0 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
 .floating-editor-title {
@@ -41,37 +42,65 @@
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .floating-editor-window-actions {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 2px !important;
+  flex-shrink: 0 !important;
 }
 
-/* Floating behavior (Triggered via data attributes) */
-.editor-main[data-left-layout="floating"] .mor_panel_left,
-.editor-main[data-right-layout="floating"] .mor_panel_right {
-  position: absolute;
-  z-index: 150;
-  width: 440px;
-  max-height: calc(100vh - 120px);
-  height: auto;
-  border: 1px solid var(--editor-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  will-change: top, left;
+/* Window-bar actions stay flat until hovered so the bar reads calm;
+   icons sit muted, brightening on hover. */
+.floating-editor-window-actions .editor-mini-button {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  min-height: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--editor-muted);
 }
 
-.editor-main[data-left-layout="floating"] .mor_panel_left {
-  top: var(--floating-left-y, 20px);
-  left: var(--floating-left-x, 20px);
+.floating-editor-window-actions .editor-mini-button:hover {
+  background: var(--mor-btn-hover);
+  border-color: transparent;
+  color: var(--editor-text);
 }
 
-.editor-main[data-right-layout="floating"] .mor_panel_right {
-  top: var(--floating-right-y, 20px);
-  right: var(--floating-right-x, 20px);
-  left: auto;
+/* Close is the only destructive action in the bar: red hover, set apart. */
+.floating-editor-window-actions .editor-mini-button:last-child {
+  margin-left: 8px;
+}
+
+.floating-editor-window-actions .editor-mini-button:last-child:hover {
+  background: color-mix(in srgb, var(--editor-danger) 18%, transparent);
+  color: var(--editor-danger);
+}
+
+/* Docked dock headers are drag handles: drag onto a side zone to tab the
+   dock there (see DOCK_TAB_DND_JS). */
+.editor-panel-header[data-dock-id] {
+  cursor: grab;
+}
+
+/* Drop-target hint while a dock title bar is being dragged. */
+.mor-dock-drop-hint {
+  outline: 2px solid var(--editor-accent);
+  outline-offset: -2px;
+}
+
+/* Tab strip shown when multiple docks share one side zone. */
+.mor-tabs.mor-dock-tabstrip {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 8px 0;
+  background: var(--editor-bg-deep);
+  border-bottom: 1px solid var(--editor-border);
+  overflow-x: auto;
 }
 
 /* =========================================================

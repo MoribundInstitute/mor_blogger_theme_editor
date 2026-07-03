@@ -24,6 +24,56 @@ use super::widget_workbench::WidgetWorkbench;
 use crate::ui::layout::docks::smart_code_dock::SmartCodeDock;
 use crate::ui::layout::main_pane::MainPane;
 
+/// Drag handler for the fullscreen control bar's title strip. Pointer capture
+/// keeps move events flowing even when the cursor crosses the preview iframe
+/// (which otherwise swallows them — the source of "sticky" drags), and the
+/// body class blanks iframe pointer-events + sets the grabbing cursor.
+/// Position is not persisted — re-entering fullscreen recenters the bar.
+const FS_BAR_DRAG_JS: &str = r#"
+(function () {
+    if (window.__morFsBarDragInstalled) return;
+    window.__morFsBarDragInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
+        const handle = e.target.closest('.mor-fullscreen-bar-handle');
+        if (!handle) return;
+        const bar = handle.closest('.mor-fullscreen-bar');
+        if (!bar) return;
+        e.preventDefault();
+        // Pointer capture is unreliable in this WebKitGTK webview — document
+        // listeners + the iframe pointer-events block do the job instead.
+        document.body.classList.add('editor-floating-dragging');
+
+        // Un-anchor from the centered default (left:50% + translate) so
+        // explicit left/top from here on tracks the pointer.
+        const r = bar.getBoundingClientRect();
+        const parent = bar.offsetParent ? bar.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+        const startLeft = r.left - parent.left;
+        const startTop = r.top - parent.top;
+        bar.style.left = startLeft + 'px';
+        bar.style.top = startTop + 'px';
+        bar.style.bottom = 'auto';
+        bar.style.transform = 'none';
+
+        const sx = e.clientX, sy = e.clientY;
+        const onMove = function (m) {
+            // Clamp so the bar can't be lost outside the workspace.
+            const pw = bar.offsetParent ? bar.offsetParent.clientWidth : window.innerWidth;
+            const ph = bar.offsetParent ? bar.offsetParent.clientHeight : window.innerHeight;
+            bar.style.left = Math.max(0, Math.min(startLeft + m.clientX - sx, pw - r.width)) + 'px';
+            bar.style.top = Math.max(0, Math.min(startTop + m.clientY - sy, ph - r.height)) + 'px';
+        };
+        const onUp = function () {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.body.classList.remove('editor-floating-dragging');
+        };
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    });
+})();
+"#;
+
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
     ("Search", "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5"),
@@ -172,26 +222,39 @@ pub fn BloggerWorkspace(
 
             if is_fullscreen() {
                 div {
-                    class: "editor-panel",
-                    style: "position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);",
-
-                    if center_view() == CenterView::Preview {
-                        ViewportToolbar {
-                            preview_viewport,
-                            preview_width,
-                            is_xray_active,
-                        }
-                        div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                    class: "mor-fullscreen-bar",
+                    onmounted: move |_| {
+                        // script-tag injection doesn't execute in this webview,
+                        // and a dropped Eval handle cancels the script — await it.
+                        spawn(async move {
+                            let _ = dioxus::document::eval(FS_BAR_DRAG_JS).await;
+                        });
+                    },
+                    div {
+                        class: "mor-fullscreen-bar-handle",
+                        title: "Drag to move — resize from the bottom-right corner",
                     }
+                    div {
+                        class: "mor-fullscreen-bar-controls",
 
-                    WorkspaceTabs { center_view }
+                        if center_view() == CenterView::Preview {
+                            ViewportToolbar {
+                                preview_viewport,
+                                preview_width,
+                                is_xray_active,
+                            }
+                            div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                        }
 
-                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                        WorkspaceTabs { center_view }
 
-                    button {
-                        class: "editor-mini-button",
-                        onclick: move |_| is_fullscreen.set(false),
-                        "Exit Fullscreen ×"
+                        div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+
+                        button {
+                            class: "editor-mini-button",
+                            onclick: move |_| is_fullscreen.set(false),
+                            "Exit Fullscreen ×"
+                        }
                     }
                 }
             }
@@ -388,7 +451,7 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
                 e.stop_propagation();
                 layout.enter_workspace(CenterView::JsWorkbench);
             },
-            "JS"
+            "☕✍️"
         }
         button {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },

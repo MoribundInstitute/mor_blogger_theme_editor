@@ -57,7 +57,7 @@ html:not([data-theme="light"]) body::after {
 
 /* ---- Panels as pressed paper plates: hairline gold edge, double rule ---- */
 .canvas-core, .mor-post, .mor-panel, .main-header, .mor-footer,
-.sidebar-section, .mor-catalog-mega-dropdown, .mor-bell-panel, .mor-gm-panel {
+.sidebar-section, .mor-catalog-dropdown, .mor-bell-panel, .mor-gm-panel {
   background: color-mix(in srgb, var(--bg-panel) 96%, var(--accent)) !important;
   border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-color)) !important;
   border-radius: 2px !important;
@@ -68,7 +68,7 @@ html:not([data-theme="light"]) body::after {
 }
 
 /* ---- Inscriptional headings: Roman capitals, letterspaced ---- */
-.post-title, .entry-title, .main-header h1, .mor-header-brand {
+.post-title, .entry-title, .main-header h1, .institute-title {
   font-family: var(--font-heading) !important;
   font-variant: small-caps;
   letter-spacing: 0.045em !important;

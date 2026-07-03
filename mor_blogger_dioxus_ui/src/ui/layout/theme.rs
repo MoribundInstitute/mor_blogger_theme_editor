@@ -200,21 +200,46 @@ impl MorTheme {
         toml::to_string_pretty(self).unwrap_or_default()
     }
 
+    /// Workspace theme → `:root { --mor-* }` block, injected by [`MorStyleProvider`].
+    /// Everything the app shell renders with resolves from these variables
+    /// (the `--editor-*` names in editor_styles/00-tokens.css alias onto them).
     pub fn to_css_vars(&self) -> String {
-        let image_vars = if self.enable_image_borders && self.custom_border_url.is_some() {
-            let url = self.custom_border_url.as_ref().unwrap();
-            format!(
-                "  --mor-border-image: url(\"{}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};",
-                url, self.svg_border_slice, self.image_border_width
-            )
-        } else {
-            "  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);"
-                .to_string()
-        };
-        format!(
-            ":root {{\n  --mor-bg: {};\n  --mor-panel: {};\n  --mor-header: {};\n  --mor-text: {};\n  --mor-text-muted: {};\n  --mor-border: {};\n  --mor-border-light: {};\n  --mor-accent: {};\n  --mor-accent-hover: {};\n  --mor-btn: {};\n  --mor-btn-hover: {};\n  --mor-font: {};\n  --mor-font-size: {};\n  --mor-font-h1: {};\n  --mor-padding: {};\n  --mor-radius: {};\n  --mor-destructive: {};\n  --mor-success: {};\n  --mor-warning: {};\n{}\n}}",
-            self.bg, self.panel, self.header, self.text, self.text_muted, self.border, self.border_light, self.accent, self.accent_hover, self.btn, self.btn_hover, self.font_family, self.font_size_base, self.font_size_h1, self.padding_base, self.border_radius, self.destructive, self.success, self.warning, image_vars
-        )
+        let vars = [
+            ("--mor-bg", &self.bg),
+            ("--mor-panel", &self.panel),
+            ("--mor-header", &self.header),
+            ("--mor-text", &self.text),
+            ("--mor-text-muted", &self.text_muted),
+            ("--mor-border", &self.border),
+            ("--mor-border-light", &self.border_light),
+            ("--mor-accent", &self.accent),
+            ("--mor-accent-hover", &self.accent_hover),
+            ("--mor-btn", &self.btn),
+            ("--mor-btn-hover", &self.btn_hover),
+            ("--mor-font", &self.font_family),
+            ("--mor-font-size", &self.font_size_base),
+            ("--mor-font-h1", &self.font_size_h1),
+            ("--mor-padding", &self.padding_base),
+            ("--mor-radius", &self.border_radius),
+            ("--mor-destructive", &self.destructive),
+            ("--mor-success", &self.success),
+            ("--mor-warning", &self.warning),
+        ];
+        let mut out = String::from(":root {\n");
+        for (name, value) in vars {
+            out.push_str(&format!("  {name}: {value};\n"));
+        }
+        match &self.custom_border_url {
+            Some(url) if self.enable_image_borders => out.push_str(&format!(
+                "  --mor-border-image: url(\"{url}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};\n",
+                self.svg_border_slice, self.image_border_width
+            )),
+            _ => out.push_str(
+                "  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);\n",
+            ),
+        }
+        out.push('}');
+        out
     }
 }
 
@@ -607,18 +632,41 @@ pub fn MorStyleProvider(
     let prefs = crate::app::config_bridge::EditorPrefs::load();
     let theme =
         crate::app::config_bridge::resolve_effective_theme(base, &prefs.custom_editor_colors);
-    let mut css_vars = theme.to_css_vars();
-    if let Some(ref c) = prefs.custom_editor_colors.panel_title_color {
-        let mut safe_css = css_vars.trim_end().to_string();
-        if safe_css.ends_with("}") {
-            safe_css.pop();
-            safe_css.push_str(&format!("  --panel-title-color: {};\n}}", c));
-            css_vars = safe_css;
-        }
-    }
+    let css_vars = theme.to_css_vars();
+    // Overrides ride in their own :root rule; the cascade merges them.
+    let override_vars = prefs
+        .custom_editor_colors
+        .panel_title_color
+        .as_ref()
+        .map(|c| format!(":root {{ --panel-title-color: {c}; }}"))
+        .unwrap_or_default();
 
     rsx! {
         style { "{css_vars}" }
+        style { "{override_vars}" }
         style { "{MOR_CSS}" }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn css_vars_block_is_well_formed() {
+        let theme = MorTheme::from_toml(MOR_STUDIO_TOML).unwrap();
+        let css = theme.to_css_vars();
+        assert!(css.starts_with(":root {\n"));
+        assert!(css.ends_with('}'));
+        assert!(css.contains("  --mor-bg: #16181d;\n"));
+        assert!(css.contains("  --mor-warning: #e0a13a;\n"));
+        // No image border configured → the disabled fallback vars.
+        assert!(css.contains("--mor-border-image: none;"));
+
+        let mut with_border = theme.clone();
+        with_border.enable_image_borders = true;
+        with_border.custom_border_url = Some("border.svg".to_string());
+        let css = with_border.to_css_vars();
+        assert!(css.contains("--mor-border-image: url(\"border.svg\");"));
     }
 }

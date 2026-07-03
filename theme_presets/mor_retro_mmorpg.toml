@@ -53,7 +53,7 @@ body {
 .main-header,
 .mor-panel,
 .mor-footer,
-.mor-catalog-mega-dropdown,
+.mor-catalog-dropdown,
 .mor-bell-panel {
   background:
     linear-gradient(180deg,

@@ -2,3 +2,13 @@
 .mor-nav a, .mor-nav button { color: var(--fg-dim); border-bottom: none; font-size: 0.95rem; white-space: nowrap; }
 .mor-nav > a { border: none; }
 .mor-nav > a:hover, .mor-nav > a:focus-visible { color: var(--bg-base); background: var(--fg-base); text-shadow: none; }
+
+/* Responsive rules live here (not the global responsive sheets) so the nav CSS
+   only ships with headers that render .mor-nav. */
+@media screen and (max-width: 900px) {
+  .mor-nav { width: 100%; gap: 15px; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+  .mor-nav a, .mor-nav button { font-size: 0.95rem; padding: 8px 10px; white-space: nowrap; }
+}
+@media screen and (max-width: 480px) {
+  .mor-nav { font-size: 0.8rem; }
+}

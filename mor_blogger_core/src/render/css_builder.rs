@@ -299,6 +299,10 @@ pub fn build_element_typography_css(typo: &TypographyConfig) -> String {
         push("line-height", &el.line_height);
         push("letter-spacing", &el.letter_spacing);
         push("color", &el.color);
+        push("background", &el.background);
+        push("padding", &el.padding);
+        push("border-radius", &el.border_radius);
+        push("text-align", &el.text_align);
         if el.italic {
             decls.push_str(" font-style: italic;");
         }
@@ -334,6 +338,24 @@ mod element_typography_tests {
         assert!(css.contains("font-size: 2.5rem;"));
         assert!(css.contains("font-weight: 600;"));
         assert!(css.contains("font-style: italic;"));
+    }
+
+    #[test]
+    fn plaque_box_properties_emit() {
+        let mut typo = TypographyConfig::default();
+        typo.elements.push(ElementStyle {
+            selector: "h2".into(),
+            background: "repeating-linear-gradient(135deg, #0c0c0c, #1c1c1d 40%, #0c0c0c 80%)".into(),
+            padding: "20px".into(),
+            border_radius: "8px".into(),
+            text_align: "center".into(),
+            ..Default::default()
+        });
+        let css = build_element_typography_css(&typo);
+        assert!(css.contains("background: repeating-linear-gradient(135deg, #0c0c0c, #1c1c1d 40%, #0c0c0c 80%);"));
+        assert!(css.contains("padding: 20px;"));
+        assert!(css.contains("border-radius: 8px;"));
+        assert!(css.contains("text-align: center;"));
     }
 
     #[test]

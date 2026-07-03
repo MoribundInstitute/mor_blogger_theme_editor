@@ -16,7 +16,7 @@ preset_css = '''
      via color-mix(), so dark and light palettes both read true.
 
    New in v5: selectors verified against the real template markup
-   (.mor-panel.panel-left/.panel-right, .mor-catalog-mega-dropdown),
+   (.mor-panel.panel-left/.panel-right, .mor-catalog-dropdown),
    aurora colors are per-mode CSS variables, and signature
    flourishes: selection tint, focus rings, frosted blockquotes,
    code chips, gradient hr, calm link treatment.
@@ -146,13 +146,13 @@ html::after {
   box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.25) !important;
 }
 
-.mor-header-brand {
+.institute-title {
   letter-spacing: -0.02em;
   text-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* Catalog mega dropdown floats over everything: strongest blur. */
-.mor-catalog-mega-dropdown {
+.mor-catalog-dropdown {
   background: var(--glass-strong) !important;
   backdrop-filter: blur(26px) saturate(160%);
   -webkit-backdrop-filter: blur(26px) saturate(160%);
@@ -336,7 +336,7 @@ select:focus {
 @media (max-width: 768px) {
   .main-header { backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); }
   .mor-post    { backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%); }
-  .mor-panel, .mor-footer, .mor-catalog-mega-dropdown {
+  .mor-panel, .mor-footer, .mor-catalog-dropdown {
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   body::before, body::after { filter: blur(55px); }
@@ -348,7 +348,7 @@ select:focus {
   .mor-panel,
   .mor-post,
   .mor-footer,
-  .mor-catalog-mega-dropdown {
+  .mor-catalog-dropdown {
     background: var(--bg-panel) !important;
     backdrop-filter: none !important;
   }

@@ -80,13 +80,13 @@ body {
 }
 
 /* ---- Nav: buoyant links ---- */
-.mor-nav > a, .mor-main-navigation a {
+.mor-nav > a {
   transition: transform var(--fluid-speed) var(--fluid-ease),
               background var(--fluid-speed) ease,
               color var(--fluid-speed) ease;
 }
 
-.mor-nav > a:hover, .mor-main-navigation a:hover {
+.mor-nav > a:hover {
   color: var(--accent) !important;
   background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
   transform: translateY(-2px);
@@ -251,11 +251,11 @@ input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/
 @media (prefers-reduced-motion: reduce) {
   body { animation: none !important; }
   .mor-post, .mor-post .post-title::after, .post-thumbnail,
-  .mor-nav > a, .mor-main-navigation a,
+  .mor-nav > a,
   .post-body a, .entry-content a, .sidebar-section {
     transition: none !important;
   }
-  .mor-post:hover, .mor-nav > a:hover, .mor-main-navigation a:hover,
+  .mor-post:hover, .mor-nav > a:hover,
   .mor-post:hover .post-thumbnail {
     transform: none;
   }

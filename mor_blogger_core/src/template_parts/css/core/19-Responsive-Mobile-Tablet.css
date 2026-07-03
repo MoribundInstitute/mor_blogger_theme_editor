@@ -8,12 +8,6 @@
   .branding .institute-title { font-size: 1.05rem; letter-spacing: 1px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; }
   .panel-toggle { min-width: auto; font-size: 0.9rem; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-width: 1px; }
   .header-bottom-row { flex-direction: column; align-items: stretch; padding: 12px 15px; gap: 15px; }
-  .mor-nav { width: 100%; gap: 15px; overflow-x: auto; overflow-y: hidden; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-  .mor-nav a, .mor-nav button { font-size: 0.95rem; padding: 8px 10px; white-space: nowrap; }
-  .mor-search { width: 100%; }
-  .mor-search form { width: 100%; align-items: stretch; }
-  .mor-search .prompt { display: none; }
-  .mor-search input { width: 100%; flex: 1; padding: 10px; font-size: 1rem; }
   .mor-workspace { display: block; height: auto; min-height: 100vh; overflow: visible; }
   .canvas-core { height: auto; min-height: 100vh; overflow: visible; background: transparent; }
   .canvas-content { padding: 24px 16px; max-width: none; gap: 40px; background: transparent; }

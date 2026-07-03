@@ -63,6 +63,81 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Floating control pill shown while the workspace header is collapsed
+   (fullscreen). Solid surface -- the preview must not bleed through. */
+.mor-fullscreen-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 48px);
+  background: color-mix(in srgb, var(--editor-bg-deep) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  /* Native horizontal resize; controls rewrap and height follows. */
+  resize: horizontal;
+  overflow: hidden;
+  min-width: 264px;
+}
+
+/* Full-width title strip: the drag handle (sheet-grabber pill affordance). */
+.mor-fullscreen-bar-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  flex: 0 0 auto;
+  cursor: grab;
+}
+
+.mor-fullscreen-bar-handle::before {
+  content: "";
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--editor-muted-2);
+  transition: background 0.15s ease, width 0.15s ease;
+}
+
+.mor-fullscreen-bar-handle:hover::before {
+  background: var(--editor-muted);
+  width: 60px;
+}
+
+.mor-fullscreen-bar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 16px 10px;
+}
+
+/* While floating chrome is being dragged, iframes must not swallow pointer
+   events (the preview iframe otherwise freezes the drag mid-flight). */
+body.editor-floating-dragging iframe {
+  pointer-events: none !important;
+}
+
+/* The viewport group already sits inside the pill -- drop its own pill chrome
+   so it doesn't render as a bordered box within the bar. */
+.mor-fullscreen-bar .preview-toolbar-group {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.mor-fullscreen-bar .editor-mini-button {
+  white-space: nowrap;
+}
+
 .preview-toolbar-divider {
   align-self: stretch;
   width: 1px;

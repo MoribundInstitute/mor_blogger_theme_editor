@@ -1,32 +1,107 @@
-<header class="mor-header-baseline" id="mor-header">
-    
-    <button class="panel-toggle left-panel-toggle" data-target="panel-left" aria-label="Open Browse Panel">
-        {{LEFT_PANEL_OPEN_LABEL}}
-    </button>
-
-    <div class="mor-header-brand">
-        {{HEADER_LOGO_IMG}}
-    </div>
-
-    <nav class="mor-catalog-mega-dropdown">
-        <button class="catalog-toggle" aria-haspopup="true" aria-expanded="false">
-            {{CATALOG_OPEN_LABEL}}
-        </button>
-        
-        <div class="dropdown-content">
-            {{SUBJECT_LIST}}
-            {{LEXICON_LIST}}
-            {{MEDIA_LIST}}
-            {{WIKI_LIST}}
-            {{PROJECTS_LIST}}
-            {{PROGRESS_LIST}}
+<header class="main-header mor-header-baseline" id="mor-header">
+    <div class="header-top-row">
+        <div class="header-side-controls left-controls">
+            <button class="panel-toggle left-panel-toggle" data-target="panel-left" aria-label="Open Browse Panel">
+                {{LEFT_PANEL_OPEN_LABEL}}
+            </button>
         </div>
-    </nav>
-
-    {{PLUGIN_WIDGET_HEADER}}
-
-    <button class="panel-toggle right-panel-toggle" data-target="panel-right" aria-label="Open Contents Panel">
-        {{RIGHT_PANEL_OPEN_LABEL}}
-    </button>
-
+        <a class="branding branding-link" href="{{SITE_HOME_URL_ATTR}}">
+            {{HEADER_BRANDING}}
+        </a>
+        <div class="header-side-controls right-controls">
+            {{PLUGIN_WIDGET_HEADER}}
+            <button class="panel-toggle right-panel-toggle" data-target="panel-right" aria-label="Open Contents Panel">
+                {{RIGHT_PANEL_OPEN_LABEL}}
+            </button>
+        </div>
+    </div>
+    <div class="header-bottom-row">
+        <nav class="mor-nav">
+            {{MAIN_NAV_LINKS}}
+            <span class="mor-catalog-menu">
+                <button class="mor-catalog-trigger" type="button" aria-haspopup="true" aria-expanded="false">{{CATALOG_TRIGGER_LABEL}} &#9662;</button>
+                <span class="mor-catalog-dropdown">
+                    <span class="mor-catalog-left">
+                        <button class="mor-catalog-category is-active" type="button" data-catalog-panel="subjects">{{CATALOG_SUBJECTS_LABEL}}</button>
+                        <button class="mor-catalog-category" type="button" data-catalog-panel="lexicon">{{CATALOG_LEXICON_LABEL}}</button>
+                        <button class="mor-catalog-category" type="button" data-catalog-panel="media">{{CATALOG_MEDIA_LABEL}}</button>
+                        <button class="mor-catalog-category" type="button" data-catalog-panel="wiki">{{CATALOG_WIKI_LABEL}}</button>
+                        <button class="mor-catalog-category" type="button" data-catalog-panel="projects">{{CATALOG_PROJECTS_LABEL}}</button>
+                        <button class="mor-catalog-category" type="button" data-catalog-panel="progress">{{CATALOG_PROGRESS_LABEL}}</button>
+                        <a class="mor-catalog-all" href="{{CATALOG_ALL_URL}}">{{CATALOG_ALL_LABEL}}</a>
+                    </span>
+                    <span class="mor-catalog-right">
+                        <span class="mor-catalog-panel is-active" data-catalog-panel-content="subjects">
+                            <a class="mor-panel-heading" href="{{CATALOG_SUBJECTS_URL}}">{{CATALOG_SUBJECTS_LABEL}}</a>
+                            <a href="{{SUBJECT_000_URL}}">{{SUBJECT_000_LABEL}}</a>
+                            <a href="{{SUBJECT_100_URL}}">{{SUBJECT_100_LABEL}}</a>
+                            <a href="{{SUBJECT_200_URL}}">{{SUBJECT_200_LABEL}}</a>
+                            <a href="{{SUBJECT_300_URL}}">{{SUBJECT_300_LABEL}}</a>
+                            <a href="{{SUBJECT_400_URL}}">{{SUBJECT_400_LABEL}}</a>
+                            <a href="{{SUBJECT_500_URL}}">{{SUBJECT_500_LABEL}}</a>
+                            <a href="{{SUBJECT_600_URL}}">{{SUBJECT_600_LABEL}}</a>
+                            <a href="{{SUBJECT_700_URL}}">{{SUBJECT_700_LABEL}}</a>
+                            <a href="{{SUBJECT_800_URL}}">{{SUBJECT_800_LABEL}}</a>
+                            <a href="{{SUBJECT_900_URL}}">{{SUBJECT_900_LABEL}}</a>
+                        </span>
+                        <span class="mor-catalog-panel" data-catalog-panel-content="lexicon">
+                            <a class="mor-panel-heading" href="{{CATALOG_LEXICON_URL}}">{{CATALOG_LEXICON_LABEL}}</a>
+                            <a href="{{LEXICON_MORDICTIONARY_URL}}">{{LEXICON_MORDICTIONARY_LABEL}}</a>
+                            <a href="{{LEXICON_WEAR_YOUR_DICTIONARY_URL}}">{{LEXICON_WEAR_YOUR_DICTIONARY_LABEL}}</a>
+                            <a href="{{LEXICON_VOCABULARY_URL}}">{{LEXICON_VOCABULARY_LABEL}}</a>
+                            <a href="{{LEXICON_ETYMOLOGY_URL}}">{{LEXICON_ETYMOLOGY_LABEL}}</a>
+                            <a href="{{LEXICON_WORDPLAY_URL}}">{{LEXICON_WORDPLAY_LABEL}}</a>
+                            <a href="{{LEXICON_LANGUAGE_URL}}">{{LEXICON_LANGUAGE_LABEL}}</a>
+                        </span>
+                        <span class="mor-catalog-panel" data-catalog-panel-content="media">
+                            <a class="mor-panel-heading" href="{{CATALOG_MEDIA_URL}}">{{CATALOG_MEDIA_LABEL}}</a>
+                            <a href="{{MEDIA_AUDIOBOOK_GAMING_URL}}">{{MEDIA_AUDIOBOOK_GAMING_LABEL}}</a>
+                            <a href="{{MEDIA_WATCHLISTS_URL}}">{{MEDIA_WATCHLISTS_LABEL}}</a>
+                            <a href="{{MEDIA_READING_URL}}">{{MEDIA_READING_LABEL}}</a>
+                            <a href="{{MEDIA_LISTENING_URL}}">{{MEDIA_LISTENING_LABEL}}</a>
+                            <a href="{{MEDIA_SOCIAL_SCIENCE_URL}}">{{MEDIA_SOCIAL_SCIENCE_LABEL}}</a>
+                            <a href="{{MEDIA_DIET_URL}}">{{MEDIA_DIET_LABEL}}</a>
+                        </span>
+                        <span class="mor-catalog-panel" data-catalog-panel-content="wiki">
+                            <a class="mor-panel-heading" href="{{CATALOG_WIKI_URL}}">{{CATALOG_WIKI_LABEL}}</a>
+                            <a href="{{WIKI_START_URL}}">{{WIKI_START_LABEL}}</a>
+                            <a href="{{WIKI_ALL_POSTS_URL}}">{{WIKI_ALL_POSTS_LABEL}}</a>
+                            <a href="{{WIKI_TRAILS_URL}}">{{WIKI_TRAILS_LABEL}}</a>
+                            <a href="{{WIKI_WALKING_URL}}">{{WIKI_WALKING_LABEL}}</a>
+                            <a href="{{WIKI_VIDEO_COMMENTARY_URL}}">{{WIKI_VIDEO_COMMENTARY_LABEL}}</a>
+                            <a href="{{WIKI_LEXICOGRAPHY_URL}}">{{WIKI_LEXICOGRAPHY_LABEL}}</a>
+                            <a href="{{WIKI_BLOG_URL}}">{{WIKI_BLOG_LABEL}}</a>
+                            <a href="{{WIKI_OFFICIAL_URL}}">{{WIKI_OFFICIAL_LABEL}}</a>
+                            <a href="{{WIKI_YOUTUBE_URL}}">{{WIKI_YOUTUBE_LABEL}}</a>
+                            <a href="{{WIKI_REDDIT_URL}}">{{WIKI_REDDIT_LABEL}}</a>
+                        </span>
+                        <span class="mor-catalog-panel" data-catalog-panel-content="projects">
+                            <a class="mor-panel-heading" href="{{CATALOG_PROJECTS_URL}}">{{CATALOG_PROJECTS_LABEL}}</a>
+                            <a href="{{PROJECTS_ALL_URL}}">{{PROJECTS_ALL_LABEL}}</a>
+                            <a href="{{PROJECTS_INSTITUTE_URL}}">{{PROJECTS_INSTITUTE_LABEL}}</a>
+                            <a href="{{PROJECTS_WEAR_YOUR_WORDS_URL}}">{{PROJECTS_WEAR_YOUR_WORDS_LABEL}}</a>
+                            <a href="{{PROJECTS_MORBLOCKS_URL}}">{{PROJECTS_MORBLOCKS_LABEL}}</a>
+                            <a href="{{PROJECTS_MORLESSONBUILDER_URL}}">{{PROJECTS_MORLESSONBUILDER_LABEL}}</a>
+                            <a href="{{PROJECTS_LOG_URL}}">{{PROJECTS_LOG_LABEL}}</a>
+                        </span>
+                        <span class="mor-catalog-panel" data-catalog-panel-content="progress">
+                            <a class="mor-panel-heading" href="{{PROGRESS_DASHBOARD_URL}}">{{CATALOG_PROGRESS_LABEL}}</a>
+                            <a href="{{PROGRESS_DASHBOARD_URL}}">{{PROGRESS_DASHBOARD_LABEL}}</a>
+                            <a href="{{PROGRESS_OFFLINE_TRACKER_URL}}">{{PROGRESS_OFFLINE_TRACKER_LABEL}}</a>
+                            <a href="{{PROGRESS_CATALOG_URL}}">{{PROGRESS_CATALOG_LABEL}}</a>
+                            <a href="{{PROGRESS_LESSONS_URL}}">{{PROGRESS_LESSONS_LABEL}}</a>
+                            <a href="{{PROGRESS_ACTIVITIES_URL}}">{{PROGRESS_ACTIVITIES_LABEL}}</a>
+                        </span>
+                    </span>
+                </span>
+            </span>
+        </nav>
+        <div class="mor-search">
+            <form action="{{SEARCH_ACTION_URL_ATTR}}" method="get" role="search">
+                <span class="prompt">&gt;</span>
+                <input type="text" name="q" placeholder="{{SEARCH_PLACEHOLDER_ATTR}}" aria-label="Search"/>
+                <button type="submit" class="icon-search-btn" aria-label="Search"></button>
+            </form>
+        </div>
+    </div>
 </header>

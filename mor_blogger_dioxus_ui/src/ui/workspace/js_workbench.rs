@@ -123,7 +123,7 @@ pub fn JsWorkspaceBody(
                             title: "Open {s.file} in the JS Editor",
                             onclick: move |_| {
                                 if (layout.js_editor_pos)() == DockPosition::Hidden {
-                                    layout.request_exclusive_dock("js_editor", DockPosition::mor_panel_left);
+                                    layout.request_dock("js_editor", DockPosition::mor_panel_left);
                                 }
                                 layout.js_editor_open_file.set(Some(file.to_string()));
                             },
@@ -224,7 +224,7 @@ pub fn JsWorkspaceBody(
                         title: "Open custom_js.js in the JS Editor",
                         onclick: move |_| {
                             if (layout.js_editor_pos)() == DockPosition::Hidden {
-                                layout.request_exclusive_dock("js_editor", DockPosition::mor_panel_left);
+                                layout.request_dock("js_editor", DockPosition::mor_panel_left);
                             }
                             layout.js_editor_open_file.set(Some("custom_js.js".to_string()));
                         },

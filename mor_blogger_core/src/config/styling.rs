@@ -393,6 +393,12 @@ pub struct ElementStyle {
     pub letter_spacing: String,
     pub italic: bool,
     pub color: String,
+    /// Box treatment — lets headings render as "plaques" (background chip +
+    /// padding + radius + centering) without hand-written preset CSS.
+    pub background: String,
+    pub padding: String,
+    pub border_radius: String,
+    pub text_align: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

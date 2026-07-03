@@ -1,9 +1,9 @@
-<header class="mor-header-minimal" id="mor-header">
-    <div class="mor-header-brand">
-        {{HEADER_LOGO_IMG}}
+<header class="main-header mor-header-minimal" id="mor-header">
+    <div class="header-top-row">
+        <a class="branding branding-link" href="{{SITE_HOME_URL_ATTR}}">
+            {{HEADER_BRANDING}}
+        </a>
+        <nav class="mor-nav">{{MAIN_NAV_LINKS}}</nav>
+        {{PLUGIN_WIDGET_HEADER}}
     </div>
-    <nav class="mor-main-navigation">
-        <!-- Minimal flexbox navigation link row -->
-    </nav>
-    {{PLUGIN_WIDGET_HEADER}}
 </header>

@@ -280,6 +280,16 @@ html {
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), flex-basis 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Inside a dock zone the container is a COLUMN (tab strip above the panel),
+   so the panels' flex-basis above would set height, not width. Fill the
+   remaining column instead; width comes from the container/grid. */
+.panel-container > .mor_panel_left,
+.panel-container > .mor_panel_right {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
 /* Left Widths (Triggered via data-left-layout) */
 .editor-main[data-left-layout="split"] { --left-panel-width: 360px; }
 .editor-main[data-left-layout="wide"]  { --left-panel-width: 520px; }
@@ -342,8 +352,10 @@ html {
   align-items: center !important;
   justify-content: space-between !important;
   padding: 0 12px !important;
-  background: var(--bg-elevated) !important;
-  border-bottom: 1px solid var(--editor-border-soft) !important;
+  /* Workspace-theme header color, NOT blog-theme --bg-elevated: the bar must
+     stand apart from the panel body in every workspace theme. */
+  background: var(--editor-bg-deep) !important;
+  border-bottom: 1px solid var(--editor-border) !important;
   cursor: move !important;
   box-sizing: border-box !important;
   width: 100% !important;
@@ -365,47 +377,77 @@ html {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  flex-shrink: 0 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
 .floating-editor-title {
   margin: 0 !important;
+  color: var(--editor-text) !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .floating-editor-window-actions {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 2px !important;
+  flex-shrink: 0 !important;
 }
 
-/* Floating behavior (Triggered via data attributes) */
-.editor-main[data-left-layout="floating"] .mor_panel_left,
-.editor-main[data-right-layout="floating"] .mor_panel_right {
-  position: absolute;
-  z-index: 150;
-  width: 440px;
-  max-height: calc(100vh - 120px);
-  height: auto;
-  border: 1px solid var(--editor-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  will-change: top, left;
+/* Window-bar actions stay flat until hovered so the bar reads calm;
+   icons sit muted, brightening on hover. */
+.floating-editor-window-actions .editor-mini-button {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  min-height: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--editor-muted);
 }
 
-.editor-main[data-left-layout="floating"] .mor_panel_left {
-  top: var(--floating-left-y, 20px);
-  left: var(--floating-left-x, 20px);
+.floating-editor-window-actions .editor-mini-button:hover {
+  background: var(--mor-btn-hover);
+  border-color: transparent;
+  color: var(--editor-text);
 }
 
-.editor-main[data-right-layout="floating"] .mor_panel_right {
-  top: var(--floating-right-y, 20px);
-  right: var(--floating-right-x, 20px);
-  left: auto;
+/* Close is the only destructive action in the bar: red hover, set apart. */
+.floating-editor-window-actions .editor-mini-button:last-child {
+  margin-left: 8px;
+}
+
+.floating-editor-window-actions .editor-mini-button:last-child:hover {
+  background: color-mix(in srgb, var(--editor-danger) 18%, transparent);
+  color: var(--editor-danger);
+}
+
+/* Docked dock headers are drag handles: drag onto a side zone to tab the
+   dock there (see DOCK_TAB_DND_JS). */
+.editor-panel-header[data-dock-id] {
+  cursor: grab;
+}
+
+/* Drop-target hint while a dock title bar is being dragged. */
+.mor-dock-drop-hint {
+  outline: 2px solid var(--editor-accent);
+  outline-offset: -2px;
+}
+
+/* Tab strip shown when multiple docks share one side zone. */
+.mor-tabs.mor-dock-tabstrip {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 8px 0;
+  background: var(--editor-bg-deep);
+  border-bottom: 1px solid var(--editor-border);
+  overflow-x: auto;
 }
 
 /* =========================================================
@@ -425,10 +467,85 @@ html {
   break-inside: avoid;
 }
 
+.mor-shortcut-group {
+  margin-bottom: 22px;
+}
+
+.mor-shortcut-group-title {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--editor-text);
+}
+
 .mor-shortcut-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 5px 0;
+}
+
+/* Key cluster: plain (fixed shortcuts) or a button (click to rebind). */
+.mor-shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 190px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--editor-text);
+  text-align: left;
+}
+
+button.mor-shortcut-keys {
+  cursor: pointer;
+}
+
+button.mor-shortcut-keys:hover .mor-keycap {
+  border-color: var(--mor-accent-hover);
+}
+
+.mor-keycap-plus {
+  color: var(--editor-muted);
+  font-size: 0.8em;
+}
+
+.mor-keycap-capturing {
+  outline: 2px solid var(--mor-accent-hover);
+}
+
+/* Nemo-style numbered page dots. */
+.mor-shortcuts-pager {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mor-page-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--editor-border);
+  background: transparent;
+  color: var(--editor-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mor-page-dot:hover {
+  background: var(--mor-btn-hover);
+}
+
+.mor-page-dot.active {
+  background: var(--mor-btn-hover);
+  color: var(--editor-text);
+  font-weight: 600;
 }
 
 /* Optional wrapper for the keys to keep them cleanly separated from the label */
@@ -443,8 +560,8 @@ html {
 }
 
 .mor-keycap {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
+  background: var(--editor-panel-raised);
+  border: 1px solid var(--editor-border);
   border-bottom-width: 2px;
   border-radius: var(--btn-radius, 4px);
   font-family: var(--font-mono);
@@ -646,6 +763,118 @@ html {
   font-size: 0.85rem;
   color: var(--editor-muted);
   line-height: 1.5;
+}
+
+/* Themed checkboxes — replace the raw browser control so they match the
+   accent. Editor-chrome only (the preview iframe is a separate document). */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--editor-accent);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--editor-accent);
+  border-color: var(--editor-accent);
+}
+
+/* Checkmark drawn as a rotated corner, in the dark base colour for contrast. */
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 3px;
+  height: 8px;
+  border: solid var(--editor-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--editor-focus);
+}
+
+/* Themed radio buttons — round, accent dot when selected. */
+input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid var(--editor-border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--editor-text) 15%, transparent);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+input[type="radio"]:hover,
+input[type="radio"]:checked {
+  border-color: var(--editor-accent);
+}
+
+input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--editor-accent);
+  transform: translate(-50%, -50%);
+}
+
+input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--editor-focus);
+}
+
+/* Themed colour swatches — rounded, themed border instead of raw chrome. */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+input[type="color"]:hover {
+  border-color: var(--editor-accent);
+}
+
+input[type="color"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--editor-focus);
 }
 
 /* ============================================================
@@ -1061,6 +1290,81 @@ html {
   border: 1px solid var(--editor-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Floating control pill shown while the workspace header is collapsed
+   (fullscreen). Solid surface -- the preview must not bleed through. */
+.mor-fullscreen-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 48px);
+  background: color-mix(in srgb, var(--editor-bg-deep) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--editor-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  /* Native horizontal resize; controls rewrap and height follows. */
+  resize: horizontal;
+  overflow: hidden;
+  min-width: 264px;
+}
+
+/* Full-width title strip: the drag handle (sheet-grabber pill affordance). */
+.mor-fullscreen-bar-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  flex: 0 0 auto;
+  cursor: grab;
+}
+
+.mor-fullscreen-bar-handle::before {
+  content: "";
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--editor-muted-2);
+  transition: background 0.15s ease, width 0.15s ease;
+}
+
+.mor-fullscreen-bar-handle:hover::before {
+  background: var(--editor-muted);
+  width: 60px;
+}
+
+.mor-fullscreen-bar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 16px 10px;
+}
+
+/* While floating chrome is being dragged, iframes must not swallow pointer
+   events (the preview iframe otherwise freezes the drag mid-flight). */
+body.editor-floating-dragging iframe {
+  pointer-events: none !important;
+}
+
+/* The viewport group already sits inside the pill -- drop its own pill chrome
+   so it doesn't render as a bordered box within the bar. */
+.mor-fullscreen-bar .preview-toolbar-group {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.mor-fullscreen-bar .editor-mini-button {
+  white-space: nowrap;
 }
 
 .preview-toolbar-divider {

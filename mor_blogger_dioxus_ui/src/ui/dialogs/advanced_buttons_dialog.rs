@@ -42,6 +42,50 @@ pub fn AdvancedButtonsDialog(mut open_signal: Signal<bool>) -> Element {
                     button { class: "pager-btn", "Read More" }
                 }
 
+                h3 { style: "{H3}", "Style Presets" }
+                p { style: "{LBL} margin: 0;", "One-click starting points — tweak any field afterward." }
+                div { style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                    // Neon Link: outline that fills to the accent on hover (this blog's
+                    // home/feed/pager links).
+                    button { class: "editor-button", onclick: move |_| {
+                        let mut w = buttons.write();
+                        w.fill = "outline".into(); w.hover_effect = "invert".into();
+                        w.border_width = "2px".into(); w.border_style = "solid".into();
+                        w.glow_strength = "14px".into(); w.transition_ms = "200ms".into();
+                        w.radius = "8px".into(); w.pressed_feedback = true;
+                    }, "Neon Link" }
+                    // Glow Pill: solid rounded button that blooms on hover.
+                    button { class: "editor-button", onclick: move |_| {
+                        let mut w = buttons.write();
+                        w.fill = "solid".into(); w.hover_effect = "glow".into();
+                        w.radius = "999px".into(); w.border_width = "0".into();
+                        w.glow_strength = "14px".into(); w.transition_ms = "200ms".into();
+                        w.pressed_feedback = true;
+                    }, "Glow Pill" }
+                    // Ghost: borderless, brightens on hover.
+                    button { class: "editor-button", onclick: move |_| {
+                        let mut w = buttons.write();
+                        w.fill = "ghost".into(); w.hover_effect = "brighten".into();
+                        w.border_width = "0".into(); w.transition_ms = "150ms".into();
+                        w.radius = "8px".into();
+                    }, "Ghost" }
+                    // Glass: frosted blur that lifts on hover.
+                    button { class: "editor-button", onclick: move |_| {
+                        let mut w = buttons.write();
+                        w.fill = "glass".into(); w.hover_effect = "lift".into();
+                        w.glass_blur = "12px".into(); w.glass_opacity = "0.4".into();
+                        w.radius = "12px".into(); w.transition_ms = "200ms".into();
+                    }, "Glass" }
+                    // Flat: plain solid, no motion — a clean reset.
+                    button { class: "editor-button", onclick: move |_| {
+                        let mut w = buttons.write();
+                        w.fill = "solid".into(); w.hover_effect = "none".into();
+                        w.elevation = "flat".into(); w.radius = "6px".into();
+                        w.border_width = "1px".into(); w.glow_strength = "".into();
+                        w.box_shadow = "".into(); w.transition_ms = "150ms".into();
+                    }, "Flat" }
+                }
+
                 h3 { style: "{H3}", "Geometry" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;",
                     Field { label: "Radius", value: b.radius.clone(), placeholder: "8px",
@@ -71,10 +115,20 @@ pub fn AdvancedButtonsDialog(mut open_signal: Signal<bool>) -> Element {
                 h3 { style: "{H3}", "Interaction & Motion" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
                     Pick { label: "Hover Effect", value: b.hover_effect.clone(),
-                        options: vec![("none","None"),("lift","Lift"),("grow","Grow"),("brighten","Brighten"),("glow","Glow")],
+                        options: vec![("none","None"),("lift","Lift"),("grow","Grow"),("brighten","Brighten"),("glow","Glow"),("invert","Invert (neon fill)")],
                         oninput: move |v| { buttons.write().hover_effect = v; } }
                     Field { label: "Transition", value: b.transition_ms.clone(), placeholder: "150ms",
                         oninput: move |v| { buttons.write().transition_ms = v; } }
+                    Pick { label: "Easing", value: b.easing.clone(),
+                        options: vec![
+                            ("ease","Ease (default)"),("linear","Linear"),
+                            ("ease-in","Ease In"),("ease-out","Ease Out"),("ease-in-out","Ease In-Out"),
+                            ("cubic-bezier(0.22,1,0.36,1)","Snappy (expo out)"),
+                            ("cubic-bezier(0.83,0,0.17,1)","Dramatic (expo in-out)"),
+                            ("cubic-bezier(0.34,1.56,0.64,1)","Back (overshoot)"),
+                            ("cubic-bezier(0.68,-0.55,0.27,1.55)","Anticipate"),
+                        ],
+                        oninput: move |v| { buttons.write().easing = v; } }
                     Check { label: "Pressed feedback", checked: b.pressed_feedback,
                         onchange: move |v| { buttons.write().pressed_feedback = v; } }
                 }

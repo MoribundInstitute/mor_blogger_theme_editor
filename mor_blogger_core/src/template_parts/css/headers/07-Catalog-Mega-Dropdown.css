@@ -21,3 +21,14 @@
 .mor-catalog-left::-webkit-scrollbar-track, .mor-catalog-right::-webkit-scrollbar-track { background: var(--bg-base); }
 .mor-catalog-left::-webkit-scrollbar-thumb, .mor-catalog-right::-webkit-scrollbar-thumb { background: var(--border-color); }
 .mor-catalog-left::-webkit-scrollbar-thumb:hover, .mor-catalog-right::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }
+
+/* Responsive + contrast rules live here (not the global sheets) so catalog CSS
+   only ships with headers that render the catalog menu. */
+@media screen and (max-width: 480px) {
+  .mor-catalog-dropdown { left: 6px; right: 6px; top: 140px; max-height: calc(100vh - 155px); }
+  .mor-catalog-left, .mor-catalog-right { padding: 0.65rem; }
+  .mor-catalog-category, .mor-catalog-panel a, .mor-catalog-all { padding: 0.55rem 0.6rem; }
+}
+@media (prefers-contrast: more) {
+  .mor-catalog-dropdown { background: var(--bg-base) !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 2px solid var(--fg-base) !important; color: var(--fg-base) !important; text-shadow: none !important; }
+}

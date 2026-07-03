@@ -8,10 +8,10 @@ use crate::app::config_bridge::{CompendiumManifest, PluginState};
 /// so pins keyed from the activity bar (ids) and from preview icons (names) agree.
 pub fn normalize_dock_key(key: &str) -> String {
     match key {
-        "Theme Palette" => "theme_palette",
-        "Site Data" => "site_data",
-        "CSS Editor" => "css_editor",
-        "JS Editor" => "js_editor",
+        "Theme Palette" | "theme" => "theme_palette",
+        "Site Data" | "site" => "site_data",
+        "CSS Editor" | "css" => "css_editor",
+        "JS Editor" | "js" => "js_editor",
         "Presets" => "presets",
         "Plugin Manager" => "plugin_manager",
         "Diagnostics" => "diagnostics",
@@ -23,6 +23,32 @@ pub fn normalize_dock_key(key: &str) -> String {
         other => other,
     }
     .to_string()
+}
+
+/// Every dock id with its tab/display label, in zone-priority order (workbench
+/// companion docks first, so they win the default tab when a workspace opens).
+pub const DOCK_REGISTRY: &[(&str, &str)] = &[
+    ("template_modules", "Template Modules"),
+    ("widgets", "Widgets"),
+    ("code_nav", "Code Nav"),
+    ("static_pages", "Static Pages"),
+    ("css_editor", "CSS Editor"),
+    ("js_editor", "JS Editor"),
+    ("diagnostics", "Diagnostics"),
+    ("plugin_manager", "Plugin Manager"),
+    ("css_builder", "CSS Builder"),
+    ("js_builder", "JS Builder"),
+    ("theme_palette", "Theme Palette"),
+    ("site_data", "Site Data"),
+    ("presets", "Presets"),
+];
+
+pub fn dock_display_name(id: &str) -> &'static str {
+    DOCK_REGISTRY
+        .iter()
+        .find(|(d, _)| *d == id)
+        .map(|(_, name)| *name)
+        .unwrap_or("Dock")
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -85,6 +111,9 @@ pub struct LayoutState {
     /// which buffer is showing (false = TOML, true = compiled XML).
     pub code_show_xml: Signal<bool>,
     pub active_workbench_module: Signal<Option<&'static str>>,
+    /// One-shot request: open the JS Editor dock on this file (JS workspace
+    /// behavior cards set it; the dock consumes it and resets to None).
+    pub js_editor_open_file: Signal<Option<String>>,
 
     pub center_view: Signal<CenterView>,
     pub active_static_page: Signal<Option<String>>,
@@ -97,6 +126,11 @@ pub struct LayoutState {
     pub activity_icons: Signal<HashMap<String, String>>,
     /// Dock id whose activity-bar icon is being edited (drives the picker modal).
     pub active_activity_icon_picker: Signal<Option<String>>,
+    /// Which dock's tab is focused in each shared zone ("" = first dock in
+    /// registry order). Docks that leave the zone need no cleanup here: the
+    /// zone falls back to its first dock when the focused id isn't present.
+    pub left_dock_focus: Signal<String>,
+    pub right_dock_focus: Signal<String>,
 }
 
 impl LayoutState {
@@ -123,6 +157,7 @@ impl LayoutState {
             static_pages_pos: use_signal(|| DockPosition::Hidden),
             code_show_xml: use_signal(|| false),
             active_workbench_module: use_signal(|| None),
+            js_editor_open_file: use_signal(|| None),
 
             center_view: use_signal(|| CenterView::Preview),
             active_static_page: use_signal(|| None::<String>),
@@ -154,6 +189,8 @@ impl LayoutState {
             quick_launch_hidden: use_signal(|| layout_prefs.quick_launch_hidden.clone()),
             activity_icons: use_signal(|| layout_prefs.activity_icons.clone()),
             active_activity_icon_picker: use_signal(|| None::<String>),
+            left_dock_focus: use_signal(String::new),
+            right_dock_focus: use_signal(String::new),
         }
     }
 
@@ -275,92 +312,62 @@ impl LayoutState {
         self.toggle_dock_by_id(&id);
     }
 
-    /// Open the dock into a free zone if hidden, otherwise hide it.
+    /// Where a dock opens by default: Site Data is the natural right-hand dock,
+    /// the Plugin Manager is a floating dialog, everything else prefers the left.
+    pub fn preferred_dock_position(&self, dock_id: &str) -> DockPosition {
+        match normalize_dock_key(dock_id).as_str() {
+            "site_data" => DockPosition::mor_panel_right,
+            "plugin_manager" => DockPosition::Floating,
+            _ => DockPosition::mor_panel_left,
+        }
+    }
+
+    /// Open the dock into its preferred zone if hidden, otherwise hide it.
     pub fn toggle_dock_by_id(&mut self, dock_id: &str) {
         let id = normalize_dock_key(dock_id);
         let Some(mut sig) = self.dock_pos_signal(&id) else {
             return;
         };
         if *sig.read() == DockPosition::Hidden {
-            // Site Data is the natural right-hand dock; everything else prefers
-            // the left and falls through to right/floating if that zone is taken.
-            let preferred = if id == "site_data" {
-                DockPosition::mor_panel_right
-            } else {
-                DockPosition::mor_panel_left
-            };
-            self.request_exclusive_dock(&id, preferred);
+            let preferred = self.preferred_dock_position(&id);
+            self.request_dock(&id, preferred);
         } else {
             sig.set(DockPosition::Hidden);
         }
     }
 
-    pub fn request_exclusive_dock(&mut self, target_id: &str, requested_pos: DockPosition) {
-        let sig = match target_id {
-            "theme" | "theme_palette" => &self.theme_palette_pos,
-            "site" | "site_data" => &self.site_data_pos,
-            "css" | "css_editor" => &self.css_editor_pos,
-            "js" | "js_editor" => &self.js_editor_pos,
-            "diagnostics" => &self.diagnostics_pos,
-            "plugin_manager" => &self.plugin_manager_pos,
-            "presets" => &self.presets_pos,
-            "css_builder" => &self.css_builder_pos,
-            "js_builder" => &self.js_builder_pos,
-            "template_modules" => &self.template_modules_pos,
-            "widgets" => &self.widgets_pos,
-            "code_nav" => &self.code_nav_pos,
-            "static_pages" => &self.static_pages_pos,
-            _ => return,
+    /// Every dock currently at `pos`, in registry (zone-priority) order.
+    pub fn docks_at(&self, pos: DockPosition) -> Vec<&'static str> {
+        DOCK_REGISTRY
+            .iter()
+            .filter(|(id, _)| {
+                self.dock_pos_signal(id)
+                    .map(|s| *s.read() == pos)
+                    .unwrap_or(false)
+            })
+            .map(|(id, _)| *id)
+            .collect()
+    }
+
+    /// Move a dock to a position. Zones are shared: a dock landing in an
+    /// occupied zone joins it as a tab (and takes focus) instead of bouncing
+    /// the occupant out.
+    pub fn request_dock(&mut self, target_id: &str, requested_pos: DockPosition) {
+        let id = normalize_dock_key(target_id);
+        let Some(mut sig) = self.dock_pos_signal(&id) else {
+            return;
         };
-
-        if requested_pos == DockPosition::mor_panel_left
-            || requested_pos == DockPosition::mor_panel_right
-        {
-            let preferred_zone = requested_pos;
-            let opposite_zone = if preferred_zone == DockPosition::mor_panel_left {
-                DockPosition::mor_panel_right
-            } else {
-                DockPosition::mor_panel_left
-            };
-
-            let other_signals = [
-                &self.theme_palette_pos,
-                &self.site_data_pos,
-                &self.css_editor_pos,
-                &self.js_editor_pos,
-                &self.diagnostics_pos,
-                &self.plugin_manager_pos,
-                &self.presets_pos,
-                &self.css_builder_pos,
-                &self.js_builder_pos,
-                &self.template_modules_pos,
-                &self.widgets_pos,
-                &self.code_nav_pos,
-                &self.static_pages_pos,
-            ];
-
-            let is_occupied = |zone: DockPosition| -> bool {
-                for &s in &other_signals {
-                    if *s != *sig && *s.read() == zone {
-                        return true;
-                    }
-                }
-                false
-            };
-
-            let final_pos = if !is_occupied(preferred_zone) {
-                preferred_zone
-            } else if !is_occupied(opposite_zone) {
-                opposite_zone
-            } else {
-                DockPosition::Floating
-            };
-
-            let mut target_sig = *sig;
-            target_sig.set(final_pos);
-        } else {
-            let mut target_sig = *sig;
-            target_sig.set(requested_pos);
+        sig.set(requested_pos);
+        match requested_pos {
+            DockPosition::mor_panel_left => {
+                let mut focus = self.left_dock_focus;
+                focus.set(id);
+            }
+            DockPosition::mor_panel_right => {
+                let mut focus = self.right_dock_focus;
+                focus.set(id);
+            }
+            _ => {}
         }
     }
 }

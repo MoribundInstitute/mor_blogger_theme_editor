@@ -16,6 +16,11 @@ pub struct ColorConfig {
     pub panel_border_width: String,
     pub glow_spread: String,
     pub hover_scale: String,
+    /// Number of stacked glow layers (1–4). More layers = deeper neon bloom.
+    pub glow_intensity: String,
+    /// Glow trigger. `true` (default) = enabled targets glow only on
+    /// hover/focus; `false` = glow always on, with a brighter hover bloom.
+    pub glow_hover: bool,
 
     pub panel_border_image_url: String,
     pub panel_border_image_slice: String,
@@ -58,6 +63,8 @@ impl Default for ColorConfig {
             panel_border_width: "1px".to_string(),
             glow_spread: "10px".to_string(),
             hover_scale: "1.02".to_string(),
+            glow_intensity: "2".to_string(),
+            glow_hover: true,
             panel_border_image_url: String::new(),
             panel_border_image_slice: "30%".to_string(),
             panel_border_image_repeat: "stretch".to_string(),
@@ -293,6 +300,9 @@ pub struct ButtonConfig {
     // Interaction & motion
     pub hover_effect: String, // none | lift | grow | brighten | glow
     pub transition_ms: String,
+    /// CSS transition-timing-function. "" or "ease" = browser default; accepts any
+    /// keyword or cubic-bezier(...). Curated named curves are offered in the UI.
+    pub easing: String,
     pub pressed_feedback: bool,
     // Focus ring ("" color = derive)
     pub focus_ring_color: String,
@@ -330,6 +340,7 @@ impl Default for ButtonConfig {
             hover_bg_color: String::new(),
             hover_effect: "none".to_string(),
             transition_ms: "0ms".to_string(),
+            easing: "ease".to_string(),
             pressed_feedback: false,
             focus_ring_color: String::new(),
             focus_ring_width: "2px".to_string(),
@@ -347,6 +358,11 @@ pub struct TypographyConfig {
     pub scale_ratio: String,
     pub line_height: String,
     pub heading_weight: String,
+    /// Per-element overrides (LibreOffice-style). Empty by default; each entry
+    /// targets a fixed selector ("h1"|"h2"|"h3"|"p"|"blockquote"|"code") and
+    /// only emits CSS for its non-empty properties. See
+    /// [`crate::render::css_builder::build_element_typography_css`].
+    pub elements: Vec<ElementStyle>,
 }
 
 impl Default for TypographyConfig {
@@ -359,8 +375,30 @@ impl Default for TypographyConfig {
             scale_ratio: "1.2".to_string(),
             line_height: "1.6".to_string(),
             heading_weight: "700".to_string(),
+            elements: Vec::new(),
         }
     }
+}
+
+/// Per-element typography override. An empty string means "inherit / leave the
+/// base stylesheet's value". `selector` is one of the fixed element keys the
+/// Typography panel offers.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct ElementStyle {
+    pub selector: String,
+    pub font_size: String,
+    pub font_weight: String,
+    pub line_height: String,
+    pub letter_spacing: String,
+    pub italic: bool,
+    pub color: String,
+    /// Box treatment — lets headings render as "plaques" (background chip +
+    /// padding + radius + centering) without hand-written preset CSS.
+    pub background: String,
+    pub padding: String,
+    pub border_radius: String,
+    pub text_align: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -392,6 +430,13 @@ pub struct IconConfig {
 
     /// Arbitrary SVG mask icons keyed by name.
     pub custom_icons: HashMap<String, String>,
+
+    /// Per-slot render mode keyed by slot field name (e.g. "panel_close").
+    /// Absent or `true` = recolor to theme (mask). `false` = show the icon
+    /// as-is in full colour (background image, no tint) — for colour emoji,
+    /// multicolour SVGs, logos, etc.
+    #[serde(default)]
+    pub recolor: HashMap<String, bool>,
 }
 
 impl Default for IconConfig {
@@ -412,6 +457,7 @@ impl Default for IconConfig {
             arrow_up: svg_mask(ICON_ARROW_UP_PATH),
             external_link: svg_mask(ICON_EXTERNAL_LINK_PATH),
             custom_icons: HashMap::new(),
+            recolor: HashMap::new(),
         }
     }
 }

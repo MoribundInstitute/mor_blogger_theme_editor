@@ -28,18 +28,22 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--fg-base);
-    mask: var(--icon-sidebar-left) center/20px no-repeat;
-    -webkit-mask: var(--icon-sidebar-left) center/20px no-repeat;
+    background-color: var(--icon-sidebar-left-tint, var(--fg-base));
+    background-image: var(--icon-sidebar-left-bg, none);
+    background-position: center; background-repeat: no-repeat; background-size: 20px;
+    mask: var(--icon-sidebar-left-mask, var(--icon-sidebar-left)) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-left-mask, var(--icon-sidebar-left)) center/20px no-repeat;
 }
 
 .header-panel-toggle-right::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--fg-base);
-    mask: var(--icon-sidebar-right) center/20px no-repeat;
-    -webkit-mask: var(--icon-sidebar-right) center/20px no-repeat;
+    background-color: var(--icon-sidebar-right-tint, var(--fg-base));
+    background-image: var(--icon-sidebar-right-bg, none);
+    background-position: center; background-repeat: no-repeat; background-size: 20px;
+    mask: var(--icon-sidebar-right-mask, var(--icon-sidebar-right)) center/20px no-repeat;
+    -webkit-mask: var(--icon-sidebar-right-mask, var(--icon-sidebar-right)) center/20px no-repeat;
 }
 
 .panel-header .panel-toggle {
@@ -65,9 +69,11 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--fg-base);
-    mask: var(--icon-panel-close) center/18px no-repeat;
-    -webkit-mask: var(--icon-panel-close) center/18px no-repeat;
+    background-color: var(--icon-panel-close-tint, var(--fg-base));
+    background-image: var(--icon-panel-close-bg, none);
+    background-position: center; background-repeat: no-repeat; background-size: 18px;
+    mask: var(--icon-panel-close-mask, var(--icon-panel-close)) center/18px no-repeat;
+    -webkit-mask: var(--icon-panel-close-mask, var(--icon-panel-close)) center/18px no-repeat;
 }
 
 .panel-header .panel-toggle:hover {

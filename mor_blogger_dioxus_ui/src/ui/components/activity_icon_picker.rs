@@ -2,7 +2,7 @@ use crate::app::shell_layout::render_named_svg;
 use crate::app::state::LayoutState;
 use dioxus::prelude::*;
 
-const INPUT_STYLE: &str = "flex:1; padding:6px 8px; background:#0f0e0c; color:#f4f1ea; border:1px solid #3d372c; border-radius:4px; font-size:14px;";
+const INPUT_STYLE: &str = "flex:1; padding:6px 8px; background:var(--editor-bg); color:var(--editor-text); border:1px solid var(--editor-border); border-radius:4px; font-size:14px;";
 
 /// Modal for customizing a dock's activity-bar icon: emoji, a built-in SVG, or
 /// pasted custom SVG. Driven by `layout.active_activity_icon_picker` (the dock id).
@@ -26,7 +26,7 @@ pub fn ActivityIconPicker() -> Element {
             style: "position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center;",
             onclick: close,
             div {
-                style: "width: 380px; max-width: 90vw; background:#16140f; border:1px solid #3c382f; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,0.6); padding:18px; display:flex; flex-direction:column; gap:14px;",
+                style: "width: 380px; max-width: 90vw; background:var(--editor-panel); border:1px solid var(--editor-border); border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,0.6); padding:18px; display:flex; flex-direction:column; gap:14px;",
                 onclick: move |e| e.stop_propagation(),
 
                 div {
@@ -93,7 +93,7 @@ pub fn ActivityIconPicker() -> Element {
                     style: "display:flex; flex-direction:column; gap:6px;",
                     label { style: "font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--fg-muted);", "Custom SVG" }
                     textarea {
-                        style: "min-height:70px; padding:6px 8px; background:#0f0e0c; color:#f4f1ea; border:1px solid #3d372c; border-radius:4px; font-family:monospace; font-size:11px; resize:vertical;",
+                        style: "min-height:70px; padding:6px 8px; background:var(--editor-bg); color:var(--editor-text); border:1px solid var(--editor-border); border-radius:4px; font-family:monospace; font-size:11px; resize:vertical;",
                         placeholder: "<svg ...>...</svg>",
                         value: "{raw_input}",
                         oninput: move |e| raw_input.set(e.value()),

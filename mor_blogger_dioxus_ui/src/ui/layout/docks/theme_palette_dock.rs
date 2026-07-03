@@ -139,6 +139,8 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                     EditorAccordion { id: "Effects", title: "Lighting & Motion", active: active_tab,
                         EffectsPanel {
                             glow_spread: signals.glow_spread,
+                            glow_intensity: signals.glow_intensity,
+                            glow_hover: signals.glow_hover,
                             hover_scale: signals.hover_scale,
                             show_advanced_glow,
                         }
@@ -158,11 +160,7 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                     }
 
                     EditorAccordion { id: "Typography", title: "Typography", active: active_tab,
-                        TypographyPanel {
-                            body_font_stack: signals.body_font_stack,
-                            heading_font_stack: signals.heading_font_stack,
-                            base_size: signals.base_size,
-                        }
+                        TypographyPanel {}
                     }
 
                     EditorAccordion { id: "Scrollbars", title: "Scrollbars", active: active_tab,

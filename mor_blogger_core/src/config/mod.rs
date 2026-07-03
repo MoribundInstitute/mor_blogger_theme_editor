@@ -22,7 +22,9 @@ pub use styling::*;
 pub use template_pack::*;
 
 fn default_slice() -> String {
-    "30".to_string()
+    // Percentage, not pixels: resolution-independent so it survives Blogger's
+    // =sNNNN image rescaling and varying source sizes (see frames_panel slider).
+    "30%".to_string()
 }
 
 fn default_image_width() -> String {
@@ -143,7 +145,7 @@ impl Default for ThemeConfig {
             svg_border_slice: default_slice(),
             image_border_width: default_image_width(),
             target_sidebars: default_true(),
-            target_canvas: false,
+            target_canvas: default_true(),
             scripts: ScriptBehaviorConfig::default(),
         }
     }

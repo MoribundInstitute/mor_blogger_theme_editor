@@ -94,6 +94,12 @@ impl EditorPrefs {
         let _ = prefs.save();
     }
 
+    pub fn update_wrap_override(key: String, wrap: bool) {
+        let mut prefs = Self::load();
+        prefs.wrap_overrides.insert(key, wrap);
+        let _ = prefs.save();
+    }
+
     pub fn update_default_template_pack(pack: mor_blogger_core::config::TemplatePackConfig) {
         let mut prefs = Self::load();
         prefs.default_template_pack = Some(pack);

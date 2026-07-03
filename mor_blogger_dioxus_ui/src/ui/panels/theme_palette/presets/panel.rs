@@ -106,35 +106,43 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             class: "editor-card preset-panel",
 
             div { class: "preset-panel-header",
-                h3 { class: "editor-card-title", style: "margin-bottom: 0; padding-bottom: 0; border-bottom: none;", "Theme Presets" }
+                if !props.is_embedded {
+                    h3 { class: "editor-card-title", style: "margin-bottom: 0; padding-bottom: 0; border-bottom: none;", "Theme Presets" }
+                }
 
-                div { class: "editor-row", style: "flex-wrap: wrap;",
+                div { class: "editor-row", style: "flex-wrap: wrap; gap: 4px; margin-left: auto;",
                     button {
-                        class: if show_import() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        class: if show_import() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        title: "Import JSON",
                         onclick: move |_| show_import.set(!show_import()),
-                        "Import JSON"
+                        "⤓"
                     }
 
                     button {
-                        class: "editor-button editor-button-small",
+                        class: "editor-mini-button",
+                        title: if (props.signals.is_dark_mode)() { "Switch to light mode" } else { "Switch to dark mode" },
                         onclick: move |_| {
                             theme.perform_dark_mode_toggle();
                         },
-                        if (props.signals.is_dark_mode)() { "☾ Dark Mode" } else { "☀ Light Mode" }
+                        if (props.signals.is_dark_mode)() { "☾" } else { "☀" }
                     }
 
                     button {
-                        class: if (theme.show_advanced_presets)() { "editor-button editor-button-small editor-button-active" } else { "editor-button editor-button-small" },
+                        class: if (theme.show_advanced_presets)() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        title: "Advanced presets",
                         onclick: move |_| theme.show_advanced_presets.set(true),
-                        "⚙ Advanced"
+                        "⚙"
                     }
 
-                    button {
-                        class: "editor-button editor-button-small",
-                        onclick: move |_| {
-                            layout.presets_pos.set(DockPosition::Hidden);
-                        },
-                        "Close"
+                    if !props.is_embedded {
+                        button {
+                            class: "editor-mini-button",
+                            title: "Close panel",
+                            onclick: move |_| {
+                                layout.presets_pos.set(DockPosition::Hidden);
+                            },
+                            "✕"
+                        }
                     }
                 }
             }

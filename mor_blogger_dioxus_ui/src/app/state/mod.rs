@@ -4,8 +4,8 @@ pub mod site_data;
 pub mod theme_state;
 
 pub use layout_state::{
-    normalize_dock_key, CenterView, ContextMenuPayload, DockPosition, LayoutState,
-    PluginManagerContext,
+    dock_display_name, normalize_dock_key, CenterView, ContextMenuPayload, DockPosition,
+    LayoutState, PluginManagerContext,
 };
 pub use render_state::RenderState;
 pub use site_data::SiteData;

@@ -94,7 +94,7 @@ pub fn PluginManagerDock() -> Element {
             
             if needs_restart() {
                 div {
-                    style: "padding: 8px 12px; background: #1c1a16; color: #f1ede2; border-bottom: 1px solid rgba(236, 231, 218, 0.2); font-size: 0.78rem;",
+                    style: "padding: 8px 12px; background: color-mix(in srgb, var(--editor-warning) 12%, transparent); color: var(--editor-warning); border-bottom: 1px solid var(--editor-border-soft); font-size: 0.78rem;",
                     "Restart required to apply changes."
                 }
             }
@@ -102,34 +102,34 @@ pub fn PluginManagerDock() -> Element {
             match &*install_status.read() {
                 Some(Ok(msg)) => rsx! {
                     div {
-                        style: "padding: 8px 12px; background: #132317; color: #73c991; border-bottom: 1px solid rgba(115, 201, 145, 0.2); font-size: 0.78rem;",
+                        style: "padding: 8px 12px; background: color-mix(in srgb, var(--editor-good) 12%, transparent); color: var(--editor-good); border-bottom: 1px solid var(--editor-border-soft); font-size: 0.78rem;",
                         "{msg}"
                     }
                 },
                 Some(Err(err)) => rsx! {
                     div {
-                        style: "padding: 8px 12px; background: #2a1415; color: #ea8285; border-bottom: 1px solid rgba(234, 130, 133, 0.2); font-size: 0.78rem;",
+                        style: "padding: 8px 12px; background: color-mix(in srgb, var(--editor-danger) 12%, transparent); color: var(--editor-danger); border-bottom: 1px solid var(--editor-border-soft); font-size: 0.78rem;",
                         "{err}"
                     }
                 },
                 None => rsx! {}
             }
 
-            // Tab bar
-            div {
-                style: "display: flex; border-bottom: 1px solid var(--border); background: var(--bg-elevated); padding: 4px 8px; gap: 4px;",
+            // Tab bar — shared .mor-tab styling (underline active state).
+            div { class: "mor-tabs",
+                style: "margin: 0; padding: 0 8px; flex-shrink: 0;",
                 button {
-                    style: format!("padding: 4px 8px; border: none; background: {}; color: {}; font-size: 0.8rem; cursor: pointer; border-radius: 2px;", if active_tab() == ManagerTab::Installed { "var(--accent)" } else { "transparent" }, if active_tab() == ManagerTab::Installed { "#111" } else { "inherit" }),
+                    class: if active_tab() == ManagerTab::Installed { "mor-tab active" } else { "mor-tab" },
                     onclick: move |_| active_tab.set(ManagerTab::Installed),
                     "Installed ({installed_plugins.read().len()})"
                 }
                 button {
-                    style: format!("padding: 4px 8px; border: none; background: {}; color: {}; font-size: 0.8rem; cursor: pointer; border-radius: 2px;", if active_tab() == ManagerTab::Discover { "var(--accent)" } else { "transparent" }, if active_tab() == ManagerTab::Discover { "#111" } else { "inherit" }),
+                    class: if active_tab() == ManagerTab::Discover { "mor-tab active" } else { "mor-tab" },
                     onclick: move |_| active_tab.set(ManagerTab::Discover),
                     "Discover"
                 }
                 button {
-                    style: format!("padding: 4px 8px; border: none; background: {}; color: {}; font-size: 0.8rem; cursor: pointer; border-radius: 2px;", if active_tab() == ManagerTab::Updates { "var(--accent)" } else { "transparent" }, if active_tab() == ManagerTab::Updates { "#111" } else { "inherit" }),
+                    class: if active_tab() == ManagerTab::Updates { "mor-tab active" } else { "mor-tab" },
                     onclick: move |_| active_tab.set(ManagerTab::Updates),
                     "Updates ({updates_count})"
                 }
@@ -143,11 +143,21 @@ pub fn PluginManagerDock() -> Element {
                         for (server_key, display_name, prompt) in mcp_daemon_cards().into_iter() {
                             div {
                                 key: "mcp-{server_key}",
-                                style: "display: flex; flex-direction: column; padding: 8px 10px; background: rgba(5, 165, 129, 0.08); border: 1px solid rgba(5, 165, 129, 0.25); border-radius: 3px; gap: 4px;",
-                                div { style: "font-weight: bold; color: var(--accent);", "MCP: {display_name}" }
-                                div { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted);", "daemon key: {server_key}" }
+                                style: "display: flex; flex-direction: column; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; gap: 6px;",
+                                div { style: "display: flex; align-items: center; gap: 8px;",
+                                    span {
+                                        style: "font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; background: color-mix(in srgb, var(--editor-good) 15%, transparent); color: var(--editor-good);",
+                                        "MCP"
+                                    }
+                                    span { style: "font-weight: 600; color: var(--fg-base);", "{display_name}" }
+                                }
+                                div { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted);", "{server_key}" }
                                 if !prompt.is_empty() {
-                                    div { style: "font-size: 0.75rem; color: var(--fg-muted); line-height: 1.35;", "prompt: {prompt}" }
+                                    div {
+                                        title: "{prompt}",
+                                        style: "font-size: 0.75rem; color: var(--fg-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;",
+                                        "{prompt}"
+                                    }
                                 }
                             }
                         }
@@ -155,45 +165,52 @@ pub fn PluginManagerDock() -> Element {
                         for local_plugin in current_read.iter() {
                             div {
                                 key: "{local_plugin.id}",
-                                style: "display: flex; flex-direction: column; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; gap: 6px;",
-                                div { style: "display: flex; justify-content: space-between; align-items: center;",
-                                    div { style: "display: flex; gap: 8px; align-items: center;",
-                                        input {
-                                            r#type: "checkbox",
-                                            style: "accent-color: var(--accent); cursor: pointer;",
-                                            checked: local_plugin.enabled,
-                                            onchange: {
-                                                let id = local_plugin.id.to_string();
-                                                move |evt: FormEvent| {
-                                                    let on = evt.checked();
-                                                    current_state.with_mut(|s| { if let Some(p) = s.iter_mut().find(|p| p.id == id) { p.enabled = on; } });
-                                                }
+                                style: "display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; gap: 8px;",
+                                div { style: "display: flex; gap: 8px; align-items: center; min-width: 0;",
+                                    input {
+                                        r#type: "checkbox",
+                                        style: "cursor: pointer; flex-shrink: 0;",
+                                        checked: local_plugin.enabled,
+                                        onchange: {
+                                            let id = local_plugin.id.to_string();
+                                            move |evt: FormEvent| {
+                                                let on = evt.checked();
+                                                current_state.with_mut(|s| { if let Some(p) = s.iter_mut().find(|p| p.id == id) { p.enabled = on; } });
                                             }
                                         }
-                                        span { style: "font-weight: bold; color: var(--fg-base);", "{local_plugin.id}" }
                                     }
-                                    button {
-                                        style: "color: #ea8285; background: transparent; border: 1px solid #ea8285; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 0.75rem;",
-                                        onclick: {
-                                            let id = local_plugin.id.to_string();
-                                            move |_| { current_state.with_mut(|s| s.retain(|p| p.id != id)); }
-                                        },
-                                        "Remove"
-                                    }
+                                    span { style: "font-weight: 600; color: var(--fg-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", "{local_plugin.id}" }
+                                    span { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted); flex-shrink: 0;", "v{local_plugin.version}" }
                                 }
-                                div { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted);", "version: v{local_plugin.version}" }
+                                button {
+                                    style: "color: var(--editor-danger); background: transparent; border: 1px solid var(--editor-danger); border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.75rem; flex-shrink: 0;",
+                                    onclick: {
+                                        let id = local_plugin.id.to_string();
+                                        move |_| { current_state.with_mut(|s| s.retain(|p| p.id != id)); }
+                                    },
+                                    "Remove"
+                                }
                             }
                         }
                     },
                     ManagerTab::Discover => rsx! {
+                        if !compendium_read.iter().any(|r| !current_read.iter().any(|l| l.id == r.id)) {
+                            p { style: "margin: 8px 0; text-align: center; font-size: 0.8rem; color: var(--fg-muted);",
+                                "Nothing new to discover."
+                            }
+                        }
                         for remote in compendium_read.iter().filter(|r| !current_read.iter().any(|l| l.id == r.id)) {
                             div {
                                 key: "discover-{remote.id}",
-                                style: "display: flex; flex-direction: column; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; gap: 6px;",
-                                div { style: "display: flex; justify-content: space-between; align-items: center;",
-                                    span { style: "font-weight: bold; color: var(--fg-base);", "{remote.display_name}" }
+                                style: "display: flex; flex-direction: column; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; gap: 6px;",
+                                div { style: "display: flex; justify-content: space-between; align-items: center; gap: 8px;",
+                                    div { style: "display: flex; align-items: center; gap: 8px; min-width: 0;",
+                                        span { style: "font-weight: 600; color: var(--fg-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", "{remote.display_name}" }
+                                        span { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted); flex-shrink: 0;", "v{remote.version}" }
+                                    }
                                     button {
-                                        style: "color: #111; background: var(--accent); border: none; border-radius: 3px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem;",
+                                        class: "mor-btn-primary",
+                                        style: "padding: 3px 10px; font-size: 0.75rem; flex-shrink: 0;",
                                         onclick: {
                                             let new_plugin = PluginState { id: remote.id.clone(), enabled: true, version: remote.version.clone() };
                                             move |_| { current_state.with_mut(|s| s.push(new_plugin.clone())); }
@@ -201,30 +218,35 @@ pub fn PluginManagerDock() -> Element {
                                         "Install"
                                     }
                                 }
-                                div { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted);", "version: v{remote.version}" }
-                                p { style: "margin: 0; font-size: 0.78rem; color: var(--fg-muted);", "{remote.description}" }
+                                p { style: "margin: 0; font-size: 0.78rem; line-height: 1.4; color: var(--fg-muted);", "{remote.description}" }
                             }
                         }
                     },
                     ManagerTab::Updates => rsx! {
+                        if updates_count == 0 {
+                            p { style: "margin: 8px 0; text-align: center; font-size: 0.8rem; color: var(--fg-muted);",
+                                "Everything is up to date."
+                            }
+                        }
                         for (local, remote) in updates_available.into_iter() {
                             div {
                                 key: "update-{local.id}",
-                                style: "display: flex; flex-direction: column; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; gap: 6px;",
-                                div { style: "display: flex; justify-content: space-between; align-items: center;",
-                                    span { style: "font-weight: bold; color: var(--fg-base);", "{remote.display_name}" }
-                                    button {
-                                        style: "color: #111; background: #73c991; border: none; border-radius: 3px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem;",
-                                        onclick: {
-                                            let id = local.id.clone();
-                                            let target_version = remote.version.clone();
-                                            move |_| { current_state.with_mut(|s| { if let Some(p) = s.iter_mut().find(|p| p.id == id) { p.version = target_version.clone(); } }); }
-                                        },
-                                        "Update"
+                                style: "display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; gap: 8px;",
+                                div { style: "display: flex; align-items: center; gap: 8px; min-width: 0;",
+                                    span { style: "font-weight: 600; color: var(--fg-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", "{remote.display_name}" }
+                                    span { style: "font-family: monospace; font-size: 0.75rem; color: var(--fg-muted); flex-shrink: 0;",
+                                        "v{local.version} → v{remote.version}"
                                     }
                                 }
-                                div { style: "font-family: monospace; font-size: 0.75rem; color: var(--fg-muted);",
-                                    "v{local.version} → v{remote.version}"
+                                button {
+                                    class: "mor-btn-primary",
+                                    style: "padding: 3px 10px; font-size: 0.75rem; flex-shrink: 0;",
+                                    onclick: {
+                                        let id = local.id.clone();
+                                        let target_version = remote.version.clone();
+                                        move |_| { current_state.with_mut(|s| { if let Some(p) = s.iter_mut().find(|p| p.id == id) { p.version = target_version.clone(); } }); }
+                                    },
+                                    "Update"
                                 }
                             }
                         }
@@ -235,7 +257,8 @@ pub fn PluginManagerDock() -> Element {
                 div {
                     style: "margin-top: 10px; border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;",
                     button {
-                        style: "padding: 6px; border: 1px dashed var(--border); background: transparent; color: var(--fg-base); cursor: pointer; border-radius: 3px; font-size: 0.8rem;",
+                        class: "mor-btn",
+                        style: "width: 100%; border-style: dashed; font-size: 0.8rem;",
                         onclick: move |_| {
                             if let Some(file_path) = FileDialog::new()
                                 .set_title("Select MorBlogger MCP Binary")
@@ -284,13 +307,15 @@ pub fn PluginManagerDock() -> Element {
                     div {
                         style: "display: flex; flex-direction: column; gap: 4px;",
                         input {
-                            style: "width: 100%; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-elevated); color: var(--fg-base); padding: 6px 10px; font-size: 0.8rem; box-sizing: border-box;",
+                            class: "mor-input",
+                            style: "width: 100%; font-size: 0.8rem; box-sizing: border-box;",
                             placeholder: "Author/Repo (e.g. MoribundInstitute/mcp)",
                             value: "{repo_input}",
                             oninput: move |evt| repo_input.set(evt.value())
                         }
                         button {
-                            style: "padding: 6px; border: none; background: var(--accent); color: #111; font-weight: bold; cursor: pointer; border-radius: 3px; font-size: 0.8rem;",
+                            class: "mor-btn-primary",
+                            style: "width: 100%; font-size: 0.8rem;",
                             onclick: move |_| {
                                 let repo = repo_input.read().clone();
                                 if !repo.is_empty() {
@@ -320,6 +345,12 @@ pub fn PluginManagerDock() -> Element {
         crate::ui_kit::MorPanelWrapper {
             position: pos,
             default_position: DockPosition::mor_panel_left,
+            floating_class: "floating-landscape",
+            // Self-sufficient when floating: don't depend on another dock
+            // having mounted the shared pane CSS/drag scripts (install-once guards).
+            style { {crate::ui::layout::docks::shared::PANE_CSS} }
+            script { dangerous_inner_html: crate::ui::layout::docks::shared::PANE_DRAG_JS }
+            script { dangerous_inner_html: crate::ui::layout::docks::shared::PANE_RESIZE_JS }
             {inner_content}
         }
     }

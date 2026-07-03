@@ -312,6 +312,38 @@ mod tests {
         );
     }
 
+    // Regression gate: every shipped preset must load, carry non-empty CSS with
+    // no CDATA hazard, and survive a full render with its CSS landing in the
+    // exported XML. Fails loudly if the presets dir can't be found — a silent
+    // skip here would defeat the gate.
+    #[test]
+    fn every_shipped_preset_loads_renders_and_lands_its_css() {
+        let dir = get_canonical_presets_dir();
+        let mut checked = 0;
+        for entry in fs::read_dir(&dir).unwrap_or_else(|e| panic!("presets dir {dir:?}: {e}")) {
+            let path = entry.expect("dir entry").path();
+            if path.extension().and_then(|s| s.to_str()) != Some("toml") {
+                continue;
+            }
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            let config = theme_config_from_path(&path)
+                .unwrap_or_else(|e| panic!("{name}: failed to load: {e}"));
+
+            let css = config.preset_css.trim();
+            assert!(!css.is_empty(), "{name}: empty preset_css");
+            assert!(!css.contains("]]>"), "{name}: CDATA hazard ]]> in preset_css");
+
+            let xml = crate::render::theme::render_theme(&config, &std::collections::HashMap::new());
+            // A distinctive slice from the first rule proves the CSS landed
+            // verbatim in the export (comments before the first brace skipped).
+            let brace = css.find('{').unwrap_or_else(|| panic!("{name}: css has no rule"));
+            let slice = &css[brace..css.len().min(brace + 40)];
+            assert!(xml.contains(slice), "{name}: preset_css missing from rendered XML");
+            checked += 1;
+        }
+        assert!(checked >= 8, "expected >= 8 presets, found {checked} in {dir:?}");
+    }
+
     // Every shipped preset must actually customize its scrollbar (not leave the
     // default thumb). Guards the theme_presets/*.toml [scrollbars] tables.
     #[test]

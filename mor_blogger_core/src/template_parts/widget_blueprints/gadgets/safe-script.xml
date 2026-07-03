@@ -1,0 +1,44 @@
+<b:widget id='HTML1' locked='false' title='Safe custom script' type='HTML' version='1' visible='true'>
+  <b:includable id='main'>
+    <!-- Starter for your own JavaScript that survives Blogger.
+         Two things break custom widget JS on Blogger; this skeleton handles both:
+
+         1. STRICT XML.  A raw `<`, `>` or `&` (e.g. `if (a < b && c)`) makes
+            Blogger reject the whole theme. Keep all JS between the `//<![CDATA[`
+            and `//]]>` markers below and you never have to escape anything.
+         2. SCRIPT HOISTING + RE-RUNS.  Blogger moves/duplicates widget scripts,
+            so `document.currentScript` can be null and your handler can bind
+            twice. The IIFE below scopes to `.mor-widget` roots and sets a
+            `dataset.morBound` flag so each one is wired exactly once.
+
+         Put your markup in the `.mor-widget` div and your code in the EDIT ZONE. -->
+    <div class='mor-widget'>
+      <button class='mor-widget-btn' type='button'>Clicked <span class='mor-widget-count'>0</span> times</button>
+    </div>
+    <script>
+      //<![CDATA[
+      (function () {
+        var roots = [].slice.call(document.querySelectorAll('.mor-widget'));
+        roots.forEach(function (root) {
+          if (root.dataset.morBound) return;   // Blogger may run this script twice.
+          root.dataset.morBound = '1';
+
+          // ===== EDIT ZONE — your code goes here =========================
+          // `root` is this widget's container. Query inside it, not the whole
+          // page, so multiple copies don't collide. Raw <, >, && are all fine
+          // in here because everything sits inside the //<![CDATA[ block.
+          var btn = root.querySelector('.mor-widget-btn');
+          var out = root.querySelector('.mor-widget-count');
+          var n = 0;
+          btn.addEventListener('click', function () {
+            n = n + 1;                 // e.g. plain `<` and `&&` are safe here
+            out.textContent = String(n);
+          });
+          // ===============================================================
+        });
+      })();
+      //]]>
+    </script>
+    <b:include name='quickedit'/>
+  </b:includable>
+</b:widget>

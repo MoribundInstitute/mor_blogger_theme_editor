@@ -18,6 +18,10 @@ pub struct AssetEditorProps {
     pub on_close: EventHandler<()>,
     pub vfs_signal: Signal<std::collections::HashMap<String, String>>,
     pub is_native_window: bool,
+    /// One-shot "open this file" request (e.g. JS workspace behavior cards).
+    /// The dock consumes it: selects the tab, then resets the signal to None.
+    #[props(default = None)]
+    pub open_file_request: Option<Signal<Option<String>>>,
 }
 
 static OPEN_WINDOWS: std::sync::Mutex<Option<std::collections::HashSet<String>>> =
@@ -89,8 +93,23 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
     // Full-viewport focused editing, mirroring the Module Workbench takeover.
     // Not offered in the pop-out OS window (it is already a standalone window).
     let mut is_takeover = use_signal(|| false);
+    // Read-only unified diff of the current file against its bundled default.
+    let mut show_diff = use_signal(|| false);
     let tx_opt = try_use_context::<tokio::sync::mpsc::UnboundedSender<EditorEvent>>();
     let theme_state_opt = try_use_context::<ThemeState>();
+
+    // Consume external open-file requests (one-shot: select the tab, clear the
+    // request; the clearing write re-runs the effect once as a no-op).
+    {
+        let request = props.open_file_request;
+        use_effect(move || {
+            let Some(mut req) = request else { return };
+            if let Some(file) = req() {
+                active_tab.set(file);
+                req.set(None);
+            }
+        });
+    }
 
     let mut is_window_open = use_signal(|| false);
     let mut child_window_ref = use_signal(|| Option::<dioxus::desktop::WeakDesktopContext>::None);
@@ -256,6 +275,30 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         props.available_files.first().cloned().unwrap_or_else(|| props.default_file.to_string())
     };
 
+    // Bundled default for the current file (css/js only; xml has none), used by
+    // the Diff view and the Reset button. Editing writes a VFS override; the
+    // file counts as customized when that override differs from this default.
+    let bundled_default: Option<&'static str> = if current_file == props.default_file {
+        None
+    } else {
+        match props.mode {
+            "css" => Some(mor_blogger_core::render::template_resolver::fetch_default_css(&current_file)),
+            "js" | "javascript" => Some(mor_blogger_core::render::template_resolver::fetch_js(&current_file)),
+            _ => None,
+        }
+    };
+    let current_is_edited = matches!(
+        (bundled_default, vfs.read().get(&current_file)),
+        (Some(d), Some(c)) if c != d
+    );
+    let show_diff_view = show_diff() && current_is_edited;
+    let diff_lines: Vec<(char, String)> = if show_diff_view {
+        let edited = vfs.read().get(&current_file).cloned().unwrap_or_default();
+        crate::utils::line_diff::line_diff(bundled_default.unwrap_or(""), &edited)
+    } else {
+        Vec::new()
+    };
+
     let raw_val = if current_file == props.default_file {
         if props.mode == "css" {
             theme.signals.preset_css.read().clone()
@@ -352,11 +395,18 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
         let key_str = evt.key().to_string();
         if evt.modifiers().ctrl() && key_str.eq_ignore_ascii_case("s") {
             evt.prevent_default();
+            evt.stop_propagation(); // ours; don't also trigger the global Save Project bind
             if let Some(tx) = &tx_opt_key {
                 let _ = tx.send(EditorEvent::Save);
             } else {
                 on_save_key.call(());
             }
+            return;
+        }
+        // CodeMirror owns undo/redo while typing here — keep the global
+        // theme-level Undo/Redo binds from also firing on the same keys.
+        if evt.modifiers().ctrl() && (key_str.eq_ignore_ascii_case("z") || key_str.eq_ignore_ascii_case("y")) {
+            evt.stop_propagation();
             return;
         }
 
@@ -595,6 +645,15 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                     for file in props.available_files {
                         {
                             let is_active = file == current_file;
+                            // Customized = VFS override that differs from the bundled
+                            // default (edit-then-undo leaves an identical entry).
+                            let is_edited = file != props.default_file
+                                && vfs.read().get(&file).is_some_and(|c| match props.mode {
+                                    "css" => c != mor_blogger_core::render::template_resolver::fetch_default_css(&file),
+                                    "js" | "javascript" => c != mor_blogger_core::render::template_resolver::fetch_js(&file),
+                                    // ponytail: xml has no single bundled default to diff against
+                                    _ => true,
+                                });
                             let tab_style = if is_active {
                                 "color: var(--fg-base); background: var(--bg-panel); border-bottom: 2px solid var(--accent); opacity: 1.0;"
                             } else {
@@ -610,9 +669,52 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                                         move |_| active_tab.set(f.clone())
                                     },
                                     "{file}"
+                                    if is_edited {
+                                        span {
+                                            style: "margin-left: 4px; color: var(--accent, #c2622a); font-size: 0.6rem; vertical-align: middle;",
+                                            title: "Customized — differs from the bundled default",
+                                            "●"
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+
+                if current_is_edited {
+                    button {
+                        class: if show_diff() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;",
+                        title: "Toggle a read-only diff of this file against the bundled default",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            show_diff.set(!show_diff());
+                        },
+                        "Diff"
+                    }
+                    button {
+                        class: "editor-mini-button",
+                        style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;",
+                        title: "Reset to the bundled default — discards this customization (in-app and the saved copy on disk)",
+                        onclick: {
+                            let file = current_file.clone();
+                            let mode = props.mode;
+                            move |e| {
+                                e.stop_propagation();
+                                vfs.write().remove(&file);
+                                let deleted = if mode == "css" {
+                                    mor_blogger_core::utils::fs_bridge::delete_custom_css(&file)
+                                } else {
+                                    mor_blogger_core::utils::fs_bridge::delete_custom_js(&file)
+                                };
+                                if let Err(err) = deleted {
+                                    log::error!("Failed to delete persisted override {}: {}", file, err);
+                                }
+                                show_diff.set(false);
+                            }
+                        },
+                        "Reset to default"
                     }
                 }
 
@@ -646,6 +748,22 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
 
             div {
                 style: "display: flex; flex-direction: column; flex-grow: 1; width: 100%; min-height: 0;",
+                if show_diff_view {
+                    pre {
+                        style: "flex-grow: 1; margin: 0; padding: 12px 16px; overflow: auto; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; background: var(--bg-panel); color: var(--fg-muted);",
+                        for (idx, (tag, line)) in diff_lines.into_iter().enumerate() {
+                            span {
+                                key: "{idx}",
+                                style: match tag {
+                                    '+' => "color: #7cbf6b;",
+                                    '-' => "color: #d9705f;",
+                                    _ => "",
+                                },
+                                "{tag} {line}\n"
+                            }
+                        }
+                    }
+                } else {
                 CodeEditor {
                     value: editor_value,
                     mode: props.mode.to_string(),
@@ -669,6 +787,7 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                         sig.set(new_val.clone());
                         last_external_val.set(new_val);
                     }
+                }
                 }
             }
         }
@@ -795,6 +914,8 @@ pub fn IsolatedEditorWindow(props: EditorWindowProps) -> Element {
         // Separate webview: the main shell's bundle/CSS aren't here, so inject the
         // CodeMirror runtime this window's CodeEditor needs.
         script { dangerous_inner_html: "{crate::ui::components::code_editor::CM6_BUNDLE_JS}" }
+        // Theme-aware JS completions, same as the main shell.
+        script { dangerous_inner_html: "window.MOR_JS_HINTS = {mor_blogger_core::render::js_behaviors::editor_hints_json()};" }
         // Include the Dioxus mount root (#main/#root): this window doesn't load
         // editor_ui.css, so without height:100% here the root collapses to content
         // height and the editor's height:100% chain breaks (scroll cut off).

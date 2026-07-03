@@ -24,6 +24,36 @@ pub fn init_shortcuts() {
     use_context_provider(|| Signal::new(ShortcutRegistry::default()));
 }
 
+/// Canonical form for a key combo, shared by every producer and consumer of
+/// combos (registry keys, the keyboard.rs JS map, prefs strings, the rebind
+/// capture). Uppercase, modifiers in CTRL/SHIFT/ALT order, `Arrow` prefix
+/// stripped ("Shift+Ctrl+e" / "Ctrl+Shift+ArrowLeft" → "CTRL+SHIFT+E" /
+/// "CTRL+SHIFT+LEFT"). Without one canonical form the two dispatch layers
+/// silently disagree about the same prefs string.
+pub fn normalize_combo(combo: &str) -> String {
+    let mut mods = String::new();
+    let mut key = String::new();
+    for part in combo.split('+').map(str::trim).filter(|p| !p.is_empty()) {
+        match part.to_ascii_uppercase().as_str() {
+            "CTRL" | "CONTROL" | "CMD" | "META" => {}
+            "SHIFT" => {}
+            "ALT" => {}
+            other => key = other.strip_prefix("ARROW").unwrap_or(other).to_string(),
+        }
+    }
+    let upper = combo.to_ascii_uppercase();
+    if upper.contains("CTRL") || upper.contains("CONTROL") || upper.contains("CMD") || upper.contains("META") {
+        mods.push_str("CTRL+");
+    }
+    if upper.contains("SHIFT") {
+        mods.push_str("SHIFT+");
+    }
+    if upper.contains("ALT") {
+        mods.push_str("ALT+");
+    }
+    format!("{mods}{key}")
+}
+
 // =========================================================================
 // REGISTRATION HOOKS
 // =========================================================================
@@ -54,7 +84,7 @@ pub fn use_registered_shortcut(
                 (registry_opt, combo.clone(), handler.clone())
             {
                 reg.write().binds.insert(
-                    c.to_uppercase(),
+                    normalize_combo(&c),
                     ShortcutMeta {
                         category: cat.clone(),
                         action: act.clone(),
@@ -71,7 +101,7 @@ pub fn use_registered_shortcut(
         let combo = combo.clone();
         move || {
             if let (Some(mut reg), Some(c)) = (registry_opt, combo) {
-                reg.write().binds.remove(&c.to_uppercase());
+                reg.write().binds.remove(&normalize_combo(&c));
             }
         }
     });
@@ -80,6 +110,25 @@ pub fn use_registered_shortcut(
 // =========================================================================
 // EVENT LISTENER ROOT
 // =========================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_combo;
+
+    #[test]
+    fn combos_normalize_to_one_canonical_form() {
+        // Same binding written three ways must collide on one registry key.
+        assert_eq!(normalize_combo("Shift+Ctrl+E"), "CTRL+SHIFT+E");
+        assert_eq!(normalize_combo("ctrl+shift+e"), "CTRL+SHIFT+E");
+        assert_eq!(normalize_combo("CTRL+SHIFT+E"), "CTRL+SHIFT+E");
+        // Arrow naming: prefs say "Left", the DOM says "ArrowLeft".
+        assert_eq!(normalize_combo("Ctrl+Shift+Left"), "CTRL+SHIFT+LEFT");
+        assert_eq!(normalize_combo("Ctrl+Shift+ArrowLeft"), "CTRL+SHIFT+LEFT");
+        // Unmodified keys and meta aliasing.
+        assert_eq!(normalize_combo("F9"), "F9");
+        assert_eq!(normalize_combo("Cmd+S"), "CTRL+S");
+    }
+}
 
 #[component]
 pub fn MorShortcutRoot(children: Element) -> Element {
@@ -104,6 +153,7 @@ pub fn MorShortcutRoot(children: Element) -> Element {
                     dioxus::html::Key::Character(c) => key_combo.push_str(&c.to_uppercase()),
                     other => key_combo.push_str(&other.to_string().to_uppercase()),
                 }
+                let key_combo = normalize_combo(&key_combo);
 
                 if let Some(meta) = registry.read().binds.get(&key_combo) {
                     meta.handler.call(());

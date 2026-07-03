@@ -10,6 +10,8 @@ use mor_blogger_core::render::xml_parts::css_generator::render_css_sockets;
 
 use mor_blogger_core::utils::fs_bridge;
 
+use dioxus::html::HasFileData;
+
 use crate::app::shell::WorkbenchEditState;
 use crate::app::state::{DockPosition, LayoutState, RenderState};
 use crate::app::vfs::VfsDictionary;
@@ -60,7 +62,9 @@ fn render_module_preview(
     slots: &[widget_layout::WidgetSlot],
 ) -> String {
     let parts = mor_blogger_core::render::template_resolver::resolve_template_parts(config, vfs);
-    let true_css = render_css_sockets(parts.css, config);
+    // Decode XML entities: Blogger-escaped CSS into a browser <style>.
+    let true_css =
+        mor_blogger_core::render::util::unescape_for_style(&render_css_sockets(parts.css, config));
 
     use mor_blogger_core::render::preview;
 
@@ -103,7 +107,26 @@ html, body {{ overflow: hidden; margin: 0; }}
     )
 }
 
-fn module_key_to_category(key: &str) -> &'static str {
+/// Route a module file (dropped on the workspace) into the matching slot's editor
+/// buffer. Infers the slot from the filename; falls back to the active slot.
+fn apply_loaded_module(name: &str, xml: String, mut layout: LayoutState, mut edit_state: WorkbenchEditState) {
+    let hint = name.to_lowercase();
+    match crate::ui::layout::docks::template_editor_dock::infer_module_slot(
+        &hint,
+        (layout.active_workbench_module)(),
+    ) {
+        Some(slot) => {
+            layout.active_workbench_module.set(Some(slot));
+            edit_state.load_module_request.set(Some(xml));
+            edit_state.workbench_status.set(format!("Loaded {name} → {slot}."));
+        }
+        None => edit_state
+            .workbench_status
+            .set(format!("Couldn't detect module type for {name}; select a slot first.")),
+    }
+}
+
+pub(crate) fn module_key_to_category(key: &str) -> &'static str {
     match key {
         "header_variant" => "headers",
         "main_variant" => "layouts",
@@ -146,7 +169,7 @@ pub fn ModuleWorkbench(
         let mut es = edit_state;
         es.add_target.set(target);
         let mut l = layout;
-        l.request_exclusive_dock("widgets", DockPosition::mor_panel_right);
+        l.request_dock("widgets", DockPosition::mor_panel_right);
     };
 
     // Reactively resolve the active module's XML fragment from the live config.
@@ -187,6 +210,21 @@ pub fn ModuleWorkbench(
                 editing_blueprint.set(Some((bp.group.clone(), bp.name.clone())));
                 edited_xml.set(bp.xml.clone());
                 layout_view.set(false);
+                req.set(None);
+            }
+        });
+    }
+
+    // Honor "load this module file" requests (Template Modules dock picker or a
+    // file dropped on the workspace): the sender already set active_workbench_module,
+    // so we just push the XML into the editor buffer. Declared AFTER the module-key
+    // reset effect so, when the slot also changes, this write wins over the reset.
+    {
+        let mut req = edit_state.load_module_request;
+        use_effect(move || {
+            if let Some(xml) = req() {
+                editing_blueprint.set(None);
+                edited_xml.set(xml);
                 req.set(None);
             }
         });
@@ -329,7 +367,7 @@ pub fn ModuleWorkbench(
     // current target socket (config widget_map) or append to the module buffer.
     {
         let mut req = edit_state.add_widget_request;
-        let target = edit_state.add_target;
+        let mut target = edit_state.add_target;
         use_effect(move || {
             if let Some(bp) = req() {
                 match target() {
@@ -346,12 +384,26 @@ pub fn ModuleWorkbench(
                             }));
                         }
                     }
+                    // No explicit socket: append to the active module's buffer. Refuse
+                    // (with a hint) when nothing is selected, so the gadget can't vanish
+                    // into the orphan module_fragment buffer that has no module to
+                    // preview or save into — the silent no-op that read as "Add broken".
                     None => {
-                        let mut g = insert_blueprint;
-                        g(bp.clone());
+                        if (layout.active_workbench_module)().is_none()
+                            && editing_blueprint().is_none()
+                        {
+                            workbench_status.set(
+                                "Select a template module first (Template Editor dock), then Add."
+                                    .to_string(),
+                            );
+                        } else {
+                            let mut g = insert_blueprint;
+                            g(bp.clone());
+                        }
                     }
                 }
                 req.set(None);
+                target.set(None); // one-shot: next Add defaults back to the active module
             }
         });
     }
@@ -386,6 +438,17 @@ pub fn ModuleWorkbench(
             // ── Takeover Mode ─ Full-viewport isolated canvas stage ───────
             div {
                 style: "flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;",
+                ondragover: move |evt| { evt.prevent_default(); },
+                ondrop: move |evt| {
+                    async move {
+                        evt.prevent_default();
+                        if let Some(file) = evt.files().first() {
+                            if let Ok(bytes) = file.read_bytes().await {
+                                apply_loaded_module(&file.name(), String::from_utf8_lossy(&bytes).into_owned(), layout, edit_state);
+                            }
+                        }
+                    }
+                },
 
                 // Top navigation bar
                 div {
@@ -483,6 +546,17 @@ pub fn ModuleWorkbench(
             div {
                 class: "export-viewport",
                 style: "display: flex; flex-direction: row; flex: 1; min-height: 0; border: 1px solid var(--editor-border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel);",
+                ondragover: move |evt| { evt.prevent_default(); },
+                ondrop: move |evt| {
+                    async move {
+                        evt.prevent_default();
+                        if let Some(file) = evt.files().first() {
+                            if let Ok(bytes) = file.read_bytes().await {
+                                apply_loaded_module(&file.name(), String::from_utf8_lossy(&bytes).into_owned(), layout, edit_state);
+                            }
+                        }
+                    }
+                },
 
                 // ── Left Pane ─ XML Fragment Editor ──────────────────────
                 div {

@@ -89,9 +89,15 @@ pub fn ActivityBarButton(props: ActivityBarButtonProps) -> Element {
                 tooltip: props.dock_name.to_string(),
                 onclick: move |_| {
                     let pos = (props.pos_signal)();
-                    if pos == DockPosition::Hidden || pos == DockPosition::Floating {
-                        // Closed → open it.
-                        layout.request_exclusive_dock(props.dock_id, DockPosition::mor_panel_left);
+                    if pos == DockPosition::Hidden {
+                        // Closed → open it where this dock prefers.
+                        let preferred = layout.preferred_dock_position(props.dock_id);
+                        layout.request_dock(props.dock_id, preferred);
+                    } else if pos == DockPosition::Floating
+                        && layout.preferred_dock_position(props.dock_id) != DockPosition::Floating
+                    {
+                        // Floating → clicking re-docks it (unless it's floating by design).
+                        layout.request_dock(props.dock_id, DockPosition::mor_panel_left);
                     } else if layout.is_dock_pinned(props.dock_id) {
                         // Open + pinned → toggle closed; the icon stays (it's pinned).
                         let mut sig = props.pos_signal;
@@ -187,88 +193,59 @@ pub fn DockZone(position: DockPosition) -> Element {
         _ => layout.active_right_tab,
     };
 
-    let show_template_modules = (layout.template_modules_pos)() == position;
-    let show_widgets = (layout.widgets_pos)() == position;
-    let show_code_nav = (layout.code_nav_pos)() == position;
-    let show_static_pages = (layout.static_pages_pos)() == position;
-    let show_theme_palette = (layout.theme_palette_pos)() == position;
-    let show_site_data = (layout.site_data_pos)() == position;
-    let show_presets = (layout.presets_pos)() == position;
-    let show_css_editor = (layout.css_editor_pos)() == position;
-    let show_js_editor = (layout.js_editor_pos)() == position;
-    let show_diagnostics = (layout.diagnostics_pos)() == position;
-    let show_plugin_manager = (layout.plugin_manager_pos)() == position;
-    let show_css_builder = (layout.css_builder_pos)() == position;
-    let show_js_builder = (layout.js_builder_pos)() == position;
+    // Zones are shared: every dock here is a tab, the focused one renders.
+    let zone_docks = layout.docks_at(position);
+    if zone_docks.is_empty() {
+        return rsx! {};
+    }
+    let mut focus = match position {
+        DockPosition::mor_panel_left => layout.left_dock_focus,
+        _ => layout.right_dock_focus,
+    };
+    let focused = focus();
+    let visible = if zone_docks.iter().any(|id| *id == focused) {
+        focused
+    } else {
+        zone_docks[0].to_string()
+    };
 
-    // Workbench tool: wins the zone over palette/site-data while active.
-    if show_template_modules {
-        return rsx! {
+    let dock_body = match visible.as_str() {
+        "template_modules" => rsx! {
             TemplateModulesDock {}
-        };
-    }
-
-    if show_widgets {
-        return rsx! {
+        },
+        "widgets" => rsx! {
             WidgetsDock {}
-        };
-    }
-
-    if show_code_nav {
-        return rsx! {
+        },
+        "code_nav" => rsx! {
             CodeNavDock {}
-        };
-    }
-
-    if show_static_pages {
-        return rsx! {
+        },
+        "static_pages" => rsx! {
             StaticPagesDock {
                 signals: theme.signals,
                 show_undocked_pages: local.show_undocked_pages,
                 preview_html: local.tv_monitor,
                 base_preview_html: render.preview_html,
             }
-        };
-    }
-
-    if show_css_editor {
-        return rsx! {
+        },
+        "css_editor" => rsx! {
             CssEditorPanel {}
-        };
-    }
-
-    if show_js_editor {
-        return rsx! {
+        },
+        "js_editor" => rsx! {
             JsEditorPanel {}
-        };
-    }
-
-    if show_diagnostics {
-        return rsx! {
+        },
+        "diagnostics" => rsx! {
             DiagnosticsDock {}
-        };
-    }
-
-    if show_plugin_manager {
-        return rsx! {
+        },
+        "plugin_manager" => rsx! {
             PluginManagerDock {}
-        };
-    }
-
-    if show_css_builder {
-        return rsx! {
+        },
+        "css_builder" => rsx! {
             CssBuilderDock {}
-        };
-    }
-
-    if show_js_builder {
-        return rsx! {
+        },
+        "js_builder" => rsx! {
             JsBuilderDock {}
-        };
-    }
-
-    if show_theme_palette {
-        return rsx! {
+        },
+        "theme_palette" => rsx! {
             ThemePaletteDock {
                 active_tab,
                 active_preset: theme.active_preset,
@@ -287,11 +264,8 @@ pub fn DockZone(position: DockPosition) -> Element {
                 preview_html: local.tv_monitor,
                 base_preview_html: render.preview_html,
             }
-        };
-    }
-
-    if show_site_data {
-        return rsx! {
+        },
+        "site_data" => rsx! {
             SiteDataDock {
                 active_tab,
                 signals: theme.signals,
@@ -300,11 +274,8 @@ pub fn DockZone(position: DockPosition) -> Element {
                     theme.signals.apply_config(&new_config);
                 },
             }
-        };
-    }
-
-    if show_presets {
-        return rsx! {
+        },
+        "presets" => rsx! {
             PresetsPanel {
                 active_preset: theme.active_preset,
                 signals: theme.signals,
@@ -317,10 +288,25 @@ pub fn DockZone(position: DockPosition) -> Element {
                 },
                 show_undocked_presets: theme.show_undocked_presets,
             }
-        };
-    }
+        },
+        _ => rsx! {},
+    };
 
-    rsx! {}
+    rsx! {
+        if zone_docks.len() > 1 {
+            div { class: "mor-tabs mor-dock-tabstrip",
+                for id in zone_docks {
+                    button {
+                        key: "{id}",
+                        class: if *id == visible { "mor-tab active" } else { "mor-tab" },
+                        onclick: move |_| focus.set(id.to_string()),
+                        {crate::app::state::dock_display_name(id)}
+                    }
+                }
+            }
+        }
+        {dock_body}
+    }
 }
 
 #[derive(Props, Clone, PartialEq)]
@@ -340,36 +326,29 @@ pub fn MorLayoutChrome(props: MorLayoutChromeProps) -> Element {
     let theme = use_context::<ThemeState>();
     let signals = theme.signals;
 
-    let left_active = use_memo(move || {
-        (layout.theme_palette_pos)() == DockPosition::mor_panel_left
-            || (layout.site_data_pos)() == DockPosition::mor_panel_left
-            || (layout.css_editor_pos)() == DockPosition::mor_panel_left
-            || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-            || (layout.presets_pos)() == DockPosition::mor_panel_left
-            || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
-            || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
-            || (layout.css_builder_pos)() == DockPosition::mor_panel_left
-            || (layout.js_builder_pos)() == DockPosition::mor_panel_left
-            || (layout.template_modules_pos)() == DockPosition::mor_panel_left
-            || (layout.widgets_pos)() == DockPosition::mor_panel_left
-            || (layout.code_nav_pos)() == DockPosition::mor_panel_left
-            || (layout.static_pages_pos)() == DockPosition::mor_panel_left
-    });
+    let left_active = use_memo(move || !layout.docks_at(DockPosition::mor_panel_left).is_empty());
+    let right_active = use_memo(move || !layout.docks_at(DockPosition::mor_panel_right).is_empty());
 
-    let right_active = use_memo(move || {
-        (layout.theme_palette_pos)() == DockPosition::mor_panel_right
-            || (layout.site_data_pos)() == DockPosition::mor_panel_right
-            || (layout.css_editor_pos)() == DockPosition::mor_panel_right
-            || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-            || (layout.presets_pos)() == DockPosition::mor_panel_right
-            || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
-            || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
-            || (layout.css_builder_pos)() == DockPosition::mor_panel_right
-            || (layout.js_builder_pos)() == DockPosition::mor_panel_right
-            || (layout.template_modules_pos)() == DockPosition::mor_panel_right
-            || (layout.widgets_pos)() == DockPosition::mor_panel_right
-            || (layout.code_nav_pos)() == DockPosition::mor_panel_right
-            || (layout.static_pages_pos)() == DockPosition::mor_panel_right
+    // Title-bar drag → tab docking. The JS tracks pointer drags that start on a
+    // dock title bar ([data-dock-id]) and reports drops over a side zone; the
+    // loop here moves the dock (join-as-tab semantics live in request_dock).
+    use_future(move || async move {
+        let mut layout = layout;
+        let mut eval = dioxus::document::eval(crate::ui::layout::docks::shared::DOCK_TAB_DND_JS);
+        while let Ok(json) = eval.recv::<serde_json::Value>().await {
+            let (Some(dock), Some(zone)) = (
+                json.get("dock").and_then(|v| v.as_str()),
+                json.get("zone").and_then(|v| v.as_str()),
+            ) else {
+                continue;
+            };
+            let pos = match zone {
+                "left" => DockPosition::mor_panel_left,
+                "right" => DockPosition::mor_panel_right,
+                _ => continue,
+            };
+            layout.request_dock(dock, pos);
+        }
     });
 
     let grid_style = use_memo(move || {
@@ -629,22 +608,8 @@ pub fn FloatingWindowManager(props: FloatingWindowManagerProps) -> Element {
 #[component]
 pub fn LeftPanelContainer() -> Element {
     let layout = use_context::<LayoutState>();
-    
-    let has_left_dock = (layout.theme_palette_pos)() == DockPosition::mor_panel_left
-        || (layout.site_data_pos)() == DockPosition::mor_panel_left
-        || (layout.css_editor_pos)() == DockPosition::mor_panel_left
-        || (layout.js_editor_pos)() == DockPosition::mor_panel_left
-        || (layout.presets_pos)() == DockPosition::mor_panel_left
-        || (layout.plugin_manager_pos)() == DockPosition::mor_panel_left
-        || (layout.diagnostics_pos)() == DockPosition::mor_panel_left
-        || (layout.css_builder_pos)() == DockPosition::mor_panel_left
-        || (layout.js_builder_pos)() == DockPosition::mor_panel_left
-        || (layout.template_modules_pos)() == DockPosition::mor_panel_left
-        || (layout.widgets_pos)() == DockPosition::mor_panel_left
-        || (layout.code_nav_pos)() == DockPosition::mor_panel_left
-        || (layout.static_pages_pos)() == DockPosition::mor_panel_left;
-
-    let display_style = if has_left_dock { "display: flex;" } else { "display: none;" };
+    let has_left_dock = !layout.docks_at(DockPosition::mor_panel_left).is_empty();
+    let display_style = if has_left_dock { "display: flex; flex-direction: column;" } else { "display: none;" };
 
     rsx! {
         div { class: "panel-container left left-dock-container", style: "{display_style}",
@@ -658,22 +623,8 @@ pub fn LeftPanelContainer() -> Element {
 #[component]
 pub fn RightPanelContainer() -> Element {
     let layout = use_context::<LayoutState>();
-
-    let has_right_dock = (layout.theme_palette_pos)() == DockPosition::mor_panel_right
-        || (layout.site_data_pos)() == DockPosition::mor_panel_right
-        || (layout.css_editor_pos)() == DockPosition::mor_panel_right
-        || (layout.js_editor_pos)() == DockPosition::mor_panel_right
-        || (layout.presets_pos)() == DockPosition::mor_panel_right
-        || (layout.plugin_manager_pos)() == DockPosition::mor_panel_right
-        || (layout.diagnostics_pos)() == DockPosition::mor_panel_right
-        || (layout.css_builder_pos)() == DockPosition::mor_panel_right
-        || (layout.js_builder_pos)() == DockPosition::mor_panel_right
-        || (layout.template_modules_pos)() == DockPosition::mor_panel_right
-        || (layout.widgets_pos)() == DockPosition::mor_panel_right
-        || (layout.code_nav_pos)() == DockPosition::mor_panel_right
-        || (layout.static_pages_pos)() == DockPosition::mor_panel_right;
-
-    let display_style = if has_right_dock { "display: flex;" } else { "display: none;" };
+    let has_right_dock = !layout.docks_at(DockPosition::mor_panel_right).is_empty();
+    let display_style = if has_right_dock { "display: flex; flex-direction: column;" } else { "display: none;" };
 
     rsx! {
         div { class: "panel-container right right-dock-container", style: "{display_style}",

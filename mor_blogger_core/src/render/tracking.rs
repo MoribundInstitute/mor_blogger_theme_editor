@@ -62,10 +62,29 @@ pub fn widget_title_field_path(widget_id: &str) -> String {
     format!("widget.{widget_id}.title")
 }
 
-/// Static HTML h2; editable text lives in the inner span.
+/// The icon-slot edit target for a widget heading's glyph (the `::before`
+/// drawn from `--widget-icon`), if the widget has one. Lets the preview make
+/// those icons shift-click swappable like the header/panel icons.
+fn widget_icon_target(widget_id: &str) -> Option<&'static str> {
+    match widget_id {
+        "Label1" => Some("icons.label"),
+        "BlogArchive1" => Some("icons.archive"),
+        "HTML1" => Some("icons.toc"),
+        _ => None,
+    }
+}
+
+/// Static HTML h2; editable text lives in the inner span. When the widget has a
+/// heading glyph, the `<h2>` carries `data-edit-target` so shift-click swaps the
+/// icon while the inner span's dbl-click still edits the title text.
 pub fn widget_title_h2(widget_id: &str, title: &str) -> String {
+    let icon_attr = match widget_icon_target(widget_id) {
+        Some(target) => format!(r#" data-edit-target="{target}""#),
+        None => String::new(),
+    };
     format!(
-        r#"<h2 class="title"><span data-field-path="{path}">{title}</span></h2>"#,
+        r#"<h2 class="title"{icon_attr}><span data-field-path="{path}">{title}</span></h2>"#,
+        icon_attr = icon_attr,
         path = widget_title_field_path(widget_id),
         title = escape_html(title),
     )
@@ -106,6 +125,16 @@ mod tests {
         let out = stamp_all_widget_block_ids(raw.to_string());
         assert!(out.contains("data-block-id='Blog1'"));
         assert!(out.contains("data-block-id='Label2'"));
+    }
+
+    #[test]
+    fn widget_title_h2_tags_icon_target_for_known_widgets() {
+        // Heading glyphs become shift-click swappable for these widgets...
+        assert!(widget_title_h2("Label1", "Labels").contains(r#"data-edit-target="icons.label""#));
+        assert!(widget_title_h2("BlogArchive1", "Archive").contains(r#"data-edit-target="icons.archive""#));
+        assert!(widget_title_h2("HTML1", "Table of Contents").contains(r#"data-edit-target="icons.toc""#));
+        // ...but a widget without a heading glyph gets no icon target.
+        assert!(!widget_title_h2("Feed1", "Feed").contains("data-edit-target"));
     }
 
     #[test]

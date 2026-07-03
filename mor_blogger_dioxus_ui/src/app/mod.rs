@@ -49,7 +49,12 @@ pub fn App() -> Element {
     provide_context(site_data);
     provide_context(render);
 
-    use_keyboard_shortcuts(layout);
+    // Customized keybinds, shared by the dispatch layers (keyboard.rs JS map,
+    // shortcut registry), the menu-bar chips, and the rebind dialog.
+    let shortcut_prefs =
+        provide_context(Signal::new(config_bridge::ShortcutPrefs::load()));
+
+    use_keyboard_shortcuts(layout, shortcut_prefs);
     use_restore_drop_bridge(theme);
     use_theme_config_hot_reload(theme);
 

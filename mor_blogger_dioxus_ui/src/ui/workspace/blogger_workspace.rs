@@ -15,6 +15,7 @@ use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::diagnostics::DiagnosticResult;
 use mor_blogger_core::utils::svg_icons::{is_svg, svg_to_data_uri};
+use crate::ui::dialogs::modal::Modal;
 
 use super::js_workbench::JsWorkbench;
 use super::module_workbench::ModuleWorkbench;
@@ -22,6 +23,56 @@ use super::static_page_editor::StaticPageEditor;
 use super::widget_workbench::WidgetWorkbench;
 use crate::ui::layout::docks::smart_code_dock::SmartCodeDock;
 use crate::ui::layout::main_pane::MainPane;
+
+/// Drag handler for the fullscreen control bar's title strip. Pointer capture
+/// keeps move events flowing even when the cursor crosses the preview iframe
+/// (which otherwise swallows them — the source of "sticky" drags), and the
+/// body class blanks iframe pointer-events + sets the grabbing cursor.
+/// Position is not persisted — re-entering fullscreen recenters the bar.
+const FS_BAR_DRAG_JS: &str = r#"
+(function () {
+    if (window.__morFsBarDragInstalled) return;
+    window.__morFsBarDragInstalled = true;
+
+    document.addEventListener('pointerdown', function (e) {
+        const handle = e.target.closest('.mor-fullscreen-bar-handle');
+        if (!handle) return;
+        const bar = handle.closest('.mor-fullscreen-bar');
+        if (!bar) return;
+        e.preventDefault();
+        // Pointer capture is unreliable in this WebKitGTK webview — document
+        // listeners + the iframe pointer-events block do the job instead.
+        document.body.classList.add('editor-floating-dragging');
+
+        // Un-anchor from the centered default (left:50% + translate) so
+        // explicit left/top from here on tracks the pointer.
+        const r = bar.getBoundingClientRect();
+        const parent = bar.offsetParent ? bar.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+        const startLeft = r.left - parent.left;
+        const startTop = r.top - parent.top;
+        bar.style.left = startLeft + 'px';
+        bar.style.top = startTop + 'px';
+        bar.style.bottom = 'auto';
+        bar.style.transform = 'none';
+
+        const sx = e.clientX, sy = e.clientY;
+        const onMove = function (m) {
+            // Clamp so the bar can't be lost outside the workspace.
+            const pw = bar.offsetParent ? bar.offsetParent.clientWidth : window.innerWidth;
+            const ph = bar.offsetParent ? bar.offsetParent.clientHeight : window.innerHeight;
+            bar.style.left = Math.max(0, Math.min(startLeft + m.clientX - sx, pw - r.width)) + 'px';
+            bar.style.top = Math.max(0, Math.min(startTop + m.clientY - sy, ph - r.height)) + 'px';
+        };
+        const onUp = function () {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.body.classList.remove('editor-floating-dragging');
+        };
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    });
+})();
+"#;
 
 const PICKER_ICONS: [(&str, &str); 15] = [
     ("Close", "M18 6 6 18M6 6l12 12"),
@@ -171,26 +222,39 @@ pub fn BloggerWorkspace(
 
             if is_fullscreen() {
                 div {
-                    class: "editor-panel",
-                    style: "position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);",
-
-                    if center_view() == CenterView::Preview {
-                        ViewportToolbar {
-                            preview_viewport,
-                            preview_width,
-                            is_xray_active,
-                        }
-                        div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                    class: "mor-fullscreen-bar",
+                    onmounted: move |_| {
+                        // script-tag injection doesn't execute in this webview,
+                        // and a dropped Eval handle cancels the script — await it.
+                        spawn(async move {
+                            let _ = dioxus::document::eval(FS_BAR_DRAG_JS).await;
+                        });
+                    },
+                    div {
+                        class: "mor-fullscreen-bar-handle",
+                        title: "Drag to move — resize from the bottom-right corner",
                     }
+                    div {
+                        class: "mor-fullscreen-bar-controls",
 
-                    WorkspaceTabs { center_view }
+                        if center_view() == CenterView::Preview {
+                            ViewportToolbar {
+                                preview_viewport,
+                                preview_width,
+                                is_xray_active,
+                            }
+                            div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                        }
 
-                    div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+                        WorkspaceTabs { center_view }
 
-                    button {
-                        class: "editor-mini-button",
-                        onclick: move |_| is_fullscreen.set(false),
-                        "Exit Fullscreen ×"
+                        div { style: "width: 1px; height: 16px; background: var(--editor-border-soft);" }
+
+                        button {
+                            class: "editor-mini-button",
+                            onclick: move |_| is_fullscreen.set(false),
+                            "Exit Fullscreen ×"
+                        }
                     }
                 }
             }
@@ -204,7 +268,7 @@ pub fn BloggerWorkspace(
                         let toml_str = config_toml.clone();
                         let restore = on_restore.clone();
                         let target = icon_target.clone();
-                        move |mask: String| {
+                        move |(mask, recolor): (String, bool)| {
                             let mut config = toml::from_str::<ThemeConfig>(&toml_str()).unwrap_or_default();
                             match target.as_str() {
                                 "icons.panel_close" => config.icons.panel_close = mask,
@@ -212,14 +276,22 @@ pub fn BloggerWorkspace(
                                 "icons.menu" => config.icons.menu = mask,
                                 "icons.sidebar_left" => config.icons.sidebar_left = mask,
                                 "icons.sidebar_right" => config.icons.sidebar_right = mask,
-                                "icons.archive" => config.icons.archive = mask,
-                                "icons.label" => config.icons.label = mask,
+                                // Widget heading glyphs render from custom_icons
+                                // (see css_builder --icon-label/archive/toc), so write
+                                // there — that's what the preview/export actually read.
+                                "icons.label" => { config.icons.custom_icons.insert("label".to_string(), mask); }
+                                "icons.archive" => { config.icons.custom_icons.insert("archive".to_string(), mask); }
+                                "icons.toc" => { config.icons.custom_icons.insert("toc".to_string(), mask); }
                                 "icons.share" => config.icons.share = mask,
                                 "icons.user" => config.icons.user = mask,
                                 "icons.comment" => config.icons.comment = mask,
                                 "icons.arrow_up" => config.icons.arrow_up = mask,
                                 "icons.external_link" => config.icons.external_link = mask,
                                 _ => {}
+                            }
+                            // Record per-slot render mode (slot key = field name after "icons.").
+                            if let Some(slot) = target.strip_prefix("icons.") {
+                                config.icons.recolor.insert(slot.to_string(), recolor);
                             }
                             restore.call(config);
                         }
@@ -379,7 +451,7 @@ fn WorkspaceTabs(center_view: Signal<CenterView>) -> Element {
                 e.stop_propagation();
                 layout.enter_workspace(CenterView::JsWorkbench);
             },
-            "JS"
+            "☕✍️"
         }
         button {
             class: if center_view() == CenterView::StaticPageEditor { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
@@ -493,28 +565,38 @@ fn IconPickerModal(
     target: String,
     config_toml: String,
     on_close: EventHandler<()>,
-    on_select_mask: EventHandler<String>,
+    on_select_mask: EventHandler<(String, bool)>,
 ) -> Element {
     let mut status_msg = use_signal(String::new);
     let mut raw_svg_input = use_signal(String::new);
+    let mut emoji_input = use_signal(String::new);
+    // Default ON: most icons are monochrome and want to follow the theme. Uncheck
+    // to keep an icon's own colours (colour emoji, multicolour SVG, a logo).
+    let recolor = use_signal(|| true);
+    // Standard floating dialog (opaque .mor-modal, draggable, resizable). The
+    // parent unmounts us on close, so this local `open` just satisfies Modal.
+    let open_signal = use_signal(|| true);
 
     rsx! {
-        div {
-            class: "editor-modal-overlay",
-            style: "position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);",
-            onclick: move |_| on_close.call(()),
+        Modal {
+            open: open_signal,
+            title: "Select Visual Icon",
+            style: "width: 460px;".to_string(),
+            on_close: move |_| on_close.call(()),
 
-            div {
-                class: "editor-panel",
-                style: "width: 460px; background: var(--bg-panel); border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); padding: 20px; border-radius: 12px;",
-                onclick: move |e| e.stop_propagation(),
-
-                div { style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;",
-                    h3 { style: "margin: 0; color: var(--fg-base);", "Select Visual Icon" }
-                    button { class: "editor-mini-button", onclick: move |_| on_close.call(()), "×" }
+                div { style: "font-size: 0.85em; color: var(--fg-muted); margin-bottom: 12px;", "Target slot: ", code { style: "color: var(--accent);", "{target}" } }
+                label { style: "display: flex; align-items: center; gap: 8px; font-size: 0.85em; color: var(--fg-base); margin-bottom: 16px; cursor: pointer;",
+                    input {
+                        r#type: "checkbox",
+                        checked: recolor(),
+                        onchange: {
+                            let mut recolor = recolor;
+                            move |evt: Event<FormData>| recolor.set(evt.checked())
+                        }
+                    }
+                    "Recolor to match theme"
+                    span { style: "color: var(--fg-muted); font-weight: normal;", " — off keeps the icon's own colours (colour emoji, multicolour SVG, logos)" }
                 }
-
-                div { style: "font-size: 0.85em; color: var(--fg-muted); margin-bottom: 16px;", "Target slot: ", code { style: "color: var(--accent);", "{target}" } }
                 if !status_msg().is_empty() { div { class: "export-status", "{status_msg}" } }
 
                 h4 { style: "margin: 0 0 10px 0; font-size: 0.85em; color: var(--fg-base); text-transform: uppercase; letter-spacing: 0.05em;", "Paste Raw SVG" }
@@ -536,7 +618,7 @@ fn IconPickerModal(
                                 return;
                             }
                             let mask = svg_to_data_uri(&raw_svg);
-                            on_select_mask.call(mask);
+                            on_select_mask.call((mask, recolor()));
                             status_msg.set("SVG applied!".to_string());
                             raw_svg_input.set(String::new());
                         },
@@ -547,6 +629,7 @@ fn IconPickerModal(
                         style: "justify-content: center;",
                         onclick: move |_| {
                             let apply = on_select_mask.clone();
+                            let recolor_on = recolor();
                             spawn(async move {
                                 if let Some(file) = rfd::AsyncFileDialog::new().add_filter("SVG", &["svg"]).pick_file().await {
                                     let bytes = file.read().await;
@@ -556,7 +639,7 @@ fn IconPickerModal(
                                         return;
                                     }
                                     let mask = svg_to_data_uri(&raw_svg);
-                                    apply.call(mask);
+                                    apply.call((mask, recolor_on));
                                     status_msg.set(format!("SVG applied from {}", file.file_name()));
                                 }
                             });
@@ -564,6 +647,41 @@ fn IconPickerModal(
                         "Browse OS for .svg..."
                     }
                 }
+
+                h4 { style: "margin: 0 0 10px 0; font-size: 0.85em; color: var(--fg-base); text-transform: uppercase; letter-spacing: 0.05em;", "Emoji / Symbol" }
+                div { style: "display: flex; gap: 8px; margin-bottom: 6px;",
+                    input {
+                        class: "editor-input",
+                        style: "flex: 1; text-align: center; font-size: 18px;",
+                        placeholder: "🔔  ★  ⚙  →",
+                        value: "{emoji_input}",
+                        oninput: move |evt| emoji_input.set(evt.value()),
+                    }
+                    button {
+                        class: "editor-button",
+                        style: "justify-content: center; white-space: nowrap;",
+                        onclick: move |_| {
+                            let raw = emoji_input().trim().to_string();
+                            if raw.is_empty() {
+                                status_msg.set("Error: enter an emoji or symbol.".to_string());
+                                return;
+                            }
+                            // Wrap as an SVG <text> glyph so it rides the existing icon
+                            // pipeline unchanged. Recolor ON → masked silhouette in the theme
+                            // colour; recolor OFF → the SVG renders as a background image, i.e.
+                            // the full-colour emoji.
+                            let safe = raw.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+                            let svg = format!(
+                                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='12' y='12' font-size='20' text-anchor='middle' dominant-baseline='central'>{safe}</text></svg>"
+                            );
+                            on_select_mask.call((svg_to_data_uri(&svg), recolor()));
+                            status_msg.set(if recolor() { "Emoji applied (theme colour).".to_string() } else { "Emoji applied (full colour).".to_string() });
+                            emoji_input.set(String::new());
+                        },
+                        "Apply Emoji"
+                    }
+                }
+                p { style: "margin: 0 0 24px 0; font-size: 0.75em; color: var(--fg-muted);", "Any emoji or Unicode symbol. With “Recolor” on it's a theme-tinted silhouette; off keeps the full-colour emoji." }
 
                 h4 { style: "margin: 0 0 10px 0; font-size: 0.85em; color: var(--fg-base); text-transform: uppercase; letter-spacing: 0.05em;", "Loaded in Current Theme" }
                 div {
@@ -586,7 +704,7 @@ fn IconPickerModal(
                                         let mask_uri = mask_uri.clone();
                                         let apply = on_select_mask.clone();
                                         move |_| {
-                                            apply.call(mask_uri.clone());
+                                            apply.call((mask_uri.clone(), recolor()));
                                             status_msg.set(format!("Applied {} icon.", label));
                                         }
                                     },
@@ -607,7 +725,7 @@ fn IconPickerModal(
                                 let mask = encode_path_to_mask(path_d);
                                 let apply = on_select_mask.clone();
                                 move |_| {
-                                    apply.call(mask.clone());
+                                    apply.call((mask.clone(), recolor()));
                                     status_msg.set(format!("Applied {} icon.", label));
                                 }
                             },
@@ -615,7 +733,6 @@ fn IconPickerModal(
                         }
                     }
                 }
-            }
         }
     }
 }

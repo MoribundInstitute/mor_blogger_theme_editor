@@ -4,21 +4,21 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
-/// Neutral dark theme — the app's own "Dark Mode" (no longer a GTK clone).
-/// Warm-neutral charcoal surfaces under the shared MorBlogger amber accent so
-/// it reads as the same product as Mor Studio, just calmer.
+/// Neutral dark theme — the app's own "Dark Mode": monochrome white-on-black,
+/// no brand accent. Accent stays a mid-gray (not white) because primary
+/// buttons and menu hovers paint white text on it.
 pub const DARK_MODE_TOML: &str = r##"
-bg            = "#1a1a1c"
-panel         = "#232325"
-header        = "#141416"
-text          = "#ececed"
+bg            = "#0e0e0f"
+panel         = "#161618"
+header        = "#080809"
+text          = "#f5f5f5"
 text_muted    = "#9b9b9e"
-border        = "#2e2e31"
-border_light  = "#3c3c40"
-accent        = "#b0571d"
-accent_hover  = "#c2622a"
-btn           = "#2a2a2d"
-btn_hover     = "#343438"
+border        = "#2a2a2d"
+border_light  = "#3a3a3e"
+accent        = "#4a4a4f"
+accent_hover  = "#5c5c62"
+btn           = "#1f1f22"
+btn_hover     = "#2c2c30"
 font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"
@@ -29,21 +29,21 @@ success       = "#46c08a"
 warning       = "#e0a13a"
 "##;
 
-/// Light theme — the app's own "Light Mode" (no longer a macOS clone).
-/// Warm off-white surfaces with the same amber accent, tuned darker for the
-/// status colors so they stay legible on a light background.
+/// Light theme — the app's own "Light Mode": monochrome black-on-white,
+/// no brand accent. Text is near-black for contrast; accent is a dark gray
+/// (not black) since primary buttons and menu hovers paint white text on it.
 pub const LIGHT_MODE_TOML: &str = r##"
-bg            = "#f4f3f1"
+bg            = "#f6f6f6"
 panel         = "#ffffff"
-header        = "#e8e6e2"
-text          = "#1f1e1d"
-text_muted    = "#6b6a67"
-border        = "#d9d6d1"
-border_light  = "#e8e6e2"
-accent        = "#b0571d"
-accent_hover  = "#c2622a"
+header        = "#eaeaea"
+text          = "#111111"
+text_muted    = "#4a4a4a"
+border        = "#d4d4d4"
+border_light  = "#e4e4e4"
+accent        = "#2e2e2e"
+accent_hover  = "#454545"
 btn           = "#ffffff"
-btn_hover     = "#efedea"
+btn_hover     = "#ececec"
 font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"
@@ -146,11 +146,11 @@ pub struct MorTheme {
 }
 
 fn default_slice() -> String {
-    "30".to_string()
+    "30%".to_string()
 }
 
 fn default_image_width() -> String {
-    "20px".to_string()
+    "28px".to_string()
 }
 
 fn default_true() -> bool {
@@ -200,21 +200,46 @@ impl MorTheme {
         toml::to_string_pretty(self).unwrap_or_default()
     }
 
+    /// Workspace theme → `:root { --mor-* }` block, injected by [`MorStyleProvider`].
+    /// Everything the app shell renders with resolves from these variables
+    /// (the `--editor-*` names in editor_styles/00-tokens.css alias onto them).
     pub fn to_css_vars(&self) -> String {
-        let image_vars = if self.enable_image_borders && self.custom_border_url.is_some() {
-            let url = self.custom_border_url.as_ref().unwrap();
-            format!(
-                "  --mor-border-image: url(\"{}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};",
-                url, self.svg_border_slice, self.image_border_width
-            )
-        } else {
-            "  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);"
-                .to_string()
-        };
-        format!(
-            ":root {{\n  --mor-bg: {};\n  --mor-panel: {};\n  --mor-header: {};\n  --mor-text: {};\n  --mor-text-muted: {};\n  --mor-border: {};\n  --mor-border-light: {};\n  --mor-accent: {};\n  --mor-accent-hover: {};\n  --mor-btn: {};\n  --mor-btn-hover: {};\n  --mor-font: {};\n  --mor-font-size: {};\n  --mor-font-h1: {};\n  --mor-padding: {};\n  --mor-radius: {};\n  --mor-destructive: {};\n  --mor-success: {};\n  --mor-warning: {};\n{}\n}}",
-            self.bg, self.panel, self.header, self.text, self.text_muted, self.border, self.border_light, self.accent, self.accent_hover, self.btn, self.btn_hover, self.font_family, self.font_size_base, self.font_size_h1, self.padding_base, self.border_radius, self.destructive, self.success, self.warning, image_vars
-        )
+        let vars = [
+            ("--mor-bg", &self.bg),
+            ("--mor-panel", &self.panel),
+            ("--mor-header", &self.header),
+            ("--mor-text", &self.text),
+            ("--mor-text-muted", &self.text_muted),
+            ("--mor-border", &self.border),
+            ("--mor-border-light", &self.border_light),
+            ("--mor-accent", &self.accent),
+            ("--mor-accent-hover", &self.accent_hover),
+            ("--mor-btn", &self.btn),
+            ("--mor-btn-hover", &self.btn_hover),
+            ("--mor-font", &self.font_family),
+            ("--mor-font-size", &self.font_size_base),
+            ("--mor-font-h1", &self.font_size_h1),
+            ("--mor-padding", &self.padding_base),
+            ("--mor-radius", &self.border_radius),
+            ("--mor-destructive", &self.destructive),
+            ("--mor-success", &self.success),
+            ("--mor-warning", &self.warning),
+        ];
+        let mut out = String::from(":root {\n");
+        for (name, value) in vars {
+            out.push_str(&format!("  {name}: {value};\n"));
+        }
+        match &self.custom_border_url {
+            Some(url) if self.enable_image_borders => out.push_str(&format!(
+                "  --mor-border-image: url(\"{url}\");\n  --mor-border-slice: {};\n  --mor-border-width-img: {};\n",
+                self.svg_border_slice, self.image_border_width
+            )),
+            _ => out.push_str(
+                "  --mor-border-image: none;\n  --mor-border-slice: 0;\n  --mor-border-width-img: var(--panel-border-width);\n",
+            ),
+        }
+        out.push('}');
+        out
     }
 }
 
@@ -458,36 +483,10 @@ pub const MOR_CSS: &str = r#"
     font-family: var(--mor-font);
 }
 
-.mor-checkbox {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--mor-border);
-    border-radius: 3px;
-    background: var(--mor-bg);
-    cursor: pointer;
-    position: relative;
-    transition: all 0.1s ease;
-    margin: 0;
-}
-
-.mor-checkbox:checked {
-    background: var(--mor-accent-hover);
-    border-color: var(--mor-accent-hover);
-}
-
-.mor-checkbox:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 1px;
-    width: 4px;
-    height: 8px;
-    border: solid var(--mor-bg);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
+/* .mor-checkbox intentionally has no visual rules: it's an <input
+   type="checkbox">, so it inherits the single global themed checkbox style
+   (editor_styles/21-ui-inputs.css). One source of truth = every checkbox
+   matches. */
 
 .mor-select-wrapper {
     display: flex;
@@ -633,18 +632,41 @@ pub fn MorStyleProvider(
     let prefs = crate::app::config_bridge::EditorPrefs::load();
     let theme =
         crate::app::config_bridge::resolve_effective_theme(base, &prefs.custom_editor_colors);
-    let mut css_vars = theme.to_css_vars();
-    if let Some(ref c) = prefs.custom_editor_colors.panel_title_color {
-        let mut safe_css = css_vars.trim_end().to_string();
-        if safe_css.ends_with("}") {
-            safe_css.pop();
-            safe_css.push_str(&format!("  --panel-title-color: {};\n}}", c));
-            css_vars = safe_css;
-        }
-    }
+    let css_vars = theme.to_css_vars();
+    // Overrides ride in their own :root rule; the cascade merges them.
+    let override_vars = prefs
+        .custom_editor_colors
+        .panel_title_color
+        .as_ref()
+        .map(|c| format!(":root {{ --panel-title-color: {c}; }}"))
+        .unwrap_or_default();
 
     rsx! {
         style { "{css_vars}" }
+        style { "{override_vars}" }
         style { "{MOR_CSS}" }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn css_vars_block_is_well_formed() {
+        let theme = MorTheme::from_toml(MOR_STUDIO_TOML).unwrap();
+        let css = theme.to_css_vars();
+        assert!(css.starts_with(":root {\n"));
+        assert!(css.ends_with('}'));
+        assert!(css.contains("  --mor-bg: #16181d;\n"));
+        assert!(css.contains("  --mor-warning: #e0a13a;\n"));
+        // No image border configured → the disabled fallback vars.
+        assert!(css.contains("--mor-border-image: none;"));
+
+        let mut with_border = theme.clone();
+        with_border.enable_image_borders = true;
+        with_border.custom_border_url = Some("border.svg".to_string());
+        let css = with_border.to_css_vars();
+        assert!(css.contains("--mor-border-image: url(\"border.svg\");"));
     }
 }

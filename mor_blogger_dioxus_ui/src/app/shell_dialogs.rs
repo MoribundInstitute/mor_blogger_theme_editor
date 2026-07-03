@@ -103,7 +103,7 @@ pub fn EditorSettingsDialog(mut open: Signal<bool>, active_theme_toml: Signal<St
 
                 nav {
                     style: "flex: 0 0 200px; display: flex; flex-direction: column; \
-                            border-right: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.18)); padding: 18px;",
+                            border-right: 1px solid var(--editor-border-soft); padding: 18px;",
 
                     div {
                         style: "display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto;",
@@ -126,7 +126,7 @@ pub fn EditorSettingsDialog(mut open: Signal<bool>, active_theme_toml: Signal<St
                 }
 
                 div {
-                    style: "flex: 1 1 auto; overflow-y: auto; padding: 24px; background: var(--editor-bg, #0f0e0c); color: var(--editor-fg, #f4f1ea);",
+                    style: "flex: 1 1 auto; overflow-y: auto; padding: 24px; background: var(--editor-bg); color: var(--editor-text);",
 
                     match active_tab() {
                         SettingsTab::General => rsx! {
@@ -158,11 +158,11 @@ fn GeneralSettings(active_theme_toml: Signal<String>) -> Element {
                     "Editor"
                 }
                 p {
-                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
+                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: var(--editor-muted);",
                     "Code editor behavior. Changes apply immediately and persist to editor_prefs.toml."
                 }
                 div {
-                    style: "display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
+                    style: "display: flex; flex-direction: column; gap: 16px; background: var(--editor-panel-soft); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft);",
                     crate::ui::components::form::MorCheckbox {
                         label: "Show code minimap by default (toggle per editor with the corner button)".to_string(),
                         checked: minimap(),
@@ -179,11 +179,11 @@ fn GeneralSettings(active_theme_toml: Signal<String>) -> Element {
                     "Workspace Theme"
                 }
                 p {
-                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
+                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: var(--editor-muted);",
                     "Workspace theme presets. Changes apply immediately and persist to editor_prefs.toml."
                 }
                 div {
-                    style: "display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
+                    style: "display: flex; flex-direction: column; gap: 16px; background: var(--editor-panel-soft); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft);",
                     WorkspaceThemePresets { active_theme_toml }
                 }
             }
@@ -202,11 +202,11 @@ fn AppearanceSettings(active_theme_toml: Signal<String>) -> Element {
                     "Appearance"
                 }
                 p {
-                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
+                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: var(--editor-muted);",
                     "Customize editor colors, typography, and layout geometry."
                 }
                 div {
-                    style: "background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
+                    style: "background: var(--editor-panel-soft); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft);",
                     WorkspaceAppearancePanel { active_theme_toml }
                 }
             }
@@ -239,11 +239,11 @@ fn QuickLaunchSettings() -> Element {
                     "Quick Launch Bar"
                 }
                 p {
-                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: #a8a294;",
+                    style: "margin: 0 0 16px 0; font-size: 0.85rem; color: var(--editor-muted);",
                     "Pin tools to the activity bar. Unpinned tools still open from the Docks/Tools menus and appear temporarily while open."
                 }
                 div {
-                    style: "display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft, rgba(236, 231, 218, 0.12));",
+                    style: "display: flex; flex-direction: column; gap: 8px; background: var(--editor-panel-soft); padding: 16px; border-radius: 6px; border: 1px solid var(--editor-border-soft);",
                     for (dock_id, label, icon) in QUICK_LAUNCH_ITEMS {
                         QuickLaunchToggle {
                             key: "{dock_id}",
@@ -273,7 +273,7 @@ fn QuickLaunchToggle(
                 r#type: "checkbox",
                 checked: visible,
                 onchange: move |evt| on_change.call(evt.checked()),
-                style: "cursor: pointer; width: 16px; height: 16px; accent-color: #73c991;",
+                style: "cursor: pointer;",
             }
             span { style: "font-size: 18px;", "{icon}" }
             span { style: "font-size: 0.95rem;", "{label}" }
@@ -293,11 +293,11 @@ fn CategoryButton(
                 "text-align: left; padding: 8px 12px; border: none; cursor: pointer; border-radius: 3px; \
                  font-family: inherit; font-size: 0.95rem; transition: background 0.2s; \
                  background: {}; color: {}; font-weight: {};",
-                if active { "rgba(236, 231, 218, 0.08)" } else { "transparent" },
-                if active { "#f4f1ea" } else { "#a8a294" },
+                if active { "var(--mor-btn-hover)" } else { "transparent" },
+                if active { "var(--editor-text)" } else { "var(--editor-muted)" },
                 if active { "600" } else { "400" }
             ),
-            onclick: move |evt| on_click.call(evt),
+            onclick: on_click,
             "{label}"
         }
     }

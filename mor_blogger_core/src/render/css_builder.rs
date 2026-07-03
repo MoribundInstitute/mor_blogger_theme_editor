@@ -1,7 +1,7 @@
 //! CSS Builder module for sanitizing and concatenating base CSS files.
 
 use crate::config::fonts::resolve_font_stack_with_fallback;
-use crate::config::{BackgroundMode, ThemeConfig};
+use crate::config::{BackgroundMode, ThemeConfig, TypographyConfig};
 use crate::render::util::escape_attr;
 use crate::utils::svg_icons::svg_to_data_uri;
 
@@ -55,6 +55,21 @@ pub fn icon_or_default(value: &str, default_path_d: &str) -> String {
     } else {
         value.to_string()
     }
+}
+
+/// Per-slot render-mode override. Recolor mode (default / absent / `true`)
+/// emits nothing: the icon CSS rules fall back to masking `var(--icon-X)` with
+/// the theme colour, exactly as before. As-is mode (`false`) emits the three
+/// hook vars that flip that slot to a full-colour background image with no tint
+/// — so colour emoji, multicolour SVGs, and logos render untouched.
+fn icon_asis_vars(slot_field: &str, recolor: &std::collections::HashMap<String, bool>) -> String {
+    if recolor.get(slot_field).copied().unwrap_or(true) {
+        return String::new();
+    }
+    let v = slot_field.replace('_', "-");
+    format!(
+        "\n  --icon-{v}-tint: transparent;\n  --icon-{v}-bg: var(--icon-{v});\n  --icon-{v}-mask: none;"
+    )
 }
 
 /// Builds the master CSS baseline from modular chunks or user uploads,
@@ -129,18 +144,22 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         "\n  --icon-sidebar-left: {};",
         icon_or_default(&config.icons.sidebar_left, DEFAULT_ICON_SIDEBAR_LEFT)
     ));
+    custom_vars.push_str(&icon_asis_vars("sidebar_left", &config.icons.recolor));
     custom_vars.push_str(&format!(
         "\n  --icon-sidebar-right: {};",
         icon_or_default(&config.icons.sidebar_right, DEFAULT_ICON_SIDEBAR_RIGHT)
     ));
+    custom_vars.push_str(&icon_asis_vars("sidebar_right", &config.icons.recolor));
     custom_vars.push_str(&format!(
         "\n  --icon-panel-close: {};",
         icon_or_default(&config.icons.panel_close, DEFAULT_ICON_PANEL_CLOSE)
     ));
+    custom_vars.push_str(&icon_asis_vars("panel_close", &config.icons.recolor));
     custom_vars.push_str(&format!(
         "\n  --icon-search: {};",
         icon_or_default(&config.icons.search, DEFAULT_ICON_SEARCH)
     ));
+    custom_vars.push_str(&icon_asis_vars("search", &config.icons.recolor));
     custom_vars.push_str(&format!(
         "\n  --icon-menu: {};",
         icon_or_default(&config.icons.menu, DEFAULT_ICON_MENU)
@@ -154,7 +173,14 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         custom_vars.push_str(&format!("\n  --icon-{safe_key}: {svg_data};"));
     }
 
-    let frame_on = config.enable_image_borders && config.custom_border_url.is_some();
+    // The frame is active whenever a non-empty image URL is set; the
+    // per-region toggles (target_sidebars / target_canvas) decide WHERE it
+    // applies. (No separate "enable" gate — pasting a URL is the enable, which
+    // matches what the panel's live Preview Frame already shows.)
+    let frame_on = config
+        .custom_border_url
+        .as_ref()
+        .is_some_and(|u| !u.trim().is_empty());
     // Sidebars consume --mor-border-image (see 10-Side-Panels.css). Honor the
     // "Apply to Sidebars" toggle instead of always framing them.
     if frame_on && config.target_sidebars {
@@ -173,18 +199,6 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
 
     custom_vars.push_str("\n}\n");
 
-    // Main canvas frame — the canvas has no --mor-border-image hook of its own, so
-    // emit a dedicated rule, gated on "Apply to Main Canvas".
-    if frame_on && config.target_canvas {
-        let url = config.custom_border_url.as_ref().unwrap();
-        custom_vars.push_str(&format!(
-            ".canvas-core {{ border-style: solid; border-width: {}; border-image-source: url(\"{}\"); border-image-slice: {}; border-image-repeat: round; }}\n",
-            escape_attr(&config.image_border_width),
-            escape_attr(url),
-            escape_attr(&config.svg_border_slice),
-        ));
-    }
-
     /* Widget header icons via CSS mask (scoped per widget ID/class for .widget h2::before) */
     custom_vars.push_str("#Label1, .Label { --widget-icon: var(--icon-label); }\n");
     custom_vars.push_str("#BlogArchive1, .BlogArchive { --widget-icon: var(--icon-archive); }\n");
@@ -195,6 +209,11 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
     let mut result = custom_vars;
     result.push_str("\n\n");
     result.push_str(&combined_css);
+
+    // Per-element typography overrides. Emitted AFTER the base CSS so simple
+    // element selectors (h1, p, …) win over 02-Typography-Links.css and UA
+    // defaults, but still before preset_css/user CSS below.
+    result.push_str(&build_element_typography_css(&config.typography));
 
     // Generated button styling, emitted AFTER all core CSS so it is the
     // authoritative button layer (beats base rules in 13-Pagination, 18-Footer,
@@ -220,5 +239,225 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         result.push_str(&config.preset_css);
     }
 
+    // Image frame — emitted LAST, with !important, so an explicitly-enabled
+    // frame wins over preset CSS that hard-sets borders on these elements (e.g.
+    // the glassmorphism preset's `.canvas-core/.mor-panel { border: ... !important }`).
+    // The `border` shorthand in those presets resets border-image, so we must
+    // re-assert the longhands here. Applies to both preview and exported XML.
+    if frame_on {
+        let url = config.custom_border_url.as_ref().unwrap();
+        let decl = format!(
+            "border-style: solid !important; border-width: {w} !important; border-image-source: url(\"{u}\") !important; border-image-slice: {s} !important; border-image-repeat: round !important; border-radius: 0 !important;",
+            w = escape_attr(&config.image_border_width),
+            u = escape_attr(url),
+            s = escape_attr(&config.svg_border_slice),
+        );
+        result.push_str("\n\n/* --- Image frame (wins over preset borders) --- */\n");
+        if config.target_canvas {
+            result.push_str(&format!(".canvas-core {{ {decl} }}\n"));
+        }
+        if config.target_sidebars {
+            result.push_str(&format!(".mor-panel {{ {decl} }}\n"));
+        }
+    }
+
     result
+}
+
+/// Map a Typography panel element key to the CSS selector(s) it targets.
+fn element_selector(key: &str) -> Option<&'static str> {
+    match key {
+        "h1" => Some("h1"),
+        "h2" => Some("h2"),
+        "h3" => Some("h3"),
+        "p" | "body" => Some(".post-body, .post-body p, .post-body li"),
+        "blockquote" => Some("blockquote"),
+        "code" => Some("code, pre, kbd, samp"),
+        _ => None,
+    }
+}
+
+/// Build CSS rules for per-element typography overrides. Each [`ElementStyle`]
+/// emits one rule containing only its non-empty properties; an all-default
+/// entry (or an unknown selector) emits nothing.
+pub fn build_element_typography_css(typo: &TypographyConfig) -> String {
+    let mut out = String::new();
+    for el in &typo.elements {
+        let Some(selector) = element_selector(el.selector.trim()) else {
+            continue;
+        };
+
+        let mut decls = String::new();
+        let mut push = |prop: &str, val: &str| {
+            let v = val.trim();
+            if !v.is_empty() {
+                decls.push_str(&format!(" {}: {};", prop, escape_attr(v)));
+            }
+        };
+        push("font-size", &el.font_size);
+        push("font-weight", &el.font_weight);
+        push("line-height", &el.line_height);
+        push("letter-spacing", &el.letter_spacing);
+        push("color", &el.color);
+        push("background", &el.background);
+        push("padding", &el.padding);
+        push("border-radius", &el.border_radius);
+        push("text-align", &el.text_align);
+        if el.italic {
+            decls.push_str(" font-style: italic;");
+        }
+
+        if !decls.is_empty() {
+            out.push_str(&format!("{} {{{} }}\n", selector, decls));
+        }
+    }
+    if out.is_empty() {
+        out
+    } else {
+        format!("\n\n/* --- Per-element typography --- */\n{}", out)
+    }
+}
+
+#[cfg(test)]
+mod element_typography_tests {
+    use super::*;
+    use crate::config::{ElementStyle, TypographyConfig};
+
+    #[test]
+    fn populated_element_emits_rule() {
+        let mut typo = TypographyConfig::default();
+        typo.elements.push(ElementStyle {
+            selector: "h1".into(),
+            font_size: "2.5rem".into(),
+            font_weight: "600".into(),
+            italic: true,
+            ..Default::default()
+        });
+        let css = build_element_typography_css(&typo);
+        assert!(css.contains("h1 {"));
+        assert!(css.contains("font-size: 2.5rem;"));
+        assert!(css.contains("font-weight: 600;"));
+        assert!(css.contains("font-style: italic;"));
+    }
+
+    #[test]
+    fn plaque_box_properties_emit() {
+        let mut typo = TypographyConfig::default();
+        typo.elements.push(ElementStyle {
+            selector: "h2".into(),
+            background: "repeating-linear-gradient(135deg, #0c0c0c, #1c1c1d 40%, #0c0c0c 80%)".into(),
+            padding: "20px".into(),
+            border_radius: "8px".into(),
+            text_align: "center".into(),
+            ..Default::default()
+        });
+        let css = build_element_typography_css(&typo);
+        assert!(css.contains("background: repeating-linear-gradient(135deg, #0c0c0c, #1c1c1d 40%, #0c0c0c 80%);"));
+        assert!(css.contains("padding: 20px;"));
+        assert!(css.contains("border-radius: 8px;"));
+        assert!(css.contains("text-align: center;"));
+    }
+
+    #[test]
+    fn all_default_element_emits_nothing() {
+        let mut typo = TypographyConfig::default();
+        typo.elements.push(ElementStyle {
+            selector: "h2".into(),
+            ..Default::default()
+        });
+        assert!(build_element_typography_css(&typo).is_empty());
+    }
+
+    #[test]
+    fn per_element_rule_reaches_exported_xml() {
+        let mut config = crate::config::ThemeConfig::default();
+        config.typography.elements.push(ElementStyle {
+            selector: "h1".into(),
+            font_size: "2.5rem".into(),
+            ..Default::default()
+        });
+        let xml = crate::render::render_theme(&config, &std::collections::HashMap::new());
+        assert!(xml.contains("h1 {"));
+        assert!(xml.contains("font-size: 2.5rem;"));
+    }
+
+    #[test]
+    fn frame_emits_from_url_without_enable_flag() {
+        let mut config = crate::config::ThemeConfig::default();
+        config.enable_image_borders = false; // legacy gate must NOT matter
+        config.custom_border_url = Some("https://example.com/frame.png".to_string());
+        config.target_canvas = true;
+        config.target_sidebars = true;
+        let css = build_master_css(&[], &config);
+        // Both regions get an !important frame rule emitted AFTER preset_css so
+        // it beats preset borders. Sidebars also get the legacy var.
+        assert!(css.contains("--mor-border-image: url(\"https://example.com/frame.png\")"));
+        assert!(css.contains(".canvas-core { border-style: solid !important;"));
+        assert!(css.contains(".mor-panel { border-style: solid !important;"));
+        assert!(css.contains("border-image-source: url(\"https://example.com/frame.png\") !important;"));
+    }
+
+    #[test]
+    fn frame_beats_preset_border_none() {
+        // The frame rule must come AFTER preset_css that kills the border.
+        let mut config = crate::config::ThemeConfig::default();
+        config.custom_border_url = Some("https://example.com/frame.png".to_string());
+        config.target_canvas = true;
+        config.preset_css = ".canvas-core { border: none !important; }".to_string();
+        let css = build_master_css(&[], &config);
+        let preset_pos = css.find("border: none !important").unwrap();
+        let frame_pos = css.find(".canvas-core { border-style: solid !important;").unwrap();
+        assert!(frame_pos > preset_pos, "frame must be emitted after preset_css");
+    }
+
+    #[test]
+    fn icon_recolor_off_emits_asis_vars() {
+        let mut config = crate::config::ThemeConfig::default();
+        // Opt one slot out of recolor → as-is full-colour override vars appear.
+        config.icons.recolor.insert("panel_close".to_string(), false);
+        let css = build_master_css(&[], &config);
+        assert!(css.contains("--icon-panel-close-bg: var(--icon-panel-close);"));
+        assert!(css.contains("--icon-panel-close-mask: none;"));
+        assert!(css.contains("--icon-panel-close-tint: transparent;"));
+        // A slot left at default stays in recolor (mask) mode — no override vars.
+        assert!(!css.contains("--icon-search-mask: none;"));
+    }
+
+    #[test]
+    fn glow_wins_over_preset_box_shadow_on_any_preset() {
+        // Per-target glow is config-driven (preset-independent) and emitted LAST,
+        // so it beats a preset's own box-shadow — i.e. it shows on every preset.
+        let mut config = crate::config::ThemeConfig::default();
+        config.colors.glow_containers = true;
+        config.colors.glow_hover = false; // always-on -> a resting rule exists
+        config.preset_css = ".mor-panel { box-shadow: 0 0 0 99px red; }".to_string();
+        let xml = crate::render::render_theme(&config, &std::collections::HashMap::new());
+        let preset_pos = xml.find("box-shadow: 0 0 0 99px red").unwrap();
+        let glow_pos = xml.find("Per-target glow").unwrap();
+        assert!(
+            glow_pos > preset_pos,
+            "glow must be emitted after preset_css so it wins on every preset"
+        );
+    }
+
+    #[test]
+    fn frame_off_when_url_blank() {
+        let mut config = crate::config::ThemeConfig::default();
+        config.custom_border_url = Some("   ".to_string());
+        config.target_canvas = true;
+        let css = build_master_css(&[], &config);
+        assert!(css.contains("--mor-border-image: none"));
+        assert!(!css.contains("border-style: solid !important;"));
+    }
+
+    #[test]
+    fn unknown_selector_skipped() {
+        let mut typo = TypographyConfig::default();
+        typo.elements.push(ElementStyle {
+            selector: "marquee".into(),
+            font_size: "9px".into(),
+            ..Default::default()
+        });
+        assert!(build_element_typography_css(&typo).is_empty());
+    }
 }

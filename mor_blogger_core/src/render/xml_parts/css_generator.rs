@@ -109,6 +109,18 @@ fn generate_background_value(bg: &BackgroundMode) -> String {
 /// Per-target glow CSS driven by the Advanced Glow toggles. Each enabled target
 /// gets a box/text-shadow using its own color (falling back to the global glow
 /// color, then the accent). Appended last so it overrides the base rules.
+/// Expand a (possibly comma-separated) selector into its hover/focus form,
+/// attaching the pseudo-classes to EACH selector — `a, b` → `a:hover,
+/// a:focus-visible, b:hover, b:focus-visible` (not just the last one).
+fn hover_selectors(sel: &str) -> String {
+    sel.split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .flat_map(|s| [format!("{s}:hover"), format!("{s}:focus-visible")])
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 fn build_target_glow_css(config: &ThemeConfig) -> String {
     let c = &config.colors;
     let spread = first_non_empty(&c.glow_spread, "8px");
@@ -117,23 +129,60 @@ fn build_target_glow_css(config: &ThemeConfig) -> String {
     } else {
         c.glow_color.as_str()
     };
+    // Stacked layers at increasing blur give the deep neon bloom (1–4 layers).
+    let layers: usize = c.glow_intensity.trim().parse::<usize>().unwrap_or(2).clamp(1, 4);
+    // Each layer fades as it spreads — inner layer brightest, outer ones soft —
+    // so the glow reads as a natural halo instead of a hard solid block.
+    // `extra` widens each layer's blur (integer multipliers keep the CSS clean).
+    let shadow = |col: &str, extra: usize| -> String {
+        (1..=layers)
+            .map(|i| {
+                let alpha = (0.70 / i as f32).max(0.14);
+                format!("0 0 calc({spread} * {}) {}", i + extra, hex_to_rgba(col, alpha))
+            })
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    // Smooth fade is this blog's signature — the glow eases in/out instead of
+    // snapping. margin/transform are included so a glow target that also animates
+    // (panel collapse, hover-scale) keeps doing so. ponytail: this replaces a few
+    // minor per-element transitions (e.g. search-btn filter) — fine for a uniform,
+    // smooth glow; the key collapse/scale animations are preserved.
+    let transition =
+        "transition: text-shadow 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease, margin 0.2s ease-in-out;";
     let rule = |on: bool, color: &str, sel: &str, prop: &str| -> String {
         if !on {
             return String::new();
         }
         let col = first_non_empty(color, global);
-        format!("{sel} {{ {prop}: 0 0 {spread} {col} !important; }}\n")
+        let hov = hover_selectors(sel);
+        if c.glow_hover {
+            // Hover-only: no glow at rest, but arm the transition so it fades.
+            format!("{sel} {{ {transition} }}\n{hov} {{ {prop}: {} !important; }}\n", shadow(col, 0))
+        } else {
+            // Always on, with a wider bloom on hover/focus; both fade smoothly.
+            format!(
+                "{sel} {{ {prop}: {} !important; {transition} }}\n{hov} {{ {prop}: {} !important; }}\n",
+                shadow(col, 0),
+                shadow(col, 1)
+            )
+        }
     };
     let mut out = String::new();
     out.push_str(&rule(c.glow_logo, &c.glow_logo_color, ".institute-logo, .footer-logo", "box-shadow"));
     out.push_str(&rule(c.glow_title, &c.glow_title_color, ".post-title a, .post-title", "text-shadow"));
     out.push_str(&rule(c.glow_toc, &c.glow_toc_color, ".mor-toc-container, .mor-toc-list a", "text-shadow"));
-    out.push_str(&rule(c.glow_sidebar, &c.glow_sidebar_color, ".mor-panel .widget, .sidebar-section .widget", "box-shadow"));
-    out.push_str(&rule(c.glow_text, &c.glow_text_color, ".post-body, .post-body p, .post-body h2, .post-body h3", "text-shadow"));
-    out.push_str(&rule(c.glow_containers, &c.glow_containers_color, ".widget, .mor-panel, .mor-post", "box-shadow"));
+    // Glow the OUTER side panel, not each inner widget box (nested box-shadow
+    // halos on every widget look bad — this blog glows the sidebar itself).
+    out.push_str(&rule(c.glow_sidebar, &c.glow_sidebar_color, ".mor-panel", "box-shadow"));
+    // Typography also covers sidebar widget headings/links, so "glow the text"
+    // works inside panels without boxing the containers.
+    out.push_str(&rule(c.glow_text, &c.glow_text_color, ".post-body, .post-body p, .post-body h2, .post-body h3, .mor-panel .widget h2, .mor-panel .widget a", "text-shadow"));
+    // Content cards only — not inner .widget boxes.
+    out.push_str(&rule(c.glow_containers, &c.glow_containers_color, ".mor-post, .mor-catalog-dropdown", "box-shadow"));
     out.push_str(&rule(c.glow_icons, &c.glow_icons_color, ".icon-search-btn, .mor-nav a, .header-panel-toggle, .back-to-top-btn", "box-shadow"));
     out.push_str(&rule(c.glow_footer, &c.glow_footer_color, ".mor-footer, .mor-footer-mega, .mor-footer-social, .mor-footer-compact", "box-shadow"));
-    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .mor-header-baseline, .mor-header-minimal, .gtk-headerbar", "box-shadow"));
+    out.push_str(&rule(c.glow_header, &c.glow_header_color, ".main-header, .gtk-headerbar", "box-shadow"));
     out.push_str(&rule(c.glow_main, &c.glow_main_color, ".canvas-core, .canvas-content", "box-shadow"));
     if out.is_empty() {
         String::new()
@@ -701,7 +750,12 @@ pub fn render_button_styles(b: &ButtonConfig, scope: &str) -> String {
     let transition = if b.transition_ms.trim().is_empty() || b.transition_ms.trim() == "0ms" {
         String::new()
     } else {
-        format!("  transition: all {} ease;\n", b.transition_ms)
+        let easing = if b.easing.trim().is_empty() {
+            "ease"
+        } else {
+            b.easing.trim()
+        };
+        format!("  transition: all {} {};\n", b.transition_ms, easing)
     };
 
     let hover_extra = match b.hover_effect.as_str() {
@@ -710,6 +764,9 @@ pub fn render_button_styles(b: &ButtonConfig, scope: &str) -> String {
         "brighten" => "  filter: brightness(1.12);\n".to_string(),
         // Customizable glow, also intensifies neon on hover.
         "glow" => format!("  box-shadow: 0 0 {g} {gc}, 0 0 calc({g} * 2) color-mix(in srgb, {gc} 50%, transparent);\n"),
+        // Neon fill flip: button lights up to the accent with contrasting text,
+        // a subtle scale, and a glow — the classic "fill on hover" link/button.
+        "invert" => format!("  background: var(--accent);\n  color: var(--bg-base);\n  border-color: var(--accent);\n  transform: scale(1.03);\n  box-shadow: 0 0 {g} {gc};\n"),
         _ => String::new(),
     };
     let pressed = if b.pressed_feedback {
@@ -776,8 +833,62 @@ pub fn render_button_styles(b: &ButtonConfig, scope: &str) -> String {
 }
 
 #[cfg(test)]
-mod button_tests {
+mod glow_tests {
     use super::*;
+
+    #[test]
+    fn hover_only_mode_emits_no_resting_glow() {
+        let mut config = ThemeConfig::default();
+        config.colors.glow_title = true;
+        config.colors.glow_spread = "10px".to_string();
+        config.colors.glow_intensity = "3".to_string();
+        config.colors.glow_hover = true; // hover-only (default)
+        let css = build_target_glow_css(&config);
+        // Three stacked layers, only inside a hover/focus rule.
+        assert!(css.contains("calc(10px * 3)"));
+        // :hover attaches to EACH selector in the list, not just the last.
+        assert!(css.contains(".post-title a:hover"));
+        assert!(css.contains(".post-title:hover"));
+        assert!(css.contains(":focus-visible"));
+        // Resting rule only arms the smooth transition — no glow shadow at rest.
+        assert!(css.contains("transition: text-shadow 0.3s ease"));
+        assert!(css.contains(".post-title a, .post-title { transition:"));
+        assert!(!css.contains(".post-title a, .post-title { text-shadow"));
+        // No widened hover layer in hover-only mode.
+        assert!(!css.contains("calc(10px * 4)"));
+    }
+
+    #[test]
+    fn always_mode_emits_resting_plus_wider_hover() {
+        let mut config = ThemeConfig::default();
+        config.colors.glow_title = true;
+        config.colors.glow_spread = "10px".to_string();
+        config.colors.glow_intensity = "3".to_string();
+        config.colors.glow_hover = false; // always on
+        let css = build_target_glow_css(&config);
+        // Resting rule present, plus a wider hover bloom (3 + 1 layers).
+        assert!(css.contains(".post-title a, .post-title {"));
+        assert!(css.contains("calc(10px * 3)"));
+        assert!(css.contains("calc(10px * 4)"));
+
+        // Intensity clamps junk to 1; 1 layer = no second layer.
+        config.colors.glow_intensity = "1".to_string();
+        let soft = build_target_glow_css(&config);
+        assert!(soft.contains("calc(10px * 1)"));
+        assert!(!soft.contains("calc(10px * 3)"));
+    }
+
+    #[test]
+    fn invert_hover_fills_with_accent() {
+        let mut b = ButtonConfig::default();
+        b.hover_effect = "invert".into();
+        let css = render_button_styles(&b, "");
+        // On hover the button flips to the accent fill with contrasting text.
+        assert!(css.contains(":hover"));
+        assert!(css.contains("background: var(--accent);"));
+        assert!(css.contains("color: var(--bg-base);"));
+        assert!(css.contains("transform: scale("));
+    }
 
     #[test]
     fn button_styles_cover_variants() {

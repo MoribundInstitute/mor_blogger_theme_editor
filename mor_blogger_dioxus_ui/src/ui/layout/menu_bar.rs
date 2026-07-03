@@ -47,6 +47,8 @@ pub fn MenuItem(
     #[props(default = false)] disabled: bool,
     #[props(default = None)] on_action: Option<EventHandler<()>>,
 ) -> Element {
+    // Empty string = "no binding" so callers can pass prefs fields directly.
+    let shortcut = shortcut.filter(|s| !s.is_empty());
     let bind_shortcut = if disabled { None } else { shortcut.clone() };
     use_shortcut(bind_shortcut, on_action.clone());
 
@@ -99,6 +101,12 @@ pub fn AppMenuBar(
     let theme = use_context::<ThemeState>();
     let mut layout = use_context::<LayoutState>();
 
+    // Customized keybinds; chips re-render live when the rebind dialog writes
+    // this signal (the dialog also rekeys the live registry — registrations
+    // here only bind once, at mount).
+    let sc = use_context::<Signal<crate::app::config_bridge::ShortcutPrefs>>()();
+    let combo = |v: &Option<String>| v.clone().unwrap_or_default();
+
     rsx! {
         MorMenuBar {
             // 1. FILE
@@ -110,10 +118,12 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem {
                     label: "Load Theme (.toml)".to_string(),
+                    shortcut: combo(&sc.open_project),
                     on_action: move |_| on_load_theme.call(())
                 }
                 MenuItem {
                     label: "Save Theme (.toml)".to_string(),
+                    shortcut: combo(&sc.save_project),
                     on_action: move |_| on_save_theme.call(())
                 }
                 MenuItem {
@@ -132,6 +142,7 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem {
                     label: "Export Blogger XML".to_string(),
+                    shortcut: combo(&sc.export_xml),
                     on_action: move |_| on_export_xml.call(())
                 }
                 MenuItem {
@@ -141,6 +152,7 @@ pub fn AppMenuBar(
                 MenuSeparator {}
                 MenuItem {
                     label: "Exit".to_string(),
+                    shortcut: combo(&sc.exit_architect),
                     on_action: move |_| -> () { std::process::exit(0); }
                 }
             }
@@ -149,20 +161,20 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Edit".to_string(),
                 MenuItem {
                     label: "Undo".to_string(),
-                    shortcut: "Ctrl+Z".to_string(),
+                    shortcut: combo(&sc.undo),
                     disabled: !theme.can_undo(),
                     on_action: move |_| theme.undo(),
                 }
                 MenuItem {
                     label: "Redo".to_string(),
-                    shortcut: "Ctrl+Y".to_string(),
+                    shortcut: combo(&sc.redo),
                     disabled: !theme.can_redo(),
                     on_action: move |_| theme.redo(),
                 }
                 MenuSeparator {}
                 MenuItem {
                     label: "Copy Raw XML".to_string(),
-                    shortcut: "Ctrl+Shift+C".to_string(),
+                    shortcut: combo(&sc.copy_raw_xml),
                     on_action: move |_| on_copy_xml.call(())
                 }
             }
@@ -171,6 +183,7 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "View".to_string(),
                 MenuItem {
                     label: "Toggle Preview Monitor".to_string(),
+                    shortcut: combo(&sc.toggle_preview),
                     on_action: move |_| on_toggle_preview.call(())
                 }
                 MenuItem {
@@ -179,6 +192,7 @@ pub fn AppMenuBar(
                 }
                 MenuItem {
                     label: "Reset Viewport Scale".to_string(),
+                    shortcut: combo(&sc.reset_zoom),
                     on_action: move |_| on_reset_viewport.call(())
                 }
             }
@@ -258,6 +272,7 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Profile".to_string(),
                 MenuItem {
                     label: "User Preferences".to_string(),
+                    shortcut: combo(&sc.user_prefs),
                     on_action: move |_| show_prefs.set(true)
                 }
                 MenuItem {
@@ -277,10 +292,11 @@ pub fn AppMenuBar(
             MorMenuDropdown { label: "Tools".to_string(),
                 MenuItem {
                     label: "Theme Diagnostics".to_string(),
+                    shortcut: combo(&sc.theme_diagnostics),
                     on_action: move |_| {
                         let pos = (layout.diagnostics_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("diagnostics", DockPosition::mor_panel_left);
+                            layout.request_dock("diagnostics", DockPosition::mor_panel_left);
                         } else {
                             layout.diagnostics_pos.set(DockPosition::Hidden);
                         }
@@ -291,7 +307,7 @@ pub fn AppMenuBar(
                     on_action: move |_| {
                         let pos = (layout.css_builder_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("css_builder", DockPosition::mor_panel_left);
+                            layout.request_dock("css_builder", DockPosition::mor_panel_left);
                         } else {
                             layout.css_builder_pos.set(DockPosition::Hidden);
                         }
@@ -302,7 +318,7 @@ pub fn AppMenuBar(
                     on_action: move |_| {
                         let pos = (layout.js_builder_pos)();
                         if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("js_builder", DockPosition::mor_panel_left);
+                            layout.request_dock("js_builder", DockPosition::mor_panel_left);
                         } else {
                             layout.js_builder_pos.set(DockPosition::Hidden);
                         }
@@ -312,12 +328,7 @@ pub fn AppMenuBar(
                 MenuItem {
                     label: "Plugin Manager".to_string(),
                     on_action: move |_| {
-                        let pos = (layout.plugin_manager_pos)();
-                        if pos == DockPosition::Hidden {
-                            layout.request_exclusive_dock("plugin_manager", DockPosition::mor_panel_left);
-                        } else {
-                            layout.plugin_manager_pos.set(DockPosition::Hidden);
-                        }
+                        layout.toggle_dock_by_id("plugin_manager");
                     }
                 }
             }

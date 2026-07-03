@@ -2,7 +2,7 @@ use crate::app::state::{CenterView, DockPosition, LayoutState, RenderState, Them
 use crate::app::vfs::VfsDictionary;
 use crate::ui::layout::docks::{resolve_workbench_dependencies, AssetEditorDock};
 use dioxus::prelude::*;
-use mor_blogger_core::render::template_resolver::CORE_JS_FILES;
+use mor_blogger_core::render::template_resolver::{CORE_JS_FILES, MAGAZINE_GRID_JS};
 
 #[component]
 pub fn JsEditorPanel() -> Element {
@@ -28,11 +28,14 @@ pub fn JsEditorPanel() -> Element {
         || view == CenterView::CodeEditor
         || view == CenterView::Split
         || view == CenterView::StaticPageEditor
+        || view == CenterView::JsWorkbench
     {
         let mut deps = vec!["custom_js.js".to_string()];
         for file in CORE_JS_FILES {
             deps.push(file.to_string());
         }
+        // Not in CORE_JS_FILES, but the JS workspace cross-links to it.
+        deps.push(MAGAZINE_GRID_JS.to_string());
         available_files.extend(deps);
     } else {
         available_files.push("custom_js.js".to_string());
@@ -48,6 +51,7 @@ pub fn JsEditorPanel() -> Element {
             content_signal: theme.signals.custom_js,
             vfs_signal: use_context::<VfsDictionary>().0,
             is_native_window: false,
+            open_file_request: Some(layout.js_editor_open_file),
             on_save: move |_| {
                 let vfs = use_context::<VfsDictionary>().0;
                 let current_vfs = vfs.read().clone();

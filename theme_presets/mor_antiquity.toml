@@ -1,0 +1,311 @@
+name = "Mor Antiquity"
+description = "An engraved celestial plate: sepia ink on aged parchment, ruled with a gold ecliptic and a verdigris graticule, set in Fell types beneath Roman capitals. Toggles to a star-flecked astronomer's nocturne."
+
+preset_css = '''
+/* ============================================================
+   Mor Antiquity  —  "Folio / Nocturne"
+   The page as a leaf from a 17th-century star atlas: an off-
+   centre ecliptic struck in gold, a fine verdigris coordinate
+   grid, panels as pressed paper plates with double-ruled
+   borders. Dark mode is the same plate printed at night —
+   sepia-black ink and a scatter of gilt stars.
+   Display: Cinzel (Roman inscriptional capitals).
+   Body: IM Fell English (Oxford Fell types).
+   Verdigris constant: #4a6153 (oxidized brass instruments).
+   ============================================================ */
+
+/* ---- The celestial ground: ecliptic rings over an engraver's graticule ---- */
+body::before { background: none !important; opacity: 0 !important; }
+html, body { background-color: var(--bg-base) !important; }
+body {
+  min-height: 100vh;
+  background-image:
+    /* concentric ecliptic rings, gold, struck from an off-centre pole */
+    repeating-radial-gradient(circle at 50% 34%,
+      transparent 0 77px,
+      color-mix(in srgb, var(--accent) 10%, transparent) 77px 78px,
+      transparent 78px 156px),
+    /* fine verdigris graticule — the chart's coordinate grid */
+    repeating-linear-gradient(0deg,
+      transparent 0 63px, color-mix(in srgb, #4a6153 7%, transparent) 63px 64px),
+    repeating-linear-gradient(90deg,
+      transparent 0 63px, color-mix(in srgb, #4a6153 7%, transparent) 63px 64px),
+    /* plate vignette + paper wash */
+    radial-gradient(120% 120% at 50% 0%, transparent 55%,
+      color-mix(in srgb, var(--fg-base) 12%, transparent) 100%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg-base) 96%, var(--fg-base)) 0%,
+      var(--bg-base) 45%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Nocturne only: a scatter of gilt stars behind the plate. */
+html:not([data-theme="light"]) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 22% 28%, color-mix(in srgb, var(--accent) 55%, transparent) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 68% 12%, color-mix(in srgb, var(--fg-base) 40%, transparent) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 84% 62%, color-mix(in srgb, var(--accent) 38%, transparent) 0 1.3px, transparent 2px),
+    radial-gradient(circle at 40% 78%, color-mix(in srgb, var(--fg-base) 30%, transparent) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 8% 66%, color-mix(in srgb, var(--accent) 30%, transparent) 0 1px, transparent 1.5px);
+  background-size: 340px 340px, 260px 260px, 420px 420px, 300px 300px, 380px 380px;
+}
+
+/* ---- Panels as pressed paper plates: hairline gold edge, double rule ---- */
+.canvas-core, .mor-post, .mor-panel, .main-header, .mor-footer,
+.sidebar-section, .mor-catalog-dropdown, .mor-bell-panel, .mor-gm-panel {
+  background: color-mix(in srgb, var(--bg-panel) 96%, var(--accent)) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-color)) !important;
+  border-radius: 2px !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--bg-base) 50%, transparent),
+    inset 0 0 0 4px color-mix(in srgb, var(--accent) 8%, transparent),
+    0 10px 30px color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
+}
+
+/* ---- Inscriptional headings: Roman capitals, letterspaced ---- */
+.post-title, .entry-title, .main-header h1, .institute-title {
+  font-family: var(--font-heading) !important;
+  font-variant: small-caps;
+  letter-spacing: 0.045em !important;
+}
+
+/* Signature divider: a constellation node — hairline broken by a gold star. */
+.post-title::after, .entry-title::after {
+  content: "";
+  display: block;
+  height: 9px;
+  margin-top: 0.55rem;
+  background:
+    radial-gradient(circle at 50% 50%, var(--accent) 0 2px, transparent 2.5px),
+    linear-gradient(90deg, transparent 0,
+      color-mix(in srgb, var(--accent) 55%, transparent) 12%,
+      color-mix(in srgb, var(--accent) 55%, transparent) 88%, transparent 100%);
+  background-repeat: no-repeat;
+  background-position: center, center;
+  background-size: 100% 100%, 100% 1px;
+}
+
+/* The same node, standing alone, whenever prose calls for a rule. */
+hr {
+  border: none !important;
+  width: 62%;
+  height: 11px;
+  margin: 2.2rem auto;
+  background:
+    radial-gradient(circle at 50% 50%, var(--accent) 0 2px, transparent 2.5px),
+    linear-gradient(90deg, transparent 0,
+      color-mix(in srgb, var(--accent) 50%, transparent) 15%,
+      color-mix(in srgb, var(--accent) 50%, transparent) 85%, transparent 100%);
+  background-repeat: no-repeat;
+  background-position: center, center 50%;
+  background-size: 100% 100%, 100% 1px;
+}
+
+/* One book flourish: an illuminated capital in a ruled woodcut box. */
+.post-body > p:first-of-type::first-letter,
+.entry-content > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 3em;
+  line-height: 0.72;
+  margin: 0.06em 0.16em 0 0;
+  padding: 0.1em 0.16em;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---- Gilded ink links: replace the harsh inversion hover ---- */
+a {
+  color: color-mix(in srgb, var(--accent) 70%, var(--fg-base));
+  border-bottom: 1px dotted color-mix(in srgb, var(--accent) 55%, transparent);
+}
+a:hover, a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--fg-base);
+  border-bottom: 1px solid var(--accent);
+}
+::selection {
+  background: color-mix(in srgb, var(--accent) 32%, var(--bg-base));
+  color: var(--fg-base);
+}
+
+/* ---- Nav: engraved small-caps, verdigris resting, gold on hover ---- */
+.mor-nav > a {
+  font-family: var(--font-heading);
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--fg-base) 70%, #4a6153) !important;
+  border-bottom-color: transparent;
+  transition: color 180ms ease;
+}
+.mor-nav > a:hover, .mor-nav > a:focus-visible {
+  background: transparent;
+  color: var(--accent) !important;
+  border-bottom-color: var(--accent);
+}
+
+/* ---- Colophon lines: dates, bylines, labels in engraved small caps ---- */
+.post-meta, .byline, .post-date, .timestamp, .footer-copyright {
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--fg-muted) 80%, #4a6153) !important;
+}
+.post-labels a, .post-tags a {
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  padding: 0.05em 0.5em;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2px;
+}
+
+/* ---- Marginalia: quoted text in italic Fell with a verdigris rule ---- */
+blockquote {
+  border-left: 2px solid #4a6153 !important;
+  margin-left: 0;
+  padding: 0.35rem 1.1rem !important;
+  font-style: italic;
+  color: color-mix(in srgb, var(--fg-base) 82%, #4a6153) !important;
+  background: color-mix(in srgb, #4a6153 6%, transparent);
+}
+
+/* ---- Plate captions: code set apart on an inset paper panel ---- */
+code, kbd, samp {
+  font-size: 0.92em;
+  padding: 0.08em 0.35em;
+  background: color-mix(in srgb, var(--fg-base) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border-radius: 2px;
+}
+pre {
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  background: color-mix(in srgb, var(--bg-base) 55%, var(--bg-panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border-color));
+  border-left: 2px solid #4a6153;
+}
+pre code { padding: 0; background: none; border: none; }
+
+/* ---- Figures mounted as plates: mat, hairline gold frame ---- */
+.post-body img, .entry-content img, .post-thumbnail img {
+  background: var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border-color));
+  padding: 6px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--fg-base) 12%, transparent);
+}
+
+/* ---- Instruments in hand: dip-pen nib, pointing manicule, serif I-beam ---- */
+:root {
+  --theme-cursor-default: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 2L6 2L16 16L13 19L11 17L3 2Z' fill='%23b8912a' stroke='%232a2012' stroke-width='1'/><path d='M9 11L13 15' stroke='%232a2012' stroke-width='1'/></svg>") 3 2, auto;
+  --theme-cursor-pointer: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23b8912a' stroke='%232a2012' stroke-width='1'/></svg>") 9 2, pointer;
+}
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23b8912a' stroke-width='1.6'/></svg>") 12 12, text !important; }
+'''
+
+# --- Base / light: aged parchment ("Folio") ---
+[colors]
+bg_base = "#e8dcc0"
+fg_base = "#2b2113"
+fg_muted = "#6d5a3a"
+accent = "#8a6413"
+border = "#c3a86c"
+panel_border_width = "1px"
+glow_spread = "14px"
+hover_scale = "1.01"
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#f2e8cf"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#f8f0dc"
+
+[background.mode.Solid]
+color = "#e8dcc0"
+
+[typography]
+body_font_stack = "'IM Fell English', Georgia, 'Times New Roman', serif"
+heading_font_stack = "'Cinzel', 'Playfair Display', Georgia, serif"
+mono_font_stack = "'Inconsolata', monospace"
+base_size = "18px"
+scale_ratio = "1.333"
+line_height = "1.72"
+heading_weight = "600"
+
+[buttons]
+radius = "2px"
+border_width = "1px"
+border_style = "solid"
+text_transform = "uppercase"
+letter_spacing = "0.09em"
+padding_x = "1rem"
+padding_y = "0.5rem"
+font_weight = "600"
+fill = "gradient"
+gradient_from = "color-mix(in srgb, var(--accent) 24%, var(--bg-panel))"
+gradient_to = "color-mix(in srgb, var(--accent) 10%, var(--bg-base))"
+gradient_angle = "180deg"
+border_color = "var(--accent)"
+text_color = "var(--fg-base)"
+box_shadow = "inset 0 1px 0 color-mix(in srgb, var(--bg-base) 70%, transparent), 0 2px 4px color-mix(in srgb, var(--fg-base) 18%, transparent)"
+elevation = "subtle"
+hover_effect = "lift"
+transition_ms = "160ms"
+easing = "cubic-bezier(0.2, 0.6, 0.2, 1)"
+pressed_feedback = true
+
+# --- Light toggle: the same parchment plate, stated explicitly ---
+[light.colors]
+bg_base = "#e8dcc0"
+fg_base = "#2b2113"
+fg_muted = "#6d5a3a"
+accent = "#8a6413"
+border = "#c3a86c"
+panel_border_width = "1px"
+glow_spread = "14px"
+hover_scale = "1.01"
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#f2e8cf"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#f8f0dc"
+
+[light.background.mode.Solid]
+color = "#e8dcc0"
+
+# --- Dark toggle: astronomer's night ink ("Nocturne") ---
+[dark.colors]
+bg_base = "#15110a"
+fg_base = "#e6dfc8"
+fg_muted = "#a3957a"
+accent = "#d4af37"
+border = "#3b321f"
+panel_border_width = "1px"
+glow_spread = "14px"
+hover_scale = "1.01"
+
+[dark.colors.bg_panel]
+mode = "Solid"
+color = "#201a10"
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#2a2214"
+
+[dark.background.mode.Solid]
+color = "#15110a"
+
+[scrollbars]
+width = "12px"
+track_color = "#e3d7b8"
+thumb_color = "#8a6413"
+thumb_hover_color = "#d4af37"

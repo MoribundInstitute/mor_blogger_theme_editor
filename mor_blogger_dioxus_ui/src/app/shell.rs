@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use super::state::{CenterView, LayoutState, PluginManagerContext, RenderState, ThemeState};
+use super::state::{
+    CenterView, DockPosition, LayoutState, PluginManagerContext, RenderState, ThemeState,
+};
+use mor_blogger_core::diagnostics::Severity;
 use crate::app::config_bridge::{CompendiumManifest, EditorPrefs};
 use crate::ui::layout::menu_bar::AppMenuBar;
 use crate::ui::layout::theme::MorStyleProvider;
@@ -39,7 +42,6 @@ fn fallback_compendium() -> Vec<CompendiumManifest> {
 #[derive(Clone, Copy)]
 pub struct WorkbenchEditState {
     pub edited_xml: Signal<String>,
-    pub module_xml_signal: Signal<String>,
     pub workbench_status: Signal<String>,
     /// Set by the Widgets dock to ask the workbench to open a blueprint for editing.
     /// The workbench consumes it (loads the buffer) and resets it to None.
@@ -52,6 +54,169 @@ pub struct WorkbenchEditState {
     /// Where an added gadget lands: Some(socket_key) → that slot; None → appended
     /// to the active module buffer. Set by the workbench's "+ Add" buttons.
     pub add_target: Signal<Option<String>>,
+    /// Set by the Template Modules dock's file picker or a file dropped onto the
+    /// workspace: the XML to load into the active slot's editor buffer (the sender
+    /// also sets `active_workbench_module`). Non-destructive — edits the buffer
+    /// until the user hits Save. The workbench consumes it and resets to None.
+    pub load_module_request: Signal<Option<String>>,
+}
+
+/// VS Code-style bottom status strip, three zones:
+/// left = health (diagnostics count + unsaved dot), center = transient workbench
+/// messages (`WorkbenchEditState::workbench_status`, otherwise unrendered), right =
+/// active-workspace context, exported-XML size vs Blogger's ~1 MB cap, active preset.
+#[component]
+fn StatusBar(config_toml_signal: Memo<String>, original_toml: Signal<String>) -> Element {
+    let mut layout = use_context::<LayoutState>();
+    let render = use_context::<RenderState>();
+    let theme = use_context::<ThemeState>();
+    let edit_state = use_context::<WorkbenchEditState>();
+
+    let result = render.diag.read();
+    let error_count = result.errors.len();
+    let warning_count = result
+        .warnings
+        .iter()
+        .filter(|w| w.severity == Severity::Warning)
+        .count();
+    let clean = error_count == 0 && warning_count == 0;
+    // Surface the first problem in the tooltip so the count is actionable on hover.
+    let diag_title = result
+        .errors
+        .first()
+        .cloned()
+        .or_else(|| {
+            result
+                .warnings
+                .iter()
+                .find(|w| w.severity == Severity::Warning)
+                .map(|w| w.message.clone())
+        })
+        .map(|m| format!("{m} — click for all diagnostics"))
+        .unwrap_or_else(|| "Theme Diagnostics — click to open panel".to_string());
+
+    let dirty = config_toml_signal() != original_toml();
+    let message = (edit_state.workbench_status)();
+
+    // What the active workspace is looking at.
+    let context = match (layout.center_view)() {
+        CenterView::Preview | CenterView::Split => format!(
+            "{} \u{00b7} {}px \u{00b7} {}",
+            (layout.preview_viewport)().label(),
+            (layout.preview_width)(),
+            (layout.preview_template_mode)().label(),
+        ),
+        CenterView::CodeEditor => if (layout.code_show_xml)() {
+            "compiled XML".to_string()
+        } else {
+            "config TOML".to_string()
+        },
+        CenterView::ModuleWorkbench => match (layout.active_workbench_module)() {
+            Some(key) => {
+                let name =
+                    crate::ui::layout::docks::template_editor_dock::slot_display_name(key);
+                if mor_blogger_core::render::template_resolver::module_override(key).is_some() {
+                    format!("{name} \u{00b7} customized")
+                } else {
+                    name.to_string()
+                }
+            }
+            None => "no module selected".to_string(),
+        },
+        CenterView::StaticPageEditor => {
+            (layout.active_static_page)().unwrap_or_else(|| "no page selected".to_string())
+        }
+        _ => String::new(),
+    };
+
+    // Blogger rejects theme XML over ~1 MB; warn as the export approaches it.
+    let xml_bytes = render.generated_xml.read().len();
+    let size_color = if xml_bytes > 1_000_000 {
+        "#ea8285"
+    } else if xml_bytes > 900_000 {
+        "#d29922"
+    } else {
+        "inherit"
+    };
+
+    let preset_label = (theme.active_preset)()
+        .map(|id| {
+            mor_blogger_core::presets::all_presets()
+                .iter()
+                .find(|p| p.id == id)
+                .map(|p| p.name)
+                .unwrap_or(id)
+        })
+        .unwrap_or("no preset");
+
+    rsx! {
+        div {
+            class: "editor-statusbar",
+            style: "flex-shrink: 0; display: flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; font-size: 0.72rem; background: var(--mor-header, #10161f); border-top: 1px solid var(--mor-border, #2a2a2a); color: var(--editor-text, #ddd); user-select: none; white-space: nowrap;",
+            button {
+                class: "statusbar-diagnostics",
+                title: "{diag_title}",
+                style: "display: flex; align-items: center; gap: 12px; background: transparent; border: none; color: inherit; font: inherit; cursor: pointer; padding: 2px 6px; border-radius: 3px;",
+                onclick: move |_| {
+                    if (layout.diagnostics_pos)() == DockPosition::Hidden {
+                        layout.request_dock("diagnostics", DockPosition::mor_panel_left);
+                    } else {
+                        layout.diagnostics_pos.set(DockPosition::Hidden);
+                    }
+                },
+                if clean {
+                    span { style: "color: #73c991;", "\u{2713} no problems" }
+                } else {
+                    span { style: "color: #ea8285; font-weight: bold;", "\u{2298} {error_count}" }
+                    span { style: "color: #d29922; font-weight: bold;", "\u{25B3} {warning_count}" }
+                }
+            }
+            if dirty {
+                span {
+                    title: "Theme config has unsaved changes (File \u{2192} Save Theme)",
+                    style: "color: #d29922;",
+                    "\u{25cf} unsaved"
+                }
+            }
+
+            // Center: transient workbench/dock messages; click to dismiss.
+            div {
+                style: "flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: center;",
+                if !message.is_empty() {
+                    button {
+                        title: "Click to dismiss",
+                        style: "background: transparent; border: none; color: inherit; font: inherit; cursor: pointer; opacity: 0.85; max-width: 100%; overflow: hidden; text-overflow: ellipsis;",
+                        onclick: move |_| {
+                            let mut status = edit_state.workbench_status;
+                            status.set(String::new());
+                        },
+                        "{message}"
+                    }
+                }
+            }
+
+            if !context.is_empty() {
+                span { style: "opacity: 0.8;", "{context}" }
+            }
+            span {
+                title: "Exported theme XML size \u{2014} Blogger caps themes at ~1 MB",
+                style: "color: {size_color}; opacity: 0.9;",
+                "{xml_bytes / 1024} KB"
+            }
+            button {
+                title: "Active preset \u{2014} click to open Presets",
+                style: "background: transparent; border: none; color: inherit; font: inherit; cursor: pointer; padding: 2px 6px; border-radius: 3px; opacity: 0.9;",
+                onclick: move |_| {
+                    if (layout.presets_pos)() == DockPosition::Hidden {
+                        layout.request_dock("presets", DockPosition::mor_panel_left);
+                    } else {
+                        layout.presets_pos.set(DockPosition::Hidden);
+                    }
+                },
+                "\u{25c6} {preset_label}"
+            }
+        }
+    }
 }
 
 pub fn render_app_shell(
@@ -165,16 +330,15 @@ pub fn render_app_shell(
     });
 
     let edited_xml = use_signal(String::new);
-    let module_xml_signal = use_signal(String::new);
     let workbench_status = use_signal(String::new);
 
     provide_context(WorkbenchEditState {
         edited_xml,
-        module_xml_signal,
         workbench_status,
         edit_widget_request: use_signal(|| None),
         add_widget_request: use_signal(|| None),
         add_target: use_signal(|| None),
+        load_module_request: use_signal(|| None),
     });
 
     provide_context(DockLocalSignals {
@@ -186,6 +350,8 @@ pub fn render_app_shell(
     rsx! {
         script { dangerous_inner_html: "document.addEventListener('contextmenu', event => event.preventDefault());" }
         script { dangerous_inner_html: "{CM6_BUNDLE_JS}" }
+        // Theme-aware JS completions (read lazily by the CM6 bundle's js mode).
+        script { dangerous_inner_html: "window.MOR_JS_HINTS = {mor_blogger_core::render::js_behaviors::editor_hints_json()};" }
         MorStyleProvider { theme_toml: ui_theme_pref() }
         style { "{EDITOR_UI_CSS}" }
 
@@ -273,6 +439,8 @@ pub fn render_app_shell(
                     active_preset,
                     original_toml,
                 }
+
+                StatusBar { config_toml_signal, original_toml }
             }
 
             FloatingWindowManager {

@@ -28,6 +28,16 @@
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), flex-basis 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Inside a dock zone the container is a COLUMN (tab strip above the panel),
+   so the panels' flex-basis above would set height, not width. Fill the
+   remaining column instead; width comes from the container/grid. */
+.panel-container > .mor_panel_left,
+.panel-container > .mor_panel_right {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
 /* Left Widths (Triggered via data-left-layout) */
 .editor-main[data-left-layout="split"] { --left-panel-width: 360px; }
 .editor-main[data-left-layout="wide"]  { --left-panel-width: 520px; }

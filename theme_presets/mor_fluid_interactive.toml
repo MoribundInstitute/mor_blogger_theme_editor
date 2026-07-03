@@ -1,11 +1,20 @@
 name = "Mor Fluid Interactive"
-description = "Readable liquid-motion UI: luminous panels, gentle hover physics, and dashboard-friendly surfaces."
+description = "Liquid-motion reading surface: aurora backwash that drifts, glassy luminous panels, springy hover physics, and links that pour their underlines in. Calm by default, alive under the cursor."
 
 preset_css = '''
 /* ============================================================
-   Mor Fluid Interactive Preset
+   Mor Fluid Interactive
+   Identity: water, not machinery. Every surface responds to the
+   cursor with a small, springy, GPU-cheap gesture (transform /
+   opacity only); everything settles when you stop moving.
    ============================================================ */
 
+:root {
+  --fluid-ease: cubic-bezier(0.34, 1.4, 0.5, 1); /* gentle overshoot */
+  --fluid-speed: 240ms;
+}
+
+/* ---- Aurora backwash: three drifting pools over a deep base ---- */
 body::before {
   background: none !important;
   opacity: 0 !important;
@@ -18,39 +27,41 @@ html, body {
 body {
   min-height: 100vh;
   background-image:
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--accent) 34%, transparent) 0, transparent 32rem),
-    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--border-color) 32%, var(--accent)) 0, transparent 30rem),
-    radial-gradient(circle at 48% 92%, color-mix(in srgb, var(--bg-panel) 28%, var(--accent)) 0, transparent 34rem),
+    radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--accent) 26%, transparent) 0, transparent 30rem),
+    radial-gradient(circle at 84% 8%, color-mix(in srgb, var(--accent) 14%, transparent) 0, transparent 26rem),
+    radial-gradient(circle at 50% 96%, color-mix(in srgb, var(--border-color) 40%, transparent) 0, transparent 34rem),
     linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--bg-base) 94%, var(--accent)) 0%,
-      var(--bg-base) 45%,
-      color-mix(in srgb, var(--bg-base) 88%, var(--border-color)) 100%
+      160deg,
+      color-mix(in srgb, var(--bg-base) 92%, var(--accent)) 0%,
+      var(--bg-base) 48%,
+      color-mix(in srgb, var(--bg-base) 90%, var(--border-color)) 100%
     ) !important;
-  background-size: 145% 145%, 135% 135%, 160% 160%, 100% 100% !important;
+  background-size: 150% 150%, 140% 140%, 160% 160%, 100% 100% !important;
   background-position: 0% 0%, 100% 0%, 50% 100%, center !important;
   background-attachment: fixed !important;
-  animation: mor-fluid-background-drift 28s ease-in-out infinite alternate;
+  animation: mor-fluid-drift 36s ease-in-out infinite alternate;
 }
 
-@keyframes mor-fluid-background-drift {
+@keyframes mor-fluid-drift {
   from { background-position: 0% 0%, 100% 0%, 50% 100%, center; }
-  to { background-position: 22% 10%, 78% 18%, 38% 82%, center; }
+  to   { background-position: 24% 12%, 74% 20%, 36% 84%, center; }
 }
 
+/* ---- Luminous panels: lit from above, grounded by depth ---- */
 .canvas-core, .mor-post, .mor-panel, .main-header, .mor-footer, .mor-catalog-dropdown {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--bg-panel) 88%, var(--fg-base)) 0%,
-    color-mix(in srgb, var(--bg-panel) 90%, var(--bg-base)) 100%
+    color-mix(in srgb, var(--bg-panel) 90%, var(--fg-base)) 0%,
+    color-mix(in srgb, var(--bg-panel) 92%, var(--bg-base)) 100%
   ) !important;
-  border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent) !important;
-  border-radius: 8px !important;
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent) !important;
+  border-radius: 10px !important;
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset,
-    0 16px 42px color-mix(in srgb, var(--bg-base) 22%, transparent) !important;
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 10%, transparent),
+    0 14px 38px color-mix(in srgb, var(--bg-base) 30%, transparent) !important;
 }
 
+/* ---- Header: waterline shimmer along its base ---- */
 .main-header {
   position: relative !important;
   overflow: hidden !important;
@@ -64,29 +75,69 @@ body {
   right: 1rem;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 76%, transparent), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 80%, transparent), transparent);
   pointer-events: none;
 }
 
-.mor-nav > a:hover, .mor-nav button:hover {
-  color: var(--accent) !important;
-  background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
-  transform: translateY(-1px);
+/* ---- Nav: buoyant links ---- */
+.mor-nav > a {
+  transition: transform var(--fluid-speed) var(--fluid-ease),
+              background var(--fluid-speed) ease,
+              color var(--fluid-speed) ease;
 }
 
+.mor-nav > a:hover {
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  transform: translateY(-2px);
+}
+
+/* ---- Soften the global hover inversion into an accent wash ---- */
+a:hover, a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--fg-base);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Prose links: the underline pours in from the left ---- */
+.post-body a, .entry-content a {
+  color: color-mix(in srgb, var(--accent) 78%, var(--fg-base));
+  border-bottom: none;
+  background-image: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 45%, var(--fg-base)));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  transition: background-size var(--fluid-speed) var(--fluid-ease), color var(--fluid-speed) ease;
+}
+
+.post-body a:hover, .entry-content a:hover,
+.post-body a:focus-visible, .entry-content a:focus-visible {
+  color: var(--accent);
+  background-color: transparent;
+  background-size: 100% 2px;
+}
+
+/* ---- Post cards: surface tension. Lift, ring, and title sweep ---- */
 .mor-post {
   padding: clamp(1.1rem, 2.5vw, 1.75rem) !important;
-  margin-bottom: 1rem !important;
-  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 220ms ease, box-shadow 220ms ease !important;
+  margin-bottom: 1.1rem !important;
+  transition: transform var(--fluid-speed) var(--fluid-ease),
+              border-color var(--fluid-speed) ease,
+              box-shadow var(--fluid-speed) ease !important;
+  will-change: transform;
 }
 
 .mor-post:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border-color)) !important;
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--fg-base) 14%, transparent) inset,
-    0 22px 56px color-mix(in srgb, var(--bg-base) 26%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important;
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent),
+    0 22px 52px color-mix(in srgb, var(--bg-base) 34%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent) !important;
 }
 
 .mor-post .post-title::after {
@@ -96,101 +147,231 @@ body {
   height: 2px;
   margin-top: 0.55rem;
   background: linear-gradient(90deg, var(--accent), transparent);
+  transform: scaleX(0.4);
+  transform-origin: left center;
+  transition: transform var(--fluid-speed) var(--fluid-ease);
 }
+
+.mor-post:hover .post-title::after {
+  transform: scaleX(1);
+}
+
+.hero-post {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-color)) !important;
+}
+
+.post-thumbnail {
+  border-radius: 8px;
+  transition: transform var(--fluid-speed) var(--fluid-ease);
+}
+
+.mor-post:hover .post-thumbnail {
+  transform: translateY(-1px) scale(1.015);
+}
+
+.post-meta, .byline {
+  color: var(--fg-muted);
+  font-size: 0.85em;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Prose flourishes ---- */
+.post-body blockquote {
+  margin: 1.2em 0;
+  padding: 0.7em 1.1em;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.post-body code {
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-elevated) 80%, var(--accent));
+}
+
+.post-body pre {
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+}
+
+/* ---- Sidebar: sections wake up under the cursor ---- */
+.sidebar-section {
+  transition: border-color var(--fluid-speed) ease;
+}
+
+.sidebar-section:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+}
+
+.panel-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border-color));
+}
+
+/* ---- Footer: mirrored waterline on top ---- */
+.mor-footer {
+  position: relative !important;
+  margin-top: 22px !important;
+}
+
+.mor-footer::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 70%, transparent), transparent);
+  pointer-events: none;
+}
+
+/* ---- Inputs: ripple ring on focus ---- */
 input[type='text']:focus, textarea:focus {
   outline: none !important;
   border-color: var(--accent) !important;
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent),
-    0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset !important;
+    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--fg-base) 10%, transparent) !important;
+  transition: box-shadow var(--fluid-speed) ease, border-color var(--fluid-speed) ease;
 }
 
-/* --- Theme cursors (default / pointer / text) --- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%2305a581' stroke='%2306231d' stroke-width='1'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%2305a581' stroke='%2306231d' stroke-width='1'/></svg>") 9 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%2305a581' stroke-width='1.6'/></svg>") 12 12, text !important; }
+/* ---- Selection: dipped in the accent ---- */
+::selection {
+  background: var(--accent);
+  color: var(--bg-base);
+}
+
+/* ---- Theme cursors (default / pointer / text) ---- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%2314c9a2' stroke='%23062a22' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%2314c9a2' stroke='%23062a22' stroke-width='1'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%2314c9a2' stroke-width='1.6'/></svg>") 12 12, text !important; }
+
+/* ---- Still water: honor reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none !important; }
+  .mor-post, .mor-post .post-title::after, .post-thumbnail,
+  .mor-nav > a,
+  .post-body a, .entry-content a, .sidebar-section {
+    transition: none !important;
+  }
+  .mor-post:hover, .mor-nav > a:hover,
+  .mor-post:hover .post-thumbnail {
+    transform: none;
+  }
+}
 '''
 
 [colors]
-bg_base = "#080d12"
-fg_base = "#edf7f3"
-fg_muted = "#9fb8b0"
-accent = "#05a581"
-border = "#27423d"
+bg_base = "#06121a"
+fg_base = "#eafaf4"
+fg_muted = "#8fb3ab"
+accent = "#14c9a2"
+border = "#1f4038"
 panel_border_width = "1px"
-glow_spread = "15px"
-hover_scale = "1.015"
+glow_spread = "14px"
+hover_scale = "1.01"
 
 [colors.bg_panel]
-mode = "Solid"
-color = "#101923"
-gradient_from = "#101923"
-gradient_to = "#101923"
+mode = "Gradient"
+color = "#0c1c28"
+gradient_from = "#0d1f2c"
+gradient_to = "#0a1722"
 gradient_angle_deg = 180
 
 [colors.bg_elevated]
 mode = "Solid"
-color = "#172635"
-gradient_from = "#172635"
-gradient_to = "#172635"
+color = "#12283a"
+gradient_from = "#12283a"
+gradient_to = "#12283a"
 gradient_angle_deg = 180
 
 [background.mode.Solid]
-color = "#080d12"
+color = "#06121a"
 
 [typography]
-body_font_stack = "system-ui, -apple-system, sans-serif"
-heading_font_stack = "system-ui, -apple-system, sans-serif"
-mono_font_stack = "'Courier New', Courier, monospace"
+body_font_stack = "'Inter', sans-serif"
+heading_font_stack = "'Poppins', sans-serif"
+mono_font_stack = "'JetBrains Mono', monospace"
 base_size = "16px"
-scale_ratio = "1.22"
-line_height = "1.65"
-heading_weight = "700"
+scale_ratio = "1.25"
+line_height = "1.7"
+heading_weight = "650"
 
 [buttons]
-radius = "8px"
+radius = "10px"
 border_width = "1px"
 text_transform = "none"
-padding_x = "0.9rem"
+padding_x = "0.95rem"
 padding_y = "0.55rem"
-font_weight = "650"
-fill = "gradient"
-gradient_from = "color-mix(in srgb, var(--bg-panel) 82%, var(--fg-base))"
-gradient_to = "color-mix(in srgb, var(--bg-panel) 86%, var(--bg-base))"
-gradient_angle = "180deg"
-box_shadow = "0 1px 0 color-mix(in srgb, var(--fg-base) 12%, transparent) inset, 0 8px 22px color-mix(in srgb, var(--bg-base) 14%, transparent)"
+font_weight = "600"
+fill = "glass"
+glass_blur = "14px"
+glass_opacity = "0.35"
+elevation = "subtle"
 hover_effect = "lift"
-transition_ms = "160ms"
+transition_ms = "240ms"
+easing = "cubic-bezier(0.34, 1.4, 0.5, 1)"
+pressed_feedback = true
+focus_ring_color = "#14c9a2"
+focus_ring_width = "2px"
+
+[dark.colors]
+bg_base = "#06121a"
+fg_base = "#eafaf4"
+fg_muted = "#8fb3ab"
+accent = "#14c9a2"
+border = "#1f4038"
+panel_border_width = "1px"
+glow_spread = "14px"
+hover_scale = "1.01"
+
+[dark.colors.bg_panel]
+mode = "Gradient"
+color = "#0c1c28"
+gradient_from = "#0d1f2c"
+gradient_to = "#0a1722"
+gradient_angle_deg = 180
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#12283a"
+gradient_from = "#12283a"
+gradient_to = "#12283a"
+gradient_angle_deg = 180
+
+[dark.background.mode.Solid]
+color = "#06121a"
 
 [light.colors]
-bg_base = "#f0f5f9"
-fg_base = "#0b1118"
-fg_muted = "#566a78"
-accent = "#05a581"
-border = "#a8c0d0"
+bg_base = "#edf6f4"
+fg_base = "#0a1f1e"
+fg_muted = "#4c6a66"
+accent = "#047865"
+border = "#b6d5cf"
 panel_border_width = "1px"
-glow_spread = "15px"
-hover_scale = "1.015"
+glow_spread = "14px"
+hover_scale = "1.01"
 
 [light.colors.bg_panel]
-mode = "Solid"
+mode = "Gradient"
 color = "#ffffff"
 gradient_from = "#ffffff"
-gradient_to = "#ffffff"
+gradient_to = "#f3faf8"
 gradient_angle_deg = 180
 
 [light.colors.bg_elevated]
 mode = "Solid"
-color = "#f4f8fc"
-gradient_from = "#f4f8fc"
-gradient_to = "#f4f8fc"
+color = "#e2efec"
+gradient_from = "#e2efec"
+gradient_to = "#e2efec"
 gradient_angle_deg = 180
 
 [light.background.mode.Solid]
-color = "#f0f5f9"
+color = "#edf6f4"
 
 [scrollbars]
 width = "10px"
-track_color = "#101923"
-thumb_color = "#05a581"
-thumb_hover_color = "#2fd0a8"
+track_color = "#0a1722"
+thumb_color = "#14c9a2"
+thumb_hover_color = "#3fe6c0"

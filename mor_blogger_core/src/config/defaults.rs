@@ -20,6 +20,8 @@ pub fn light_color_config() -> ColorConfig {
         panel_border_width: "1px".to_string(),
         glow_spread: "10px".to_string(),
         hover_scale: "1.02".to_string(),
+        glow_intensity: "2".to_string(),
+        glow_hover: true,
         panel_border_image_url: String::new(),
         panel_border_image_slice: "30%".to_string(),
         panel_border_image_repeat: "stretch".to_string(),
@@ -60,6 +62,8 @@ pub fn dark_color_config() -> ColorConfig {
         panel_border_width: "1px".to_string(),
         glow_spread: "10px".to_string(),
         hover_scale: "1.02".to_string(),
+        glow_intensity: "2".to_string(),
+        glow_hover: true,
         panel_border_image_url: String::new(),
         panel_border_image_slice: "30%".to_string(),
         panel_border_image_repeat: "stretch".to_string(),
@@ -127,6 +131,7 @@ pub fn default_theme_config() -> ThemeConfig {
             scale_ratio: "1.2".to_string(),
             line_height: "1.6".to_string(),
             heading_weight: "600".to_string(),
+            elements: Vec::new(),
         },
         buttons: ButtonConfig {
             radius: "14px".to_string(),
@@ -170,12 +175,12 @@ pub fn default_theme_config() -> ThemeConfig {
         blocks: vec![],
         preset_css: "".to_string(),
         active_preset_id: None,
-        enable_image_borders: false,
+        enable_image_borders: false, // legacy field, no longer gates the frame
         custom_border_url: None,
-        svg_border_slice: "30".to_string(),
-        image_border_width: "20px".to_string(),
+        svg_border_slice: "30%".to_string(),
+        image_border_width: "28px".to_string(),
         target_sidebars: true,
-        target_canvas: false,
+        target_canvas: true,
         scripts: ScriptBehaviorConfig::default(),
         // Drops the 15 lines of raw string repetition in favor of styling.rs defaults.
         // Explicit standard blog action icons are now first-class on IconConfig (with svg_mask defaults).

@@ -27,7 +27,7 @@ pub struct TemplateGridDialogProps {
 #[component]
 pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
     let mut open_signal = props.open;
-    let theme = use_context::<ThemeState>();
+    let mut theme = use_context::<ThemeState>();
     let mut active_category = use_signal(|| ModuleCategory::Header);
     let pack = theme.signals.template_pack.read().clone();
 
@@ -162,7 +162,7 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                 // Left Navigation
                 nav {
                     style: "flex: 0 0 220px; display: flex; flex-direction: column; \
-                            border-right: 1px solid rgba(236, 231, 218, 0.18); padding: 18px;",
+                            border-right: 1px solid var(--editor-border-soft); padding: 18px;",
 
                     div { style: "display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto;",
                         CategoryButton { label: "Header Variant", active: active_category() == ModuleCategory::Header, on_click: move |_| active_category.set(ModuleCategory::Header) }
@@ -176,9 +176,9 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
 
                     // Discover Link Block
                     div {
-                        style: "margin-top: 18px; padding-top: 18px; border-top: 1px dashed rgba(236, 231, 218, 0.18);",
-                        p { style: "margin: 0 0 10px; font-size: 0.8rem; color: #f4f1ea; font-weight: 600;", "Download More Layouts" }
-                        p { style: "margin: 0 0 10px; font-size: 0.75rem; color: #a8a294; line-height: 1.4;", "Browse the official compendiums for new XML snippets." }
+                        style: "margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--editor-border-soft);",
+                        p { style: "margin: 0 0 10px; font-size: 0.8rem; color: var(--editor-text); font-weight: 600;", "Download More Layouts" }
+                        p { style: "margin: 0 0 10px; font-size: 0.75rem; color: var(--editor-muted); line-height: 1.4;", "Browse the official compendiums for new XML snippets." }
                         a {
                             href: "https://morxml.blogspot.com/",
                             target: "_blank",
@@ -189,7 +189,7 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                         a {
                             href: "https://github.com/MoribundInstitute/mor-xml-compendium",
                             target: "_blank",
-                            style: "display: block; text-align: center; background: transparent; color: #a8a294; \
+                            style: "display: block; text-align: center; background: transparent; color: var(--editor-muted); \
                                     text-decoration: underline; padding: 4px; font-size: 0.75rem;",
                             "GitHub Repository"
                         }
@@ -198,7 +198,7 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
 
                 // Right Grid Area
                 div {
-                    style: "flex: 1 1 auto; overflow-y: auto; padding: 18px; background: #0f0e0c;",
+                    style: "flex: 1 1 auto; overflow-y: auto; padding: 18px; background: var(--editor-bg);",
 
                     div {
                         style: "display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;",
@@ -206,12 +206,11 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                             div {
                                 key: "{module.id}",
                                 style: format!("display: flex; flex-direction: column; justify-content: space-between; \
-                                                padding: 16px; background: #16140f; border-radius: 4px; cursor: pointer; \
+                                                padding: 16px; background: var(--editor-panel); border-radius: 4px; cursor: pointer; \
                                                 transition: all 0.2s; border: 2px solid {};",
-                                                if current_selection == module.id { "#ece7da" } else { "rgba(236, 231, 218, 0.12)" }),
+                                                if current_selection == module.id { "var(--mor-accent-hover)" } else { "var(--editor-border-soft)" }),
                                 onclick: {
                                     let id = module.id.to_string();
-                                    let mut theme = theme;
                                     let cat = active_category();
                                     move |_| {
                                         let mut pack = theme.signals.template_pack.read().clone();
@@ -231,16 +230,16 @@ pub fn TemplateGridDialog(props: TemplateGridDialogProps) -> Element {
                                 },
 
                                 div {
-                                    h3 { style: "margin: 0 0 6px; font-size: 1.05rem; font-weight: 600; color: #f4f1ea;", "{module.name}" }
-                                    p { style: "margin: 0; font-size: 0.85rem; line-height: 1.5; color: #a8a294;", "{module.desc}" }
+                                    h3 { style: "margin: 0 0 6px; font-size: 1.05rem; font-weight: 600; color: var(--editor-text);", "{module.name}" }
+                                    p { style: "margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--editor-muted);", "{module.desc}" }
                                 }
 
                                 div {
                                     style: "margin-top: 16px; font-family: monospace; font-size: 0.75rem; text-align: right;",
                                     if current_selection == module.id {
-                                        span { style: "color: #73c991; font-weight: bold;", "● Active" }
+                                        span { style: "color: var(--editor-good); font-weight: bold;", "● Active" }
                                     } else {
-                                        span { style: "color: #8c8678;", "○ Select" }
+                                        span { style: "color: var(--editor-muted);", "○ Select" }
                                     }
                                 }
                             }
@@ -263,10 +262,10 @@ fn CategoryButton(
             style: format!("text-align: left; padding: 8px 12px; border: none; cursor: pointer; border-radius: 3px; \
                             font-family: inherit; font-size: 0.95rem; transition: background 0.2s; \
                             background: {}; color: {}; font-weight: {};",
-                            if active { "rgba(236, 231, 218, 0.08)" } else { "transparent" },
-                            if active { "#f4f1ea" } else { "#a8a294" },
+                            if active { "var(--mor-btn-hover)" } else { "transparent" },
+                            if active { "var(--editor-text)" } else { "var(--editor-muted)" },
                             if active { "600" } else { "400" }),
-            onclick: move |evt| on_click.call(evt),
+            onclick: on_click,
             "{label}"
         }
     }

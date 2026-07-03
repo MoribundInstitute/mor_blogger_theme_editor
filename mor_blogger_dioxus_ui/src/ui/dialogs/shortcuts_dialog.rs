@@ -22,6 +22,26 @@ const ACTIONS: &[(&str, &str, &str)] = &[
     ("reset_zoom", "Reset Zoom", "Workspace"),
 ];
 
+/// Built-in shortcuts that are not rebindable: (combo, label, group).
+/// Alternate combos are separated with " / ".
+const FIXED: &[(&str, &str, &str)] = &[
+    ("Alt+1", "Split layout (dock both panes)", "Docks & Layout"),
+    ("Alt+2", "Wide layout", "Docks & Layout"),
+    ("Alt+3", "Float both panes", "Docks & Layout"),
+    ("Ctrl+Shift+1…9", "Toggle pinned dock (activity-bar order)", "Docks & Layout"),
+    ("Ctrl+S", "Save current file", "Asset Editors"),
+    ("Alt+Left / Alt+J", "Previous file tab", "Asset Editors"),
+    ("Alt+Right / Alt+K", "Next file tab", "Asset Editors"),
+    ("Ctrl+Z / Ctrl+Y", "Undo / Redo in code editor", "Asset Editors"),
+    ("Esc", "Cancel shortcut capture", "This Dialog"),
+];
+
+/// Nemo-style pages: which groups render on each page.
+const PAGES: &[&[&str]] = &[
+    &["Global App", "Project & File", "Workspace"],
+    &["Docks & Layout", "Asset Editors", "This Dialog"],
+];
+
 fn field_mut<'a>(sc: &'a mut ShortcutPrefs, id: &str) -> Option<&'a mut Option<String>> {
     Some(match id {
         "user_prefs" => &mut sc.user_prefs,
@@ -72,6 +92,25 @@ fn combo_from_event(evt: &Event<KeyboardData>) -> Option<String> {
     Some(combo)
 }
 
+/// Render a combo string as Nemo-style keycap chips.
+/// "Ctrl+Shift+E" → [Ctrl] + [Shift] + [E]; " / " separates alternates.
+#[component]
+fn KeyCaps(combo: String) -> Element {
+    rsx! {
+        for (i, alt) in combo.split(" / ").enumerate() {
+            if i > 0 {
+                span { class: "mor-keycap-plus", "/" }
+            }
+            for (j, k) in alt.split('+').enumerate() {
+                if j > 0 {
+                    span { class: "mor-keycap-plus", "+" }
+                }
+                span { class: "mor-keycap", "{k}" }
+            }
+        }
+    }
+}
+
 #[component]
 pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
     let mut prefs = use_context::<Signal<ShortcutPrefs>>();
@@ -79,6 +118,7 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
     // Action id currently capturing its new combo, if any.
     let mut capturing = use_signal(|| None::<&'static str>);
     let mut filter = use_signal(String::new);
+    let mut page = use_signal(|| 0usize);
 
     let mut apply = move |id: &'static str, new_combo: String| {
         let mut sc = prefs.write();
@@ -102,7 +142,12 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
 
     let sc = prefs();
     let query = filter().to_lowercase();
-    let groups = ["Global App", "Project & File", "Workspace"];
+    // Searching cuts across all pages; otherwise show the current page's groups.
+    let visible_groups: Vec<&'static str> = if query.is_empty() {
+        PAGES[page().min(PAGES.len() - 1)].to_vec()
+    } else {
+        PAGES.iter().flat_map(|p| p.iter().copied()).collect()
+    };
 
     rsx! {
         Modal {
@@ -112,6 +157,7 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
 
             div { class: "mor-shortcuts-wrapper",
                 div { class: "mor-shortcuts-search",
+                    style: "display: flex; align-items: center;",
                     span { class: "search-icon", "🔎" }
                     input {
                         class: "mor-input",
@@ -122,15 +168,16 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                     }
                 }
 
-                p { style: "margin: 8px 0 0 0; font-size: 0.75rem; color: var(--fg-muted);",
-                    "Click a key chip, then press the new combination. Esc cancels."
+                p { style: "margin: 8px 0 16px 0; font-size: 0.75rem; color: var(--editor-muted);",
+                    "Click a key combination to rebind it, then press the new keys. Esc cancels. Gray-listed shortcuts are fixed."
                 }
 
                 div { class: "mor-shortcuts-grid",
-                    for group in groups {
+                    for group in visible_groups {
                         div { class: "mor-shortcut-group",
                             h4 { class: "mor-shortcut-group-title", "{group}" }
 
+                            // Rebindable actions in this group.
                             for (id, label, _) in ACTIONS.iter().filter(|(id, label, g)| {
                                 *g == group
                                     && (query.is_empty()
@@ -141,15 +188,11 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                                     let id: &'static str = id;
                                     let is_capturing = capturing() == Some(id);
                                     let keys = field(&sc, id).unwrap_or_default();
-                                    let display = if is_capturing { "press keys…".to_string() } else { keys };
                                     rsx! {
                                         div { class: "mor-shortcut-row", key: "{id}",
                                             button {
-                                                class: "mor-input",
-                                                style: format!(
-                                                    "width: 150px; text-align: center; font-family: monospace; cursor: pointer; {}",
-                                                    if is_capturing { "outline: 2px solid var(--accent);" } else { "" }
-                                                ),
+                                                class: "mor-shortcut-keys",
+                                                title: "Click, then press the new combination. Esc cancels.",
                                                 onclick: move |_| capturing.set(Some(id)),
                                                 onkeydown: move |evt: Event<KeyboardData>| {
                                                     if capturing() != Some(id) { return; }
@@ -167,35 +210,46 @@ pub fn ShortcutsDialog(open: Signal<bool>) -> Element {
                                                 onblur: move |_| {
                                                     if capturing() == Some(id) { capturing.set(None); }
                                                 },
-                                                "{display}"
+                                                if is_capturing {
+                                                    span { class: "mor-keycap mor-keycap-capturing", "press keys…" }
+                                                } else {
+                                                    KeyCaps { combo: keys }
+                                                }
                                             }
                                             div { class: "mor-action-label", "{label}" }
                                         }
                                     }
                                 }
                             }
+
+                            // Fixed (non-rebindable) shortcuts in this group.
+                            for (combo, label, _) in FIXED.iter().filter(|(combo, label, g)| {
+                                *g == group
+                                    && (query.is_empty()
+                                        || label.to_lowercase().contains(&query)
+                                        || combo.to_lowercase().contains(&query))
+                            }) {
+                                div { class: "mor-shortcut-row", key: "fixed-{combo}-{label}",
+                                    span { class: "mor-shortcut-keys",
+                                        KeyCaps { combo: combo.to_string() }
+                                    }
+                                    div { class: "mor-action-label", style: "color: var(--editor-muted);", "{label}" }
+                                }
+                            }
                         }
                     }
+                }
 
-                    div { class: "mor-shortcut-group",
-                        h4 { class: "mor-shortcut-group-title", "Asset Editors (fixed)" }
-                        div { class: "mor-shortcut-row",
-                            input {
-                                class: "mor-input",
-                                style: "width: 150px; text-align: center; font-family: monospace; pointer-events: none;",
-                                readonly: true,
-                                value: "Alt+Left / Right",
+                // Nemo-style page dots (hidden while searching across pages).
+                if query.is_empty() {
+                    div { class: "mor-shortcuts-pager",
+                        for i in 0..PAGES.len() {
+                            button {
+                                key: "page-{i}",
+                                class: if page() == i { "mor-page-dot active" } else { "mor-page-dot" },
+                                onclick: move |_| page.set(i),
+                                "{i + 1}"
                             }
-                            div { class: "mor-action-label", "Previous / Next File Tab" }
-                        }
-                        div { class: "mor-shortcut-row",
-                            input {
-                                class: "mor-input",
-                                style: "width: 150px; text-align: center; font-family: monospace; pointer-events: none;",
-                                readonly: true,
-                                value: "Ctrl+Shift+1…9",
-                            }
-                            div { class: "mor-action-label", "Toggle Pinned Dock (activity-bar order)" }
                         }
                     }
                 }

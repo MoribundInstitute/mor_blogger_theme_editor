@@ -4,21 +4,21 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
-/// Neutral dark theme — the app's own "Dark Mode" (no longer a GTK clone).
-/// Warm-neutral charcoal surfaces under the shared MorBlogger amber accent so
-/// it reads as the same product as Mor Studio, just calmer.
+/// Neutral dark theme — the app's own "Dark Mode": monochrome white-on-black,
+/// no brand accent. Accent stays a mid-gray (not white) because primary
+/// buttons and menu hovers paint white text on it.
 pub const DARK_MODE_TOML: &str = r##"
-bg            = "#1a1a1c"
-panel         = "#232325"
-header        = "#141416"
-text          = "#ececed"
+bg            = "#0e0e0f"
+panel         = "#161618"
+header        = "#080809"
+text          = "#f5f5f5"
 text_muted    = "#9b9b9e"
-border        = "#2e2e31"
-border_light  = "#3c3c40"
-accent        = "#b0571d"
-accent_hover  = "#c2622a"
-btn           = "#2a2a2d"
-btn_hover     = "#343438"
+border        = "#2a2a2d"
+border_light  = "#3a3a3e"
+accent        = "#4a4a4f"
+accent_hover  = "#5c5c62"
+btn           = "#1f1f22"
+btn_hover     = "#2c2c30"
 font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"
@@ -29,21 +29,21 @@ success       = "#46c08a"
 warning       = "#e0a13a"
 "##;
 
-/// Light theme — the app's own "Light Mode" (no longer a macOS clone).
-/// Warm off-white surfaces with the same amber accent, tuned darker for the
-/// status colors so they stay legible on a light background.
+/// Light theme — the app's own "Light Mode": monochrome black-on-white,
+/// no brand accent. Text is near-black for contrast; accent is a dark gray
+/// (not black) since primary buttons and menu hovers paint white text on it.
 pub const LIGHT_MODE_TOML: &str = r##"
-bg            = "#f4f3f1"
+bg            = "#f6f6f6"
 panel         = "#ffffff"
-header        = "#e8e6e2"
-text          = "#1f1e1d"
-text_muted    = "#6b6a67"
-border        = "#d9d6d1"
-border_light  = "#e8e6e2"
-accent        = "#b0571d"
-accent_hover  = "#c2622a"
+header        = "#eaeaea"
+text          = "#111111"
+text_muted    = "#4a4a4a"
+border        = "#d4d4d4"
+border_light  = "#e4e4e4"
+accent        = "#2e2e2e"
+accent_hover  = "#454545"
 btn           = "#ffffff"
-btn_hover     = "#efedea"
+btn_hover     = "#ececec"
 font_family   = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 font_size_base= "13px"
 font_size_h1  = "20px"

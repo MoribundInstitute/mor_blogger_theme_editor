@@ -114,11 +114,11 @@ pub fn StaticPagesFloatingWindow(
     rsx! {
         div {
             class: "preset-floating-window",
-            style: "position: fixed; top: 120px; left: 380px; width: 400px; max-height: 80vh; background: var(--editor-bg-base); border: 1px solid var(--editor-border-soft); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden;",
+            style: "position: fixed; top: 120px; left: 380px; width: 400px; max-height: 80vh; background: var(--editor-panel); border: 1px solid var(--editor-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden;",
 
             div {
                 class: "preset-floating-drag-handle",
-                style: "padding: 10px 16px; background: var(--editor-bg-panel); border-bottom: 1px solid var(--editor-border-soft); display: flex; justify-content: space-between; align-items: center; cursor: move;",
+                style: "padding: 10px 16px; background: var(--editor-bg-deep); border-bottom: 1px solid var(--editor-border); display: flex; justify-content: space-between; align-items: center; cursor: move;",
 
                 h3 { style: "margin: 0; font-size: 14px;", "Static Pages" }
 

@@ -102,6 +102,7 @@ pub struct ThemeSignals {
     pub glow_header_color: Signal<String>,
     pub glow_main_color: Signal<String>,
     pub cursor_style: Signal<String>,
+    pub cursor_set: Signal<mor_blogger_core::config::CursorSetConfig>,
     pub scrollbar_width: Signal<String>,
     pub scrollbar_track_color: Signal<String>,
     pub scrollbar_thumb_color: Signal<String>,
@@ -204,6 +205,7 @@ impl ThemeSignals {
             glow_header_color: Signal::new(config.colors.glow_header_color.clone()),
             glow_main_color: Signal::new(config.colors.glow_main_color.clone()),
             cursor_style: Signal::new(config.cursor_style.clone()),
+            cursor_set: Signal::new(config.cursor_set.clone()),
             scrollbar_width: Signal::new(config.scrollbar_width.clone()),
             scrollbar_track_color: Signal::new(config.scrollbar_track_color.clone()),
             scrollbar_thumb_color: Signal::new(config.scrollbar_thumb_color.clone()),
@@ -316,6 +318,7 @@ impl ThemeSignals {
             blocks: Vec::new(),
             preset_css: self.preset_css.read().clone(),
             active_preset_id: None,
+            active_variant_id: None,
             enable_image_borders: *self.enable_image_borders.read(),
             custom_border_url: self.custom_border_url.read().clone(),
             svg_border_slice: self.svg_border_slice.read().clone(),
@@ -323,6 +326,7 @@ impl ThemeSignals {
             target_sidebars: *self.target_sidebars.read(),
             target_canvas: *self.target_canvas.read(),
             cursor_style: self.cursor_style.read().clone(),
+            cursor_set: self.cursor_set.read().clone(),
             scrollbar_width: self.scrollbar_width.read().clone(),
             scrollbar_track_color: self.scrollbar_track_color.read().clone(),
             scrollbar_thumb_color: self.scrollbar_thumb_color.read().clone(),
@@ -368,6 +372,7 @@ impl ThemeSignals {
         self.target_sidebars.clone().set(config.target_sidebars);
         self.target_canvas.clone().set(config.target_canvas);
         self.cursor_style.clone().set(config.cursor_style.clone());
+        self.cursor_set.clone().set(config.cursor_set.clone());
     }
 
     /// Apply a preset: visual theme only (colors, typography, buttons,

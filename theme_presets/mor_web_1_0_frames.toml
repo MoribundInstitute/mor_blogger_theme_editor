@@ -1,5 +1,5 @@
-name = "Web 1.0 Frames"
-description = "A 1998 frameset homepage, restored with care: teal desktop, silver bevelled frames, navy title bars, blue links that turn purple when you have been there. Under construction forever."
+name = "Mor Web 1.0"
+description = "A 1998 frameset homepage, restored with care: teal desktop, silver bevelled frames, navy title bars, blue links that turn purple when you have been there. Under construction forever. Desktops: teal default, spruce, rose, eggplant."
 
 preset_css = '''
 /* ============================================================
@@ -15,13 +15,13 @@ preset_css = '''
 
 /* ---- Mode-scoped materials (dark is the :root default) ---- */
 :root {
-  --w1-link: #8ab6ff;
+  --w1-link: var(--accent);
   --w1-visited: #c7a3e6;
   --w1-active: #ff6a4d;
   --w1-bevel-hi: rgba(255, 255, 255, 0.14);
   --w1-bevel-lo: rgba(0, 0, 0, 0.55);
-  --w1-titlebar-a: #17305e;
-  --w1-titlebar-b: #2d5ba6;
+  --w1-titlebar-a: color-mix(in srgb, var(--accent) 32%, #0b0d16);
+  --w1-titlebar-b: color-mix(in srgb, var(--accent) 60%, #1a1e2e);
   --w1-titlebar-fg: #eaf1ff;
   --w1-field: #1d2027;
   /* Bevels do the lighting in 1998 — retire the glow system. */
@@ -30,13 +30,13 @@ preset_css = '''
 }
 
 html[data-theme="light"] {
-  --w1-link: #0000cc;
+  --w1-link: var(--accent);
   --w1-visited: #551a8b;
   --w1-active: #cc2200;
   --w1-bevel-hi: rgba(255, 255, 255, 0.85);
   --w1-bevel-lo: rgba(0, 0, 0, 0.32);
-  --w1-titlebar-a: #000080;
-  --w1-titlebar-b: #1084d0;
+  --w1-titlebar-a: color-mix(in srgb, var(--accent) 72%, #000000);
+  --w1-titlebar-b: color-mix(in srgb, var(--accent) 60%, #7ab6e8);
   --w1-titlebar-fg: #ffffff;
   --w1-field: #ffffff;
   --glow: none;
@@ -448,3 +448,34 @@ width = "16px"
 track_color = "#cdcac3"
 thumb_color = "#8f8c85"
 thumb_hover_color = "#6e6b64"
+
+# --- Color variants: the classic Windows appearance schemes ------------------
+# Silver chrome is the constant (that IS the aesthetic); the desktop tile,
+# title bars, and link ink change together, like picking a .theme file.
+
+[[variants]]
+name = "Spruce"
+[variants.light]
+colors = { bg_base = "#31694f", fg_base = "#111111", fg_muted = "#4d4a45", accent = "#1e5c38", border = "#9c9a94", bg_panel = { mode = "Solid", color = "#c0c0c0" }, bg_elevated = { mode = "Solid", color = "#d4d0c8" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMzMTY5NGYiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMmE1YzQ0Ii8+PC9zdmc+" } } }
+[variants.dark]
+colors = { bg_base = "#101d16", fg_base = "#e2e6dc", fg_muted = "#9ca698", accent = "#7fd0a0", border = "#56605a", bg_panel = { mode = "Solid", color = "#262e28" }, bg_elevated = { mode = "Solid", color = "#303a32" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMxMDFkMTYiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMTYyNDFjIi8+PC9zdmc+" } } }
+
+[[variants]]
+name = "Rose"
+[variants.light]
+colors = { bg_base = "#a8787f", fg_base = "#111111", fg_muted = "#4d4a45", accent = "#8e2e48", border = "#9c9a94", bg_panel = { mode = "Solid", color = "#c0c0c0" }, bg_elevated = { mode = "Solid", color = "#d4d0c8" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiNhODc4N2YiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjOTg2YTcwIi8+PC9zdmc+" } } }
+[variants.dark]
+colors = { bg_base = "#1d1216", fg_base = "#e8dee2", fg_muted = "#a6969c", accent = "#e08898", border = "#60565a", bg_panel = { mode = "Solid", color = "#2e262a" }, bg_elevated = { mode = "Solid", color = "#3a3036" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMxZDEyMTYiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMjQxODIwIi8+PC9zdmc+" } } }
+
+[[variants]]
+name = "Eggplant"
+[variants.light]
+colors = { bg_base = "#4a3a5e", fg_base = "#111111", fg_muted = "#4d4a45", accent = "#5e3a86", border = "#9c9a94", bg_panel = { mode = "Solid", color = "#c0c0c0" }, bg_elevated = { mode = "Solid", color = "#d4d0c8" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiM0YTNhNWUiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjNDAzMjUyIi8+PC9zdmc+" } } }
+[variants.dark]
+colors = { bg_base = "#171224", fg_base = "#e2dee8", fg_muted = "#9c96a8", accent = "#b491e0", border = "#5a5666", bg_panel = { mode = "Solid", color = "#292435" }, bg_elevated = { mode = "Solid", color = "#343048" } }
+background = { mode = { Tile = { url = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMxNzEyMjQiLz48cGF0aCBkPSJNMCAwaDF2MUgwek00IDRoMXYxSDR6IiBmaWxsPSIjMWUxODMwIi8+PC9zdmc+" } } }

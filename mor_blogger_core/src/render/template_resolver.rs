@@ -235,6 +235,7 @@ pub fn fetch_default_css(filename: &str) -> &'static str {
         // Core
         "00-Root-Section.css" => include_str!("../template_parts/css/core/00-Root-Section.css"),
         "01-Reset-Base.css" => include_str!("../template_parts/css/core/01-Reset-Base.css"),
+        "27-Cursors.css" => include_str!("../template_parts/css/core/27-Cursors.css"),
         "02-Typography-Links.css" => {
             include_str!("../template_parts/css/core/02-Typography-Links.css")
         }
@@ -470,6 +471,7 @@ pub fn resolve_template_parts(
         "24-Author-Profile.css",
         "25-Share-Menu.css",
         "26-Analytics-Dashboard.css",
+        "27-Cursors.css",
     ];
 
     for css in global_css {

@@ -15,6 +15,8 @@ pub struct ThemeHistory {
 pub struct ThemeState {
     pub signals: ThemeSignals,
     pub active_preset: Signal<Option<&'static str>>,
+    /// Active color-variant name within the active preset (None = base palette).
+    pub active_variant: Signal<Option<&'static str>>,
     pub show_undocked_presets: Signal<bool>,
     pub show_advanced_presets: Signal<bool>,
     pub show_advanced_glow: Signal<bool>,
@@ -65,6 +67,7 @@ impl ThemeState {
         });
 
         let active_preset = use_signal(move || default_preset_id);
+        let active_variant = use_signal(|| None::<&'static str>);
         let show_undocked_presets = use_signal(|| false);
         let show_advanced_presets = use_signal(|| false);
         let show_advanced_glow = use_signal(|| false);
@@ -85,6 +88,7 @@ impl ThemeState {
         ThemeState {
             signals,
             active_preset,
+            active_variant,
             show_undocked_presets,
             show_advanced_presets,
             show_advanced_glow,
@@ -259,12 +263,9 @@ impl ThemeState {
         } else if let Some(id) = active_id {
             let presets = mor_blogger_core::presets::all_presets();
             if let Some(preset) = presets.iter().find(|p| p.id == id) {
-                let pal = if new_dark {
-                    &preset.dark
-                } else {
-                    &preset.light
-                };
-                signals.swap_palette(pal);
+                let variant = *self.active_variant.read();
+                let (light, dark) = preset.palette_pair(variant);
+                signals.swap_palette(if new_dark { dark } else { light });
                 signals.apply_preset_css(preset);
             }
         }

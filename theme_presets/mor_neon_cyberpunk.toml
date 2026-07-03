@@ -1,9 +1,9 @@
-name = "Neon Cyberpunk"
-description = "Near-black phosphor under hot-pink and cyan glow: scanlines, chromatic-aberration headings, terminal type. A CRT readout from a 1995 prediction of 2025. Light mode trades the tube for a printed-circuit daylight look - silkscreen white, teal ink, copper-trace accents."
+name = "Mor Neon Cyberpunk"
+description = "Near-black phosphor under a two-tone glow: scanlines, chromatic-aberration headings, terminal type. A CRT readout from a 1995 prediction of 2025. Light mode trades the tube for printed-circuit daylight. Phosphor pairs: pink/cyan, acid/cyan, cyan/pink, amber/red."
 
 preset_css = '''
 /* ============================================================
-   Neon Cyberpunk preset
+   Mor Neon Cyberpunk preset
    Dark: a CRT readout from a 1995 prediction of 2025 -
    near-black tube, hot-pink / cyan phosphor bloom, scanlines,
    chromatic-aberration headings, terminal typefaces.
@@ -13,22 +13,23 @@ preset_css = '''
    body copy stays clean for readability.
    ============================================================ */
 
-/* --- Signal palette (light mode re-tunes every glow) --- */
+/* --- Signal palette: primary phosphor = --accent, secondary = --glow-color
+   (both palette-driven, so every color scheme keeps a true two-tone pair;
+   light mode only turns the bloom down) --- */
 :root {
   --nc-pink: var(--accent);
-  --nc-cyan: #00e5ff;
-  --nc-pink-glow: rgba(255, 43, 214, 0.45);
-  --nc-cyan-glow: rgba(0, 229, 255, 0.40);
-  --nc-scanline: rgba(0, 229, 255, 0.045);
+  --nc-cyan: var(--glow-color, #00e5ff);
+  --nc-pink-glow: color-mix(in srgb, var(--nc-pink) 45%, transparent);
+  --nc-cyan-glow: color-mix(in srgb, var(--nc-cyan) 40%, transparent);
+  --nc-scanline: color-mix(in srgb, var(--nc-cyan) 4.5%, transparent);
   --nc-grid: transparent;
 }
 
 html[data-theme="light"] {
-  --nc-cyan: #0e7490;
-  --nc-pink-glow: rgba(194, 7, 127, 0.16);
-  --nc-cyan-glow: rgba(14, 116, 144, 0.14);
+  --nc-pink-glow: color-mix(in srgb, var(--nc-pink) 16%, transparent);
+  --nc-cyan-glow: color-mix(in srgb, var(--nc-cyan) 14%, transparent);
   --nc-scanline: transparent;
-  --nc-grid: rgba(14, 116, 144, 0.08);
+  --nc-grid: color-mix(in srgb, var(--nc-cyan) 8%, transparent);
 }
 
 /* --- CRT overlay: scanlines in dark, PCB trace grid in light --- */
@@ -88,21 +89,21 @@ body::after {
   pointer-events: none;
 }
 
-/* Hover flips the bloom from pink to cyan */
+/* Hover deepens the accent bloom (structure never swaps phosphor) */
 .mor-post:hover {
-  border-color: var(--nc-cyan);
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border-color));
   box-shadow:
-    0 0 0 1px var(--nc-cyan-glow),
-    0 0 22px var(--nc-cyan-glow),
-    inset 0 0 30px color-mix(in srgb, var(--nc-cyan) 8%, transparent);
+    0 0 0 1px var(--nc-pink-glow),
+    0 0 22px var(--nc-pink-glow),
+    inset 0 0 30px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .hero-post {
-  border-color: var(--nc-cyan);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-color));
   box-shadow:
-    0 0 0 1px var(--nc-cyan-glow),
-    0 0 24px var(--nc-cyan-glow),
-    0 0 18px var(--nc-pink-glow),
+    0 0 0 1px var(--nc-pink-glow),
+    0 0 24px var(--nc-pink-glow),
+    0 0 14px var(--nc-cyan-glow),
     inset 0 0 30px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
@@ -132,8 +133,18 @@ body::after {
 }
 
 .post-body,
+.post-body p,
 .panel-content {
+  color: var(--fg-base);
   text-shadow: none;
+}
+
+/* Meta/telemetry always uses the palette's muted ink, not a phosphor. */
+.post-meta,
+.post-meta a,
+.sys-date,
+.byline {
+  color: var(--fg-muted) !important;
 }
 
 /* --- Masthead: tracked-out marquee with an occasional flicker --- */
@@ -163,13 +174,13 @@ body::after {
   }
 }
 
-/* --- Links: cyan data-lines; hover fills like a selected cell --- */
+/* --- Links: accent data-lines; hover fills like a selected cell --- */
 .post-body a,
 .panel-content a,
 .footer-col a {
-  color: var(--nc-cyan);
+  color: color-mix(in srgb, var(--accent) 78%, var(--fg-base));
   text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--nc-cyan) 45%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
@@ -180,10 +191,10 @@ body::after {
 .footer-col a:hover,
 .footer-col a:focus-visible {
   color: var(--bg-base);
-  background: var(--nc-cyan);
-  border-bottom-color: var(--nc-cyan);
+  background: var(--accent);
+  border-bottom-color: var(--accent);
   text-shadow: none;
-  box-shadow: 0 0 12px var(--nc-cyan-glow);
+  box-shadow: 0 0 12px var(--nc-pink-glow);
 }
 
 /* --- Meta lines: tiny uppercase telemetry --- */
@@ -229,9 +240,9 @@ body::after {
 /* --- Code: raw feed on an elevated slab --- */
 .post-body code,
 .post-body kbd {
-  color: var(--nc-cyan);
+  color: color-mix(in srgb, var(--accent) 72%, var(--fg-base));
   background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--nc-cyan) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   padding: 0.1em 0.4em;
   font-size: 0.9em;
 }
@@ -239,7 +250,7 @@ body::after {
 .post-body pre {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  box-shadow: inset 0 0 20px color-mix(in srgb, var(--nc-cyan) 5%, transparent);
+  box-shadow: inset 0 0 20px color-mix(in srgb, var(--accent) 5%, transparent);
   padding: 1em 1.2em;
   overflow-x: auto;
 }
@@ -286,9 +297,9 @@ hr {
 }
 
 /* --- Theme cursors (default / pointer / text) --- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23000000' stroke='%2300e5ff' stroke-width='1.4'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 3v5M12 16v5M3 12h5M16 12h5' fill='none' stroke='%23ff2bd6' stroke-width='1.6'/><circle cx='12' cy='12' r='3' fill='none' stroke='%23ff2bd6' stroke-width='1.4'/><circle cx='12' cy='12' r='1.3' fill='%2300e5ff'/></svg>") 12 12, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%2300e5ff' stroke-width='1.6'/></svg>") 12 12, text !important; }
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23000000' stroke='{{GLOW_URLENCODED}}' stroke-width='1.4'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 3v5M12 16v5M3 12h5M16 12h5' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.6'/><circle cx='12' cy='12' r='3' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.4'/><circle cx='12' cy='12' r='1.3' fill='{{GLOW_URLENCODED}}'/></svg>") 12 12, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='{{GLOW_URLENCODED}}' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 # --- Base config (dark is the native mode) ---
@@ -299,7 +310,7 @@ fg_base = "#e8faff"
 fg_muted = "#7fd8ea"
 accent = "#ff2bd6"
 border = "#8f1f9e"
-glow_color = "#ff2bd6"
+glow_color = "#00e5ff"
 panel_border_width = "1px"
 glow_spread = "12px"
 glow_intensity = "3"
@@ -340,13 +351,13 @@ font_weight = "600"
 padding_x = "14px"
 padding_y = "7px"
 fill = "neon"
-glow_color = "#ff2bd6"
+glow_color = "var(--accent)"
 glow_strength = "10px"
 hover_effect = "glow"
 transition_ms = "160ms"
 easing = "cubic-bezier(0.2, 0.8, 0.2, 1)"
 pressed_feedback = true
-focus_ring_color = "#00e5ff"
+focus_ring_color = "color-mix(in srgb, var(--accent) 60%, white)"
 
 # --- Dark palette: the tube, powered on ---
 
@@ -356,7 +367,7 @@ fg_base = "#e8faff"
 fg_muted = "#7fd8ea"
 accent = "#ff2bd6"
 border = "#8f1f9e"
-glow_color = "#ff2bd6"
+glow_color = "#00e5ff"
 panel_border_width = "1px"
 glow_spread = "12px"
 glow_intensity = "3"
@@ -389,7 +400,7 @@ fg_base = "#0b2530"
 fg_muted = "#3d6b7a"
 accent = "#c2077f"
 border = "#0e8a9e"
-glow_color = "#c2077f"
+glow_color = "#0e7490"
 panel_border_width = "1px"
 glow_spread = "6px"
 glow_intensity = "1"
@@ -413,6 +424,36 @@ angle_deg = 180
 
 [scrollbars]
 width = "10px"
-track_color = "#05010d"
-thumb_color = "#ff2bd6"
-thumb_hover_color = "#00e5ff"
+track_color = "color-mix(in srgb, var(--bg-base) 55%, black)"
+thumb_color = "var(--accent)"
+thumb_hover_color = "color-mix(in srgb, var(--accent) 60%, white)"
+
+# --- Color variants: phosphor pairs (accent = primary, glow_color = secondary),
+# each on its own tinted tube so a swap reads as different hardware.
+
+[[variants]]
+name = "Acid Grid"
+[variants.dark]
+colors = { bg_base = "#020803", fg_base = "#f2f8ef", fg_muted = "#a6d998", accent = "#9dff00", border = "#3f8f1f", glow_color = "#00e5ff", bg_panel = { mode = "Gradient", color = "#07130a", gradient_from = "#081808", gradient_to = "#030a04", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#0c1f0e" } }
+background = { mode = { Gradient = { from = "#04120a", to = "#010502", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#eef4ec", fg_base = "#16251a", fg_muted = "#537d45", accent = "#4a8f00", border = "#6a9e0e", glow_color = "#0e7490", bg_panel = { mode = "Gradient", color = "#fbfffb", gradient_from = "#ffffff", gradient_to = "#eff7ec", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#e0ecdc" } }
+background = { mode = { Gradient = { from = "#f0f6ee", to = "#e2ece0", angle_deg = 180 } } }
+
+[[variants]]
+name = "Cyan Overdrive"
+[variants.dark]
+colors = { bg_base = "#010409", fg_base = "#e8faff", fg_muted = "#7fd8ea", accent = "#00e5ff", border = "#1f7a9e", glow_color = "#ff2bd6", bg_panel = { mode = "Gradient", color = "#061423", gradient_from = "#071827", gradient_to = "#030a12", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#0a1c30" } }
+background = { mode = { Gradient = { from = "#031020", to = "#01040a", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#e9f2f4", fg_base = "#0b2530", fg_muted = "#3d6b7a", accent = "#0779c2", border = "#0e6a9e", glow_color = "#c2077f", bg_panel = { mode = "Gradient", color = "#fbfeff", gradient_from = "#ffffff", gradient_to = "#eef7f8", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#dcebee" } }
+background = { mode = { Gradient = { from = "#eef6f7", to = "#dfeced", angle_deg = 180 } } }
+
+[[variants]]
+name = "Blade Amber"
+[variants.dark]
+colors = { bg_base = "#0a0502", fg_base = "#fff4e0", fg_muted = "#d8b284", accent = "#ffb300", border = "#9e6a1f", glow_color = "#ff3d5a", bg_panel = { mode = "Gradient", color = "#170e04", gradient_from = "#1c1105", gradient_to = "#0e0702", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#221405" } }
+background = { mode = { Gradient = { from = "#120a03", to = "#050201", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#f4f0e9", fg_base = "#302008", fg_muted = "#7a6236", accent = "#b45309", border = "#9e7a0e", glow_color = "#b3123f", bg_panel = { mode = "Gradient", color = "#fffdf8", gradient_from = "#ffffff", gradient_to = "#f8f2e6", gradient_angle_deg = 165 }, bg_elevated = { mode = "Solid", color = "#eee4d2" } }
+background = { mode = { Gradient = { from = "#f6f2ea", to = "#eae2d2", angle_deg = 180 } } }

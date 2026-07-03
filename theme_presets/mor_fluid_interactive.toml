@@ -1,5 +1,5 @@
 name = "Mor Fluid Interactive"
-description = "Liquid-motion reading surface: aurora backwash that drifts, glassy luminous panels, springy hover physics, and links that pour their underlines in. Calm by default, alive under the cursor."
+description = "Liquid-motion reading surface: aurora backwash that drifts, glassy luminous panels, springy hover physics, and links that pour their underlines in. Calm by default, alive under the cursor. Waters: lagoon, dusk tide, ultraviolet deep, moonlit."
 
 preset_css = '''
 /* ============================================================
@@ -242,21 +242,66 @@ input[type='text']:focus, textarea:focus {
   color: var(--bg-base);
 }
 
+/* ---- Images: buoyant media ---- */
+.post-body img, .entry-content img, .post-thumbnail img {
+  border-radius: 10px;
+  transition: transform var(--fluid-speed) var(--fluid-ease), box-shadow var(--fluid-speed) ease;
+}
+.post-body img:hover, .entry-content img:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--bg-base) 40%, transparent);
+}
+
+/* ---- Tables: rows ripple under the cursor ---- */
+.post-body table, .entry-content table { border-collapse: collapse; width: 100%; }
+.post-body th, .entry-content th {
+  text-align: left;
+  padding: 0.45em 0.8em;
+  border-bottom: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.post-body td, .entry-content td {
+  padding: 0.45em 0.8em;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  transition: background var(--fluid-speed) ease;
+}
+.post-body tr:hover td, .entry-content tr:hover td {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+/* ---- Label pills: droplets ---- */
+.post-labels a, .post-tags a {
+  padding: 0.1em 0.65em;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  transition: background var(--fluid-speed) ease, transform var(--fluid-speed) var(--fluid-ease);
+}
+.post-labels a:hover, .post-tags a:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ---- Anchors glide instead of jump ---- */
+html { scroll-behavior: smooth; }
+
 /* ---- Theme cursors (default / pointer / text) ---- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%2314c9a2' stroke='%23062a22' stroke-width='1'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%2314c9a2' stroke='%23062a22' stroke-width='1'/></svg>") 9 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%2314c9a2' stroke-width='1.6'/></svg>") 12 12, text !important; }
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='{{ACCENT_URLENCODED}}' stroke='%23062a22' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='{{ACCENT_URLENCODED}}' stroke='%23062a22' stroke-width='1'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.6'/></svg>") 12 12, text !important; }
 
 /* ---- Still water: honor reduced-motion ---- */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   body { animation: none !important; }
   .mor-post, .mor-post .post-title::after, .post-thumbnail,
-  .mor-nav > a,
+  .mor-nav > a, .post-body img, .entry-content img,
+  .post-labels a, .post-tags a,
   .post-body a, .entry-content a, .sidebar-section {
     transition: none !important;
   }
   .mor-post:hover, .mor-nav > a:hover,
-  .mor-post:hover .post-thumbnail {
+  .mor-post:hover .post-thumbnail,
+  .post-body img:hover, .entry-content img:hover,
+  .post-labels a:hover, .post-tags a:hover {
     transform: none;
   }
 }
@@ -313,7 +358,7 @@ hover_effect = "lift"
 transition_ms = "240ms"
 easing = "cubic-bezier(0.34, 1.4, 0.5, 1)"
 pressed_feedback = true
-focus_ring_color = "#14c9a2"
+focus_ring_color = "var(--accent)"
 focus_ring_width = "2px"
 
 [dark.colors]
@@ -372,6 +417,37 @@ color = "#edf6f4"
 
 [scrollbars]
 width = "10px"
-track_color = "#0a1722"
-thumb_color = "#14c9a2"
-thumb_hover_color = "#3fe6c0"
+track_color = "color-mix(in srgb, var(--bg-base) 82%, black)"
+thumb_color = "var(--accent)"
+thumb_hover_color = "color-mix(in srgb, var(--accent) 75%, white)"
+
+# --- Color variants: different waters ---------------------------------------
+# Each scheme re-tints the whole sea (base, panels, muted ink) to sit under
+# its light, so a swap reads as different water, not a dyed lagoon.
+
+[[variants]]
+name = "Dusk Tide"
+[variants.dark]
+colors = { bg_base = "#171009", fg_base = "#faf1e2", fg_muted = "#b5a184", accent = "#f5a623", border = "#4a3a1f", bg_panel = { mode = "Gradient", color = "#241a10", gradient_from = "#261c11", gradient_to = "#1d140a", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#2c2013" } }
+background = { mode = { Solid = { color = "#171009" } } }
+[variants.light]
+colors = { bg_base = "#faf3e6", fg_base = "#231a0e", fg_muted = "#77603f", accent = "#b45309", border = "#e2cda1", bg_panel = { mode = "Gradient", color = "#ffffff", gradient_from = "#ffffff", gradient_to = "#fbf4e4", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#f2e7d2" } }
+background = { mode = { Solid = { color = "#faf3e6" } } }
+
+[[variants]]
+name = "Ultraviolet Deep"
+[variants.dark]
+colors = { bg_base = "#0d0a1a", fg_base = "#f0ecfd", fg_muted = "#a49ac9", accent = "#a78bfa", border = "#37305e", bg_panel = { mode = "Gradient", color = "#171230", gradient_from = "#191434", gradient_to = "#110d24", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#1f1840" } }
+background = { mode = { Solid = { color = "#0d0a1a" } } }
+[variants.light]
+colors = { bg_base = "#f2effc", fg_base = "#181233", fg_muted = "#5c5482", accent = "#6d28d9", border = "#ccc4ec", bg_panel = { mode = "Gradient", color = "#ffffff", gradient_from = "#ffffff", gradient_to = "#f4f1fd", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#e8e3f8" } }
+background = { mode = { Solid = { color = "#f2effc" } } }
+
+[[variants]]
+name = "Moonlit"
+[variants.dark]
+colors = { bg_base = "#0a1420", fg_base = "#eaf4fb", fg_muted = "#8fa9bd", accent = "#8ec9f0", border = "#2b4258", bg_panel = { mode = "Gradient", color = "#101f2e", gradient_from = "#112132", gradient_to = "#0c1826", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#16283a" } }
+background = { mode = { Solid = { color = "#0a1420" } } }
+[variants.light]
+colors = { bg_base = "#eef4f9", fg_base = "#10202c", fg_muted = "#4e6a7d", accent = "#1173b0", border = "#b9d2e2", bg_panel = { mode = "Gradient", color = "#ffffff", gradient_from = "#ffffff", gradient_to = "#f1f7fb", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#e2edf4" } }
+background = { mode = { Solid = { color = "#eef4f9" } } }

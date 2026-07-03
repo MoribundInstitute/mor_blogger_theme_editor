@@ -193,7 +193,11 @@ fn build_target_glow_css(config: &ThemeConfig) -> String {
 
 pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     let (light_palette, dark_palette) =
-        resolve_palette_pair(config.active_preset_id.as_deref(), config);
+        resolve_palette_pair(
+        config.active_preset_id.as_deref(),
+        config.active_variant_id.as_deref(),
+        config,
+    );
 
     let light_bg_css = generate_background_css(&light_palette.background.mode);
     let dark_bg_css = generate_background_css(&dark_palette.background.mode);
@@ -300,6 +304,12 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         "{{LIGHT_ACCENT}}",
         &escape_attr(&light_palette.colors.accent),
     );
+    let light_glow = if light_palette.colors.glow_color.trim().is_empty() {
+        &light_palette.colors.accent
+    } else {
+        &light_palette.colors.glow_color
+    };
+    xml = xml.replace("{{LIGHT_GLOW_COLOR}}", &escape_attr(light_glow));
     xml = xml.replace(
         "{{LIGHT_BORDER}}",
         &escape_attr(&light_palette.colors.border),
@@ -360,6 +370,12 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         &escape_attr(&dark_palette.colors.fg_muted),
     );
     xml = xml.replace("{{DARK_ACCENT}}", &escape_attr(&dark_palette.colors.accent));
+    let dark_glow = if dark_palette.colors.glow_color.trim().is_empty() {
+        &dark_palette.colors.accent
+    } else {
+        &dark_palette.colors.glow_color
+    };
+    xml = xml.replace("{{DARK_GLOW_COLOR}}", &escape_attr(dark_glow));
     xml = xml.replace("{{DARK_BORDER}}", &escape_attr(&dark_palette.colors.border));
     xml = xml.replace(
         "{{DARK_PANEL_BORDER_WIDTH}}",
@@ -405,7 +421,26 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{FLUID_GLOW_CSS}}", &fluid_glow);
     xml = xml.replace("{{GLOBAL_CURSOR_CSS}}", &escape_attr(&config.cursor_style));
     xml = xml.replace("{{CURSOR_DEFAULT}}", &config.cursor_style);
-    xml = xml.replace("{{CURSOR_POINTER}}", "pointer");
+    // URL-encoded palette colors for inline-SVG cursors in preset CSS, so
+    // themed cursors follow the active color scheme instead of baking a hex.
+    let accent_urlenc = config.colors.accent.replace('#', "%23");
+    let glow_urlenc = if config.colors.glow_color.trim().is_empty() {
+        accent_urlenc.clone()
+    } else {
+        config.colors.glow_color.replace('#', "%23")
+    };
+    xml = xml.replace("{{ACCENT_URLENCODED}}", &accent_urlenc);
+    xml = xml.replace("{{GLOW_URLENCODED}}", &glow_urlenc);
+    let cs = &config.cursor_set;
+    xml = xml.replace("{{CURSOR_POINTER}}", &cs.pointer);
+    xml = xml.replace("{{CURSOR_TEXT}}", &cs.text);
+    xml = xml.replace("{{CURSOR_HELP}}", &cs.help);
+    xml = xml.replace("{{CURSOR_WAIT}}", &cs.wait);
+    xml = xml.replace("{{CURSOR_NOT_ALLOWED}}", &cs.not_allowed);
+    xml = xml.replace("{{CURSOR_CROSSHAIR}}", &cs.crosshair);
+    xml = xml.replace("{{CURSOR_MOVE}}", &cs.move_);
+    xml = xml.replace("{{CURSOR_GRAB}}", &cs.grab);
+    xml = xml.replace("{{CURSOR_ZOOM}}", &cs.zoom_in);
     xml = xml.replace("{{SCROLLBAR_WIDTH}}", &escape_attr(&config.scrollbar_width));
     xml = xml.replace(
         "{{SCROLLBAR_TRACK}}",

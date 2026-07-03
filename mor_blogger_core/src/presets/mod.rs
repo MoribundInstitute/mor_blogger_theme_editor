@@ -20,6 +20,15 @@ pub struct PresetPalette {
     pub background: BackgroundConfig,
 }
 
+/// A named alternate color scheme for a preset — same structure and CSS,
+/// different palette pair. "Quick color options" in the preset browser.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PresetVariant {
+    pub name: &'static str,
+    pub dark: PresetPalette,
+    pub light: PresetPalette,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Preset {
     pub id: &'static str,
@@ -29,6 +38,20 @@ pub struct Preset {
     pub dark: PresetPalette,
     pub light: PresetPalette,
     pub preset_css: &'static str,
+    pub variants: Vec<PresetVariant>,
+}
+
+impl Preset {
+    /// Palette pair (light, dark) for a variant name; the base pair when
+    /// `variant` is None or unknown.
+    pub fn palette_pair(&self, variant: Option<&str>) -> (&PresetPalette, &PresetPalette) {
+        if let Some(name) = variant {
+            if let Some(v) = self.variants.iter().find(|v| v.name == name) {
+                return (&v.light, &v.dark);
+            }
+        }
+        (&self.light, &self.dark)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -51,10 +74,22 @@ struct TomlPreset {
     dark: Option<PresetPalette>,
 
     #[serde(default)]
+    variants: Vec<TomlVariant>,
+
+    #[serde(default)]
     scrollbars: TomlScrollbars,
 
     #[serde(default)]
     preset_css: String,
+}
+
+/// `[[variants]]` entry. A missing mode falls back to the preset's base
+/// palette for that mode, so accent-only variants can skip one side.
+#[derive(Clone, Debug, Deserialize)]
+struct TomlVariant {
+    name: String,
+    light: Option<PresetPalette>,
+    dark: Option<PresetPalette>,
 }
 
 /// Optional `[scrollbars]` table. Each field overrides the corresponding
@@ -118,6 +153,16 @@ impl TomlPreset {
             self.name
         };
 
+        let variants = self
+            .variants
+            .into_iter()
+            .map(|v| PresetVariant {
+                name: Box::leak(v.name.into_boxed_str()),
+                light: v.light.unwrap_or_else(|| light.clone()),
+                dark: v.dark.unwrap_or_else(|| dark.clone()),
+            })
+            .collect();
+
         Preset {
             id: Box::leak(id.into_boxed_str()),
             name: Box::leak(name.into_boxed_str()),
@@ -126,6 +171,7 @@ impl TomlPreset {
             dark,
             light,
             preset_css: Box::leak(self.preset_css.into_boxed_str()),
+            variants,
         }
     }
 }
@@ -219,11 +265,13 @@ pub fn all_presets() -> Vec<Preset> {
 
 pub fn resolve_palette_pair(
     preset_id: Option<&str>,
+    variant_id: Option<&str>,
     fallback_config: &crate::config::ThemeConfig,
 ) -> (PresetPalette, PresetPalette) {
     if let Some(id) = preset_id {
         if let Some(preset) = all_presets().into_iter().find(|p| p.id == id) {
-            return (preset.light.clone(), preset.dark.clone());
+            let (light, dark) = preset.palette_pair(variant_id);
+            return (light.clone(), dark.clone());
         }
     }
 
@@ -360,6 +408,138 @@ mod tests {
                 p.name
             );
         }
+    }
+
+    // Variants: names must be present and unique, every shipped preset offers
+    // at least one alternate scheme, and each variant actually changes the
+    // accent (a variant that looks identical to base is authoring error).
+    #[test]
+    fn shipped_presets_have_distinct_color_variants() {
+        let presets = all_presets();
+        if presets.is_empty() {
+            return;
+        }
+        for p in &presets {
+            assert!(
+                !p.variants.is_empty(),
+                "preset '{}' has no color variants",
+                p.name
+            );
+            let mut seen = std::collections::HashSet::new();
+            for v in &p.variants {
+                assert!(!v.name.trim().is_empty(), "{}: unnamed variant", p.name);
+                assert!(seen.insert(v.name), "{}: duplicate variant {}", p.name, v.name);
+                assert_ne!(
+                    v.dark.colors.accent, p.dark.colors.accent,
+                    "{}: variant '{}' keeps the base dark accent",
+                    p.name, v.name
+                );
+            }
+            // palette_pair resolves variants and falls back on unknown names.
+            let (l, _) = p.palette_pair(Some(p.variants[0].name));
+            assert_eq!(l, &p.variants[0].light);
+            let (l, d) = p.palette_pair(Some("no-such-variant"));
+            assert_eq!((l, d), (&p.light, &p.dark));
+        }
+    }
+
+    // The variant id in the config must reach the rendered palette pair — the
+    // exported CSS's light/dark variable blocks carry the VARIANT colors, not
+    // the preset's base palette (the "scheme half-applies" regression).
+    #[test]
+    fn variant_id_reaches_rendered_palette_pair() {
+        let presets = all_presets();
+        if presets.is_empty() {
+            return;
+        }
+        let preset = presets
+            .iter()
+            .find(|p| !p.variants.is_empty())
+            .expect("at least one preset ships variants");
+        let variant = &preset.variants[0];
+
+        let mut config = preset.base_config.clone();
+        config.preset_css = preset.preset_css.to_string();
+        config.active_preset_id = Some(preset.id.to_string());
+        config.active_variant_id = Some(variant.name.to_string());
+
+        let xml = crate::render::theme::render_theme(&config, &std::collections::HashMap::new());
+        assert!(
+            xml.contains(&variant.dark.colors.accent),
+            "{}/{}: variant dark accent missing from rendered theme",
+            preset.name,
+            variant.name
+        );
+    }
+
+    // The secondary phosphor (palette glow_color) must be emitted as the
+    // --glow-color CSS var so two-tone presets keep their pair per scheme.
+    #[test]
+    fn palette_glow_color_lands_as_css_var() {
+        let presets = all_presets();
+        let Some(neon) = presets.iter().find(|p| p.id == "mor_neon_cyberpunk") else {
+            return;
+        };
+        let variant = neon
+            .variants
+            .iter()
+            .find(|v| v.name == "Cyan Overdrive")
+            .expect("neon ships Cyan Overdrive");
+
+        let mut config = neon.base_config.clone();
+        config.preset_css = neon.preset_css.to_string();
+        config.active_preset_id = Some(neon.id.to_string());
+        config.active_variant_id = Some(variant.name.to_string());
+
+        let xml = crate::render::theme::render_theme(&config, &std::collections::HashMap::new());
+        // Cyan Overdrive swaps the pair: cyan primary, pink secondary.
+        assert!(xml.contains("--glow-color: #ff2bd6"), "secondary phosphor var missing");
+        assert!(xml.contains("--accent: #00e5ff"), "primary phosphor missing");
+    }
+
+    // Every cursor slot must land in the rendered CSS as its --theme-cursor-*
+    // variable (the exported theme's pure-CSS cursor set).
+    #[test]
+    fn cursor_set_lands_in_rendered_css() {
+        let mut config = ThemeConfig::default();
+        config.cursor_set.zoom_in = "url('https://x/z.png') 4 4, zoom-in".to_string();
+        config.cursor_set.not_allowed = "no-drop".to_string();
+        let xml = crate::render::theme::render_theme(&config, &std::collections::HashMap::new());
+        assert!(xml.contains("--theme-cursor-zoom: url('https://x/z.png') 4 4, zoom-in"));
+        assert!(xml.contains("--theme-cursor-not-allowed: no-drop"));
+        // The mapping sheet ships with the defaults.
+        assert!(xml.contains("var(--theme-cursor-help, help)"));
+        assert!(xml.contains("var(--theme-cursor-wait, wait)"));
+    }
+
+    // Preset cursor SVGs use {{ACCENT_URLENCODED}}, so the pen/arrow ink
+    // follows the active color scheme instead of baking one hex forever.
+    #[test]
+    fn preset_cursors_follow_the_scheme() {
+        let presets = all_presets();
+        let Some(glass) = presets.iter().find(|p| p.id == "mor_glassmorphism") else {
+            return;
+        };
+        let variant = glass
+            .variants
+            .iter()
+            .find(|v| v.name == "Emerald Mist")
+            .expect("glassmorphism ships Emerald Mist");
+
+        // Simulate the app applying the variant: current colors = variant palette.
+        let mut config = glass.base_config.clone();
+        config.colors = variant.dark.colors.clone();
+        config.preset_css = glass.preset_css.to_string();
+        config.active_preset_id = Some(glass.id.to_string());
+        config.active_variant_id = Some(variant.name.to_string());
+
+        let xml = crate::render::theme::render_theme(&config, &std::collections::HashMap::new());
+        let enc = variant.dark.colors.accent.replace('#', "%23");
+        assert!(
+            xml.contains(&format!("fill='{enc}'")),
+            "cursor fill did not follow the scheme accent"
+        );
+        assert!(!xml.contains("{{ACCENT_URLENCODED}}"), "token left unreplaced");
     }
 
     // The themed [buttons] fields must reach base_config (TOML -> ButtonConfig).

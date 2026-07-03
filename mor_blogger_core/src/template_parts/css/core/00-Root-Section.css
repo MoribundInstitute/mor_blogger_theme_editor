@@ -11,6 +11,7 @@
   --fg-dim: {{DARK_FG_MUTED}};
   --fg-muted: {{DARK_FG_MUTED}};
   --accent: {{DARK_ACCENT}};
+  --glow-color: {{DARK_GLOW_COLOR}};
 
   --border-color: {{DARK_BORDER}};
   --border-soft: {{DARK_BORDER}};
@@ -31,6 +32,14 @@
 
   --theme-cursor-default: {{CURSOR_DEFAULT}};
   --theme-cursor-pointer: {{CURSOR_POINTER}};
+  --theme-cursor-text: {{CURSOR_TEXT}};
+  --theme-cursor-help: {{CURSOR_HELP}};
+  --theme-cursor-wait: {{CURSOR_WAIT}};
+  --theme-cursor-not-allowed: {{CURSOR_NOT_ALLOWED}};
+  --theme-cursor-crosshair: {{CURSOR_CROSSHAIR}};
+  --theme-cursor-move: {{CURSOR_MOVE}};
+  --theme-cursor-grab: {{CURSOR_GRAB}};
+  --theme-cursor-zoom: {{CURSOR_ZOOM}};
   
   --theme-scrollbar-width: {{SCROLLBAR_WIDTH}};
   --theme-scrollbar-track: {{SCROLLBAR_TRACK}};
@@ -61,6 +70,7 @@ html[data-theme="light"] {
   --fg-dim: {{LIGHT_FG_MUTED}};
   --fg-muted: {{LIGHT_FG_MUTED}};
   --accent: {{LIGHT_ACCENT}};
+  --glow-color: {{LIGHT_GLOW_COLOR}};
 
   --border-color: {{LIGHT_BORDER}};
   --border-soft: {{LIGHT_BORDER}};

@@ -1,0 +1,49 @@
+/* Cursor slots: every surface a reader touches maps to a themed cursor
+   variable (set from the Cursors panel), with the native keyword as the
+   fallback. Presets may still override specific elements in preset_css. */
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+  cursor: var(--theme-cursor-text, text);
+}
+
+abbr[title],
+[data-tooltip] {
+  cursor: var(--theme-cursor-help, help);
+}
+
+button:disabled,
+input:disabled,
+[aria-disabled="true"],
+.disabled {
+  cursor: var(--theme-cursor-not-allowed, not-allowed) !important;
+}
+
+/* Busy states: scripts toggle .mor-busy on <html> while working. */
+html.mor-busy,
+html.mor-busy body,
+.mor-busy {
+  cursor: var(--theme-cursor-wait, wait) !important;
+}
+
+/* Post media invites a closer look. Defaults to `auto` (no zoom affordance)
+   until the theme opts in via the Cursors panel. */
+.post-body img,
+.post-thumbnail img {
+  cursor: var(--theme-cursor-zoom, auto);
+}
+
+[draggable="true"] {
+  cursor: var(--theme-cursor-grab, auto);
+}
+
+[draggable="true"]:active {
+  cursor: var(--theme-cursor-move, move);
+}
+
+.mor-move-handle,
+.drag-handle {
+  cursor: var(--theme-cursor-move, move);
+}

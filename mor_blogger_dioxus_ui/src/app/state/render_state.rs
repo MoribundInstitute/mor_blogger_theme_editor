@@ -24,10 +24,12 @@ impl RenderState {
     pub fn new(theme: ThemeState, layout: LayoutState, site_data: Signal<SiteData>) -> Self {
         let signals = theme.signals;
         let active_preset = theme.active_preset;
+        let active_variant = theme.active_variant;
 
         let current_config = use_memo(move || {
             let mut config = signals.to_config();
             config.active_preset_id = active_preset().map(|s| s.to_string());
+            config.active_variant_id = active_variant().map(|s| s.to_string());
             config
         });
 

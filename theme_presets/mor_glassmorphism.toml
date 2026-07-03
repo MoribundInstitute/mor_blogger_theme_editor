@@ -1,9 +1,9 @@
-name = "Aurora Glassmorphism"
-description = "Frosted panels floating over a slow aurora. One focal glass surface, layered depth, and light that moves."
+name = "MorGlassmorphism"
+description = "Frosted panels floating over a slow aurora. One focal glass surface, layered depth, and light that moves. Four schemes: violet, arctic, rose, emerald."
 
 preset_css = '''
 /* ============================================================
-   Aurora Glassmorphism — v5 (grounded rewrite)
+   MorGlassmorphism — v5 (grounded rewrite)
 
    Identity carried over from v4:
    - ONE focal glass surface (the post). Header = medium glass,
@@ -30,18 +30,20 @@ preset_css = '''
   --glass-border:  color-mix(in srgb, var(--fg-base) 10%, transparent);
   --glass-divider: color-mix(in srgb, var(--fg-base)  8%, transparent);
 
-  /* Aurora lights — vivid against the deep indigo dark palette. */
-  --aurora-a: rgba(167, 139, 250, 0.60);
-  --aurora-b: rgba(56, 189, 248, 0.50);
-  --aurora-c: rgba(236, 72, 153, 0.42);
+  /* Aurora lights — primary/soft derive from the accent so color
+     variants recolor the aurora; a fixed cool secondary keeps the
+     multi-hue depth in every scheme. */
+  --aurora-a: color-mix(in srgb, var(--accent) 58%, transparent);
+  --aurora-b: rgba(56, 189, 248, 0.42);
+  --aurora-c: color-mix(in srgb, var(--accent) 34%, transparent);
   --glass-shadow: 0 20px 50px -12px rgba(4, 6, 26, 0.55);
 }
 
 html[data-theme="light"] {
   /* Softer, higher-key lights so the light palette stays airy. */
-  --aurora-a: rgba(139, 92, 246, 0.30);
-  --aurora-b: rgba(14, 165, 233, 0.26);
-  --aurora-c: rgba(244, 114, 182, 0.24);
+  --aurora-a: color-mix(in srgb, var(--accent) 30%, transparent);
+  --aurora-b: rgba(14, 165, 233, 0.22);
+  --aurora-c: color-mix(in srgb, var(--accent) 18%, transparent);
   --glass-shadow: 0 20px 45px -14px rgba(52, 55, 120, 0.28);
 }
 
@@ -356,9 +358,9 @@ select:focus {
 }
 
 /* ---- Theme cursors: frosted violet glass (default / pointer / text) ---- */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23a78bfa' fill-opacity='0.85' stroke='%23241b45' stroke-width='1'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='%23a78bfa' fill-opacity='0.85' stroke='%23241b45' stroke-width='1'/></svg>") 9 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23a78bfa' stroke-width='1.6'/></svg>") 12 12, text !important; }
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='{{ACCENT_URLENCODED}}' fill-opacity='0.85' stroke='%23241b45' stroke-width='1'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 2.2c-.7 0-1.3.6-1.3 1.3v6.5H6.9c-.6 0-1.1.3-1.4.8-.3.5-.2 1.1.1 1.6l2.2 3.1c.5.7 1.3 1.1 2.1 1.1h3.4c1 0 1.9-.7 2.1-1.7l.7-3.2c.2-.9-.3-1.8-1.2-2-.2 0-.3-.1-.5-.1h-2.8V3.5c0-.7-.6-1.3-1.3-1.3z' fill='{{ACCENT_URLENCODED}}' fill-opacity='0.85' stroke='%23241b45' stroke-width='1'/></svg>") 9 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
 # Base config = dark palette (mirrored in [dark] below).
@@ -455,5 +457,139 @@ angle_deg = 135
 [scrollbars]
 width = "10px"
 track_color = "transparent"
-thumb_color = "rgba(167,139,250,0.45)"
-thumb_hover_color = "rgba(167,139,250,0.8)"
+thumb_color = "color-mix(in srgb, var(--accent) 45%, transparent)"
+thumb_hover_color = "color-mix(in srgb, var(--accent) 80%, transparent)"
+
+# ---------------------------------------------------------------------------
+# Color variants — same glass, different light. Palettes are complete pairs;
+# the aurora blobs derive from accent via the preset CSS color-mix() calls.
+# ---------------------------------------------------------------------------
+
+[[variants]]
+name = "Arctic Frost"
+
+[variants.dark.colors]
+bg_base = "#081826"
+fg_base = "#eef8ff"
+fg_muted = "#8fb3cf"
+accent = "#38bdf8"
+border = "#274d6b"
+
+[variants.dark.colors.bg_panel]
+mode = "Solid"
+color = "#0e2438"
+
+[variants.dark.colors.bg_elevated]
+mode = "Solid"
+color = "#16344e"
+
+[variants.dark.background.mode.Gradient]
+from = "#0a1f33"
+to = "#155e75"
+angle_deg = 135
+
+[variants.light.colors]
+bg_base = "#eaf6fd"
+fg_base = "#132a3a"
+fg_muted = "#4f7691"
+accent = "#0284c7"
+border = "#b9d8ea"
+
+[variants.light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+
+[variants.light.colors.bg_elevated]
+mode = "Solid"
+color = "#f2fafe"
+
+[variants.light.background.mode.Gradient]
+from = "#dcf1fc"
+to = "#bfe8f2"
+angle_deg = 135
+
+[[variants]]
+name = "Rose Nebula"
+
+[variants.dark.colors]
+bg_base = "#22101f"
+fg_base = "#fdf1f8"
+fg_muted = "#c298b3"
+accent = "#f472b6"
+border = "#5c3050"
+
+[variants.dark.colors.bg_panel]
+mode = "Solid"
+color = "#331a2f"
+
+[variants.dark.colors.bg_elevated]
+mode = "Solid"
+color = "#452440"
+
+[variants.dark.background.mode.Gradient]
+from = "#2b1233"
+to = "#7a2452"
+angle_deg = 135
+
+[variants.light.colors]
+bg_base = "#fdf1f7"
+fg_base = "#3a1830"
+fg_muted = "#94607f"
+accent = "#db2777"
+border = "#eec3d8"
+
+[variants.light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+
+[variants.light.colors.bg_elevated]
+mode = "Solid"
+color = "#fdf5fa"
+
+[variants.light.background.mode.Gradient]
+from = "#fbe3ef"
+to = "#f6d5e2"
+angle_deg = 135
+
+[[variants]]
+name = "Emerald Mist"
+
+[variants.dark.colors]
+bg_base = "#07201a"
+fg_base = "#effdf7"
+fg_muted = "#8fc4ae"
+accent = "#34d399"
+border = "#265c4b"
+
+[variants.dark.colors.bg_panel]
+mode = "Solid"
+color = "#0d2f26"
+
+[variants.dark.colors.bg_elevated]
+mode = "Solid"
+color = "#154234"
+
+[variants.dark.background.mode.Gradient]
+from = "#0a2b22"
+to = "#116b52"
+angle_deg = 135
+
+[variants.light.colors]
+bg_base = "#ecfaf3"
+fg_base = "#14332a"
+fg_muted = "#578472"
+accent = "#059669"
+border = "#bfe4d3"
+
+[variants.light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+
+[variants.light.colors.bg_elevated]
+mode = "Solid"
+color = "#f2fcf7"
+
+[variants.light.background.mode.Gradient]
+from = "#dcf5e9"
+to = "#c3ecdd"
+angle_deg = 135

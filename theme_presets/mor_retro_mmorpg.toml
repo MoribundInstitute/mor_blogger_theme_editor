@@ -1,9 +1,9 @@
-name = "Retro MMORPG"
-description = "Quest log • guild notices • trading post — gilt-edged panels, engraved gold headings, and an XP bar under the header. Dark mode is a candle-lit guild hall; light mode is the quest board's parchment."
+name = "MorRetroMMORPG"
+description = "Quest log • guild notices • trading post — gilt-edged panels, engraved gold headings, and an XP bar under the header. Dark mode is a candle-lit guild hall; light mode is the quest board's parchment. Halls: gold tavern, frost keep, dragonfire forge, emerald grove."
 
 preset_css = '''
 /* ============================================================
-   Retro MMORPG — preset chrome
+   MorRetroMMORPG — preset chrome
    Old fantasy-game UI: every surface is a beveled panel with a
    gilt filet (layered inset rings, no images), headings are
    engraved gold, sidebars read as inventory windows, and the
@@ -15,7 +15,7 @@ preset_css = '''
 /* ---- Shared tokens ---------------------------------------- */
 :root {
   --rmm-edge: color-mix(in srgb, var(--bg-base) 55%, #000000);
-  --rmm-gold-hi: color-mix(in srgb, var(--accent) 55%, #fff3d6);
+  --rmm-gold-hi: color-mix(in srgb, var(--accent) 58%, #ffffff);
   --rmm-gold-lo: color-mix(in srgb, var(--accent) 55%, var(--bg-base));
   --rmm-engrave: 0 1px 0 color-mix(in srgb, var(--bg-base) 55%, #000000);
   /* Gilt filet: dark line, gold ring, dark line — all inset so it
@@ -99,7 +99,7 @@ body {
   letter-spacing: 0.04em;
 }
 .mor-nav > a:hover {
-  background: color-mix(in srgb, var(--accent) 85%, #fff3d6) !important;
+  background: color-mix(in srgb, var(--accent) 85%, #ffffff) !important;
   color: var(--bg-base) !important;
   text-shadow: none !important;
 }
@@ -338,9 +338,9 @@ select:focus {
 }
 
 /* ---- Cursors: gold sword / gauntlet / quill ------------------ */
-body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23e8b74a' stroke='%23281a0c' stroke-width='1.2'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='%23e8b74a' stroke='%23281a0c' stroke-width='1.2'/></svg>") 12 2, pointer !important; }
-input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%23e8b74a' stroke-width='1.8'/></svg>") 12 12, text !important; }
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='{{ACCENT_URLENCODED}}' stroke='%23281a0c' stroke-width='1.2'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2l2 4v8h-4V6z M7 14h10v2H7z M11 16h2v5h-2z' fill='{{ACCENT_URLENCODED}}' stroke='%23281a0c' stroke-width='1.2'/></svg>") 12 2, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.8'/></svg>") 12 12, text !important; }
 '''
 
 # ---- Base palette (dark: candle-lit guild hall) ----------------
@@ -356,9 +356,10 @@ hover_scale = "1.01"
 
 [colors.bg_panel]
 mode = "Gradient"
-from = "#3b2b1a"
-to = "#291d11"
-angle_deg = 180
+color = "#3b2b1a"
+gradient_from = "#3b2b1a"
+gradient_to = "#291d11"
+gradient_angle_deg = 180
 
 [colors.bg_elevated]
 mode = "Solid"
@@ -414,9 +415,10 @@ hover_scale = "1.01"
 
 [dark.colors.bg_panel]
 mode = "Gradient"
-from = "#3b2b1a"
-to = "#291d11"
-angle_deg = 180
+color = "#3b2b1a"
+gradient_from = "#3b2b1a"
+gradient_to = "#291d11"
+gradient_angle_deg = 180
 
 [dark.colors.bg_elevated]
 mode = "Solid"
@@ -440,9 +442,10 @@ hover_scale = "1.01"
 
 [light.colors.bg_panel]
 mode = "Gradient"
-from = "#f7eed7"
-to = "#eee0be"
-angle_deg = 180
+color = "#f7eed7"
+gradient_from = "#f7eed7"
+gradient_to = "#eee0be"
+gradient_angle_deg = 180
 
 [light.colors.bg_elevated]
 mode = "Solid"
@@ -459,3 +462,34 @@ width = "12px"
 track_color = "color-mix(in srgb, var(--bg-base) 75%, #000000)"
 thumb_color = "color-mix(in srgb, var(--accent) 70%, var(--bg-base))"
 thumb_hover_color = "var(--accent)"
+
+# --- Color variants: different halls, not re-trimmed taverns -----------------
+# The wood, stone, and lamplight all change with the trim, so Frost Realm is
+# an ice keep and Dragonfire an obsidian forge — not blue paint on oak.
+
+[[variants]]
+name = "Frost Realm"
+[variants.dark]
+colors = { bg_base = "#0d141c", fg_base = "#e4eef8", fg_muted = "#93aec4", accent = "#6ac4e8", border = "#2b4a6b", bg_panel = { mode = "Gradient", color = "#1c2a3a", gradient_from = "#1c2a3a", gradient_to = "#141f2c", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#22334a" } }
+background = { mode = { Gradient = { from = "#152230", to = "#0a1017", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#dbe4ec", fg_base = "#14212e", fg_muted = "#4a6478", accent = "#16648f", border = "#93aec0", bg_panel = { mode = "Gradient", color = "#eaf1f7", gradient_from = "#eaf1f7", gradient_to = "#dce7f0", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#f4f8fc" } }
+background = { mode = { Gradient = { from = "#d5e0ea", to = "#c3d2df", angle_deg = 180 } } }
+
+[[variants]]
+name = "Dragonfire"
+[variants.dark]
+colors = { bg_base = "#140705", fg_base = "#f5e2d4", fg_muted = "#c09480", accent = "#e8654a", border = "#6b3229", bg_panel = { mode = "Gradient", color = "#2b120c", gradient_from = "#2b120c", gradient_to = "#1d0b07", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#351710" } }
+background = { mode = { Gradient = { from = "#220d07", to = "#0e0503", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#eed9c4", fg_base = "#33150a", fg_muted = "#7d5540", accent = "#b23a1d", border = "#c08a66", bg_panel = { mode = "Gradient", color = "#f8e9d6", gradient_from = "#f8e9d6", gradient_to = "#eeddc6", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#fcf2e2" } }
+background = { mode = { Gradient = { from = "#e8d2ba", to = "#d8bd9e", angle_deg = 180 } } }
+
+[[variants]]
+name = "Emerald Grove"
+[variants.dark]
+colors = { bg_base = "#0c130c", fg_base = "#e6f0dc", fg_muted = "#9ab88c", accent = "#8fce6f", border = "#33512b", bg_panel = { mode = "Gradient", color = "#1a2915", gradient_from = "#1a2915", gradient_to = "#121d0f", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#223421" } }
+background = { mode = { Gradient = { from = "#14200f", to = "#080d07", angle_deg = 180 } } }
+[variants.light]
+colors = { bg_base = "#dfe8d2", fg_base = "#1c2916", fg_muted = "#55704a", accent = "#3d7a24", border = "#9cb488", bg_panel = { mode = "Gradient", color = "#edf3e2", gradient_from = "#edf3e2", gradient_to = "#e0ead2", gradient_angle_deg = 180 }, bg_elevated = { mode = "Solid", color = "#f5f9ec" } }
+background = { mode = { Gradient = { from = "#d8e3c8", to = "#c6d4b2", angle_deg = 180 } } }

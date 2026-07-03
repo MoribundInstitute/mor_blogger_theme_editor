@@ -148,6 +148,7 @@ pub fn default_theme_config() -> ThemeConfig {
         static_pages: StaticPagesConfig::default(),
         ads: AdsConfig::default(),
         cursor_style: "auto".to_string(),
+        cursor_set: crate::config::CursorSetConfig::default(),
         scrollbar_width: "6px".to_string(),
         scrollbar_track_color: "transparent".to_string(),
         scrollbar_thumb_color: "#4c566a".to_string(),
@@ -175,6 +176,7 @@ pub fn default_theme_config() -> ThemeConfig {
         blocks: vec![],
         preset_css: "".to_string(),
         active_preset_id: None,
+        active_variant_id: None,
         enable_image_borders: false, // legacy field, no longer gates the frame
         custom_border_url: None,
         svg_border_slice: "30%".to_string(),

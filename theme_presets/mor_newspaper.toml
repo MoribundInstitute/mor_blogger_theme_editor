@@ -1,9 +1,9 @@
-name = "The Daily Folio"
-description = "The blog as broadsheet. Ink on newsprint: a Playfair nameplate between double rules, small-caps datelines, drop caps in editorial red, hairline column rules, and a lamplit late edition after dark."
+name = "Mor Daily Folio"
+description = "The blog as broadsheet. Ink on newsprint: a Playfair nameplate between double rules, small-caps datelines, drop caps in editorial red, hairline column rules, and a lamplit late edition after dark. Editions: newsprint red, salmon financial, sporting green, penny dreadful."
 
 preset_css = '''
 /* ============================================================
-   The Daily Folio - newspaper preset
+   Mor Daily Folio - newspaper preset
    Light mode is the hero: warm newsprint, black ink, one
    editorial red. Dark mode is the "late edition" - the same
    paper read under a night-desk lamp. Everything routes
@@ -151,6 +151,12 @@ body {
   line-height: 0.8;
   padding: 0.06em 0.1em 0 0;
   color: var(--accent);
+}
+
+/* Classic lead-in: the first line of the lead paragraph in small caps. */
+.mor-post .post-body > p:first-of-type::first-line {
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
 }
 
 /* Sub-heads: crossheads in the display face and small caps. */
@@ -373,6 +379,36 @@ body {
   color: var(--fg-muted);
 }
 
+/* ---------- Ledger-rule forms --------------------------------------
+   Inputs write on the paper: no boxes, a single ink rule that
+   turns editorial-red when the pen is live. */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--fg-muted) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-body) !important;
+  color: var(--fg-base) !important;
+  box-shadow: none !important;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus {
+  outline: none !important;
+  border-bottom: 2px solid var(--accent) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-style: italic;
+  color: color-mix(in srgb, var(--fg-muted) 80%, transparent) !important;
+}
+
 /* ---------- Late edition -------------------------------------------
    After dark the wire photos sit deeper into the page, as if
    read under a desk lamp. */
@@ -386,7 +422,7 @@ html[data-theme="dark"] .post-body img:hover {
 
 /* ---- Theme cursors: the editor's desk — ink arrow, red pen nib, caret ---- */
 body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%231c1a17' stroke='%23f4f1ea' stroke-width='1'/></svg>") 1 1, auto !important; }
-a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M4 20l2-6 9-9c.8-.8 2.2-.8 3 0s.8 2.2 0 3l-9 9-6 2z' fill='%23a31621' stroke='%23f4f1ea' stroke-width='1'/><path d='M14 5l4 4' stroke='%23f4f1ea' stroke-width='1'/></svg>") 4 20, pointer !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M4 20l2-6 9-9c.8-.8 2.2-.8 3 0s.8 2.2 0 3l-9 9-6 2z' fill='{{ACCENT_URLENCODED}}' stroke='%23f4f1ea' stroke-width='1'/><path d='M14 5l4 4' stroke='%23f4f1ea' stroke-width='1'/></svg>") 4 20, pointer !important; }
 input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='%231c1a17' stroke-width='1.6'/></svg>") 12 12, text !important; }
 '''
 
@@ -500,3 +536,34 @@ width = "10px"
 track_color = "color-mix(in srgb, var(--fg-base) 6%, var(--bg-base))"
 thumb_color = "color-mix(in srgb, var(--fg-base) 45%, var(--bg-base))"
 thumb_hover_color = "var(--accent)"
+
+# --- Color variants: different editions on their own stock ------------------
+# A scheme is a different newspaper, not a recolored one: the paper stock,
+# ink, and lamplight all move with the masthead.
+
+[[variants]]
+name = "Salmon Financial"
+[variants.light]
+colors = { bg_base = "#eeddc8", fg_base = "#1d1a1c", fg_muted = "#75604f", accent = "#1c3a8e", border = "#d3b394", bg_panel = { mode = "Solid", color = "#f6e7d3" }, bg_elevated = { mode = "Solid", color = "#fbf0e0" } }
+background = { mode = { Solid = { color = "#eeddc8" } } }
+[variants.dark]
+colors = { bg_base = "#131318", fg_base = "#e4ddd2", fg_muted = "#948c85", accent = "#7f9fd8", border = "#38363e", bg_panel = { mode = "Solid", color = "#1a1a20" }, bg_elevated = { mode = "Solid", color = "#212028" } }
+background = { mode = { Solid = { color = "#131318" } } }
+
+[[variants]]
+name = "Sporting Green"
+[variants.light]
+colors = { bg_base = "#dfe4d0", fg_base = "#171c14", fg_muted = "#5f6b52", accent = "#1e5c2f", border = "#b5bf9c", bg_panel = { mode = "Solid", color = "#eaeedb" }, bg_elevated = { mode = "Solid", color = "#f3f6e7" } }
+background = { mode = { Solid = { color = "#dfe4d0" } } }
+[variants.dark]
+colors = { bg_base = "#10140e", fg_base = "#dfe4cd", fg_muted = "#8f9c80", accent = "#63a877", border = "#333c2b", bg_panel = { mode = "Solid", color = "#171c13" }, bg_elevated = { mode = "Solid", color = "#1e2418" } }
+background = { mode = { Solid = { color = "#10140e" } } }
+
+[[variants]]
+name = "Penny Dreadful"
+[variants.light]
+colors = { bg_base = "#dedcd6", fg_base = "#1a181f", fg_muted = "#625e6b", accent = "#5b2a86", border = "#b9b6ac", bg_panel = { mode = "Solid", color = "#ebe9e3" }, bg_elevated = { mode = "Solid", color = "#f3f1ec" } }
+background = { mode = { Solid = { color = "#dedcd6" } } }
+[variants.dark]
+colors = { bg_base = "#131118", fg_base = "#e0dde6", fg_muted = "#8f8a9c", accent = "#9d7bd8", border = "#37333f", bg_panel = { mode = "Solid", color = "#191721" }, bg_elevated = { mode = "Solid", color = "#201d29" } }
+background = { mode = { Solid = { color = "#131118" } } }

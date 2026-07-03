@@ -39,6 +39,40 @@ fn default_cursor_style() -> String {
     "auto".to_string()
 }
 
+/// The full cursor set for an exported theme (pure-CSS `cursor:` values —
+/// keywords or `url('…') x y, fallback` strings). `cursor_style` on
+/// [`ThemeConfig`] remains the default-arrow slot for back-compat.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct CursorSetConfig {
+    pub pointer: String,
+    pub text: String,
+    pub help: String,
+    pub wait: String,
+    pub not_allowed: String,
+    pub crosshair: String,
+    #[serde(rename = "move")]
+    pub move_: String,
+    pub grab: String,
+    pub zoom_in: String,
+}
+
+impl Default for CursorSetConfig {
+    fn default() -> Self {
+        Self {
+            pointer: "pointer".to_string(),
+            text: "text".to_string(),
+            help: "help".to_string(),
+            wait: "wait".to_string(),
+            not_allowed: "not-allowed".to_string(),
+            crosshair: "crosshair".to_string(),
+            move_: "move".to_string(),
+            grab: "grab".to_string(),
+            zoom_in: "zoom-in".to_string(),
+        }
+    }
+}
+
 fn default_scrollbar_width() -> String {
     "6px".to_string()
 }
@@ -73,6 +107,8 @@ pub struct ThemeConfig {
     pub ads: AdsConfig,
     #[serde(default = "default_cursor_style")]
     pub cursor_style: String,
+    #[serde(default)]
+    pub cursor_set: CursorSetConfig,
     #[serde(default = "default_scrollbar_width")]
     pub scrollbar_width: String,
     #[serde(default = "default_scrollbar_track_color")]
@@ -90,6 +126,9 @@ pub struct ThemeConfig {
     pub preset_css: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub active_preset_id: Option<String>,
+    /// Active color-variant name within the preset (None = base palette).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub active_variant_id: Option<String>,
     #[serde(default)]
     pub enable_image_borders: bool,
     #[serde(default)]
@@ -132,6 +171,7 @@ impl Default for ThemeConfig {
             static_pages: StaticPagesConfig::default(),
             ads: AdsConfig::default(),
             cursor_style: default_cursor_style(),
+            cursor_set: CursorSetConfig::default(),
             scrollbar_width: default_scrollbar_width(),
             scrollbar_track_color: default_scrollbar_track_color(),
             scrollbar_thumb_color: default_scrollbar_thumb_color(),
@@ -140,6 +180,7 @@ impl Default for ThemeConfig {
             blocks: Vec::new(),
             preset_css: String::new(),
             active_preset_id: None,
+            active_variant_id: None,
             enable_image_borders: false,
             custom_border_url: None,
             svg_border_slice: default_slice(),

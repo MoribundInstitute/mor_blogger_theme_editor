@@ -88,6 +88,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
         .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
         .map(|preset| preset.name)
         .unwrap_or("Default Base Theme");
+    let active_scheme = (theme.active_variant)().unwrap_or("Default scheme");
 
     let preset_css_bytes = props.signals.preset_css.read().len();
 
@@ -151,7 +152,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             p { class: "preset-panel-copy", "One click to swap the entire theme. Edit any field afterward to customize." }
 
             div { class: "editor-note", style: "margin-bottom: 12px;",
-                div { class: "editor-note-body", "Active preset: {active_label}" }
+                div { class: "editor-note-body", "Active preset: {active_label} — {active_scheme}" }
                 div { class: "editor-note-body", "Preset CSS bytes: {preset_css_bytes}" }
                 if let Some(summary) = last_gtk_summary { div { class: "editor-note-body", "{summary}" } }
             }
@@ -254,15 +255,13 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                 }
             }
 
-            div { style: "display: flex; align-items: center; gap: 4px; margin-top: 16px;",
-                button { class: "editor-mini-button", style: "padding: 16px 4px; font-size: 10px;", title: "Scroll Left", onclick: move |_| { let _ = dioxus::document::eval("document.getElementById('presets-scroll-rail').scrollBy({ left: -220, behavior: 'smooth' });"); }, "◀" }
-                div {
-                    id: "presets-scroll-rail", class: "preset-rail", style: "display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; scroll-snap-type: x proximity; flex: 1;",
-                    for preset in presets.iter() {
-                        PresetCard { key: "{preset.id}", preset: preset.clone(), is_active: active() == Some(preset.id), signals: props.signals, active_preset: active }
-                    }
+            // Compact rows: the whole catalog scannable in ~1/4 the height of
+            // preview cards. Rich cards live in the floating preset browser.
+            div {
+                style: "display: flex; flex-direction: column; gap: 6px; margin-top: 14px; max-height: 420px; overflow-y: auto; padding: 2px;",
+                for preset in presets.iter() {
+                    PresetRow { key: "{preset.id}", preset: preset.clone(), is_active: active() == Some(preset.id), signals: props.signals, active_preset: active }
                 }
-                button { class: "editor-mini-button", style: "padding: 16px 4px; font-size: 10px;", title: "Scroll Right", onclick: move |_| { let _ = dioxus::document::eval("document.getElementById('presets-scroll-rail').scrollBy({ left: 220, behavior: 'smooth' });"); }, "▶" }
             }
         }
     };
@@ -296,7 +295,7 @@ pub(crate) struct PresetCardProps {
 
 #[component]
 pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
-    let theme = use_context::<ThemeState>();
+    let mut theme = use_context::<ThemeState>();
     let preset = &props.preset;
     let mut active = props.active_preset;
     let preset_for_click = preset.clone();
@@ -340,6 +339,7 @@ pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
                 let is_dark = *props.signals.is_dark_mode.read();
                 props.signals.apply_preset(&preset_for_click);
                 active.set(Some(preset_for_click.id));
+                theme.active_variant.set(None);
                 theme.commit();
                 morph_preview_from_preset(&preset_for_click, is_dark);
             },
@@ -356,6 +356,134 @@ pub(crate) fn PresetCard(props: PresetCardProps) -> Element {
             div { class: "preset-footer",
                 div { class: "preset-name", "{preset.name}" }
                 div { class: "preset-description", "{preset.description}" }
+                if !preset.variants.is_empty() {
+                    SchemeDots { preset: preset.clone(), is_active: props.is_active, signals: props.signals, active_preset: active }
+                }
+            }
+        }
+    }
+}
+
+/// Base + variant color-scheme dots for a preset. Click applies the preset
+/// with that palette; the active scheme gets an accent ring.
+#[component]
+pub(crate) fn SchemeDots(
+    preset: Preset,
+    is_active: bool,
+    signals: ThemeSignals,
+    active_preset: Signal<Option<&'static str>>,
+) -> Element {
+    let mut theme = use_context::<ThemeState>();
+    let mut active = active_preset;
+    let is_dark = *signals.is_dark_mode.read();
+    let palette = if is_dark { &preset.dark } else { &preset.light };
+    let colors = palette.colors.clone();
+    let active_variant = (theme.active_variant)();
+    let base_active = is_active && active_variant.is_none();
+    let ring = |on: bool| {
+        if on {
+            "outline: 2px solid var(--editor-accent, #e8a04c); outline-offset: 2px;"
+        } else {
+            ""
+        }
+    };
+
+    rsx! {
+        div {
+            style: "display: flex; gap: 7px; margin-top: 6px; align-items: center;",
+            span {
+                role: "button",
+                title: "{preset.name} — default scheme",
+                style: "width: 14px; height: 14px; border-radius: 50%; background: {colors.accent}; border: 2px solid {colors.border}; cursor: pointer; display: inline-block; flex-shrink: 0; {ring(base_active)}",
+                onclick: {
+                    let preset_for_base = preset.clone();
+                    move |evt: MouseEvent| {
+                        evt.stop_propagation();
+                        let is_dark = *signals.is_dark_mode.read();
+                        signals.apply_preset(&preset_for_base);
+                        active.set(Some(preset_for_base.id));
+                        theme.active_variant.set(None);
+                        theme.commit();
+                        morph_preview_from_preset(&preset_for_base, is_dark);
+                    }
+                },
+            }
+            for v in preset.variants.iter() {
+                {
+                    let vname = v.name;
+                    let vaccent = if is_dark { v.dark.colors.accent.clone() } else { v.light.colors.accent.clone() };
+                    let preset_for_variant = preset.clone();
+                    let v_active = is_active && active_variant == Some(vname);
+                    rsx! {
+                        span {
+                            key: "{preset.id}-{vname}",
+                            role: "button",
+                            title: "{preset.name} — {vname}",
+                            style: "width: 14px; height: 14px; border-radius: 50%; background: {vaccent}; border: 2px solid {colors.border}; cursor: pointer; display: inline-block; flex-shrink: 0; {ring(v_active)}",
+                            onclick: move |evt: MouseEvent| {
+                                evt.stop_propagation();
+                                let is_dark = *signals.is_dark_mode.read();
+                                // Structure + CSS from the preset, then the variant palette.
+                                signals.apply_preset(&preset_for_variant);
+                                let (light, dark) = preset_for_variant.palette_pair(Some(vname));
+                                signals.swap_palette(if is_dark { dark } else { light });
+                                active.set(Some(preset_for_variant.id));
+                                theme.active_variant.set(Some(vname));
+                                theme.commit();
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Compact one-line preset entry for the docked panel: theme-tinted row with
+/// name + scheme dots. The rich preview cards stay in the floating browser.
+#[component]
+pub(crate) fn PresetRow(props: PresetCardProps) -> Element {
+    let mut theme = use_context::<ThemeState>();
+    let preset = &props.preset;
+    let mut active = props.active_preset;
+    let preset_for_click = preset.clone();
+
+    let is_dark = *props.signals.is_dark_mode.read();
+    let palette = if is_dark { &preset.dark } else { &preset.light };
+    let colors = &palette.colors;
+    let bg_panel_css = colors.bg_panel.to_css();
+
+    let heading_font_raw = &preset.base_config.typography.heading_font_stack;
+    let heading_font = if heading_font_raw.trim().is_empty() {
+        &preset.base_config.typography.body_font_stack
+    } else {
+        heading_font_raw
+    };
+
+    let border = if props.is_active {
+        "2px solid var(--editor-accent, #e8a04c)".to_string()
+    } else {
+        format!("1px solid {}", colors.border)
+    };
+
+    rsx! {
+        button {
+            title: "{preset.description}",
+            style: "display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 7px 10px; background: {bg_panel_css}; border: {border}; border-radius: 8px; cursor: pointer; text-align: left;",
+            onclick: move |_| {
+                let is_dark = *props.signals.is_dark_mode.read();
+                props.signals.apply_preset(&preset_for_click);
+                active.set(Some(preset_for_click.id));
+                theme.active_variant.set(None);
+                theme.commit();
+                morph_preview_from_preset(&preset_for_click, is_dark);
+            },
+            span {
+                style: "color: {colors.accent}; font-family: {heading_font}; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;",
+                "{preset.name}"
+            }
+            span { style: "flex-shrink: 0; margin-top: -6px;",
+                SchemeDots { preset: preset.clone(), is_active: props.is_active, signals: props.signals, active_preset: active }
             }
         }
     }

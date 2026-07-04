@@ -314,7 +314,7 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
-                    label: "JS Behavior Builder".to_string(),
+                    label: "JS Behaviors".to_string(),
                     on_action: move |_| {
                         let pos = (layout.js_builder_pos)();
                         if pos == DockPosition::Hidden {

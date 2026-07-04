@@ -51,6 +51,34 @@ pub fn run_text_checks(source: &str, out: &mut Vec<Warning>) {
 /// ponytail: hardcoded prefix list; derive from render/pages if it grows.
 const CROSS_DOCUMENT_PREFIXES: &[&str] = &["mor-analytics-"];
 
+/// Documented utility hooks (27-Cursors.css): shipped for the blogger's own
+/// markup/scripts to opt into cursor slots, so nothing in the theme itself
+/// references them. Intentional, not drift.
+const UTILITY_CLASSES: &[&str] = &["mor-busy", "mor-move-handle"];
+
+/// Preset CSS is pack-agnostic: it styles every module a user can switch to
+/// (the Web 1.0 preset bevels `.mor-bell-panel` even when the search header
+/// isn't active). A class some shipped module renders is a dormant style, not
+/// drift — only classes no module and no part of this document produce are
+/// stale (the `.mor-catalog-dropdown` rename lesson still trips this).
+fn rendered_by_a_shipped_module(class: &str) -> bool {
+    use crate::render::template_resolver::{
+        CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY, LAYOUT_REGISTRY,
+        SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
+    };
+    [
+        HEADER_REGISTRY,
+        LAYOUT_REGISTRY,
+        CONTENT_REGISTRY,
+        SIDEBAR_LEFT_REGISTRY,
+        SIDEBAR_RIGHT_REGISTRY,
+        FOOTER_REGISTRY,
+    ]
+    .iter()
+    .flat_map(|r| r.iter())
+    .any(|m| m.xml_content.contains(class))
+}
+
 fn check_selector_drift(source: &str, out: &mut Vec<Warning>) {
     // Split the document into skin CSS vs everything else.
     let mut skin = String::new();
@@ -82,14 +110,16 @@ fn check_selector_drift(source: &str, out: &mut Vec<Warning>) {
     }
 
     for class in styled {
-        if CROSS_DOCUMENT_PREFIXES.iter().any(|p| class.starts_with(p)) {
+        if CROSS_DOCUMENT_PREFIXES.iter().any(|p| class.starts_with(p))
+            || UTILITY_CLASSES.contains(&class)
+        {
             continue;
         }
-        if !rest.contains(class) {
+        if !rest.contains(class) && !rendered_by_a_shipped_module(class) {
             out.push(Warning::warn(
                 "CSS_SELECTOR_DRIFT",
                 format!(
-                    ".{class} is styled in the skin CSS but never rendered by this template permutation's markup or scripts — stale selector, or its module isn't active."
+                    ".{class} is styled in the skin CSS but nothing renders it — not this permutation's markup or scripts, and no shipped module. Stale selector."
                 ),
             ));
         }
@@ -217,6 +247,16 @@ mod tests {
         let drifted: Vec<_> = out.iter().filter(|w| w.code == "CSS_SELECTOR_DRIFT").collect();
         assert_eq!(drifted.len(), 1);
         assert!(drifted[0].message.contains(".mor-ghost"));
+    }
+
+    #[test]
+    fn selector_drift_quiet_for_inactive_module_classes() {
+        // .mor-bell-panel is rendered by the (inactive here) search header module;
+        // preset CSS styling it is dormant, not drift.
+        let src = "<b:skin>.mor-bell-panel { border: 1px; } .mor-gm-panel { border: 1px; }</b:skin><body/>";
+        let mut out = Vec::new();
+        check_selector_drift(src, &mut out);
+        assert!(out.is_empty(), "{:?}", out.iter().map(|w| w.format_line()).collect::<Vec<_>>());
     }
 
     #[test]

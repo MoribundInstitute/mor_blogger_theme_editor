@@ -259,6 +259,19 @@ mod tests {
     }
 
     #[test]
+    fn default_config_ships_no_wasted_js() {
+        // Every header renders .mor-theme-toggle, so the default-on toggler is
+        // Active out of the box — a fresh export must have zero dead-weight JS.
+        for header in ["mor_header_baseline", "mor_header_minimal", "mor_header_search", "gtk_headerbar"] {
+            let mut cfg = ThemeConfig::default();
+            cfg.template_pack.header_variant = header.to_string();
+            for s in analyze_js_usage(&cfg, &HashMap::new()) {
+                assert_ne!(s.state, BehaviorState::Wasted, "{} wasted with header {header}", s.file);
+            }
+        }
+    }
+
+    #[test]
     fn editor_hint_config_keys_match_master_js_preamble() {
         // The hint list is hand-maintained; make sure every advertised
         // _MOR_CONFIG key actually exists in the emitted preamble.

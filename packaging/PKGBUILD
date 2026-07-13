@@ -1,0 +1,14 @@
+# Binary repackage of the dx-bundled deb: extract payload/ with `dpkg-deb -x <deb> payload` next to this file.
+pkgname=mor-blogger-dioxus-ui
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="MorBlogger Theme Editor — a visual Blogger theme editor"
+arch=('x86_64')
+url="https://github.com/MoribundInstitute/mor_blogger_theme_editor"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'xdotool')
+
+package() {
+  cp -a "$startdir/payload/." "$pkgdir/"
+  install -Dm644 "$startdir/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

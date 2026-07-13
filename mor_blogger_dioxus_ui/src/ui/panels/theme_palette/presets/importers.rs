@@ -71,7 +71,19 @@ pub(crate) fn register_imported_preset(
         .ok_or_else(|| "imported preset did not load back from disk".to_string())
 }
 
-pub(crate) async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String> {
+/// Import any theme document: a full preset TOML (variants/dual palettes
+/// preserved verbatim via `save_full_preset_text`), or a flat ThemeConfig
+/// JSON/TOML (registered through the existing flattening path).
+pub(crate) fn import_theme_document(
+    text: &str,
+) -> Result<mor_blogger_core::presets::Preset, String> {
+    if let Ok(preset) = mor_blogger_core::presets::save_full_preset_text(text) {
+        return Ok(preset);
+    }
+    register_imported_preset(&parse_theme_text(text)?)
+}
+
+pub(crate) async fn fetch_remote_theme_text(url: &str) -> Result<String, String> {
     let response = reqwest::get(url)
         .await
         .map_err(|err| format!("request failed: {}", err))?;
@@ -80,12 +92,10 @@ pub(crate) async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String>
         return Err(format!("HTTP {}", response.status()));
     }
 
-    let text = response
+    response
         .text()
         .await
-        .map_err(|err| format!("could not read response: {}", err))?;
-
-    parse_theme_text(&text)
+        .map_err(|err| format!("could not read response: {}", err))
 }
 
 pub(crate) fn parse_theme_text(text: &str) -> Result<ThemeConfig, String> {

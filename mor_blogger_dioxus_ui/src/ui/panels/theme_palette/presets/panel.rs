@@ -4,7 +4,7 @@ use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::presets::{all_presets, Preset};
 
 use super::importers::{
-    fetch_remote_theme, normalize_preset_url, parse_theme_text, register_imported_preset,
+    fetch_remote_theme_text, import_theme_document, normalize_preset_url,
     save_imported_gtk_preset, COMPENDIUM_REPO_URL, COMPENDIUM_SITE_URL,
 };
 use super::morph_preview_from_preset;
@@ -67,23 +67,32 @@ fn apply_imported_theme(
     signals: ThemeSignals,
     mut active: Signal<Option<&'static str>>,
     mut theme: ThemeState,
-    config: &ThemeConfig,
+    text: &str,
 ) {
-    match register_imported_preset(config) {
+    match import_theme_document(text) {
         Ok(preset) => {
-            // Imports carry one authored palette; the opposite slot is derived.
-            // Switch the editor to the authored mode so the first thing shown
-            // is the design as intended, not the auto-inverted guess.
-            let is_dark = preset.dark.colors == config.colors;
+            // Flat imports carry one authored palette (the other is derived);
+            // full preset docs author both and their base palette wins. Switch
+            // the editor to the authored mode so the first thing shown is the
+            // design as intended, not the auto-inverted guess.
+            let is_dark = preset.dark.colors == preset.base_config.colors;
             signals.is_dark_mode.clone().set(is_dark);
             signals.apply_preset(&preset);
             active.set(Some(preset.id));
             theme.active_variant.set(None);
             theme.commit();
             theme.last_imported_gtk.set(None);
-            theme
-                .import_status
-                .set(format!("Imported '{}' — added to preset list.", preset.name));
+            let schemes = preset.variants.len();
+            theme.import_status.set(if schemes > 0 {
+                format!(
+                    "Imported '{}' — added to preset list with {} color scheme{}.",
+                    preset.name,
+                    schemes + 1,
+                    if schemes > 0 { "s" } else { "" }
+                )
+            } else {
+                format!("Imported '{}' — added to preset list.", preset.name)
+            });
             morph_preview_from_preset(&preset, is_dark);
         }
         Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
@@ -256,8 +265,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     let signals = props.signals;
                                     async move {
                                         if url.trim().is_empty() { theme.import_status.set("Paste URL first.".to_string()); return; }
-                                        match fetch_remote_theme(&url).await {
-                                            Ok(config) => apply_imported_theme(signals, active, theme, &config),
+                                        match fetch_remote_theme_text(&url).await {
+                                            Ok(text) => apply_imported_theme(signals, active, theme, &text),
                                             Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                         }
                                     }
@@ -277,10 +286,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     async move {
                                         if let Some(file) = evt.files().first() {
                                             if let Ok(bytes) = file.read_bytes().await {
-                                                match parse_theme_text(&String::from_utf8_lossy(&bytes)) {
-                                                    Ok(config) => apply_imported_theme(signals, active, theme, &config),
-                                                    Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
-                                                }
+                                                apply_imported_theme(signals, active, theme, &String::from_utf8_lossy(&bytes));
                                             }
                                         }
                                     }
@@ -299,10 +305,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                             button {
                                 class: "editor-button",
                                 onclick: move |_| {
-                                    match parse_theme_text(&pasted_theme()) {
-                                        Ok(config) => apply_imported_theme(props.signals, active, theme, &config),
-                                        Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
-                                    }
+                                    apply_imported_theme(props.signals, active, theme, &pasted_theme());
                                 },
                                 "Import Pasted Theme"
                             }

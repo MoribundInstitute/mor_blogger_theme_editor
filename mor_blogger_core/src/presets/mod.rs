@@ -340,6 +340,37 @@ pub fn save_theme_config_as_preset(
     Ok(file_path)
 }
 
+/// Import a full preset document — TOML with authored `light`+`dark` palettes
+/// and/or `[[variants]]` color schemes — saved verbatim so nothing a flat
+/// `ThemeConfig` can't hold gets dropped. Errs when the text isn't a full
+/// preset doc; callers fall back to the flat import path.
+pub fn save_full_preset_text(text: &str) -> Result<Preset, String> {
+    let parsed: TomlPreset = toml::from_str(text).map_err(|e| e.to_string())?;
+    if parsed.variants.is_empty() && (parsed.light.is_none() || parsed.dark.is_none()) {
+        return Err("not a full preset document".to_string());
+    }
+    if parsed.name.trim().is_empty() {
+        return Err("preset document has no name".to_string());
+    }
+    let id: String = parsed
+        .name
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+        .collect();
+
+    let preset_dir = get_canonical_presets_dir();
+    if !preset_dir.exists() {
+        fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
+    }
+    fs::write(preset_dir.join(format!("{id}.toml")), text).map_err(|e| e.to_string())?;
+    reload_presets();
+    all_presets()
+        .into_iter()
+        .find(|p| p.id == id)
+        .ok_or_else(|| "imported preset did not load back from disk".to_string())
+}
+
 pub fn resolve_palette_pair(
     preset_id: Option<&str>,
     variant_id: Option<&str>,
@@ -416,6 +447,51 @@ fn perceived_luminance(color: &str) -> Option<f32> {
 mod tests {
     use super::*;
 
+    // Importing a full preset document must preserve its [[variants]] color
+    // schemes — the flat ThemeConfig import path drops them (the compendium
+    // "MorBranding has no color options" bug).
+    #[test]
+    fn full_preset_import_preserves_variants() {
+        let text = r##"
+name = "Import Fixture Zz"
+description = "test fixture"
+preset_css = "body { color: red; }"
+
+[colors]
+bg_base = "#eadfc2"
+accent = "#8a6a1f"
+
+[light.colors]
+bg_base = "#eadfc2"
+accent = "#8a6a1f"
+
+[dark.colors]
+bg_base = "#0b1b1d"
+accent = "#d2a94f"
+
+[[variants]]
+name = "Ultramarine Deep"
+[variants.light]
+colors = { bg_base = "#d8dfe6", accent = "#1d4f9c" }
+[variants.dark]
+colors = { bg_base = "#0b141f", accent = "#6fa1e8" }
+"##;
+
+        let preset = save_full_preset_text(text).expect("full preset import");
+        let cleanup = get_canonical_presets_dir().join("import_fixture_zz.toml");
+        let variants = preset.variants.len();
+        let has_ultramarine = preset.variants.iter().any(|v| v.name == "Ultramarine Deep");
+        let _ = fs::remove_file(&cleanup);
+        reload_presets();
+
+        assert_eq!(variants, 1, "expected the fixture's color scheme");
+        assert!(has_ultramarine, "Ultramarine Deep scheme missing");
+
+        // A flat workspace ThemeConfig TOML must NOT be claimed by this path.
+        let flat = toml::to_string(&crate::config::defaults::default_theme_config()).unwrap();
+        assert!(save_full_preset_text(&flat).is_err());
+    }
+
     // The preset format must carry scrollbar settings into base_config; overrides
     // are per-field, unspecified fields keep the ThemeConfig default.
     #[test]
@@ -490,6 +566,10 @@ mod tests {
                 continue;
             }
             let name = path.file_name().unwrap().to_string_lossy().to_string();
+            // Skip transient fixtures from the full-preset import test.
+            if name.starts_with("import_fixture") {
+                continue;
+            }
             let config = theme_config_from_path(&path)
                 .unwrap_or_else(|e| panic!("{name}: failed to load: {e}"));
 
@@ -505,7 +585,8 @@ mod tests {
             assert!(xml.contains(slice), "{name}: preset_css missing from rendered XML");
             checked += 1;
         }
-        assert!(checked >= 8, "expected >= 8 presets, found {checked} in {dir:?}");
+        // 5 presets ship in-app; the rest moved to the preset compendium repo.
+        assert!(checked >= 5, "expected >= 5 presets, found {checked} in {dir:?}");
     }
 
     // Every shipped preset must actually customize its scrollbar (not leave the
@@ -518,6 +599,10 @@ mod tests {
         }
         let def = crate::config::ThemeConfig::default().scrollbar_thumb_color;
         for p in &presets {
+            // Skip transient fixtures from the full-preset import test.
+            if p.id.starts_with("import_fixture") {
+                continue;
+            }
             assert_ne!(
                 p.base_config.scrollbar_thumb_color, def,
                 "preset '{}' does not customize its scrollbar",
@@ -633,14 +718,15 @@ mod tests {
     #[test]
     fn preset_cursors_follow_the_scheme() {
         let presets = all_presets();
-        let Some(glass) = presets.iter().find(|p| p.id == "mor_glassmorphism") else {
-            return;
-        };
+        let glass = presets
+            .iter()
+            .find(|p| p.id == "mor_fluid_interactive")
+            .expect("mor_fluid_interactive ships with the app");
         let variant = glass
             .variants
             .iter()
-            .find(|v| v.name == "Emerald Mist")
-            .expect("glassmorphism ships Emerald Mist");
+            .find(|v| v.name == "Ultraviolet Deep")
+            .expect("fluid interactive ships Ultraviolet Deep");
 
         // Simulate the app applying the variant: current colors = variant palette.
         let mut config = glass.base_config.clone();

@@ -566,6 +566,10 @@ colors = { bg_base = "#0b141f", accent = "#6fa1e8" }
                 continue;
             }
             let name = path.file_name().unwrap().to_string_lossy().to_string();
+            // Skip transient fixtures from the full-preset import test.
+            if name.starts_with("import_fixture") {
+                continue;
+            }
             let config = theme_config_from_path(&path)
                 .unwrap_or_else(|e| panic!("{name}: failed to load: {e}"));
 
@@ -595,6 +599,10 @@ colors = { bg_base = "#0b141f", accent = "#6fa1e8" }
         }
         let def = crate::config::ThemeConfig::default().scrollbar_thumb_color;
         for p in &presets {
+            // Skip transient fixtures from the full-preset import test.
+            if p.id.starts_with("import_fixture") {
+                continue;
+            }
             assert_ne!(
                 p.base_config.scrollbar_thumb_color, def,
                 "preset '{}' does not customize its scrollbar",

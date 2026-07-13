@@ -775,6 +775,11 @@ mod tests {
         }
         let vfs = HashMap::new();
         for p in &presets {
+            // The full-preset import test briefly writes fixtures into the
+            // shared presets dir; they aren't shipped presets — skip them.
+            if p.id.starts_with("import_fixture") {
+                continue;
+            }
             let mut cfg = ThemeConfig::default();
             cfg.preset_css = p.preset_css.to_string();
             let html =

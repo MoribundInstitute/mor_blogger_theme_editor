@@ -340,6 +340,37 @@ pub fn save_theme_config_as_preset(
     Ok(file_path)
 }
 
+/// Import a full preset document — TOML with authored `light`+`dark` palettes
+/// and/or `[[variants]]` color schemes — saved verbatim so nothing a flat
+/// `ThemeConfig` can't hold gets dropped. Errs when the text isn't a full
+/// preset doc; callers fall back to the flat import path.
+pub fn save_full_preset_text(text: &str) -> Result<Preset, String> {
+    let parsed: TomlPreset = toml::from_str(text).map_err(|e| e.to_string())?;
+    if parsed.variants.is_empty() && (parsed.light.is_none() || parsed.dark.is_none()) {
+        return Err("not a full preset document".to_string());
+    }
+    if parsed.name.trim().is_empty() {
+        return Err("preset document has no name".to_string());
+    }
+    let id: String = parsed
+        .name
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+        .collect();
+
+    let preset_dir = get_canonical_presets_dir();
+    if !preset_dir.exists() {
+        fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
+    }
+    fs::write(preset_dir.join(format!("{id}.toml")), text).map_err(|e| e.to_string())?;
+    reload_presets();
+    all_presets()
+        .into_iter()
+        .find(|p| p.id == id)
+        .ok_or_else(|| "imported preset did not load back from disk".to_string())
+}
+
 pub fn resolve_palette_pair(
     preset_id: Option<&str>,
     variant_id: Option<&str>,
@@ -415,6 +446,34 @@ fn perceived_luminance(color: &str) -> Option<f32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Importing a full preset document must preserve its [[variants]] color
+    // schemes — the flat ThemeConfig import path drops them (the compendium
+    // "MorBranding has no color options" bug).
+    #[test]
+    fn full_preset_import_preserves_variants() {
+        let source = get_canonical_presets_dir().join("morbranding.toml");
+        let text = fs::read_to_string(&source)
+            .expect("morbranding.toml preset")
+            .replace(
+                "name = \"MorBranding\"",
+                "name = \"Import Fixture Zz\"",
+            );
+
+        let preset = save_full_preset_text(&text).expect("full preset import");
+        let cleanup = get_canonical_presets_dir().join("import_fixture_zz.toml");
+        let variants = preset.variants.len();
+        let has_ultramarine = preset.variants.iter().any(|v| v.name == "Ultramarine Deep");
+        let _ = fs::remove_file(&cleanup);
+        reload_presets();
+
+        assert!(variants >= 3, "expected color schemes, got {variants}");
+        assert!(has_ultramarine, "Ultramarine Deep scheme missing");
+
+        // A flat workspace ThemeConfig TOML must NOT be claimed by this path.
+        let flat = toml::to_string(&crate::config::defaults::default_theme_config()).unwrap();
+        assert!(save_full_preset_text(&flat).is_err());
+    }
 
     // The preset format must carry scrollbar settings into base_config; overrides
     // are per-field, unspecified fields keep the ThemeConfig default.

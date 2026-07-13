@@ -452,22 +452,39 @@ mod tests {
     // "MorBranding has no color options" bug).
     #[test]
     fn full_preset_import_preserves_variants() {
-        let source = get_canonical_presets_dir().join("morbranding.toml");
-        let text = fs::read_to_string(&source)
-            .expect("morbranding.toml preset")
-            .replace(
-                "name = \"MorBranding\"",
-                "name = \"Import Fixture Zz\"",
-            );
+        let text = r##"
+name = "Import Fixture Zz"
+description = "test fixture"
+preset_css = "body { color: red; }"
 
-        let preset = save_full_preset_text(&text).expect("full preset import");
+[colors]
+bg_base = "#eadfc2"
+accent = "#8a6a1f"
+
+[light.colors]
+bg_base = "#eadfc2"
+accent = "#8a6a1f"
+
+[dark.colors]
+bg_base = "#0b1b1d"
+accent = "#d2a94f"
+
+[[variants]]
+name = "Ultramarine Deep"
+[variants.light]
+colors = { bg_base = "#d8dfe6", accent = "#1d4f9c" }
+[variants.dark]
+colors = { bg_base = "#0b141f", accent = "#6fa1e8" }
+"##;
+
+        let preset = save_full_preset_text(text).expect("full preset import");
         let cleanup = get_canonical_presets_dir().join("import_fixture_zz.toml");
         let variants = preset.variants.len();
         let has_ultramarine = preset.variants.iter().any(|v| v.name == "Ultramarine Deep");
         let _ = fs::remove_file(&cleanup);
         reload_presets();
 
-        assert!(variants >= 3, "expected color schemes, got {variants}");
+        assert_eq!(variants, 1, "expected the fixture's color scheme");
         assert!(has_ultramarine, "Ultramarine Deep scheme missing");
 
         // A flat workspace ThemeConfig TOML must NOT be claimed by this path.
@@ -564,7 +581,8 @@ mod tests {
             assert!(xml.contains(slice), "{name}: preset_css missing from rendered XML");
             checked += 1;
         }
-        assert!(checked >= 8, "expected >= 8 presets, found {checked} in {dir:?}");
+        // 5 presets ship in-app; the rest moved to the preset compendium repo.
+        assert!(checked >= 5, "expected >= 5 presets, found {checked} in {dir:?}");
     }
 
     // Every shipped preset must actually customize its scrollbar (not leave the
@@ -692,14 +710,15 @@ mod tests {
     #[test]
     fn preset_cursors_follow_the_scheme() {
         let presets = all_presets();
-        let Some(glass) = presets.iter().find(|p| p.id == "mor_glassmorphism") else {
-            return;
-        };
+        let glass = presets
+            .iter()
+            .find(|p| p.id == "mor_fluid_interactive")
+            .expect("mor_fluid_interactive ships with the app");
         let variant = glass
             .variants
             .iter()
-            .find(|v| v.name == "Emerald Mist")
-            .expect("glassmorphism ships Emerald Mist");
+            .find(|v| v.name == "Ultraviolet Deep")
+            .expect("fluid interactive ships Ultraviolet Deep");
 
         // Simulate the app applying the variant: current colors = variant palette.
         let mut config = glass.base_config.clone();

@@ -1,6 +1,7 @@
 use crate::app::state::{DockPosition, LayoutState, ThemeState};
 use crate::ui::layout::shortcut::use_shortcut;
 
+use dioxus::desktop::window;
 use dioxus::prelude::*;
 
 const LOGO: Asset = asset!("/assets/images/my_logo.png");
@@ -30,10 +31,28 @@ pub fn MorMenuDropdown(props: MorMenuDropdownProps) -> Element {
 pub fn MorMenuBar(children: Element) -> Element {
     rsx! {
         nav { class: "mor-menu-bar",
-            img {
-                src: LOGO,
-                alt: "MorBlogger",
-                style: "height: 22px; width: auto; margin: 0 8px 0 4px; flex-shrink: 0; object-fit: contain; pointer-events: none; -webkit-user-select: none;",
+            // System menu: window controls on the app icon, like a classic titlebar icon.
+            div { class: "mor-menu-item", style: "padding: 0 6px;",
+                img {
+                    src: LOGO,
+                    alt: "MorBlogger",
+                    style: "height: 22px; width: auto; flex-shrink: 0; object-fit: contain; pointer-events: none; -webkit-user-select: none;",
+                }
+                div { class: "mor-menu-dropdown",
+                    MenuItem {
+                        label: "Minimize".to_string(),
+                        on_action: move |_| window().set_minimized(true)
+                    }
+                    MenuItem {
+                        label: "Maximize / Restore".to_string(),
+                        on_action: move |_| window().toggle_maximized()
+                    }
+                    MenuSeparator {}
+                    MenuItem {
+                        label: "Close".to_string(),
+                        on_action: move |_| { window().close(); }
+                    }
+                }
             }
             {children}
         }
@@ -314,7 +333,7 @@ pub fn AppMenuBar(
                     }
                 }
                 MenuItem {
-                    label: "JS Behavior Builder".to_string(),
+                    label: "JS Behaviors".to_string(),
                     on_action: move |_| {
                         let pos = (layout.js_builder_pos)();
                         if pos == DockPosition::Hidden {

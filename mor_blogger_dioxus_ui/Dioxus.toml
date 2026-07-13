@@ -25,6 +25,9 @@ category = "DeveloperTool"
 short_description = "A visual Blogger theme editor."
 long_description = "MorBlogger Theme Editor is a Dioxus desktop app for visually building, previewing, and exporting Blogger themes."
 
+[bundle.deb]
+depends = ["libwebkit2gtk-4.1-0", "libgtk-3-0", "libxdo3"]
+
 [watcher]
 ignore = [
     "editor_prefs.toml",

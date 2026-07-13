@@ -100,7 +100,6 @@ html {
   position: relative;
 }
 
-.cinnamon-dock,
 .mor-quick-launch-bar {
   width: 48px;
   background: var(--editor-bg-deep);
@@ -112,19 +111,16 @@ html {
   z-index: 100;
 }
 
-.cinnamon-dock.left,
 .mor-quick-launch-bar.launch-bar-left {
   grid-column: 1;
 }
 
-.cinnamon-dock.right,
 .mor-quick-launch-bar.launch-bar-right {
   border-right: none;
   border-left: 1px solid var(--editor-border);
   grid-column: 5;
 }
 
-.dock-btn,
 .launch-btn {
   width: 36px;
   height: 36px;
@@ -140,12 +136,10 @@ html {
   font-size: 1.1rem;
 }
 
-.dock-btn:hover,
 .launch-btn:hover {
   background: var(--editor-bg-hover);
 }
 
-.dock-btn.active,
 .launch-btn.active {
   background: var(--editor-bg-hover);
   border-color: var(--editor-border-soft);
@@ -200,34 +194,6 @@ html {
   right: 48px;
   height: 100%;
   box-shadow: -4px 0 15px rgba(0,0,0,0.5);
-}
-
-.editor-footer {
-  flex-shrink: 0;
-  padding: 8px 16px;
-  background: var(--editor-bg-deep);
-  border-top: 1px solid var(--editor-border);
-  max-height: 200px;
-  overflow-y: auto;
-  font-size: 0.85rem;
-}
-
-.editor-main-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  background: rgba(5, 7, 9, 0.8);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--editor-border);
-  z-index: 200;
-}
-
-.editor-brand {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--editor-text);
 }
 
 .editor-panel-header {
@@ -302,44 +268,6 @@ html {
 .editor-main[data-left-layout="hidden"] .mor_panel_left,
 .editor-main[data-right-layout="hidden"] .mor_panel_right {
   display: none;
-}
-
-/* Collapsed Strips */
-.mor_panel_left-collapsed,
-.mor_panel_right-collapsed {
-  width: 40px;
-  flex: 0 0 40px;
-  min-height: 0;
-  height: 100%;
-  background: var(--editor-bg-deep);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 16px;
-}
-
-.mor_panel_left-collapsed { border-right: 1px solid var(--editor-border); }
-.mor_panel_right-collapsed { border-left: 1px solid var(--editor-border); }
-
-.editor-collapse-button {
-  background: transparent;
-  color: var(--editor-muted);
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 8px;
-  border-radius: var(--radius-md);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  min-height: 100px;
-  transition: background 0.2s, color 0.2s;
-}
-
-.editor-collapse-button:hover {
-  color: var(--editor-text);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================================
@@ -548,13 +476,6 @@ button.mor-shortcut-keys:hover .mor-keycap {
   font-weight: 600;
 }
 
-/* Optional wrapper for the keys to keep them cleanly separated from the label */
-.mor-key-cluster {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .mor-action-label {
   flex: 1;
 }
@@ -586,19 +507,6 @@ button.mor-shortcut-keys:hover .mor-keycap {
   margin: 16px 0;
 }
 
-.editor-accordion-section {
-  border: 1px solid var(--editor-border);
-  background: var(--editor-panel-soft);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-
-.editor-accordion-section-open {
-  background: color-mix(in srgb, var(--editor-panel) 80%, transparent);
-  border-color: color-mix(in srgb, var(--editor-accent) 40%, transparent);
-}
-
 .editor-accordion-header {
   width: 100%;
   display: flex;
@@ -619,11 +527,6 @@ button.mor-shortcut-keys:hover .mor-keycap {
 .editor-accordion-header.active {
   background-color: var(--editor-accent);
   color: var(--editor-bg);
-}
-
-.editor-accordion-section-open .editor-accordion-header {
-  border-bottom: 1px solid var(--editor-border-soft);
-  color: var(--editor-accent-warm);
 }
 
 .editor-accordion-title {
@@ -882,13 +785,6 @@ input[type="color"]:focus-visible {
    ============================================================ */
 /* Workbench layout toolbars and mini buttons. */
 
-.editor-panel-toolbar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
 .editor-mini-button {
   display: inline-flex;
   align-items: center;
@@ -1101,78 +997,6 @@ input[type="color"]:focus-visible {
 /* ============================================================
    30-panel-left-visuals.css
    ============================================================ */
-/* Theme Presets rail (Refactored to BEM namespace standard). */
-
-.editor-presets {
-  margin-bottom: 16px;
-}
-
-.editor-presets__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 12px;
-}
-
-.editor-presets__copy {
-  margin: 0 0 10px 0;
-  font-size: 0.85rem;
-  color: var(--editor-muted);
-  line-height: 1.5;
-}
-
-.editor-presets__rail {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 4px 4px 12px 4px;
-}
-
-.editor-presets__card {
-  flex: 0 0 200px;
-  padding: 0;
-  background: var(--editor-panel-raised);
-  border: 1px solid var(--editor-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  overflow: hidden;
-  text-align: left;
-  font-family: inherit;
-  color: var(--editor-text);
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.editor-presets__card:hover {
-  border-color: var(--editor-accent);
-  background: var(--editor-panel-soft);
-  transform: translateY(-2px);
-}
-
-.editor-presets__card--active {
-  border-color: var(--editor-accent);
-  box-shadow: 0 0 0 3px var(--editor-focus);
-}
-
-.editor-presets__footer {
-  padding: 10px 14px;
-  background: var(--editor-panel-raised);
-  border-top: 1px solid var(--editor-border-soft);
-}
-
-.editor-presets__name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--editor-text);
-  margin-bottom: 4px;
-}
-
-.editor-presets__desc {
-  font-size: 0.75rem;
-  color: var(--editor-muted);
-  white-space: normal;
-  line-height: 1.4;
-}
-
 
 /* ============================================================
    31-panel-right-data.css
@@ -1229,18 +1053,7 @@ input[type="color"]:focus-visible {
    ============================================================ */
 /* Center Workspace (Preview, Export, Restore) */
 
-.export-panel {
-  flex: 1 1 auto;
-  min-width: 0; 
-  min-height: 0;
-  display: flex; 
-  flex-direction: column;
-  padding: 24px; 
-  overflow: hidden;
-}
-
-.export-panel-header, 
-.export-panel-header-split {
+.export-panel-header {
   flex-shrink: 0; 
   display: flex;
   justify-content: space-between; 
@@ -1250,29 +1063,6 @@ input[type="color"]:focus-visible {
   flex-wrap: wrap;
   padding-bottom: 16px; 
   border-bottom: 1px solid var(--editor-border-soft);
-}
-
-.export-panel-title-block {
-  display: flex; 
-  flex-direction: column; 
-  gap: 6px; 
-  min-width: 190px;
-}
-
-.export-panel-title {
-  margin: 0; 
-  font-size: 1.15rem; 
-  font-weight: 600; 
-  color: var(--editor-text);
-  letter-spacing: -0.01em;
-}
-
-.preview-device-meta {
-  color: var(--editor-accent); 
-  font-size: 0.75rem; 
-  font-weight: 600; 
-  text-transform: uppercase; 
-  letter-spacing: 0.06em;
 }
 
 .export-toolbar {
@@ -1409,17 +1199,7 @@ body.editor-floating-dragging iframe {
   outline: none; 
 }
 
-.export-action-bar {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  gap: 16px; 
-  margin: 12px 0; 
-  flex-wrap: wrap;
-}
-
-.export-action-group, 
-.export-action-group-final {
+.export-action-group {
   display: flex; 
   gap: 8px; 
   align-items: center;
@@ -1432,25 +1212,6 @@ body.editor-floating-dragging iframe {
   display: flex; 
   flex-direction: column; 
   margin-top: 12px;
-}
-
-.export-xml-textarea {
-  flex: 1; 
-  width: 100%; 
-  resize: none;
-  background: rgba(0, 0, 0, 0.3); 
-  color: var(--editor-muted);
-  border: 1px solid var(--editor-border); 
-  border-radius: var(--radius-md);
-  padding: 16px; 
-  font-family: "Courier New", Courier, monospace; 
-  font-size: 0.8rem;
-  transition: border-color 0.2s ease;
-}
-
-.export-xml-textarea:focus { 
-  outline: none; 
-  border-color: var(--editor-accent); 
 }
 
 .restore-workspace-drawer {
@@ -1689,8 +1450,7 @@ body.editor-floating-dragging iframe {
   margin-bottom: 12px;
 }
 
-.preset-panel-header .editor-row,
-.preset-panel-actions {
+.preset-panel-header .editor-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
@@ -1824,11 +1584,6 @@ body.editor-floating-dragging iframe {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.preset-floating-window-intro {
-  flex: 0 0 auto;
-  padding: 14px 18px 0 18px;
 }
 
 .preset-floating-window-title {
@@ -1975,18 +1730,3 @@ body.editor-floating-dragging * {
    by either deleting rules or moving them to their proper module.
    Anything in here loads LAST and therefore wins specificity ties. */
 
-/* --------------------------------------------------------------------------
-   Rolled-back drag experiment.
-   The class .editor-floating-drag-handle is no longer rendered by panels.rs.
-   These rules keep it visually neutralized in case any old DOM still mounts
-   it briefly during hot reload. Safe to delete once a full clean build
-   confirms the class is gone everywhere.
--------------------------------------------------------------------------- */
-.editor-floating-drag-handle {
-  cursor: default;
-  user-select: none;
-}
-
-.editor-layout-floating .editor-floating-drag-handle::after {
-  content: none;
-}

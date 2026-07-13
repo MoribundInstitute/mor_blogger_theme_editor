@@ -732,8 +732,8 @@ pub fn AssetEditorDock(props: AssetEditorProps) -> Element {
                 }
 
                 button {
-                    class: "editor-mini-button",
-                    style: "padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; font-weight: 600; background: var(--accent); color: #111; border: none; cursor: pointer;",
+                    class: "editor-mini-button editor-mini-button-active",
+                    style: "padding: 4px 10px; font-size: 0.75rem; font-weight: 600;",
                     onclick: move |e| {
                         e.stop_propagation();
                         if let Some(tx) = &tx_opt_clone {

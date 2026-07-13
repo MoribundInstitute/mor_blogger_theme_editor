@@ -1,5 +1,5 @@
 <main class='canvas-core'>
-  <div class='canvas-content'>
+  <div class='canvas-content' id='mor-canvas-top'>
 
     {{LAYOUT_BLOCKS}}
 

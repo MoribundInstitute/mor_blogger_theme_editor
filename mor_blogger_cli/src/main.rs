@@ -41,13 +41,6 @@ enum Commands {
         #[arg(long)]
         strict: bool,
     },
-    Build {
-        #[arg(short, long, default_value = "workspace.toml")]
-        input: PathBuf,
-        /// Output path, or "-" to write Blogger XML to stdout.
-        #[arg(short, long, default_value = "theme.xml")]
-        output: PathBuf,
-    },
     /// Headless render: preset TOML → template_resolver → xml_generator (no UI).
     Render {
         #[arg(short, long)]
@@ -203,28 +196,6 @@ fn main() -> Result<()> {
                         e.to_string().red()
                     );
                 }
-            }
-        }
-        Commands::Build { input, output } => {
-            println!("{} Reading configuration...", "➔".cyan());
-            let config = load_config(input)?;
-
-            println!("{} Resolving theme components...", "➔".cyan());
-            let xml = render_theme(&config, &std::collections::HashMap::new());
-
-            if output.as_os_str() == "-" {
-                use std::io::Write;
-                std::io::stdout()
-                    .write_all(xml.as_bytes())
-                    .context("Failed to write XML to stdout")?;
-            } else {
-                save_xml_to_disk(&xml, output).map_err(|e| anyhow::anyhow!(e))?;
-                println!(
-                    "{} Theme successfully compiled to {} in {:?}",
-                    "✔".green().bold(),
-                    output.display().to_string().yellow(),
-                    start_time.elapsed()
-                );
             }
         }
         Commands::Render {

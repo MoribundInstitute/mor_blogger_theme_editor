@@ -40,47 +40,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const panelLeft = document.getElementById('panel-left');
   const panelRight = document.getElementById('panel-right');
-  const canvasCore = document.querySelector('.canvas-core');
 
   /*
-    Back-to-top button support.
-
-    Recommended footer button:
-    <button class='back-to-top-btn' type='button'>Back to Top</button>
-
-    Also supports legacy scrolling buttons by checking onclick strings.
+    The back-to-top button is a plain <a href='#mor-canvas-top'> — no JS.
+    This helper only backs the Home-key shortcut; scrollIntoView scrolls
+    every ancestor (canvas-core on desktop, window on mobile) and picks up
+    the CSS scroll-behavior.
   */
-  const backToTopBtn =
-    document.querySelector('.back-to-top-btn') ||
-    document.querySelector('.footer-sys-info button[onclick*="scrollTo"]');
-
   function scrollMainContentToTop() {
-    if (canvasCore && typeof canvasCore.scrollTo === 'function') {
-      canvasCore.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
+    const top = document.getElementById('mor-canvas-top');
 
-    if (typeof window.scrollTo === 'function') {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-
-    if (document.documentElement && typeof document.documentElement.scrollTo === 'function') {
-      document.documentElement.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-
-    if (document.body && typeof document.body.scrollTo === 'function') {
-      document.body.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+    if (top) {
+      top.scrollIntoView();
+    } else {
+      window.scrollTo(0, 0);
     }
   }
 
@@ -113,16 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setInitialPanelState();
-
-  if (backToTopBtn) {
-    backToTopBtn.removeAttribute('onclick');
-
-    backToTopBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      scrollMainContentToTop();
-    });
-  }
 
   /* =========================================================
      03. Catalog Mega Dropdown

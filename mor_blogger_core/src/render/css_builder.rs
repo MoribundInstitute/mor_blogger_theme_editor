@@ -18,8 +18,10 @@ fn generate_workspace_background_value(bg: &BackgroundMode) -> String {
             escape_attr(from),
             escape_attr(to)
         ),
-        BackgroundMode::Tile { url } if url.trim().is_empty() => "none".to_string(),
-        BackgroundMode::Tile { url } => format!("url('{}')", escape_attr(url)),
+        // Tile stays on the page's lowest layer; panels consuming
+        // --bg-workspace must go opaque (base color), not re-tile the image
+        // from their own origin. css_generator applies the same rule.
+        BackgroundMode::Tile { .. } => "var(--bg-base)".to_string(),
     }
 }
 
@@ -164,6 +166,21 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
         "\n  --icon-menu: {};",
         icon_or_default(&config.icons.menu, DEFAULT_ICON_MENU)
     ));
+    // Widget-heading icons: 14-Widgets-Sidebars.css masks archive/label/TOC
+    // titles with these vars. They were referenced but never emitted, so the
+    // masks resolved to none and the headings painted as solid squares.
+    custom_vars.push_str(&format!(
+        "\n  --icon-archive: {};",
+        icon_or_default(&config.icons.archive, crate::config::styling::ICON_ARCHIVE_PATH)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-label: {};",
+        icon_or_default(&config.icons.label, crate::config::styling::ICON_LABEL_PATH)
+    ));
+    custom_vars.push_str(&format!(
+        "\n  --icon-toc: {};",
+        icon_or_default(&config.icons.toc, crate::config::styling::ICON_TOC_PATH)
+    ));
 
     for (key, svg_data) in &config.icons.custom_icons {
         if svg_data.trim().is_empty() {
@@ -265,14 +282,21 @@ pub fn build_master_css(base_css_chunks: &[&str], config: &ThemeConfig) -> Strin
 }
 
 /// Map a Typography panel element key to the CSS selector(s) it targets.
+/// `:root` prefix lifts specificity to (0,1,1) so a panel-set override ties
+/// contextual base rules like `.widget h2` and wins on source order (overrides
+/// are emitted after base CSS) — a bare `h2` would lose its padding to
+/// `.widget h2 { padding-bottom: 5px }` and plaques went lopsided.
 fn element_selector(key: &str) -> Option<&'static str> {
     match key {
-        "h1" => Some("h1"),
-        "h2" => Some("h2"),
-        "h3" => Some("h3"),
+        "h1" => Some(":root h1"),
+        "h2" => Some(":root h2"),
+        "h3" => Some(":root h3"),
+        "h4" => Some(":root h4"),
+        "h5" => Some(":root h5"),
+        "h6" => Some(":root h6"),
         "p" | "body" => Some(".post-body, .post-body p, .post-body li"),
-        "blockquote" => Some("blockquote"),
-        "code" => Some("code, pre, kbd, samp"),
+        "blockquote" => Some(":root blockquote"),
+        "code" => Some(":root code, :root pre, :root kbd, :root samp"),
         _ => None,
     }
 }

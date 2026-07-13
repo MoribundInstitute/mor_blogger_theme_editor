@@ -1,4 +1,4 @@
-use directories::{BaseDirs, ProjectDirs};
+use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fs;
@@ -18,18 +18,6 @@ pub struct LocalMcpManifest {
 
 fn default_mcp_server_key() -> String {
     "mor_blogger_engine".to_string()
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct PluginPrefEntry {
-    pub id: String,
-    pub enabled: bool,
-    #[serde(default = "default_version")]
-    pub version: String,
-}
-
-fn default_version() -> String {
-    "1.0.0".to_string()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -312,8 +300,4 @@ pub fn read_daemon_registry() -> Result<Value, String> {
     }
     let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
     serde_json::from_str(&raw).map_err(|e| format!("Invalid MCP daemon registry: {e}"))
-}
-
-pub fn moribund_config_dir() -> Option<PathBuf> {
-    ProjectDirs::from("io", "Moribund", "MorBloggerThemeEditor").map(|d| d.config_dir().to_path_buf())
 }

@@ -1,5 +1,5 @@
 use crate::app::state::ThemeState;
-use crate::ui::components::inputs::EditorInput;
+use crate::ui::components::inputs::{EditorInput, EditorSelect};
 use crate::ui::dialogs::modal::Modal;
 use dioxus::html::HasFileData;
 use dioxus::prelude::*;
@@ -98,10 +98,14 @@ pub fn AdvancedTypographyDialog(mut open_signal: Signal<bool>) -> Element {
                         value: signals.mono_font_stack,
                         options: MONO_FONT_REGISTRY,
                     }
-                    SimpleSelect {
+                    EditorSelect {
                         label: "Heading Weight".to_string(),
-                        value: signals.heading_weight,
-                        options: WEIGHT_OPTIONS,
+                        value: signals.heading_weight.read().clone(),
+                        options: WEIGHT_OPTIONS.iter().map(|(name, css)| (css.to_string(), name.to_string())).collect::<Vec<_>>(),
+                        onchange: move |e: Event<FormData>| {
+                            let mut v = signals.heading_weight;
+                            v.set(e.value());
+                        },
                     }
                 }
 
@@ -193,41 +197,6 @@ fn FontStackPicker(
                         class: "editor-field",
                         style: "width: 100%;",
                         oninput: move |e| value.set(e.value()),
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn SimpleSelect(
-    label: String,
-    value: Signal<String>,
-    options: &'static [(&'static str, &'static str)],
-) -> Element {
-    let mut value = value;
-    let current = value.read().clone();
-
-    rsx! {
-        div {
-            class: "editor-field-group",
-
-            label {
-                class: "editor-field-label",
-                "{label}"
-            }
-
-            select {
-                class: "editor-select",
-                value: "{current}",
-                onchange: move |e| value.set(e.value()),
-
-                for (name, css) in options.iter() {
-                    option {
-                        value: "{css}",
-                        selected: *css == current.as_str(),
-                        "{name}"
                     }
                 }
             }

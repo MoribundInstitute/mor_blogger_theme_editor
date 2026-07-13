@@ -11,7 +11,7 @@
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  vertical-align: text-bottom;
+  vertical-align: -0.18em;
   margin-right: 8px;
 }
 
@@ -26,7 +26,7 @@
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  vertical-align: text-bottom;
+  vertical-align: -0.18em;
   margin-right: 8px;
 }
 
@@ -41,7 +41,7 @@
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  vertical-align: text-bottom;
+  vertical-align: -0.18em;
   margin-right: 8px;
 }
 .sidebar-section .widget-content { max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }

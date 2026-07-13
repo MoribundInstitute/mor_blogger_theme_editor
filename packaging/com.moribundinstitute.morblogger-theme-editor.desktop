@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MorBlogger Theme Editor
+Comment=Visual theme editor for Blogger templates
+Exec=mor_blogger_dioxus_ui
+Icon=com.moribundinstitute.morblogger-theme-editor
+StartupWMClass=com.moribundinstitute.morblogger-theme-editor
+Terminal=false
+Categories=Development;WebDevelopment;

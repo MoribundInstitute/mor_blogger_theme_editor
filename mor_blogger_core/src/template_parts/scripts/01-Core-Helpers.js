@@ -22,19 +22,19 @@
     }
 
     /* =========================================================
-    02. Side Panels + Back to Top
+    02. Side Panels + Scroll-to-Top (Home key)
     ========================================================= */
     const panelLeft = document.getElementById('panel-left');
     const panelRight = document.getElementById('panel-right');
-    const canvasCore = document.querySelector('.canvas-core');
-    const backToTopBtn = document.querySelector('.back-to-top-btn') || document.querySelector('.footer-sys-info button[onclick*="scrollTo"]');
 
+    // The back-to-top button is a plain <a href='#mor-canvas-top'> — no JS.
+    // This helper only backs the Home-key shortcut; scrollIntoView scrolls
+    // every ancestor (canvas-core on desktop, window on mobile) and picks up
+    // the CSS scroll-behavior.
     function scrollMainContentToTop() {
-      const scrollOptions = { top: 0, behavior: 'smooth' };
-      if (canvasCore && typeof canvasCore.scrollTo === 'function') canvasCore.scrollTo(scrollOptions);
-      if (typeof window.scrollTo === 'function') window.scrollTo(scrollOptions);
-      if (document.documentElement && typeof document.documentElement.scrollTo === 'function') document.documentElement.scrollTo(scrollOptions);
-      if (document.body && typeof document.body.scrollTo === 'function') document.body.scrollTo(scrollOptions);
+      const top = document.getElementById('mor-canvas-top');
+      if (top) top.scrollIntoView();
+      else window.scrollTo(0, 0);
     }
 
     function setInitialPanelState() {
@@ -56,15 +56,6 @@
     }
 
     setInitialPanelState();
-
-    if (backToTopBtn) {
-      backToTopBtn.removeAttribute('onclick');
-      backToTopBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        scrollMainContentToTop();
-      });
-    }
 
     /* =========================================================
     03. Catalog Mega Dropdown

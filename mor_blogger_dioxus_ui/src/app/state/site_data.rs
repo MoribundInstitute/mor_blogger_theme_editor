@@ -11,12 +11,12 @@ impl Default for SiteData {
         Self {
             posts: vec![
                 BlogPost {
-                    title: "WYSIWYG: The Tier 3 Architecture".to_string(),
+                    title: "Welcome to Your Live Preview".to_string(),
                     date: "24 Oct, 2026".to_string(),
-                    tags: vec!["Preview".to_string(), "Architecture".to_string()],
-                    snippet: "This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.".to_string(),
+                    tags: vec!["Preview".to_string(), "Getting Started".to_string()],
+                    snippet: "This preview shows exactly how your blog will look once your theme is published to Blogger: the same layout, fonts, and colors your readers will see. No surprises after export.".to_string(),
                     featured_image: None,
-                    body: "<p>This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.</p>\n<p>Furthermore, Dioxus now runs a <strong>Two-Way DOM Morpher</strong> inside the iframe. Modifying colors, fonts, and text fields in the left/right docks will update the preview instantly without causing destructive iframe reloads or scroll-jumping.</p>\n<blockquote>\"WYSIWYG means What You See Is What You Get. No more making up shite.\"</blockquote>\n<p>Shift+Click on any text, background, or <code data-edit-target=\"typography.mono_font_stack\">code block</code> to instantly jump to the relevant editor panel via the JS interop bridge.</p>".to_string(),
+                    body: "<p>This preview shows exactly how your blog will look once your theme is published to Blogger: the same layout, fonts, and colors your readers will see. No surprises after export.</p>\n<p><strong>Try it now:</strong> pick a different color or font in the side panels and watch this page update instantly. Nothing reloads and you never lose your place on the page.</p>\n<blockquote>\"What you see here is what your readers get. This preview is built from the very same theme file you upload to Blogger.\"</blockquote>\n<p>Handy shortcut: turn on <strong>X-Ray</strong> (the skeleton button in the toolbar), then click any text, background, or <code data-edit-target=\"typography.mono_font_stack\">code snippet</code> to jump straight to the setting that controls it. Hold <strong>Shift</strong> and click any icon to swap it.</p>".to_string(),
                     url: "#".to_string(),
                     author_name: "Moribund Engine".to_string(),
                 }

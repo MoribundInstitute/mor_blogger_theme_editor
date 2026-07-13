@@ -8,7 +8,7 @@ MorBlogger separates theme compilation logic from the tools used to edit themes.
 
 - **`mor_blogger_core`** — Headless engine: TOML parsing, XML template resolution, CSS generation, structural validation. No GUI or OS dependencies.
 - **`mor_blogger_dioxus_ui`** — Visual workspace powered by Dioxus 0.7 and `mor_rust_dioxus_ui_kit`.
-- **`mor_blogger_cli` (`mbt`)** — Terminal interface for init, check, build, and bundle.
+- **`mor_blogger_cli` (`mbt`)** — Terminal interface for init, check, render, and bundle.
 
 Both frontends call into `mor_blogger_core` only.
 

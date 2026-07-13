@@ -169,7 +169,7 @@ pub const MONO_FONT_REGISTRY: &[FontPreset] = &[
 ];
 
 /// Primary family name from a CSS font stack (text before the first comma).
-pub fn primary_font_from_stack(stack: &str) -> &str {
+fn primary_font_from_stack(stack: &str) -> &str {
     stack
         .split(',')
         .next()
@@ -180,7 +180,7 @@ pub fn primary_font_from_stack(stack: &str) -> &str {
 }
 
 /// True when the primary font does not require a Google Fonts stylesheet.
-pub fn is_system_safe_font(name: &str) -> bool {
+fn is_system_safe_font(name: &str) -> bool {
     let name = name.trim();
     if name.is_empty() {
         return true;

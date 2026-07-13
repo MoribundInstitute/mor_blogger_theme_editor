@@ -12,6 +12,7 @@ pub fn light_color_config() -> ColorConfig {
         bg_base: "#e8efff".to_string(),
         bg_panel: SurfaceFill::solid("#ffffff"),
         bg_elevated: SurfaceFill::solid("#f4f6ff"),
+        header_fill: SurfaceFill::solid("transparent"),
         fg_base: "#1a1d3a".to_string(),
         fg_muted: "#6b7099".to_string(),
         accent: "#7c3aed".to_string(),
@@ -54,6 +55,7 @@ pub fn dark_color_config() -> ColorConfig {
         bg_base: "#0f1026".to_string(),
         bg_panel: bg_fill.clone(),
         bg_elevated: bg_fill,
+        header_fill: SurfaceFill::solid("transparent"),
         fg_base: "#f5f7ff".to_string(),
         fg_muted: "#a8aedd".to_string(),
         accent: "#8b5cf6".to_string(),
@@ -113,7 +115,7 @@ pub fn dark_background_config() -> BackgroundConfig {
 pub fn default_theme_config() -> ThemeConfig {
     ThemeConfig {
         site: SiteConfig {
-            site_title: "Moribund Workspace".to_string(),
+            site_title: "My Blog".to_string(),
             site_subtitle: "A fluid, interactive environment.".to_string(),
             header_logo_url: "".to_string(),
             home_url: "/".to_string(),

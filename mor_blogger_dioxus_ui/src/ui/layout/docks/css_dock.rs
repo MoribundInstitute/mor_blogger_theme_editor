@@ -5,6 +5,44 @@ use crate::ui::layout::docks::{
 };
 use dioxus::prelude::*;
 
+/// Shared shell for the CSS/JS editor panels: everything but the file list.
+/// `mode` is the editor mode ("css" / "javascript"); the persist kind derives from it.
+pub(super) fn asset_editor_panel(
+    title: &'static str,
+    mode: &'static str,
+    default_file: &'static str,
+    available_files: Vec<String>,
+    dock_position: Signal<DockPosition>,
+    content_signal: Signal<String>,
+    open_file_request: Option<Signal<Option<String>>>,
+) -> Element {
+    let theme = use_context::<ThemeState>();
+    let persist_kind = if mode == "css" { "css" } else { "js" };
+
+    rsx! {
+        AssetEditorDock {
+            title,
+            mode,
+            default_file,
+            available_files,
+            dock_position,
+            content_signal,
+            vfs_signal: use_context::<VfsDictionary>().0,
+            is_native_window: false,
+            open_file_request,
+            on_save: move |_| {
+                let vfs = use_context::<VfsDictionary>().0;
+                let current_vfs = vfs.read().clone();
+                crate::app::services::workspace_service::persist_asset_editor(theme, &current_vfs, persist_kind);
+            },
+            on_close: move |_| {
+                let mut pos = dock_position;
+                pos.set(DockPosition::Hidden);
+            }
+        }
+    }
+}
+
 #[component]
 pub fn CssEditorPanel() -> Element {
     let layout = use_context::<LayoutState>();
@@ -60,25 +98,13 @@ pub fn CssEditorPanel() -> Element {
         available_files.extend(baseline);
     }
 
-    rsx! {
-        AssetEditorDock {
-            title: "CSS EDITOR",
-            mode: "css",
-            default_file: "preset_css.css",
-            available_files,
-            dock_position: layout.css_editor_pos,
-            content_signal: theme.signals.preset_css,
-            vfs_signal: use_context::<VfsDictionary>().0,
-            is_native_window: false,
-            on_save: move |_| {
-                let vfs = use_context::<VfsDictionary>().0;
-                let current_vfs = vfs.read().clone();
-                crate::app::services::workspace_service::persist_asset_editor(theme, &current_vfs, "css");
-            },
-            on_close: move |_| {
-                let mut pos = layout.css_editor_pos;
-                pos.set(DockPosition::Hidden);
-            }
-        }
-    }
+    asset_editor_panel(
+        "CSS EDITOR",
+        "css",
+        "preset_css.css",
+        available_files,
+        layout.css_editor_pos,
+        theme.signals.preset_css,
+        None,
+    )
 }

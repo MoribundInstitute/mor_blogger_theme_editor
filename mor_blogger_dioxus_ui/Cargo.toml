@@ -15,7 +15,7 @@ mor_blogger_core = { path = "../mor_blogger_core" }
 dioxus = "0.7"
 dioxus-logger = "0.5.1"
 rfd = "0.17.2"
-image = "0.24"
+image = { version = "0.24", default-features = false, features = ["png"] }
 
 log.workspace = true
 serde.workspace = true
@@ -24,8 +24,7 @@ toml.workspace = true
 reqwest.workspace = true
 zip.workspace = true
 
-# Native desktop runtime (clipboard, file watching, async).
-arboard = "3.3"
+# Native desktop runtime (file watching, async).
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 notify = "6.1"
 tokio = { version = "1.0", features = ["sync"] }

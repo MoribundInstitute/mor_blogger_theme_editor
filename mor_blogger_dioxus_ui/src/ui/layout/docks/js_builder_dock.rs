@@ -27,7 +27,7 @@ pub fn JsBuilderDock() -> Element {
             position: pos,
             default_position: DockPosition::mor_panel_left,
             DockChrome {
-                title: "JS Behavior Builder".to_string(),
+                title: "JS Behaviors".to_string(),
                 dock_id: "js_builder".to_string(),
                 position: pos,
                 on_close: move |_| {

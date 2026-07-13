@@ -8,8 +8,6 @@ use std::path::{Path, PathBuf};
 use super::styling::{BackgroundMode, ColorConfig, SurfaceFill};
 use super::ThemeConfig;
 
-pub use assets::svg_to_mask_uri;
-
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct GtkImportReport {
     pub files_read: Vec<PathBuf>,

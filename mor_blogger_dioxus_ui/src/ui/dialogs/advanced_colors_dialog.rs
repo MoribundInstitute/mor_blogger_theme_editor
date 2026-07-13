@@ -35,6 +35,13 @@ pub fn AdvancedColorsDialog(mut open_signal: Signal<bool>) -> Element {
                             default_color: "#1a1a1a".to_string(),
                         }
                     }
+                    div {
+                        h4 { style: "color: var(--fg-muted); margin: 0 0 8px 0; font-size: 13px;", "Header Background" }
+                        SurfaceFillEditor {
+                            value: signals.header_fill,
+                            default_color: "#141414".to_string(),
+                        }
+                    }
                 }
 
                 h3 { style: "color: var(--editor-accent, #a9aae2); margin: 10px 0 0 0; font-size: 16px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 8px;", "Granular Overrides" }

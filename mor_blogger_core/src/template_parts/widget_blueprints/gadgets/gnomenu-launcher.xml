@@ -7,7 +7,7 @@
          desktop apps in a blog, so each tile is a link you configure in the
          MOR_GM_ITEMS array below (the only thing you edit). Everything is
          self-contained (no jQuery, no external CSS) and reskins off the
-         theme vars (--accent / --bg-panel / --fg-base / --font-heading).
+         theme vars (accent / bg-panel / fg-base / font-heading).
          All markup lives in one CDATA block (the static-HTML widget convention
          the workbench preview expects) so it both previews and exports cleanly. -->
     <![CDATA[

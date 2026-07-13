@@ -104,136 +104,132 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
         "{{NAV_CONTACT_URL}}",
         &escape_attr(first_non_empty(&menu_4.url, "#")),
     );
-    xml = xml.replace("{{NAV_MERCH_LABEL}}", "Shop");
-    xml = xml.replace("{{NAV_MERCH_URL}}", "#");
-    xml = xml.replace("{{NAV_POSTS_LABEL}}", "Posts");
-    xml = xml.replace("{{NAV_POSTS_URL}}", "/search");
-    xml = xml.replace("{{NAV_CATEGORIES_LABEL}}", "Categories");
-    xml = xml.replace("{{NAV_CATEGORIES_URL}}", "#");
-    xml = xml.replace("{{NAV_ARCHIVE_LABEL}}", "Archive");
-    xml = xml.replace("{{NAV_ARCHIVE_URL}}", "#");
-
-    xml = xml.replace("{{SEARCH_ACTION_URL}}", "/search");
-    xml = xml.replace("{{SEARCH_ACTION_URL_ATTR}}", "/search");
-    xml = xml.replace("{{SEARCH_PROMPT}}", "Search");
-    xml = xml.replace("{{SEARCH_PLACEHOLDER}}", "Search...");
-    xml = xml.replace("{{SEARCH_PLACEHOLDER_ATTR}}", "Search...");
-    xml = xml.replace("{{SEARCH_BUTTON_LABEL}}", "Search");
-
-    xml = xml.replace("{{CATALOG_TRIGGER_LABEL}}", "Catalog");
-    xml = xml.replace("{{CATALOG_ALL_LABEL}}", "See All");
-    xml = xml.replace("{{CATALOG_ALL_URL}}", "#");
-    xml = xml.replace("{{CATALOG_SUBJECTS_LABEL}}", "Categories");
-    xml = xml.replace("{{CATALOG_SUBJECTS_URL}}", "#");
-    xml = xml.replace("{{CATALOG_LEXICON_LABEL}}", "Glossary");
-    xml = xml.replace("{{CATALOG_LEXICON_URL}}", "#");
-    xml = xml.replace("{{CATALOG_MEDIA_LABEL}}", "Media");
-    xml = xml.replace("{{CATALOG_MEDIA_URL}}", "#");
-    xml = xml.replace("{{CATALOG_WIKI_LABEL}}", "Wiki");
-    xml = xml.replace("{{CATALOG_WIKI_URL}}", "#");
-    xml = xml.replace("{{CATALOG_PROJECTS_LABEL}}", "Projects");
-    xml = xml.replace("{{CATALOG_PROJECTS_URL}}", "#");
-    xml = xml.replace("{{CATALOG_PROGRESS_LABEL}}", "Status");
-    xml = xml.replace("{{CATALOG_PROGRESS_URL}}", "#");
-
-    xml = xml.replace("{{SUBJECT_LIST}}", "");
-    xml = xml.replace("{{LEXICON_LIST}}", "");
-    xml = xml.replace("{{MEDIA_LIST}}", "");
-    xml = xml.replace("{{WIKI_LIST}}", "");
-    xml = xml.replace("{{PROJECTS_LIST}}", "");
-    xml = xml.replace("{{PROGRESS_LIST}}", "");
-
-    xml = xml.replace("{{SUBJECT_000_LABEL}}", "000 General");
-    xml = xml.replace("{{SUBJECT_000_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_100_LABEL}}", "100 Philosophy");
-    xml = xml.replace("{{SUBJECT_100_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_200_LABEL}}", "200 Religion");
-    xml = xml.replace("{{SUBJECT_200_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_300_LABEL}}", "300 Social");
-    xml = xml.replace("{{SUBJECT_300_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_400_LABEL}}", "400 Language");
-    xml = xml.replace("{{SUBJECT_400_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_500_LABEL}}", "500 Science");
-    xml = xml.replace("{{SUBJECT_500_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_600_LABEL}}", "600 Technology");
-    xml = xml.replace("{{SUBJECT_600_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_700_LABEL}}", "700 Arts");
-    xml = xml.replace("{{SUBJECT_700_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_800_LABEL}}", "800 Literature");
-    xml = xml.replace("{{SUBJECT_800_URL}}", "#");
-    xml = xml.replace("{{SUBJECT_900_LABEL}}", "900 History");
-    xml = xml.replace("{{SUBJECT_900_URL}}", "#");
-
-    xml = xml.replace("{{LEXICON_MORDICTIONARY_LABEL}}", "Dictionary");
-    xml = xml.replace("{{LEXICON_MORDICTIONARY_URL}}", "#");
-    xml = xml.replace("{{LEXICON_WEAR_YOUR_DICTIONARY_LABEL}}", "Apparel");
-    xml = xml.replace("{{LEXICON_WEAR_YOUR_DICTIONARY_URL}}", "#");
-    xml = xml.replace("{{LEXICON_VOCABULARY_LABEL}}", "Vocabulary");
-    xml = xml.replace("{{LEXICON_VOCABULARY_URL}}", "#");
-    xml = xml.replace("{{LEXICON_ETYMOLOGY_LABEL}}", "Etymology");
-    xml = xml.replace("{{LEXICON_ETYMOLOGY_URL}}", "#");
-    xml = xml.replace("{{LEXICON_WORDPLAY_LABEL}}", "Wordplay");
-    xml = xml.replace("{{LEXICON_WORDPLAY_URL}}", "#");
-    xml = xml.replace("{{LEXICON_LANGUAGE_LABEL}}", "Language");
-    xml = xml.replace("{{LEXICON_LANGUAGE_URL}}", "#");
-
-    xml = xml.replace("{{MEDIA_AUDIOBOOK_GAMING_LABEL}}", "Audiobooks");
-    xml = xml.replace("{{MEDIA_AUDIOBOOK_GAMING_URL}}", "#");
-    xml = xml.replace("{{MEDIA_WATCHLISTS_LABEL}}", "Watchlists");
-    xml = xml.replace("{{MEDIA_WATCHLISTS_URL}}", "#");
-    xml = xml.replace("{{MEDIA_READING_LABEL}}", "Reading");
-    xml = xml.replace("{{MEDIA_READING_URL}}", "#");
-    xml = xml.replace("{{MEDIA_LISTENING_LABEL}}", "Listening");
-    xml = xml.replace("{{MEDIA_LISTENING_URL}}", "#");
-    xml = xml.replace("{{MEDIA_SOCIAL_SCIENCE_LABEL}}", "Social Science");
-    xml = xml.replace("{{MEDIA_SOCIAL_SCIENCE_URL}}", "#");
-    xml = xml.replace("{{MEDIA_DIET_LABEL}}", "Media Diet");
-    xml = xml.replace("{{MEDIA_DIET_URL}}", "#");
-
-    xml = xml.replace("{{WIKI_START_LABEL}}", "Start Here");
-    xml = xml.replace("{{WIKI_START_URL}}", "#");
-    xml = xml.replace("{{WIKI_ALL_POSTS_LABEL}}", "All Posts");
-    xml = xml.replace("{{WIKI_ALL_POSTS_URL}}", "#");
-    xml = xml.replace("{{WIKI_TRAILS_LABEL}}", "Trails");
-    xml = xml.replace("{{WIKI_TRAILS_URL}}", "#");
-    xml = xml.replace("{{WIKI_WALKING_LABEL}}", "Walking");
-    xml = xml.replace("{{WIKI_WALKING_URL}}", "#");
-    xml = xml.replace("{{WIKI_VIDEO_COMMENTARY_LABEL}}", "Video");
-    xml = xml.replace("{{WIKI_VIDEO_COMMENTARY_URL}}", "#");
-    xml = xml.replace("{{WIKI_LEXICOGRAPHY_LABEL}}", "Lexicography");
-    xml = xml.replace("{{WIKI_LEXICOGRAPHY_URL}}", "#");
-    xml = xml.replace("{{WIKI_BLOG_LABEL}}", "Wiki Blog");
-    xml = xml.replace("{{WIKI_BLOG_URL}}", "#");
-    xml = xml.replace("{{WIKI_OFFICIAL_LABEL}}", "Official Wiki");
-    xml = xml.replace("{{WIKI_OFFICIAL_URL}}", "#");
-    xml = xml.replace("{{WIKI_YOUTUBE_LABEL}}", "YouTube");
-    xml = xml.replace("{{WIKI_YOUTUBE_URL}}", "#");
-    xml = xml.replace("{{WIKI_REDDIT_LABEL}}", "Community");
-    xml = xml.replace("{{WIKI_REDDIT_URL}}", "#");
-
-    xml = xml.replace("{{PROJECTS_ALL_LABEL}}", "All Projects");
-    xml = xml.replace("{{PROJECTS_ALL_URL}}", "#");
-    xml = xml.replace("{{PROJECTS_INSTITUTE_LABEL}}", "Main Project");
-    xml = xml.replace("{{PROJECTS_INSTITUTE_URL}}", "#");
-    xml = xml.replace("{{PROJECTS_WEAR_YOUR_WORDS_LABEL}}", "Shop");
-    xml = xml.replace("{{PROJECTS_WEAR_YOUR_WORDS_URL}}", "#");
-    xml = xml.replace("{{PROJECTS_MORBLOCKS_LABEL}}", "Blocks");
-    xml = xml.replace("{{PROJECTS_MORBLOCKS_URL}}", "#");
-    xml = xml.replace("{{PROJECTS_MORLESSONBUILDER_LABEL}}", "Builder");
-    xml = xml.replace("{{PROJECTS_MORLESSONBUILDER_URL}}", "#");
-    xml = xml.replace("{{PROJECTS_LOG_LABEL}}", "Logs");
-    xml = xml.replace("{{PROJECTS_LOG_URL}}", "#");
-
-    xml = xml.replace("{{PROGRESS_DASHBOARD_LABEL}}", "Dashboard");
-    xml = xml.replace("{{PROGRESS_DASHBOARD_URL}}", "#");
-    xml = xml.replace("{{PROGRESS_OFFLINE_TRACKER_LABEL}}", "Tracker");
-    xml = xml.replace("{{PROGRESS_OFFLINE_TRACKER_URL}}", "#");
-    xml = xml.replace("{{PROGRESS_CATALOG_LABEL}}", "Catalog");
-    xml = xml.replace("{{PROGRESS_CATALOG_URL}}", "#");
-    xml = xml.replace("{{PROGRESS_LESSONS_LABEL}}", "Lessons");
-    xml = xml.replace("{{PROGRESS_LESSONS_URL}}", "#");
-    xml = xml.replace("{{PROGRESS_ACTIVITIES_LABEL}}", "Activities");
-    xml = xml.replace("{{PROGRESS_ACTIVITIES_URL}}", "#");
+    const DEFAULTS: &[(&str, &str)] = &[
+        ("{{NAV_MERCH_LABEL}}", "Shop"),
+        ("{{NAV_MERCH_URL}}", "#"),
+        ("{{NAV_POSTS_LABEL}}", "Posts"),
+        ("{{NAV_POSTS_URL}}", "/search"),
+        ("{{NAV_CATEGORIES_LABEL}}", "Categories"),
+        ("{{NAV_CATEGORIES_URL}}", "#"),
+        ("{{NAV_ARCHIVE_LABEL}}", "Archive"),
+        ("{{NAV_ARCHIVE_URL}}", "#"),
+        ("{{SEARCH_ACTION_URL}}", "/search"),
+        ("{{SEARCH_ACTION_URL_ATTR}}", "/search"),
+        ("{{SEARCH_PROMPT}}", "Search"),
+        ("{{SEARCH_PLACEHOLDER}}", "Search..."),
+        ("{{SEARCH_PLACEHOLDER_ATTR}}", "Search..."),
+        ("{{SEARCH_BUTTON_LABEL}}", "Search"),
+        ("{{CATALOG_TRIGGER_LABEL}}", "Catalog"),
+        ("{{CATALOG_ALL_LABEL}}", "See All"),
+        ("{{CATALOG_ALL_URL}}", "#"),
+        ("{{CATALOG_SUBJECTS_LABEL}}", "Categories"),
+        ("{{CATALOG_SUBJECTS_URL}}", "#"),
+        ("{{CATALOG_LEXICON_LABEL}}", "Glossary"),
+        ("{{CATALOG_LEXICON_URL}}", "#"),
+        ("{{CATALOG_MEDIA_LABEL}}", "Media"),
+        ("{{CATALOG_MEDIA_URL}}", "#"),
+        ("{{CATALOG_WIKI_LABEL}}", "Wiki"),
+        ("{{CATALOG_WIKI_URL}}", "#"),
+        ("{{CATALOG_PROJECTS_LABEL}}", "Projects"),
+        ("{{CATALOG_PROJECTS_URL}}", "#"),
+        ("{{CATALOG_PROGRESS_LABEL}}", "Status"),
+        ("{{CATALOG_PROGRESS_URL}}", "#"),
+        ("{{SUBJECT_LIST}}", ""),
+        ("{{LEXICON_LIST}}", ""),
+        ("{{MEDIA_LIST}}", ""),
+        ("{{WIKI_LIST}}", ""),
+        ("{{PROJECTS_LIST}}", ""),
+        ("{{PROGRESS_LIST}}", ""),
+        ("{{SUBJECT_000_LABEL}}", "000 General"),
+        ("{{SUBJECT_000_URL}}", "#"),
+        ("{{SUBJECT_100_LABEL}}", "100 Philosophy"),
+        ("{{SUBJECT_100_URL}}", "#"),
+        ("{{SUBJECT_200_LABEL}}", "200 Religion"),
+        ("{{SUBJECT_200_URL}}", "#"),
+        ("{{SUBJECT_300_LABEL}}", "300 Social"),
+        ("{{SUBJECT_300_URL}}", "#"),
+        ("{{SUBJECT_400_LABEL}}", "400 Language"),
+        ("{{SUBJECT_400_URL}}", "#"),
+        ("{{SUBJECT_500_LABEL}}", "500 Science"),
+        ("{{SUBJECT_500_URL}}", "#"),
+        ("{{SUBJECT_600_LABEL}}", "600 Technology"),
+        ("{{SUBJECT_600_URL}}", "#"),
+        ("{{SUBJECT_700_LABEL}}", "700 Arts"),
+        ("{{SUBJECT_700_URL}}", "#"),
+        ("{{SUBJECT_800_LABEL}}", "800 Literature"),
+        ("{{SUBJECT_800_URL}}", "#"),
+        ("{{SUBJECT_900_LABEL}}", "900 History"),
+        ("{{SUBJECT_900_URL}}", "#"),
+        ("{{LEXICON_MORDICTIONARY_LABEL}}", "Dictionary"),
+        ("{{LEXICON_MORDICTIONARY_URL}}", "#"),
+        ("{{LEXICON_WEAR_YOUR_DICTIONARY_LABEL}}", "Apparel"),
+        ("{{LEXICON_WEAR_YOUR_DICTIONARY_URL}}", "#"),
+        ("{{LEXICON_VOCABULARY_LABEL}}", "Vocabulary"),
+        ("{{LEXICON_VOCABULARY_URL}}", "#"),
+        ("{{LEXICON_ETYMOLOGY_LABEL}}", "Etymology"),
+        ("{{LEXICON_ETYMOLOGY_URL}}", "#"),
+        ("{{LEXICON_WORDPLAY_LABEL}}", "Wordplay"),
+        ("{{LEXICON_WORDPLAY_URL}}", "#"),
+        ("{{LEXICON_LANGUAGE_LABEL}}", "Language"),
+        ("{{LEXICON_LANGUAGE_URL}}", "#"),
+        ("{{MEDIA_AUDIOBOOK_GAMING_LABEL}}", "Audiobooks"),
+        ("{{MEDIA_AUDIOBOOK_GAMING_URL}}", "#"),
+        ("{{MEDIA_WATCHLISTS_LABEL}}", "Watchlists"),
+        ("{{MEDIA_WATCHLISTS_URL}}", "#"),
+        ("{{MEDIA_READING_LABEL}}", "Reading"),
+        ("{{MEDIA_READING_URL}}", "#"),
+        ("{{MEDIA_LISTENING_LABEL}}", "Listening"),
+        ("{{MEDIA_LISTENING_URL}}", "#"),
+        ("{{MEDIA_SOCIAL_SCIENCE_LABEL}}", "Social Science"),
+        ("{{MEDIA_SOCIAL_SCIENCE_URL}}", "#"),
+        ("{{MEDIA_DIET_LABEL}}", "Media Diet"),
+        ("{{MEDIA_DIET_URL}}", "#"),
+        ("{{WIKI_START_LABEL}}", "Start Here"),
+        ("{{WIKI_START_URL}}", "#"),
+        ("{{WIKI_ALL_POSTS_LABEL}}", "All Posts"),
+        ("{{WIKI_ALL_POSTS_URL}}", "#"),
+        ("{{WIKI_TRAILS_LABEL}}", "Trails"),
+        ("{{WIKI_TRAILS_URL}}", "#"),
+        ("{{WIKI_WALKING_LABEL}}", "Walking"),
+        ("{{WIKI_WALKING_URL}}", "#"),
+        ("{{WIKI_VIDEO_COMMENTARY_LABEL}}", "Video"),
+        ("{{WIKI_VIDEO_COMMENTARY_URL}}", "#"),
+        ("{{WIKI_LEXICOGRAPHY_LABEL}}", "Lexicography"),
+        ("{{WIKI_LEXICOGRAPHY_URL}}", "#"),
+        ("{{WIKI_BLOG_LABEL}}", "Wiki Blog"),
+        ("{{WIKI_BLOG_URL}}", "#"),
+        ("{{WIKI_OFFICIAL_LABEL}}", "Official Wiki"),
+        ("{{WIKI_OFFICIAL_URL}}", "#"),
+        ("{{WIKI_YOUTUBE_LABEL}}", "YouTube"),
+        ("{{WIKI_YOUTUBE_URL}}", "#"),
+        ("{{WIKI_REDDIT_LABEL}}", "Community"),
+        ("{{WIKI_REDDIT_URL}}", "#"),
+        ("{{PROJECTS_ALL_LABEL}}", "All Projects"),
+        ("{{PROJECTS_ALL_URL}}", "#"),
+        ("{{PROJECTS_INSTITUTE_LABEL}}", "Main Project"),
+        ("{{PROJECTS_INSTITUTE_URL}}", "#"),
+        ("{{PROJECTS_WEAR_YOUR_WORDS_LABEL}}", "Shop"),
+        ("{{PROJECTS_WEAR_YOUR_WORDS_URL}}", "#"),
+        ("{{PROJECTS_MORBLOCKS_LABEL}}", "Blocks"),
+        ("{{PROJECTS_MORBLOCKS_URL}}", "#"),
+        ("{{PROJECTS_MORLESSONBUILDER_LABEL}}", "Builder"),
+        ("{{PROJECTS_MORLESSONBUILDER_URL}}", "#"),
+        ("{{PROJECTS_LOG_LABEL}}", "Logs"),
+        ("{{PROJECTS_LOG_URL}}", "#"),
+        ("{{PROGRESS_DASHBOARD_LABEL}}", "Dashboard"),
+        ("{{PROGRESS_DASHBOARD_URL}}", "#"),
+        ("{{PROGRESS_OFFLINE_TRACKER_LABEL}}", "Tracker"),
+        ("{{PROGRESS_OFFLINE_TRACKER_URL}}", "#"),
+        ("{{PROGRESS_CATALOG_LABEL}}", "Catalog"),
+        ("{{PROGRESS_CATALOG_URL}}", "#"),
+        ("{{PROGRESS_LESSONS_LABEL}}", "Lessons"),
+        ("{{PROGRESS_LESSONS_URL}}", "#"),
+        ("{{PROGRESS_ACTIVITIES_LABEL}}", "Activities"),
+        ("{{PROGRESS_ACTIVITIES_URL}}", "#"),
+    ];
+    for (key, value) in DEFAULTS {
+        xml = xml.replace(key, value);
+    }
 
     xml
 }

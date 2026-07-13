@@ -15,7 +15,6 @@ zip.workspace = true
 roxmltree.workspace = true
 base64 = "0.22"
 directories = "5"
-tokio = { version = "1", features = ["time"] }
 
 # Binary/Compressed Rehydration
 postcard = { version = "1.0", features = ["alloc"] }

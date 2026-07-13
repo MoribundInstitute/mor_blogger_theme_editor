@@ -47,19 +47,11 @@ impl Warning {
     }
 
     pub fn warn(code: &'static str, message: impl Into<String>) -> Self {
-        Self::warn_in(code, message, None)
-    }
-
-    pub fn warn_in(
-        code: &'static str,
-        message: impl Into<String>,
-        source: impl Into<Option<String>>,
-    ) -> Self {
         Self {
             severity: Severity::Warning,
             code,
             message: message.into(),
-            source: source.into(),
+            source: None,
         }
     }
 

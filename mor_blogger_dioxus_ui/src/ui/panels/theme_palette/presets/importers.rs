@@ -1,8 +1,13 @@
 use rfd::FileDialog;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use mor_blogger_core::config::gtk_theme::{import_gtk_theme, ImportedGtkPreset};
 use mor_blogger_core::config::ThemeConfig;
+
+/// Public Blogger gallery for community presets (paired with the GitHub repo below).
+pub(crate) const COMPENDIUM_SITE_URL: &str = "https://morbloggerpresetcompendium.blogspot.com/";
+pub(crate) const COMPENDIUM_REPO_URL: &str =
+    "https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium";
 
 pub(crate) fn choose_gtk_theme(
     _current_config: &ThemeConfig,
@@ -17,43 +22,53 @@ pub(crate) fn choose_gtk_theme(
     import_gtk_theme(&dir).map(Some)
 }
 
-// Emulates the shape of our new single-file TOML presets
-#[derive(Serialize)]
-struct TomlExport<'a> {
-    name: &'a str,
-    description: &'a str,
-    colors: &'a mor_blogger_core::config::ColorConfig,
-    background: &'a mor_blogger_core::config::BackgroundConfig,
-    typography: &'a mor_blogger_core::config::TypographyConfig,
-    buttons: &'a mor_blogger_core::config::ButtonConfig,
-    preset_css: &'a str,
-}
-
 pub(crate) fn save_imported_gtk_preset(imported: &ImportedGtkPreset) -> Result<String, String> {
-    let export = TomlExport {
-        name: &imported.name,
-        description: &imported.description,
-        colors: &imported.config.colors,
-        background: &imported.config.background,
-        typography: &imported.config.typography,
-        buttons: &imported.config.buttons,
-        preset_css: &imported.preset_css,
-    };
+    let mut config = imported.config.clone();
+    config.preset_css = imported.preset_css.clone();
 
-    let toml_str = toml::to_string_pretty(&export).map_err(|e| e.to_string())?;
-
-    let preset_dir = mor_blogger_core::presets::get_canonical_presets_dir();
-    if !preset_dir.exists() {
-        std::fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
-    }
-
-    let file_path = preset_dir.join(format!("{}.toml", imported.id));
-    std::fs::write(&file_path, toml_str).map_err(|e| e.to_string())?;
+    let file_path = mor_blogger_core::presets::save_theme_config_as_preset(
+        &imported.id,
+        &imported.name,
+        &imported.description,
+        &config,
+    )?;
 
     Ok(format!(
         "GTK Theme successfully compiled to {}",
         file_path.display()
     ))
+}
+
+/// Save an imported `ThemeConfig` as a real preset on disk and return it
+/// from the refreshed preset list, so imports behave exactly like built-ins
+/// (mode toggle, preset rows, persistence across restarts).
+pub(crate) fn register_imported_preset(
+    config: &ThemeConfig,
+) -> Result<mor_blogger_core::presets::Preset, String> {
+    let name = match config.site.site_title.trim() {
+        "" => "Imported Theme".to_string(),
+        title => title.to_string(),
+    };
+    let description = match config.seo.meta_description.trim() {
+        "" => "Imported preset".to_string(),
+        desc => desc.to_string(),
+    };
+
+    let mut id: String = name
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+        .collect();
+    if id.trim_matches('_').is_empty() {
+        id = "imported_theme".to_string();
+    }
+
+    mor_blogger_core::presets::save_theme_config_as_preset(&id, &name, &description, config)?;
+
+    mor_blogger_core::presets::all_presets()
+        .into_iter()
+        .find(|p| p.id == id)
+        .ok_or_else(|| "imported preset did not load back from disk".to_string())
 }
 
 pub(crate) async fn fetch_remote_theme(url: &str) -> Result<ThemeConfig, String> {

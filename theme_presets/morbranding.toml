@@ -1,0 +1,713 @@
+name = "MorBranding"
+description = "Branding decisions of the Moribund Institute, set as an art deco broadsheet under water-light: brass sunburst masthead, framed drop caps, springy story plates. Light is the surfaced edition on cream stock; dark reads down in Rapture. Editions: brass standard, verdigris, incinerate, ultramarine deep."
+
+preset_css = '''
+/* ============================================================
+   MorBranding - Rapture Standard edition
+   Art deco newspaper under water-light. Brass on cream by day,
+   brass on deep ocean teal by night. Everything routes through
+   the theme variables so the mode toggle stays clean. Motion is
+   transform/opacity only and settles when the cursor stops.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+:root {
+  --deco-ease: cubic-bezier(0.33, 1.25, 0.5, 1); /* gentle overshoot */
+  --deco-speed: 240ms;
+}
+
+/* Caustic water-light: two slow-drifting pools over laid paper. */
+body {
+  background-image:
+    radial-gradient(ellipse 40rem 26rem at 18% 8%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(ellipse 34rem 22rem at 82% 90%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--fg-base) 3%, transparent) 0 1px, transparent 1px 26px) !important;
+  background-attachment: fixed !important;
+  background-size: 160% 160%, 160% 160%, auto !important;
+  animation: mor-caustic-drift 42s ease-in-out infinite alternate;
+}
+
+@keyframes mor-caustic-drift {
+  from { background-position: 0% 0%, 100% 100%, 0 0; }
+  to   { background-position: 60% 30%, 40% 60%, 0 0; }
+}
+
+::selection { background: var(--accent); color: var(--bg-base); }
+
+/* ---------- Masthead: nameplate over a brass sunburst ----------
+   The signature. Rays fan up from below the nameplate and fade
+   into the panel before they reach the edges, so the type stays
+   the loudest thing on the plate. */
+.main-header {
+  border-top: 3px solid var(--accent);
+  border-bottom: 1px solid var(--fg-base);
+  border-radius: 0 !important;
+  box-shadow: inset 0 5px 0 -4px var(--fg-base), inset 0 -4px 0 -3px var(--accent);
+  background:
+    radial-gradient(ellipse 55% 130% at 50% 100%, color-mix(in srgb, var(--bg-panel) 30%, transparent), var(--bg-panel) 76%),
+    repeating-conic-gradient(from -90deg at 50% 115%, color-mix(in srgb, var(--accent) 20%, transparent) 0 3deg, transparent 3deg 9deg)
+    var(--bg-panel);
+}
+
+.header-top-row { padding: 26px 20px 14px; }
+
+.branding .institute-title {
+  font-family: 'Limelight', var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-base);
+  text-shadow: none;
+}
+
+.branding-link:hover .institute-title,
+.branding-link:focus-visible .institute-title {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.institute-logo { border-radius: 0; box-shadow: none; }
+
+/* Dateline strip under the nameplate. */
+.header-bottom-row {
+  justify-content: center;
+  gap: 22px;
+  border-top: 1px solid var(--border-color);
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
+  color: var(--fg-muted);
+}
+
+.main-header a { border-bottom: none; }
+
+/* Nav links surface like buoys. */
+.mor-nav > a {
+  transition: transform var(--deco-speed) var(--deco-ease),
+              color var(--deco-speed) ease,
+              background var(--deco-speed) ease;
+}
+
+.mor-nav > a:hover,
+.mor-nav > a:focus-visible {
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  transform: translateY(-2px);
+}
+
+/* ---------- Story plates -------------------------------------------
+   Square-cornered paper plates with a brass top rule; they lift
+   with a small spring under the cursor. */
+.mor-post, .hero-post, .grid-post, .masonry-card,
+.mor-panel, .panel-content, .mor-catalog-dropdown {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.mor-post {
+  border-top: 3px solid var(--accent);
+  padding: 30px 34px 22px;
+  margin-bottom: 26px;
+  transition: transform var(--deco-speed) var(--deco-ease),
+              box-shadow var(--deco-speed) ease,
+              border-color var(--deco-speed) ease;
+}
+
+.mor-post:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--fg-base) 14%, transparent);
+}
+
+/* The brand-file kicker, kept from the old MorBranding, now a
+   centered deco plaque line. */
+.mor-post::before {
+  content: "\25C6\2002MORIBUND INSTITUTE \00B7 BRAND FILE\2002\25C6";
+  display: block;
+  text-align: center;
+  font-family: 'Josefin Sans', var(--font-heading);
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.mor-post .post-title {
+  font-family: 'Josefin Sans', var(--font-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  line-height: 1.12;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.post-title a:hover,
+.post-title a:focus-visible {
+  background: transparent;
+  color: var(--accent);
+  text-shadow: none;
+}
+
+/* Dateline between hairlines. */
+.mor-post .post-meta {
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 7px 2px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--fg-muted);
+}
+
+.post-meta .sys-tags a { color: var(--accent); border-bottom: none; }
+
+/* ---------- Body copy ----------------------------------------------
+   Single column, generous leading. Justified with hyphens only
+   at widths where justification doesn't open rivers. */
+.mor-post .post-body {
+  font-size: 1.02rem;
+  line-height: 1.72;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+@media (min-width: 700px) {
+  .mor-post .post-body { text-align: justify; }
+}
+
+/* Framed brass drop cap on the lead paragraph. */
+.mor-post .post-body > p:first-of-type::first-letter {
+  float: left;
+  font-family: 'Limelight', var(--font-heading);
+  font-size: 3.1em;
+  line-height: 0.9;
+  padding: 0.1em 0.16em;
+  margin: 0.06em 0.16em 0 0;
+  color: var(--accent);
+  background: var(--bg-panel);
+  border: 2px solid var(--accent);
+  box-shadow: inset 0 0 0 3px var(--bg-panel),
+              inset 0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Numbered crossheads: the brand-file spec counter, kept. */
+.post-body { counter-reset: spec; }
+
+.post-body h2 {
+  counter-increment: spec;
+  font-family: 'Josefin Sans', var(--font-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 1.3rem;
+  margin: 1.4em 0 0.45em;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.post-body h2::before {
+  content: "No. " counter(spec, decimal-leading-zero) " \2014  ";
+  color: var(--accent);
+}
+
+.post-body h3 {
+  font-family: 'Josefin Sans', var(--font-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 1.02rem;
+  margin: 1.2em 0 0.3em;
+}
+
+/* Pull quotes held between brass rules. */
+.post-body blockquote {
+  margin: 1.5em 0;
+  padding: 16px 12px;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  border-left: none;
+  background: transparent;
+  font-family: 'Lora', var(--font-body);
+  font-style: italic;
+  font-size: 1.16rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Section break: a deco dinkus. */
+.post-body hr { border: none; margin: 1.8em 0; }
+
+.post-body hr::after {
+  content: "\25C6 \25C6 \25C6";
+  display: block;
+  text-align: center;
+  letter-spacing: 0.7em;
+  font-size: 0.7em;
+  color: var(--accent);
+}
+
+/* Plate photography: paper mat, sepia that clears on hover. */
+.post-body img {
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  padding: 6px;
+  filter: sepia(0.25) contrast(1.02);
+  transition: filter var(--deco-speed) ease;
+}
+
+.post-body img:hover { filter: none; }
+
+.post-body figcaption {
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+/* Prose links: the brass underline pours in from the left. */
+.post-body a, .entry-content a, .panel-content a {
+  color: var(--fg-base);
+  border-bottom: none;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--fg-muted) 60%, transparent);
+  background-image: linear-gradient(90deg, var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  transition: background-size var(--deco-speed) var(--deco-ease),
+              color var(--deco-speed) ease;
+}
+
+.post-body a:hover, .post-body a:focus-visible,
+.entry-content a:hover, .entry-content a:focus-visible,
+.panel-content a:hover, .panel-content a:focus-visible {
+  background-color: transparent;
+  color: var(--accent);
+  background-size: 100% 2px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* "Continued on page 2" jump link. */
+.jump-link a {
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+}
+
+/* Byline shelf. */
+.mor-post .post-footer {
+  border-top: 1px solid var(--border-color);
+  margin-top: 20px;
+  padding-top: 10px;
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--fg-muted);
+}
+
+/* ---------- Side columns ------------------------------------------- */
+.panel-header {
+  background: transparent;
+  border-bottom: 2px solid var(--accent);
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-shadow: none;
+}
+
+.mor-catalog-panel .mor-panel-heading { text-shadow: none; }
+
+.sidebar-section { transition: border-color var(--deco-speed) ease; }
+
+.sidebar-section:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+}
+
+.sidebar-section .widget h2 {
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  border-bottom: 2px solid var(--accent);
+}
+
+.sidebar-section .Label a,
+.sidebar-section .BlogArchive ul:not(.posts) a {
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  transition: transform var(--deco-speed) var(--deco-ease),
+              border-color var(--deco-speed) ease,
+              background var(--deco-speed) ease;
+}
+
+.sidebar-section .Label a:hover,
+.sidebar-section .Label a:focus-visible,
+.sidebar-section .BlogArchive ul:not(.posts) a:hover,
+.sidebar-section .BlogArchive ul:not(.posts) a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+/* ---------- Letters to the editor ---------------------------------- */
+.comment {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.comment-author {
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+}
+
+/* ---------- Ledger-rule forms --------------------------------------- */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+textarea {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-color) !important;
+  border-bottom: 2px solid var(--fg-muted) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-body) !important;
+  color: var(--fg-base) !important;
+  box-shadow: none !important;
+  transition: border-color var(--deco-speed) ease;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus,
+textarea:focus {
+  border-bottom-color: var(--accent) !important;
+}
+
+/* ---------- Colophon: the sunburst, mirrored ------------------------ */
+.mor-footer {
+  border-top: 3px solid var(--accent);
+  box-shadow: inset 0 4px 0 -3px var(--fg-base);
+  background:
+    radial-gradient(ellipse 55% 130% at 50% 0%, color-mix(in srgb, var(--bg-panel) 30%, transparent), var(--bg-panel) 76%),
+    repeating-conic-gradient(from 90deg at 50% -15%, color-mix(in srgb, var(--accent) 16%, transparent) 0 3deg, transparent 3deg 9deg)
+    var(--bg-panel);
+  text-align: center;
+  font-family: 'Josefin Sans', var(--font-heading);
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  color: var(--fg-muted);
+}
+
+/* ---- Theme cursors: brass desk set — ink dart, pen nib, caret ---- */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M2 1L2 18L7 13L10 20L13 19L10 12L16 12Z' fill='%23211c10' stroke='%23eadfc2' stroke-width='1.2'/></svg>") 2 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M4 20l2-6 9-9c.8-.8 2.2-.8 3 0s.8 2.2 0 3l-9 9-6 2z' fill='{{ACCENT_URLENCODED}}' stroke='%23eadfc2' stroke-width='1'/><path d='M6 14l4 4' stroke='%23eadfc2' stroke-width='1'/></svg>") 4 20, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M8 3h8M12 3v18M8 21h8' fill='none' stroke='%23eadfc2' stroke-width='3.2'/><path d='M8 3h8M12 3v18M8 21h8' fill='none' stroke='%23211c10' stroke-width='1.4'/></svg>") 12 12, text !important; }
+
+/* ---------- Motion settles for those who ask ------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}'''
+
+[colors]
+bg_base = "#eadfc2"
+fg_base = "#211c10"
+fg_muted = "#69603f"
+accent = "#8a6a1f"
+border = "#c9b88a"
+glow_color = "#8a6a1f"
+panel_border_width = "1px"
+glow_spread = "0px"
+hover_scale = "1.0"
+glow_intensity = "0"
+glow_hover = false
+panel_border_image_url = ""
+panel_border_image_slice = "30%"
+panel_border_image_repeat = "stretch"
+glow_text = false
+glow_containers = false
+glow_icons = false
+glow_logo = false
+glow_title = false
+glow_toc = false
+glow_sidebar = false
+glow_footer = false
+glow_header = false
+glow_main = false
+glow_logo_color = ""
+glow_title_color = ""
+glow_toc_color = ""
+glow_sidebar_color = ""
+glow_text_color = ""
+glow_containers_color = ""
+glow_icons_color = ""
+glow_footer_color = ""
+glow_header_color = ""
+glow_main_color = ""
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#f6efdc"
+gradient_from = "#f6efdc"
+gradient_to = "#f6efdc"
+gradient_angle_deg = 180
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#f1e8ce"
+gradient_from = "#f1e8ce"
+gradient_to = "#f1e8ce"
+gradient_angle_deg = 180
+
+[colors.header_fill]
+mode = "Solid"
+color = "transparent"
+gradient_from = "transparent"
+gradient_to = "transparent"
+gradient_angle_deg = 180
+
+[background.mode.Solid]
+color = "#eadfc2"
+
+[typography]
+body_font_stack = "'Lora', Georgia, 'Times New Roman', serif"
+heading_font_stack = "'Josefin Sans', 'Trebuchet MS', sans-serif"
+mono_font_stack = "'Courier New', Courier, monospace"
+base_size = "17px"
+scale_ratio = "1.28"
+line_height = "1.7"
+heading_weight = "600"
+
+[[typography.elements]]
+selector = "blockquote"
+font_size = ""
+font_weight = ""
+line_height = ""
+letter_spacing = ""
+italic = true
+color = "#69603f"
+background = ""
+padding = ""
+border_radius = ""
+text_align = ""
+
+[[typography.elements]]
+selector = "code"
+font_size = ""
+font_weight = ""
+line_height = ""
+letter_spacing = ""
+italic = false
+color = "#8a6a1f"
+background = ""
+padding = ""
+border_radius = ""
+text_align = ""
+
+[buttons]
+radius = "0px"
+border_width = "2px"
+border_style = "solid"
+padding_x = "14px"
+padding_y = "7px"
+full_width = false
+text_transform = "uppercase"
+font_size = "0.8rem"
+font_weight = "600"
+letter_spacing = "0.12em"
+fill = "solid"
+elevation = "flat"
+glow_color = "#8a6a1f"
+glow_strength = "0px"
+glass_blur = "12px"
+glass_opacity = "0.4"
+gradient_from = ""
+gradient_to = ""
+gradient_angle = "180deg"
+box_shadow = ""
+bg_color = ""
+text_color = ""
+border_color = ""
+hover_bg_color = ""
+hover_effect = "lift"
+transition_ms = "240ms"
+easing = "cubic-bezier(0.33, 1.25, 0.5, 1)"
+pressed_feedback = true
+focus_ring_color = "#b08a2e"
+focus_ring_width = "2px"
+
+[dark.colors]
+bg_base = "#0b1b1d"
+fg_base = "#eaddbb"
+fg_muted = "#a9a081"
+accent = "#d2a94f"
+border = "#2e4a47"
+glow_color = "#d2a94f"
+panel_border_width = "1px"
+glow_spread = "0px"
+hover_scale = "1.0"
+glow_intensity = "0"
+glow_hover = false
+panel_border_image_url = ""
+panel_border_image_slice = "30%"
+panel_border_image_repeat = "stretch"
+glow_text = false
+glow_containers = false
+glow_icons = false
+glow_logo = false
+glow_title = false
+glow_toc = false
+glow_sidebar = false
+glow_footer = false
+glow_header = false
+glow_main = false
+glow_logo_color = ""
+glow_title_color = ""
+glow_toc_color = ""
+glow_sidebar_color = ""
+glow_text_color = ""
+glow_containers_color = ""
+glow_icons_color = ""
+glow_footer_color = ""
+glow_header_color = ""
+glow_main_color = ""
+
+[dark.colors.bg_panel]
+mode = "Solid"
+color = "#112527"
+gradient_from = "#112527"
+gradient_to = "#112527"
+gradient_angle_deg = 180
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#142b2d"
+gradient_from = "#142b2d"
+gradient_to = "#142b2d"
+gradient_angle_deg = 180
+
+[dark.colors.header_fill]
+mode = "Solid"
+color = "transparent"
+gradient_from = "transparent"
+gradient_to = "transparent"
+gradient_angle_deg = 180
+
+[dark.background.mode.Solid]
+color = "#0b1b1d"
+
+[light.colors]
+bg_base = "#eadfc2"
+fg_base = "#211c10"
+fg_muted = "#69603f"
+accent = "#8a6a1f"
+border = "#c9b88a"
+glow_color = "#8a6a1f"
+panel_border_width = "1px"
+glow_spread = "0px"
+hover_scale = "1.0"
+glow_intensity = "0"
+glow_hover = false
+panel_border_image_url = ""
+panel_border_image_slice = "30%"
+panel_border_image_repeat = "stretch"
+glow_text = false
+glow_containers = false
+glow_icons = false
+glow_logo = false
+glow_title = false
+glow_toc = false
+glow_sidebar = false
+glow_footer = false
+glow_header = false
+glow_main = false
+glow_logo_color = ""
+glow_title_color = ""
+glow_toc_color = ""
+glow_sidebar_color = ""
+glow_text_color = ""
+glow_containers_color = ""
+glow_icons_color = ""
+glow_footer_color = ""
+glow_header_color = ""
+glow_main_color = ""
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#f6efdc"
+gradient_from = "#f6efdc"
+gradient_to = "#f6efdc"
+gradient_angle_deg = 180
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#f1e8ce"
+gradient_from = "#f1e8ce"
+gradient_to = "#f1e8ce"
+gradient_angle_deg = 180
+
+[light.colors.header_fill]
+mode = "Solid"
+color = "transparent"
+gradient_from = "transparent"
+gradient_to = "transparent"
+gradient_angle_deg = 180
+
+[light.background.mode.Solid]
+color = "#eadfc2"
+
+[scrollbars]
+width = "10px"
+track_color = "color-mix(in srgb, var(--fg-base) 7%, var(--bg-base))"
+thumb_color = "color-mix(in srgb, var(--accent) 70%, var(--bg-base))"
+thumb_hover_color = "var(--accent)"
+
+# --- Color variants: other districts, same paper --------------------------
+# Each edition moves stock, ink, and lamplight together, not just the accent.
+
+[[variants]]
+name = "Verdigris"
+[variants.light]
+colors = { bg_base = "#dce6dd", fg_base = "#142320", fg_muted = "#4e6a5f", accent = "#0f6b57", border = "#a8c2b3", bg_panel = { mode = "Solid", color = "#e9f0e8" }, bg_elevated = { mode = "Solid", color = "#f1f6ee" } }
+background = { mode = { Solid = { color = "#dce6dd" } } }
+[variants.dark]
+colors = { bg_base = "#0c1f1a", fg_base = "#d8e6da", fg_muted = "#8aa695", accent = "#4fb397", border = "#27443a", bg_panel = { mode = "Solid", color = "#122a24" }, bg_elevated = { mode = "Solid", color = "#16332c" } }
+background = { mode = { Solid = { color = "#0c1f1a" } } }
+
+[[variants]]
+name = "Incinerate"
+[variants.light]
+colors = { bg_base = "#e3d6c4", fg_base = "#241812", fg_muted = "#6f5544", accent = "#a32b20", border = "#cbac90", bg_panel = { mode = "Solid", color = "#f0e5d3" }, bg_elevated = { mode = "Solid", color = "#f5ecdc" } }
+background = { mode = { Solid = { color = "#e3d6c4" } } }
+[variants.dark]
+colors = { bg_base = "#1a1210", fg_base = "#ecdcc8", fg_muted = "#a68d78", accent = "#e0684f", border = "#45302a", bg_panel = { mode = "Solid", color = "#221815" }, bg_elevated = { mode = "Solid", color = "#2a1e1a" } }
+background = { mode = { Solid = { color = "#1a1210" } } }
+
+[[variants]]
+name = "Ultramarine Deep"
+[variants.light]
+colors = { bg_base = "#d8dfe6", fg_base = "#131a22", fg_muted = "#4d5b6e", accent = "#1d4f9c", border = "#a9b9c9", bg_panel = { mode = "Solid", color = "#e6ebf1" }, bg_elevated = { mode = "Solid", color = "#eff3f7" } }
+background = { mode = { Solid = { color = "#d8dfe6" } } }
+[variants.dark]
+colors = { bg_base = "#0b141f", fg_base = "#d7e0ea", fg_muted = "#8fa0b2", accent = "#6fa1e8", border = "#253a50", bg_panel = { mode = "Solid", color = "#101e2d" }, bg_elevated = { mode = "Solid", color = "#142536" } }
+background = { mode = { Solid = { color = "#0b141f" } } }

@@ -1,0 +1,66 @@
+<b:widget id='HTML1' locked='false' title='Theme Music Player' type='HTML' version='1' visible='true'>
+  <b:includable id='main'>
+    <!-- Compact audio bar (ported from the MorDictionary footer music player).
+         Drop it in a footer or sidebar socket. Edit the three marked lines:
+         the mp3 URL, the track title, and where the title links to. Colors
+         come from theme vars (accent / fg-base / glow) so any preset and
+         every color scheme reskins it; no hardcoded colors. -->
+    <style>
+      .mor-music {
+        display: flex; align-items: center; justify-content: center; gap: 14px;
+        padding: 8px 16px; font-size: .95em; color: var(--fg-base, #eee);
+        border-top: 1px solid color-mix(in srgb, var(--accent, #888) 25%, transparent);
+      }
+      .mor-music-btn {
+        background: transparent; color: var(--accent, currentColor);
+        border: 1px solid var(--accent, currentColor);
+        padding: 5px 12px; border-radius: 4px; cursor: pointer;
+        font-weight: bold; font-size: .95em; line-height: 1;
+        transition: background-color .3s ease, color .3s ease, box-shadow .3s ease;
+      }
+      .mor-music-btn:hover {
+        background: color-mix(in srgb, var(--accent, #888) 12%, transparent);
+        color: var(--fg-base, #fff);
+        box-shadow: 0 0 4px var(--accent, currentColor);
+      }
+      .mor-music-track {
+        max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        color: var(--fg-base, #eee); text-decoration: none;
+        transition: color .3s ease, text-shadow .3s ease;
+      }
+      .mor-music-track:hover {
+        color: var(--accent, currentColor);
+        text-shadow: 0 0 6px var(--glow, currentColor);
+      }
+    </style>
+    <div class='mor-music'>
+      <audio class='mor-music-audio' preload='none'>
+        <!-- EDIT: your track's mp3 URL -->
+        <source src='https://ia600802.us.archive.org/28/items/mor-dictionary-theme-remastered/MorDictionary%20Theme%20%28Remastered%29.mp3' type='audio/mpeg'/>
+      </audio>
+      <button aria-label='Play / pause theme music' class='mor-music-btn' type='button'>&#9654;</button>
+      <!-- EDIT: track page link + label -->
+      <a class='mor-music-track' href='https://soundcloud.com/mor-dictionary' rel='noopener noreferrer' target='_blank'>
+        Now Playing: MorDictionary Theme
+      </a>
+    </div>
+    <script>
+      //<![CDATA[
+      (function () {
+        document.querySelectorAll('.mor-music').forEach(function (bar) {
+          if (bar.dataset.morBound) return;   // Blogger may run this script twice.
+          bar.dataset.morBound = '1';
+          var audio = bar.querySelector('.mor-music-audio');
+          var btn = bar.querySelector('.mor-music-btn');
+          if (!audio || !btn) return;
+          btn.addEventListener('click', function () {
+            if (audio.paused) { audio.play(); } else { audio.pause(); }
+          });
+          audio.addEventListener('play', function () { btn.innerHTML = '&#10074;&#10074;'; });
+          audio.addEventListener('pause', function () { btn.innerHTML = '&#9654;'; });
+        });
+      })();
+      //]]>
+    </script>
+  </b:includable>
+</b:widget>

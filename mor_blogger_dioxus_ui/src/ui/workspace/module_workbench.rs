@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::ui::components::code_editor::CodeEditor;
+use crate::ui::components::dock_chrome::WorkbenchPaneHeader;
 use crate::ui::components::icons::{
     IconChevronDown, IconChevronUp, IconEye, IconEyeOff, IconGrip, IconPencil, IconTrash,
 };
@@ -565,58 +566,33 @@ pub fn ModuleWorkbench(
                         class: "editor-pane",
                         style: "display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
                         
-                        div {
-                            class: "editor-pane-header",
-                            style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
-                            div {
-                                style: "display: flex; align-items: center; gap: 8px;",
-                                span {
-                                    style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);",
-                                    {editing_blueprint().map(|(g, n)| format!("{g}/{n}.xml")).or_else(|| (layout.active_workbench_module)().map(|k| format!("{k}.xml"))).unwrap_or_else(|| "module_fragment.xml".to_string())}
-                                }
-                                span {
-                                    style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
-                                    "Blogger XML · Live"
-                                }
+                        WorkbenchPaneHeader {
+                            filename: editing_blueprint().map(|(g, n)| format!("{g}/{n}.xml")).or_else(|| (layout.active_workbench_module)().map(|k| format!("{k}.xml"))).unwrap_or_else(|| "module_fragment.xml".to_string()),
+                            badge: "Blogger XML · Live",
+                            layout_view,
+                            button {
+                                class: "editor-mini-button",
+                                title: "Revert to compiled default (drops session edits)",
+                                onclick: revert_default,
+                                "Revert"
                             }
-                            div {
-                                style: "display: flex; align-items: center; gap: 6px;",
-                                button {
-                                    class: if layout_view() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                                    title: "Visual widget layout (drag to reorder)",
-                                    onclick: move |_| layout_view.set(true),
-                                    "Layout"
-                                }
-                                button {
-                                    class: if !layout_view() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                                    title: "Raw Blogger XML",
-                                    onclick: move |_| layout_view.set(false),
-                                    "Code"
-                                }
-                                button {
-                                    class: "editor-mini-button",
-                                    title: "Revert to compiled default (drops session edits)",
-                                    onclick: revert_default,
-                                    "Revert"
-                                }
-                                button {
-                                    class: if is_editor_takeover_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                                    title: "Expand the editor (Layout or Code) to fill the workbench",
-                                    onclick: move |_| { let v = is_editor_takeover_active(); is_editor_takeover_active.set(!v); },
-                                    {if is_editor_takeover_active() { "Exit Takeover" } else { "Takeover" }}
-                                }
-                                button {
-                                    class: if (layout.active_workbench_module)().is_some() || editing_blueprint().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                                    title: "Save current XML buffer to this module's custom override",
-                                    onclick: save_module,
-                                    {if editing_blueprint().is_some() { "Save Widget" } else { "Save Module" }}
-                                }
-                                button {
-                                    class: if (layout.active_workbench_module)().is_some() || editing_blueprint().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                                    title: "Save the buffer as a new named template module",
-                                    onclick: save_as_new,
-                                    "Save as New"
-                                }
+                            button {
+                                class: if is_editor_takeover_active() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                                title: "Expand the editor (Layout or Code) to fill the workbench",
+                                onclick: move |_| { let v = is_editor_takeover_active(); is_editor_takeover_active.set(!v); },
+                                {if is_editor_takeover_active() { "Exit Takeover" } else { "Takeover" }}
+                            }
+                            button {
+                                class: if (layout.active_workbench_module)().is_some() || editing_blueprint().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                                title: "Save current XML buffer to this module's custom override",
+                                onclick: save_module,
+                                {if editing_blueprint().is_some() { "Save Widget" } else { "Save Module" }}
+                            }
+                            button {
+                                class: if (layout.active_workbench_module)().is_some() || editing_blueprint().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                                title: "Save the buffer as a new named template module",
+                                onclick: save_as_new,
+                                "Save as New"
                             }
                         }
 

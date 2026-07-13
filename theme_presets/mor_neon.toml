@@ -1,0 +1,235 @@
+name = "Mor Neon"
+description = "Near-black void lit by neon: glowing serif masthead, phosphor text that flares on hover, picture-frame borders around content, and archive chips wired like signage. Tubes: neon green, MorDictionary cyan, synth magenta."
+
+preset_css = '''
+/* ============================================================
+   Mor Neon
+   Signatures: IM Fell English everywhere, text that gains a glow
+   on hover, neon-tube chips and pagers, framed media. Everything
+   routes through the theme variables so every tube color works.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap');
+
+body {
+  background-attachment: fixed !important;
+  background-image:
+    radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--accent) 3%, transparent), transparent 40%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--accent) 2%, transparent), transparent 50%) !important;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* --- Phosphor hover: any prose flares when touched ------------- */
+.post-body h1:hover, .post-body h2:hover, .post-body h3:hover,
+.post-body h4:hover, .post-body p:hover,
+h1:hover, h2:hover, h3:hover, h4:hover,
+.mor-panel a:hover, .post-title a:hover {
+  text-shadow: 0 0 10px color-mix(in srgb, var(--glow) 70%, transparent);
+  transition: text-shadow 0.3s ease;
+}
+
+/* --- Post cards: dark slab, neon lift on hover ------------------ */
+.mor-post,
+.post-outer-container {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+.mor-post:hover,
+.post-outer-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--glow) 20%, transparent);
+}
+
+/* --- Sidebar archive chips as little neon tubes ----------------- */
+.mor-panel .sidebar-section li a,
+.mor-panel .archivedate a {
+  text-shadow: 0 0 1px var(--accent);
+}
+.mor-panel .sidebar-section li:hover,
+.mor-panel .archivedate:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 6px var(--accent);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* --- Framed media ------------------------------------------------ */
+.post-body img {
+  border-radius: 8px;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--glow) 8%, transparent);
+  transition: box-shadow 0.3s ease;
+}
+.post-body img:hover {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--glow) 60%, transparent);
+}
+.post-body iframe {
+  border: 3px solid var(--accent) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 30%, transparent) !important;
+  background: var(--bg-base) !important;
+  transition: box-shadow 0.3s ease !important;
+}
+.post-body iframe:hover {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 60%, transparent) !important;
+}
+
+/* --- Comments: void panel with a tube outline on approach ------- */
+.comments {
+  background: color-mix(in srgb, var(--bg-base) 92%, var(--accent)) !important;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+.comments:hover {
+  box-shadow: 0 0 15px 3px color-mix(in srgb, var(--glow) 45%, transparent);
+}
+
+/* --- Theme cursors: the neon quill set ------------------------------ */
+body { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1 1L1 17L5 13L8 19L11 18L8 12L14 12Z' fill='%23050505' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.6'/></svg>") 1 1, auto !important; }
+a, button { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='12' cy='12' r='6' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='2'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4' stroke='{{ACCENT_URLENCODED}}' stroke-width='2'/></svg>") 12 12, pointer !important; }
+input, textarea { cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M9 3h6M12 3v18M9 21h6' fill='none' stroke='{{ACCENT_URLENCODED}}' stroke-width='1.6'/></svg>") 12 12, text !important; }
+'''
+
+[colors]
+bg_base = "#050505"
+fg_base = "#b6ffc9"
+fg_muted = "#8fc9a4"
+accent = "#39ff5e"
+border = "#0e3d1c"
+glow_color = "#67ff8f"
+panel_border_width = "2px"
+glow_spread = "12px"
+glow_intensity = "0.7"
+hover_scale = "1.03"
+glow_hover = true
+glow_title = true
+glow_containers = true
+panel_border_image_url = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiIIyyoPNZ3kV_IoX1wnHDBFpc-HUYxj0kVIY30Wu3NevQaHnLZGOedGxlt7hZo-SuEmzCFuH-zQ7642d5c9MsrAzvetLIaITydTFPUMda4-wAwIgs4R4RVZuDgwnz1f6HgoUn4wA4r7hhtbl10xDkqKblqSFM76hjuntUrGgsVv9BqWYpBRXP1MaWvdtkM/s320/Frame%20MorDictionary.png"
+panel_border_image_slice = "40%"
+panel_border_image_repeat = "stretch"
+
+[colors.header_fill]
+mode = "Gradient"
+color = "#0a0a0a"
+gradient_from = "#0a0a0a"
+gradient_to = "#141414"
+gradient_angle_deg = 135
+
+[colors.bg_panel]
+mode = "Solid"
+color = "#0a0a0a"
+
+[colors.bg_elevated]
+mode = "Solid"
+color = "#141414"
+
+[background.mode.Solid]
+color = "#080808"
+
+[typography]
+body_font_stack = "'IM Fell English', Georgia, serif"
+heading_font_stack = "'IM Fell English', Georgia, serif"
+mono_font_stack = "'Courier New', monospace"
+base_size = "16px"
+scale_ratio = "1.25"
+line_height = "1.6"
+heading_weight = "700"
+
+# The signature plaque headings: background chip + padding + radius, no
+# hand-written CSS — this is the Typography panel's element override.
+[[typography.elements]]
+selector = "h2"
+font_size = "1.5rem"
+background = "repeating-linear-gradient(135deg, var(--bg-panel), var(--bg-elevated) 40%, var(--bg-panel) 80%)"
+padding = "20px"
+border_radius = "8px"
+text_align = "center"
+
+[[typography.elements]]
+selector = "h3"
+font_size = "1.2rem"
+
+[scrollbars]
+width = "10px"
+track_color = "var(--bg-elevated)"
+thumb_color = "color-mix(in srgb, var(--accent) 35%, var(--bg-panel))"
+thumb_hover_color = "var(--accent)"
+
+# Light mode: aged paper with ink-green neon accents — the tube off, daylight on.
+[light.colors]
+bg_base = "#f2f7ef"
+fg_base = "#173222"
+fg_muted = "#4e6b58"
+accent = "#0c8f3f"
+border = "#c4d8c8"
+glow_color = "#6fd598"
+panel_border_width = "2px"
+glow_spread = "8px"
+hover_scale = "1.02"
+
+[light.colors.header_fill]
+mode = "Gradient"
+color = "#ffffff"
+gradient_from = "#ffffff"
+gradient_to = "#e8f0e8"
+gradient_angle_deg = 135
+
+[light.colors.bg_panel]
+mode = "Solid"
+color = "#ffffff"
+
+[light.colors.bg_elevated]
+mode = "Solid"
+color = "#e8f0e8"
+
+[light.background.mode.Solid]
+color = "#eef4ec"
+
+[dark.colors]
+bg_base = "#050505"
+fg_base = "#b6ffc9"
+fg_muted = "#8fc9a4"
+accent = "#39ff5e"
+border = "#0e3d1c"
+glow_color = "#67ff8f"
+panel_border_width = "2px"
+glow_spread = "12px"
+hover_scale = "1.03"
+
+[dark.colors.header_fill]
+mode = "Gradient"
+color = "#0a0a0a"
+gradient_from = "#0a0a0a"
+gradient_to = "#141414"
+gradient_angle_deg = 135
+
+[dark.colors.bg_panel]
+mode = "Solid"
+color = "#0a0a0a"
+
+[dark.colors.bg_elevated]
+mode = "Solid"
+color = "#141414"
+
+[dark.background.mode.Solid]
+color = "#080808"
+
+# --- Tube colors -------------------------------------------------------------
+# The faithful port of the hand-written MorDictionary theme is the cyan tube.
+
+[[variants]]
+name = "MorDictionary Cyan"
+[variants.light]
+colors = { bg_base = "#eef6f6", fg_base = "#123a38", fg_muted = "#4e6f6d", accent = "#00877f", border = "#bcd8d6", glow_color = "#67d8cf", bg_panel = { mode = "Solid", color = "#ffffff" }, bg_elevated = { mode = "Solid", color = "#e4efee" } }
+background = { mode = { Solid = { color = "#ecf4f3" } } }
+[variants.dark]
+colors = { bg_base = "#050505", fg_base = "#aefeff", fg_muted = "#8fc9c6", accent = "#00fff7", border = "#0e3d3a", glow_color = "#67fff0", bg_panel = { mode = "Solid", color = "#0a0a0a" }, bg_elevated = { mode = "Solid", color = "#141414" }, header_fill = { mode = "Gradient", color = "#0a0a0a", gradient_from = "#0a0a0a", gradient_to = "#141414", gradient_angle_deg = 135 } }
+background = { mode = { Solid = { color = "#080808" } } }
+
+[[variants]]
+name = "Synth Magenta"
+[variants.light]
+colors = { bg_base = "#f8eff6", fg_base = "#3a1230", fg_muted = "#6f4e66", accent = "#b3128f", border = "#dcbcd4", glow_color = "#e067c8", bg_panel = { mode = "Solid", color = "#ffffff" }, bg_elevated = { mode = "Solid", color = "#f0e4ee" } }
+background = { mode = { Solid = { color = "#f4ecf2" } } }
+[variants.dark]
+colors = { bg_base = "#070408", fg_base = "#ffb6f2", fg_muted = "#c98fbd", accent = "#ff39d4", border = "#3d0e33", glow_color = "#ff67e0", bg_panel = { mode = "Solid", color = "#0d070c" }, bg_elevated = { mode = "Solid", color = "#170f16" }, header_fill = { mode = "Gradient", color = "#0d070c", gradient_from = "#0d070c", gradient_to = "#170f16", gradient_angle_deg = 135 } }
+background = { mode = { Solid = { color = "#0a060a" } } }

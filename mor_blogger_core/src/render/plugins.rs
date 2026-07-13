@@ -4,6 +4,28 @@
 
 use crate::render::xml_generator::XmlNode;
 
+/// Reads the editor prefs and returns the enabled plugins, boxed and ready
+/// for the render pipeline.
+pub fn load_active_plugins() -> Vec<Box<dyn MorBloggerPlugin>> {
+    let mut active: Vec<Box<dyn MorBloggerPlugin>> = Vec::new();
+    if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
+        if let Ok(prefs) = toml::from_str::<crate::config::prefs::RenderPrefs>(&toml_str) {
+            for p in prefs.plugins {
+                if p.enabled {
+                    match p.id.as_str() {
+                        "os_chameleon" => active.push(Box::new(OsChameleonPlugin)),
+                        "dewey_indexer" => active.push(Box::new(DeweyIndexerPlugin)),
+                        "workspace_docks" => active.push(Box::new(WorkspaceDocksPlugin)),
+                        "notification_bell" => active.push(Box::new(NotificationBellPlugin)),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    active
+}
+
 /// The contract every renderable plugin implements. All hooks are optional;
 /// a plugin overrides only the ones it needs.
 pub trait MorBloggerPlugin: Send + Sync {

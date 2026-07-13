@@ -1,48 +1,119 @@
 <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2'>
   <b:includable id='main'>
-    <div class='mor-minimal-feed'>
+    <b:if cond='data:view.isSingleItem'>
       <b:loop values='data:posts' var='post'>
-        <article class='mor-post minimal-row'>
-          
-          <div class='post-date'>
-            <b:if cond='data:post.dateHeader'>
-              <data:post.dateHeader/>
-            <b:else/>
-              <data:post.timestamp/>
-            </b:if>
-          </div>
-          
-          <h2 class='post-title'>
-            <a expr:href='data:post.url'><data:post.title/></a>
-          </h2>
-          
-          <b:if cond='data:post.labels'>
-            <div class='post-tags'>
-              <b:loop values='data:post.labels' var='label'>
-                <a class='minimal-tag' expr:href='data:label.url'>#<data:label.name/></a>
-              </b:loop>
-            </div>
-          </b:if>
-
-        </article>
+        <b:include data='post' name='post'/>
       </b:loop>
-    </div>
+    <b:else/>
+      <div class='mor-minimal-feed'>
+        <b:loop values='data:posts' var='post'>
+          <article class='mor-post minimal-row'>
 
-    <b:include name='postPagination'/>
+            <div class='post-date'>
+              <b:if cond='data:post.dateHeader'>
+                <data:post.dateHeader/>
+              <b:else/>
+                <data:post.timestamp/>
+              </b:if>
+            </div>
+
+            <h2 class='post-title'>
+              <a expr:href='data:post.url'><data:post.title/></a>
+            </h2>
+
+            <b:if cond='data:post.labels'>
+              <div class='post-tags'>
+                <b:loop values='data:post.labels' var='label'>
+                  <a class='minimal-tag' expr:href='data:label.url'>#<data:label.name/></a>
+                </b:loop>
+              </div>
+            </b:if>
+
+          </article>
+        </b:loop>
+      </div>
+
+      <b:include name='postPagination'/>
+    </b:if>
   </b:includable>
 
-  <b:includable id='post'></b:includable>
-  <b:includable id='postBody'></b:includable>
-  <b:includable id='postTitle'></b:includable>
-  <b:includable id='postCommentsAndAd'></b:includable>
+  <b:includable id='post' var='post'>
+    <article class='mor-post minimal-row'>
+      <b:include data='post' name='postTitle'/>
+      <b:include data='post' name='postBody'/>
+      <b:include data='post' name='postFooter'/>
+      <b:include data='post' name='postCommentsAndAd'/>
+    </article>
+  </b:includable>
+
+  <b:includable id='postTitle' var='post'>
+    <b:if cond='data:post.title'>
+      <h2 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h2>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='postBody' var='post'>
+    <div class='post-body entry-content'>
+      <data:post.body/>
+    </div>
+  </b:includable>
+
+  <b:includable id='postFooter' var='post'>
+    <div class='post-footer'>
+      <b:include data='post' name='postTimestamp'/>
+      <b:include data='post' name='postLabels'/>
+    </div>
+  </b:includable>
+
+  <b:includable id='postTimestamp' var='post'>
+    <b:if cond='data:post.timestamp'>
+      <span class='timestamp'><data:post.timestamp/></span>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='postLabels' var='post'>
+    <b:if cond='data:post.labels'>
+      <span class='post-tags'>
+        <b:loop values='data:post.labels' var='label'>
+          <a class='minimal-tag' expr:href='data:label.url'>#<data:label.name/></a>
+        </b:loop>
+      </span>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='postCommentsAndAd' var='post'>
+    <b:include data='post' name='comments'/>
+  </b:includable>
+
+  <b:includable id='comments' var='post'>
+    <b:if cond='data:post.allowComments'>
+      <section class='comments' expr:id='data:post.id + &quot;_comments&quot;'>
+        <b:include data='post' name='commentPicker'/>
+      </section>
+    </b:if>
+  </b:includable>
+
+  <b:includable id='commentPicker' var='post'>
+    <b:include data='post' name='threadedComments'/>
+  </b:includable>
+
+  <b:includable id='threadedComments' var='post'>
+    <div class='comments-placeholder'>
+      <b:if cond='data:post.numComments'>
+        <a expr:href='data:post.url + &quot;#comments&quot;'>
+          <data:post.numComments/> comment(s)
+        </a>
+      </b:if>
+    </div>
+  </b:includable>
 
   <b:includable id='postPagination'>
     <div class='mor-pager'>
       <b:if cond='data:newerPageUrl'>
-        <a class='pager-btn' expr:href='data:newerPageUrl'>&lt; Newer</a>
+        <a class='pager-btn' expr:href='data:newerPageUrl'>{{PAGER_NEWER_LABEL}}</a>
       </b:if>
       <b:if cond='data:olderPageUrl'>
-        <a class='pager-btn' expr:href='data:olderPageUrl'>Older &gt;</a>
+        <a class='pager-btn' expr:href='data:olderPageUrl'>{{PAGER_OLDER_LABEL}}</a>
       </b:if>
     </div>
   </b:includable>

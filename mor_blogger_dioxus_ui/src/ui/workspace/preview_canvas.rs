@@ -433,7 +433,15 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                                 
                                                 // 3. Navigation
                                                 if (a && (a.getAttribute('href')||'').match(/^[\/#]/)) {
-                                                    e.preventDefault(); dioxus.send({action: "NAVIGATE", target: a.getAttribute('href')});
+                                                    e.preventDefault();
+                                                    const href = a.getAttribute('href');
+                                                    // In-page fragments (back-to-top, TOC jumps) scroll inside the
+                                                    // iframe like they will on the real blog, instead of re-rendering.
+                                                    if (href.length > 1 && href[0] === '#') {
+                                                        const frag = doc.getElementById(href.slice(1));
+                                                        if (frag) { frag.scrollIntoView(); return; }
+                                                    }
+                                                    dioxus.send({action: "NAVIGATE", target: href});
                                                     return;
                                                 }
 

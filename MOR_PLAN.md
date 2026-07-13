@@ -7,152 +7,120 @@ intelligence. Every visual control and every line of code compile through the sa
 
 **The four laws (already enforced — keep them):**
 1. `ThemeConfig` is the brain. GUI panels and code editors are both just views of it.
-2. Config-driven subsystems (buttons, scrollbars, cursors, palettes) are single sources
-   of truth — presets and users never hand-write CSS the config can generate.
+2. Config-driven subsystems (buttons, scrollbars, palettes) are single sources of
+   truth — presets and users never hand-write CSS the config can generate.
 3. Ship no more than the page can use (JS behavior tree-shaking; hook attribution).
-4. No `data-mor-edit` attribute, no direct editing (see Appendix).
+4. No `data-edit-target` / `data-field-path` marker, no direct editing (see Appendix).
+5. *(new, learned the hard way)* Preview and export render from the SAME sources.
+   A hand-built preview copy of anything the exporter also generates is a bug
+   factory — it hid blank header icons and an empty Archive widget on live blogs.
 
 ---
 
-## ✅ WHERE THE APP IS TODAY (v. 2026-07)
+## ✅ WHERE THE APP IS TODAY (v. 2026-07-13)
 
 * **Modular compiler:** monolithic Blogger XML decomposed into a registry of Rust web
   components — headers, layouts, content feeds (`mor-magazine`, `mor-masonry`,
   `mor-minimal`), sidebars, footers, widgets, gadgets — with per-module manifests
   (CSS/JS deps) and `custom_<key>.xml` override persistence.
-* **Dockable IDE shell:** 16 docks (theme palette, site data, CSS/JS/template editors,
-  CSS/JS builders, diagnostics, plugins, widgets, code nav, static pages…), pinnable
-  activity bar, floating/pop-out OS windows, full-viewport takeover, draggable dialogs,
-  shortcut registry + modal.
+* **Dockable IDE shell:** 16 docks, pinnable activity bar, floating/pop-out OS
+  windows, full-viewport takeover, draggable dialogs, shortcut registry + rebinding.
 * **Real code option:** CodeMirror 6 editors (XML/CSS/JS/TOML) with search, minimap,
-  word-wrap, JS syntax lint (Lezer), theme-aware completions (`_MOR_CONFIG`, behavior
-  DOM hooks), customized-file markers, TOML↔compiled-XML toggle.
-* **JS workspace:** per-behavior Active/Wasted/Off analysis with hook→module
-  attribution, one-click ship/stop-shipping, bundle byte budget, codeless behavior
-  settings, cross-links into the JS editor.
-* **Config-driven styling:** buttons, cursors, scrollbars, glow/frame targeting,
-  logo, advanced color/typography dialogs; per-page layout/chrome overrides.
-* **8 aesthetic presets** (rewritten 2026-07): dual light/dark palettes, registry
-  fonts, validated against the compiled XML via `mbt build`.
-* **Diagnostics:** module scanner incl. un-CDATA'd script detection, export safety CSS.
-* **CLI (`mbt`):** deterministic TOML → Blogger XML builds for CI and verification.
-* **Proven export:** compiled themes deploy onto live Blogger.
+  JS lint, theme-aware completions, customized-file markers, diff-vs-bundled view.
+* **Canvas editing (Phase 19, largely landed):** preview iframe carries
+  `data-edit-target` / `data-field-path` / `data-block-id` markers end-to-end
+  (export XML too — see `render/tracking.rs`); shift-click icon swapping, X-ray
+  inspect chips, click-a-surface → the matching config panel focuses. Preview
+  renders the REAL resolved header/sidebar/widget modules, guarded by tests.
+* **Config-driven styling:** buttons, scrollbars, glow/frame targeting, logo,
+  advanced color/typography dialogs; per-page layout/chrome overrides.
+* **10 aesthetic presets** with dual light/dark palettes; compendium repo
+  (`mor-blogger-theme-preset-compendium`) serves importable JSON presets.
+* **Diagnostics:** module scanner incl. un-CDATA'd script detection, export safety
+  CSS, plus drift guards in tests: default pack ids must exist in registries,
+  UI dropdown ids must exist in core registries, widget blueprints using
+  `data:this` must bind `var='this'`.
+* **CLI (`mbt`):** `init` / `check` / `render` / `export` (reversible, embeds
+  workspace state) / `restore` (rehydrate any exported XML) / `bundle` / `plugin`.
+* **Packaged releases:** deb + rpm + Arch packages with declared runtime deps,
+  built via `dx bundle` + `packaging/PKGBUILD` + `packaging/mor-blogger.spec`;
+  published as GitHub prereleases (latest: v0.1.0-pre.2).
+* **Proven export:** compiled themes deploy onto live Blogger (morbranding blog),
+  including native Label/BlogArchive/HTML widgets rendering with data.
 
-Phases 11–12 (shortcut wiring, UX pruning) and 14–15 (code viewing — exceeded: full
-editors; CSS builder dock) from the previous plan are done or obsolete.
+**Recently landed (2026-07-13):** repo-wide over-engineering cleanup (~6k lines,
+−3 deps); standard `mask-*` fallbacks for sidebar icons; `url()` icon values render
+as masked spans in header toggles; preview uses real header modules; BlogArchive
+`var='this'` fix (was rendering empty on live blogs); stale default header id fix;
+Linux packaging + prerelease pipeline.
 
 ---
 
-## ✅ PHASE 16 — Land & Harden (done 2026-07-02)
+## 📍 PHASE 18.5 — Theme Importer (the one Phase 18 leftover)
 
-* **Task 1: Commit the in-flight branch.** ~44 modified files on
-  `chore/ponytail-audit-cleanup` (audit cleanup + JS workspace/editor upgrades).
-  Split into coherent commits; merge to `main`.
-* **Task 2: Preset regression gate.** A test (or CI step) that runs every
-  `theme_presets/*.toml` through the loader + `mbt build` and fails on parse errors,
-  empty `preset_css`, or CDATA hazards — presets can never silently rot again.
-* **Task 3: Selector-drift guard.** Extend diagnostics to flag preset/custom CSS
-  selectors that match no class in the active template modules (the
-  `.mor-catalog-dropdown` lesson, automated).
-* **Task 4: Runtime smoke checklist.** One scripted pass (mbt + xdotool-optional)
-  covering: preset load, module swap, JS workspace actions, export, editor lint.
+Open any FOREIGN Blogger theme XML and salvage it into workspace state.
+`utils/rehydration.rs` round-trips only this app's own exports; foreign themes are
+unhandled. v1 "salvage import" (separate from the existing import action): extract
+`<b:skin>` CSS into `preset_css`, inventory sections/widgets into a report, flag
+what can't map to the module registry. Full module decomposition is v2.
 
-## ✅ PHASE 17 — Keybinds & Editor Ergonomics (done 2026-07-02)
+## 📍 PHASE 19.5 — Finish the Editor Canvas
 
-* **Task 1: Persist custom keybinds** in `editor_prefs.toml` (carried from old
-  Phase 13 — still the only unfinished item from that plan).
-* **Task 2: Rebind interceptor** in the Shortcuts modal: click a row, press keys,
-  overwrite `ShortcutMeta.keys`, persist.
-* **Task 3: Editor persistence parity:** word-wrap override per workspace (same
-  mechanism as minimap), remembered active tab per editor dock.
-
-## 📍 PHASE 18 — Blogger-Aware Code Intelligence (tasks 1–4 done 2026-07-02; importer remains)
-
-The CM6 foundation exists; make it *Blogger-specialized* — the thing no generic
-editor offers:
-
-* **Task 1: `b:` tag completions** in XML mode — `b:section`, `b:widget`, `b:if`,
-  `b:loop`, `data:` expressions, `expr:` attributes — sourced from a curated schema of
-  Blogger Layouts v3, same injection pattern as `MOR_JS_HINTS`.
-* **Task 2: Blogger lint:** unclosed `b:` tags, widgets outside sections, duplicate
-  widget ids, unescaped CDATA hazards — reusing the existing diagnostics analyzers as
-  editor squiggles instead of a separate dock-only report.
-* **Task 3: Per-module custom JS** (`custom_<key>.js`, mirroring `custom_<key>.xml`)
-  so hand-written JS can follow its module through swaps and exports.
-* **Task 4: Diff & reset:** side-by-side diff of an edited file vs its bundled
-  default + one-click reset (the "customized ●" marker already knows).
-* **Task 5: Theme importer (remaining).** Open any existing Blogger theme XML and
-  decompose it into workspace state. Note: `utils/rehydration.rs` only round-trips
-  *this app's own* exports (embedded workspace payload) — foreign themes are
-  unhandled. Suggested v1 ("salvage import", separate from the existing import
-  action): extract the `<b:skin>` CSS into `preset_css`, inventory sections and
-  widgets into a report, and flag what can't map to the module registry — useful
-  restyling on-ramp without pretending full decomposition. Full module
-  decomposition is v2.
-
-## 📍 PHASE 19 — The Editor Canvas (structured direct manipulation)
-
-The Wix-feeling, done safely — full design in the Appendix. Build order:
-
-* **Task 1: CanvasBridge event protocol** (iframe → Dioxus JSON events; the preview
-  canvas already sends navigation events, extend that channel).
-* **Task 2: `data-mor-edit` markers** emitted by the renderer for the easy,
-  high-value fields: site title/subtitle, logo URL, menu labels/URLs, footer text,
-  panel titles.
-* **Task 3: Edit Mode toggle** (`Browse | Inspect | Edit`) with hover outlines,
-  selection, `contenteditable` text, blur/Enter → config update → rerender.
-* **Task 4: Click-a-surface color editing** (select a panel → theme palette focuses
-  the matching config color).
-* **Non-goal:** free drag-and-drop layout. Module swaps + widget sockets already
-  cover structure; direct manipulation is for *content and tokens*.
+What remains from the original Phase 19 design:
+* **Inline text editing:** `contenteditable` on `data-field-path` text nodes
+  (site title, menu labels, footer text, widget titles), blur/Enter → config
+  update → rerender. Selection & markers already exist; this is the last mile.
+* **Non-goal (unchanged):** free drag-and-drop layout. Module swaps + widget
+  sockets cover structure; direct manipulation is for content and tokens.
 
 ## 📍 PHASE 20 — Publisher (editor → pipeline)
 
 * **Task 1: `mor_blogger_api` crate:** OAuth 2.0 (Google), Blogger API v3.
-* **Task 2: One-click deploy:** push the compiled theme to a chosen blog, with the
-  pre-flight diagnostics report as the gate and an automatic pre-deploy XML backup
-  of the current live theme (one-click rollback).
-* **Task 3: Post & page manager:** fetch/update posts so the preview can render the
-  user's *real* content instead of sample data.
+* **Task 2: One-click deploy:** push the compiled theme to a chosen blog, gated on
+  the diagnostics report, with automatic pre-deploy backup of the live theme
+  (one-click rollback). Kills the manual download/upload loop that let stale
+  exports linger on the live blog.
+* **Task 3: Post & page manager:** fetch real posts so the preview renders the
+  user's actual content instead of sample data.
 
-## 🚀 PHASE 21+ — Ecosystem & Polish
+## 📍 PHASE 21 — Ship v0.1.0 stable
 
-* Preset/theme sharing: export a workspace as a single portable pack; import others'.
-* Template pack growth: grid gallery + text-minimalist layout presets (ideas.md).
-* Budgets beyond JS: CSS byte budget and unused-selector report per export.
+* **CI gate (GitHub Actions):** `cargo test --workspace` + render every
+  `theme_presets/*.toml` through `mbt render` and fail on errors — the preset
+  regression gate, automated on every push.
+* **Windows build:** `dx bundle --package-types msi` on Windows 11 (WebView2 is
+  preinstalled); attach to the release.
+* **Manual GUI pass** over the packaged build (docks, module swaps, import,
+  export, restore), then promote the prerelease to v0.1.0.
+* **Compendium refresh:** re-export bundled presets to the compendium repo so its
+  JSON matches current export output; regenerate its demo site theme (currently a
+  hand-written XML predating the icon system).
+
+## 🚀 PHASE 22+ — Ecosystem & Polish
+
+* Preset/theme sharing: export a workspace as a single portable pack.
+* Budgets beyond JS: CSS byte budget and unused-selector report per export
+  (the audit found ~21% dead selectors in the editor's own CSS — themes deserve
+  the same lint).
 * Accessibility pass over generated themes: contrast checks per palette, focus
-  states, reduced-motion coverage (presets already lead here — make it enforced).
-* Burn down the `ponytail:` ledger (17 markers) as their ceilings are reached.
+  states, reduced-motion coverage.
+* Burn down the `ponytail:` ledger (19 markers) as their ceilings are reached.
 
 ---
 
-## Appendix — Editor Canvas design (kept from prior plan; still the blueprint)
+## Appendix — Editor Canvas design (updated to shipped naming)
 
-**Naming:** `PreviewCanvas` (passive shell) / `EditorCanvas` (interactive mode) /
-`CanvasBridge` (iframe↔Rust events), living in `src/ui/workspace/canvas/`
-(`preview_canvas.rs`, `editor_canvas.rs`, `device_frame.rs`, `bridge.rs`,
-`inspector.rs`, `selection_overlay.rs`, `events.rs`).
+**Shipped naming** (the old plan said `data-mor-edit`; the code went with):
+* `data-edit-target="icons.label"` — shift-click editable glyph/surface, routes to
+  the owning config panel.
+* `data-field-path="site.site_title"` — text node bound to a config field.
+* `data-block-id="Label1"` — module/widget block identity for X-ray + selection.
 
-**The trick — editable bindings.** Generated preview HTML carries stable markers:
-
-```html
-<h1 data-mor-edit="site.site_title" data-mor-edit-kind="text">
-  Your Website Title Here
-</h1>
-```
-
-The bridge detects clicks on `[data-mor-edit]` and emits:
-
-```json
-{ "type": "select", "field": "site.site_title", "kind": "text", "text": "…" }
-{ "type": "update_text", "field": "site.site_title", "value": "Moribund XML Compendium" }
-```
-
-Rust updates the real config signal; the renderer regenerates the preview. Never edit
-the iframe DOM as truth — it is discarded on every rerender.
+Markers are emitted by the renderer in BOTH preview and export
+(`render/tracking.rs` tests pin this), so the canvas never edits DOM as truth —
+the iframe emits JSON events, Rust updates the config signal, the renderer
+regenerates. The preview is the eyes, the canvas bridge is the hands,
+`ThemeConfig` stays the brain.
 
 **Why not full Wix:** Wix edits a canvas model; this app edits a theme-compiler
 model. Every editable thing needs a known path back to `ThemeConfig`.
-
-**The rule:** no `data-mor-edit` attribute, no direct editing. The preview canvas is
-the eyes, the editor canvas is the hands, `ThemeConfig` stays the brain.

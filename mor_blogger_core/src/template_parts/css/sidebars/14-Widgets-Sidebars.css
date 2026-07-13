@@ -7,10 +7,10 @@
   height: 1.1em;
   background-color: var(--accent);
   filter: drop-shadow(0 0 4px var(--accent));
-  -webkit-mask-image: var(--icon-archive);
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
+  mask-image: var(--icon-archive); -webkit-mask-image: var(--icon-archive);
+  mask-size: contain; -webkit-mask-size: contain;
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+  mask-position: center; -webkit-mask-position: center;
   vertical-align: -0.18em;
   margin-right: 8px;
 }
@@ -22,10 +22,10 @@
   height: 1.1em;
   background-color: var(--accent);
   filter: drop-shadow(0 0 4px var(--accent));
-  -webkit-mask-image: var(--icon-label);
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
+  mask-image: var(--icon-label); -webkit-mask-image: var(--icon-label);
+  mask-size: contain; -webkit-mask-size: contain;
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+  mask-position: center; -webkit-mask-position: center;
   vertical-align: -0.18em;
   margin-right: 8px;
 }
@@ -37,10 +37,10 @@
   height: 1.1em;
   background-color: var(--accent);
   filter: drop-shadow(0 0 4px var(--accent));
-  -webkit-mask-image: var(--icon-toc);
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
+  mask-image: var(--icon-toc); -webkit-mask-image: var(--icon-toc);
+  mask-size: contain; -webkit-mask-size: contain;
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+  mask-position: center; -webkit-mask-position: center;
   vertical-align: -0.18em;
   margin-right: 8px;
 }

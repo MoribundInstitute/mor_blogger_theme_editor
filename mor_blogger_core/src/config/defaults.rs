@@ -157,7 +157,7 @@ pub fn default_theme_config() -> ThemeConfig {
         scrollbar_thumb_hover_color: "#81a1c1".to_string(),
 
         template_pack: TemplatePackConfig {
-            header_variant: "mor_header_baseline".to_string(),
+            header_variant: "mor".to_string(),
             main_variant: "sidebars".to_string(),
             content_variant: "standard_feed".to_string(),
             left_sidebar_variant: "blogger_left".to_string(),

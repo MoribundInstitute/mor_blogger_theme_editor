@@ -42,19 +42,24 @@ pub fn render_header_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace("{{SITE_TITLE_ATTR}}", &escape_attr(&config.site.site_title));
     xml = xml.replace("{{SITE_HOME_URL_ATTR}}", &escape_attr(site_home_url));
 
-    // FIX: Safely evaluate if the icon is a full SVG string or just a path data string,
-    // and inject it directly into the DOM tree instead of hiding it in a style attribute!
-    let left_icon = if config.icons.sidebar_left.trim().starts_with("<svg") {
-        config.icons.sidebar_left.clone()
-    } else {
-        format!("<svg fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" viewBox=\"0 0 24 24\" height=\"1.2em\" width=\"1.2em\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"{}\"/></svg>", escape_attr(&config.icons.sidebar_left))
-    };
-
-    let right_icon = if config.icons.sidebar_right.trim().starts_with("<svg") {
-        config.icons.sidebar_right.clone()
-    } else {
-        format!("<svg fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" viewBox=\"0 0 24 24\" height=\"1.2em\" width=\"1.2em\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"{}\"/></svg>", escape_attr(&config.icons.sidebar_right))
-    };
+    // Icon values come in three shapes: a full <svg> string (inlined as-is), a
+    // CSS url(...) value like the IconConfig defaults (rendered as a masked
+    // span, since url() is not valid <path d=...> data), or bare path data.
+    fn panel_icon_html(value: &str) -> String {
+        let v = value.trim();
+        if v.starts_with("<svg") {
+            value.to_string()
+        } else if v.starts_with("url(") {
+            format!(
+                "<span aria-hidden=\"true\" style=\"display:inline-block;width:1.2em;height:1.2em;background-color:currentColor;-webkit-mask:{m} center/contain no-repeat;mask:{m} center/contain no-repeat;\"></span>",
+                m = escape_attr(v)
+            )
+        } else {
+            format!("<svg fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" viewBox=\"0 0 24 24\" height=\"1.2em\" width=\"1.2em\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"{}\"/></svg>", escape_attr(v))
+        }
+    }
+    let left_icon = panel_icon_html(&config.icons.sidebar_left);
+    let right_icon = panel_icon_html(&config.icons.sidebar_right);
 
     let left_panel_html = format!(
         "<span data-edit-target=\"icons.sidebar_left\" style=\"display: inline-flex; align-items: center; gap: 6px; cursor: pointer;\">{}<span class=\"visually-hidden\">Browse</span></span>",

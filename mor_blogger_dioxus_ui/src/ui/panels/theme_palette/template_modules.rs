@@ -259,3 +259,36 @@ pub(crate) fn ModuleFileButton(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mor_blogger_core::render::template_resolver::{
+        ComponentManifest, CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY, LAYOUT_REGISTRY,
+        SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
+    };
+
+    // The dropdown ids here and the resolver registry ids are two lists that
+    // must agree; a dangling id renders a blank dropdown (the
+    // "mor_header_baseline" bug). Every UI option must resolve in core.
+    // (Core may carry extra non-user-facing variants, e.g. GTK-import ones,
+    // so this is subset, not equality.)
+    #[test]
+    fn ui_module_ids_exist_in_core_registries() {
+        let check = |defs: &[ModuleDef], reg: &[ComponentManifest], slot: &str| {
+            for d in defs {
+                assert!(
+                    reg.iter().any(|c| c.id == d.id),
+                    "{slot} option '{}' has no core registry entry",
+                    d.id
+                );
+            }
+        };
+        check(HEADERS, HEADER_REGISTRY, "header");
+        check(MAIN_CANVASES, LAYOUT_REGISTRY, "main");
+        check(CONTENT_LAYOUTS, CONTENT_REGISTRY, "content");
+        check(LEFT_SIDEBARS, SIDEBAR_LEFT_REGISTRY, "left sidebar");
+        check(RIGHT_SIDEBARS, SIDEBAR_RIGHT_REGISTRY, "right sidebar");
+        check(FOOTERS, FOOTER_REGISTRY, "footer");
+    }
+}

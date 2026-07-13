@@ -588,4 +588,34 @@ mod tests {
         let parts = resolve_template_parts(&config, &HashMap::new());
         assert!(parts.javascript.contains(fetch_js("01-Core-Helpers.js")));
     }
+
+    // The default pack once shipped "mor_header_baseline" — an id in no
+    // registry — so the resolver silently fell back to registry[0] while the
+    // UI dropdown showed blank. Every default variant id must resolve exactly.
+    #[test]
+    fn default_pack_ids_exist_in_registries() {
+        let pack = crate::config::TemplatePackConfig::default();
+        let has = |reg: &[ComponentManifest], id: &str| reg.iter().any(|c| c.id == id);
+        assert!(has(HEADER_REGISTRY, &pack.header_variant), "header: {}", pack.header_variant);
+        assert!(has(LAYOUT_REGISTRY, &pack.main_variant), "main: {}", pack.main_variant);
+        assert!(has(CONTENT_REGISTRY, &pack.content_variant), "content: {}", pack.content_variant);
+        assert!(has(SIDEBAR_LEFT_REGISTRY, &pack.left_sidebar_variant), "left: {}", pack.left_sidebar_variant);
+        assert!(has(SIDEBAR_RIGHT_REGISTRY, &pack.right_sidebar_variant), "right: {}", pack.right_sidebar_variant);
+        assert!(has(FOOTER_REGISTRY, &pack.footer_variant), "footer: {}", pack.footer_variant);
+    }
+
+    // Blogger only binds widget data to `this` when the includable declares
+    // var='this'. A blueprint using data:this without the binding renders an
+    // empty widget on the live blog (the BlogArchive "empty archive" bug).
+    #[test]
+    fn widget_blueprints_using_data_this_bind_var_this() {
+        for (id, xml) in WIDGET_REGISTRY {
+            if xml.contains("data:this") {
+                assert!(
+                    xml.contains("var='this'"),
+                    "{id} blueprint uses data:this but never binds var='this'"
+                );
+            }
+        }
+    }
 }

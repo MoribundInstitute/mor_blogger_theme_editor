@@ -10,7 +10,7 @@
     <b:widget-setting name='showPosts'>true</b:widget-setting>
     <b:widget-setting name='frequency'>MONTHLY</b:widget-setting>
   </b:widget-settings>
-  <b:includable id='main'>
+  <b:includable id='main' var='this'>
     <b:if cond='data:title != &quot;&quot;'>
       <h2 class='title'><span data-field-path='widget.BlogArchive1.title'><data:title/></span></h2>
     </b:if>

@@ -215,8 +215,32 @@ fn format_posts_for_preview(posts: &[BlogPost], content_variant: &str) -> String
 // calling these, so they can never drift apart. (Both still rely on the real
 // resolved CSS via `render_css_sockets`.)
 
-/// The preview `<header>` (branding, theme toggle, nav, search).
+/// The preview `<header>` — the REAL resolved header template (same source as
+/// export), so class/markup drift between preview and Blogger can't hide.
+/// Headers containing Blogger `<b:` tags can't run in the preview iframe and
+/// fall back to the hand-built mirror below.
 pub fn preview_header_html(config: &ThemeConfig) -> String {
+    let parts =
+        crate::render::template_resolver::resolve_template_parts(config, &HashMap::new());
+    let header =
+        crate::render::xml_parts::header_generator::render_header_sockets(parts.header, config);
+    if header.contains("<b:") {
+        return preview_search_header_html(config);
+    }
+    // Plugin sockets resolve downstream in xml_generator; the preview has no
+    // plugin widget pipeline, so drop the socket.
+    let header = header.replace("{{PLUGIN_WIDGET_HEADER}}", "");
+    // Keep the shift-click edit target the hand-built header exposed.
+    header.replacen(
+        "<header ",
+        r#"<header data-edit-target="colors.bg_elevated" "#,
+        1,
+    )
+}
+
+/// Hand-built mirror of `mor_header_search.xml` (its `b:section`/inline assets
+/// can't run in the preview iframe). Keep in sync with the module.
+fn preview_search_header_html(config: &ThemeConfig) -> String {
     let header_extra_class = if config.template_pack.header_variant == "mor_search_center" {
         " search-centered"
     } else {
@@ -654,6 +678,22 @@ mod tests {
         assert!(unknown.contains("renders live on Blogger"));
     }
 
+    // The preview header used to be a hand-built copy that drifted from the
+    // exported header parts (blank panel-toggle icons shipped to Blogger while
+    // the preview looked fine). Guard that the preview renders the REAL
+    // resolved header template.
+    #[test]
+    fn preview_header_uses_real_template_parts() {
+        let config = ThemeConfig::default();
+        let header = preview_header_html(&config);
+        // Real baseline template markup, not a hand-built mirror.
+        assert!(header.contains("mor-header-baseline"));
+        // Default url() icon values render as masked spans (the blank-button bug).
+        assert!(header.contains("-webkit-mask:url("));
+        // No unsubstituted template sockets leak into the preview.
+        assert!(!header.contains("{{"), "unsubstituted socket: {header}");
+    }
+
     // The preview header used to be hardcoded to the site title and ignored
     // header_logo_url; this guards that a set logo renders an <img>, mirroring export.
     #[test]
@@ -661,18 +701,19 @@ mod tests {
         let vfs = HashMap::new();
         let mut config = ThemeConfig::default();
 
-        // Empty logo -> title text, no logo img.
+        // Empty logo -> title text, no logo img. (Real header parts use
+        // single-quoted attrs, from header_generator.)
         config.site.header_logo_url = String::new();
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
-        assert!(html.contains(r#"class="institute-title""#));
+        assert!(html.contains(r#"class='institute-title'"#));
         // `.institute-logo` appears in the injected CSS regardless; the <img>
         // is what we must not emit, so match the class *attribute* form.
-        assert!(!html.contains(r#"class="institute-logo""#));
+        assert!(!html.contains(r#"class='institute-logo'"#));
 
         // Set logo -> img with the url, title text dropped from the brand.
         config.site.header_logo_url = "https://example.com/logo.png".to_string();
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
-        assert!(html.contains(r#"class="institute-logo""#));
+        assert!(html.contains(r#"class='institute-logo'"#));
         assert!(html.contains("https://example.com/logo.png"));
     }
 
@@ -706,9 +747,9 @@ mod tests {
         let vfs = HashMap::new();
         let mut config = ThemeConfig::default();
 
-        // Default header: no modifier class.
+        // Default header: the real resolved template (baseline), no modifier class.
         let html = render_preview_html(&config, &[], PreviewTemplateMode::default(), true, &vfs);
-        assert!(html.contains(r#"class="main-header""#));
+        assert!(html.contains("main-header"));
         assert!(!html.contains("main-header search-centered"));
         // No bell on other variants.
         assert!(!html.contains("mor-bell"));

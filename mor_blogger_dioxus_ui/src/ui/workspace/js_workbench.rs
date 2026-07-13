@@ -17,6 +17,7 @@ use mor_blogger_core::render::template_resolver::fetch_js;
 
 use crate::app::state::{DockPosition, LayoutState};
 use crate::app::vfs::VfsDictionary;
+use crate::ui::components::inputs::EditorCheckbox;
 
 fn fmt_bytes(b: usize) -> String {
     if b >= 1024 {
@@ -270,26 +271,26 @@ pub fn JsWorkspaceBody(
                 }
             }
 
-            Toggle {
+            EditorCheckbox {
                 label: "Collapse sidebars on mobile by default".to_string(),
                 checked: scripts.panels_collapsed_mobile,
-                on_toggle: {
+                onchange: {
                     let scripts = scripts.clone();
                     move |v| { let mut s = scripts.clone(); s.panels_collapsed_mobile = v; on_scripts_change.call(s); }
                 }
             }
-            Toggle {
+            EditorCheckbox {
                 label: "Light / dark toggle  (ships 07-Theme-Toggler.js)".to_string(),
                 checked: scripts.enable_theme_toggle,
-                on_toggle: {
+                onchange: {
                     let scripts = scripts.clone();
                     move |v| { let mut s = scripts.clone(); s.enable_theme_toggle = v; on_scripts_change.call(s); }
                 }
             }
-            Toggle {
+            EditorCheckbox {
                 label: "Share menu  (ships 08-Share-Actions.js)".to_string(),
                 checked: scripts.enable_share_actions,
-                on_toggle: {
+                onchange: {
                     let scripts = scripts.clone();
                     move |v| { let mut s = scripts.clone(); s.enable_share_actions = v; on_scripts_change.call(s); }
                 }
@@ -320,21 +321,6 @@ pub fn JsWorkbench(
                     }
                 }
             }
-        }
-    }
-}
-
-#[component]
-fn Toggle(label: String, checked: bool, on_toggle: EventHandler<bool>) -> Element {
-    rsx! {
-        label {
-            style: "display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--fg-base); cursor: pointer;",
-            input {
-                r#type: "checkbox",
-                checked: checked,
-                onchange: move |e| on_toggle.call(e.checked()),
-            }
-            "{label}"
         }
     }
 }

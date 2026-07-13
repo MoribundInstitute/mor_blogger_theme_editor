@@ -78,6 +78,6 @@
       <a href='{{FOOTER_LEGAL_3_URL}}' data-field-path='footer.legal_links.2.label'>{{FOOTER_LEGAL_3_LABEL}}</a> |
       <a href='{{FOOTER_LEGAL_4_URL}}' data-field-path='footer.legal_links.3.label'>{{FOOTER_LEGAL_4_LABEL}}</a>
     </div>
-    <button class='back-to-top-btn' type='button'>{{BACK_TO_TOP_LABEL}}</button>
+    <a class='back-to-top-btn' href='#mor-canvas-top'>{{BACK_TO_TOP_LABEL}}</a>
   </div>
 </footer>

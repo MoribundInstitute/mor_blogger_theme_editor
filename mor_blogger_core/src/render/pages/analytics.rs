@@ -1,14 +1,6 @@
 use crate::config::AnalyticsDashboardPageConfig;
-use crate::render::pages::escape_html;
-
-fn escape_js(value: &str) -> String {
-    value
-        .replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace("</script>", "<\\/script>")
-}
+use crate::render::util::escape_attr as escape_html;
+use crate::render::util::escape_js_string as escape_js;
 
 /// Emits the Analytics Dashboard page as a Blogger HTML-page stencil.
 ///
@@ -136,8 +128,4 @@ window.morAnalyticsDashboardConfig = {{
     html.push_str(&js_template.replace("{{MAX_RESULTS}}", &config.max_results.to_string()));
 
     format!("{}{}", crate::render::pages::page_chrome_overrides(&config.layout), html)
-}
-/// Compatibility alias for earlier patch attempts.
-pub fn generate_analytics_html(config: &AnalyticsDashboardPageConfig) -> String {
-    generate_analytics_dashboard_html(config)
 }

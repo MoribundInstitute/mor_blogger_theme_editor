@@ -11,6 +11,7 @@
 //! See the AdsConfig docs in `config.rs` for the full policy explanation.
 
 use crate::config::{AdBannerPosition, AdSlotPlacement, AdsConfig, AdsMode};
+use crate::render::util::escape_js_string;
 
 const WIDGET_ADSENSE_SIDEBAR: &str = include_str!("../template_parts/widgets/adsense_sidebar.xml");
 
@@ -210,18 +211,4 @@ pub(super) fn render_ads_runtime_script(ads: &AdsConfig) -> String {
         pub = publisher_id,
         slots = slot_descriptors,
     )
-}
-
-fn escape_js_string(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for c in value.chars() {
-        match c {
-            '\\' => out.push_str(r"\\"),
-            '"' => out.push_str(r#"\""#),
-            '\n' => out.push_str(r"\n"),
-            '\r' => out.push_str(r"\r"),
-            _ => out.push(c),
-        }
-    }
-    out
 }

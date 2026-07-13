@@ -11,7 +11,7 @@
          Uses the FeaturedPost v1 data model (flat data:postTitle/postSummary/
          postFirstImage) — the same one the live blog uses, so the post actually
          renders in the dropdown (no feed URL, no jQuery). Colors come from theme
-         vars (--accent / --bg-panel / --fg-base / …) so any preset reskins it.
+         vars (accent / bg-panel / fg-base) so any preset reskins it.
          Layout mirrors the blog: heading, post title, snippet, then image. -->
     <style>
       .mor-bell { position: relative; display: inline-block; }

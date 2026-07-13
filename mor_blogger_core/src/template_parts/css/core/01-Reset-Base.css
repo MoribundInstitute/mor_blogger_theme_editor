@@ -21,6 +21,14 @@ body {
   min-width: 0;
 }
 
+/* Native smooth scrolling for fragment links (back-to-top, TOC jumps).
+   .canvas-core is the desktop scroll container; html scrolls on mobile.
+   The reduced-motion override below forces this back to auto. */
+html,
+.canvas-core {
+  scroll-behavior: smooth;
+}
+
 img,
 iframe,
 video {

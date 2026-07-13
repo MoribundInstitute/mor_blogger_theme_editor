@@ -3,7 +3,6 @@ use dioxus::prelude::*;
 use crate::app::theme_signals::ThemeSignals;
 use crate::ui::panels::theme_palette::presets::morph_preview_from_preset;
 use mor_blogger_core::config::defaults::default_theme_config;
-use mor_blogger_core::config::ColorConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ThemeHistory {
@@ -44,12 +43,6 @@ impl ThemeState {
         // ponytail: reuse apply_preset (it also sets preset_css). Reversible — delete the
         // apply call + restore `active_preset` to None to go back to an empty default.
         let all_presets = mor_blogger_core::presets::all_presets();
-        // TEMP DEBUG: did presets load from the running binary's cwd? Empty here ->
-        // default_preset = None -> preset_css never seeded -> "[render_theme] preset_css bytes = 0".
-        eprintln!(
-            "[seed] all_presets len = {} (cwd-dependent)",
-            all_presets.len()
-        );
         let default_preset = all_presets.into_iter().next();
         let default_preset_id = default_preset.as_ref().map(|p| p.id);
 
@@ -58,11 +51,6 @@ impl ThemeState {
             if let Some(p) = &default_preset {
                 s.apply_preset(p);
             }
-            // TEMP DEBUG: byte length actually seeded into the editor-bound buffer.
-            eprintln!(
-                "[seed] preset_css after apply = {}",
-                s.preset_css.peek().len()
-            );
             s
         });
 
@@ -120,14 +108,6 @@ impl ThemeState {
     }
 
     pub fn undo(&self) {
-        self._undo_internal();
-    }
-
-    pub fn redo(&self) {
-        self._redo_internal();
-    }
-
-    fn _undo_internal(&self) {
         let mut history = self.history;
         let mut hist = history.write();
         if hist.cursor == 0 {
@@ -140,7 +120,7 @@ impl ThemeState {
         self.restore_preset(val);
     }
 
-    fn _redo_internal(&self) {
+    pub fn redo(&self) {
         let mut history = self.history;
         let mut hist = history.write();
         if hist.cursor + 1 >= hist.snapshots.len() {
@@ -213,44 +193,7 @@ impl ThemeState {
                 };
                 signals.swap_palette(&pal);
             } else {
-                let cur = ColorConfig {
-                    bg_base: signals.bg_base.read().clone(),
-                    bg_panel: signals.bg_panel.read().clone(),
-                    bg_elevated: signals.bg_elevated.read().clone(),
-                    fg_base: signals.fg_base.read().clone(),
-                    fg_muted: signals.fg_muted.read().clone(),
-                    accent: signals.accent.read().clone(),
-                    border: signals.border.read().clone(),
-                    panel_border_width: signals.panel_border_width.read().clone(),
-                    glow_spread: signals.glow_spread.read().clone(),
-                    hover_scale: signals.hover_scale.read().clone(),
-                    panel_border_image_url: signals.panel_border_image_url.read().clone(),
-                    panel_border_image_slice: signals.panel_border_image_slice.read().clone(),
-                    panel_border_image_repeat: signals.panel_border_image_repeat.read().clone(),
-                    glow_color: signals.glow_color.read().clone(),
-                    glow_logo: *signals.glow_logo.read(),
-                    glow_title: *signals.glow_title.read(),
-                    glow_toc: *signals.glow_toc.read(),
-                    glow_sidebar: *signals.glow_sidebar.read(),
-                    glow_logo_color: signals.glow_logo_color.read().clone(),
-                    glow_title_color: signals.glow_title_color.read().clone(),
-                    glow_toc_color: signals.glow_toc_color.read().clone(),
-                    glow_sidebar_color: signals.glow_sidebar_color.read().clone(),
-                    glow_text: *signals.glow_text.read(),
-                    glow_containers: *signals.glow_containers.read(),
-                    glow_icons: *signals.glow_icons.read(),
-                    glow_text_color: signals.glow_text_color.read().clone(),
-                    glow_containers_color: signals.glow_containers_color.read().clone(),
-                    glow_icons_color: signals.glow_icons_color.read().clone(),
-                    glow_footer: *signals.glow_footer.read(),
-                    glow_header: *signals.glow_header.read(),
-                    glow_main: *signals.glow_main.read(),
-                    glow_footer_color: signals.glow_footer_color.read().clone(),
-                    glow_header_color: signals.glow_header_color.read().clone(),
-                    glow_main_color: signals.glow_main_color.read().clone(),
-                    ..Default::default()
-                };
-                let inv = cur.inverted_contrast();
+                let inv = signals.to_config().colors.inverted_contrast();
                 signals.bg_base.set(inv.bg_base);
                 signals.bg_panel.set(inv.bg_panel);
                 signals.bg_elevated.set(inv.bg_elevated);

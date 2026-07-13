@@ -36,8 +36,8 @@ pub enum JsSetting {
 pub const JS_BEHAVIORS: &[JsBehavior] = &[
     JsBehavior {
         file: "01-Core-Helpers.js",
-        label: "Sidebars · Catalog · Back-to-Top",
-        description: "Collapsible BROWSE/CONTENTS panels, the mega-menu catalog, and scroll-to-top. The base behavior bundle.",
+        label: "Sidebars · Catalog · Shortcuts",
+        description: "Collapsible BROWSE/CONTENTS panels, the mega-menu catalog, and keyboard shortcuts (back-to-top is a plain anchor link, no JS). The base behavior bundle.",
         requires: &[],
         setting: None,
     },
@@ -254,6 +254,40 @@ mod tests {
                 if let Some(src) = &h.found_in {
                     assert!(src.contains(" · "), "unlabeled hook source: {src}");
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn every_module_variant_renders_with_clean_diagnostics() {
+        // The full functional sweep: every registered header/layout/content/
+        // sidebar/footer variant, swapped one at a time into a default config,
+        // must render a theme with zero integrity errors AND zero warnings
+        // (stale tokens, missing Blogger includables, un-CDATA'd scripts).
+        use crate::render::template_resolver::{
+            CONTENT_REGISTRY, FOOTER_REGISTRY, HEADER_REGISTRY, LAYOUT_REGISTRY,
+            SIDEBAR_LEFT_REGISTRY, SIDEBAR_RIGHT_REGISTRY,
+        };
+        let dims: [(&[crate::render::template_resolver::ComponentManifest], fn(&mut ThemeConfig, &str)); 6] = [
+            (HEADER_REGISTRY, |c, id| c.template_pack.header_variant = id.into()),
+            (LAYOUT_REGISTRY, |c, id| c.template_pack.main_variant = id.into()),
+            (CONTENT_REGISTRY, |c, id| c.template_pack.content_variant = id.into()),
+            (SIDEBAR_LEFT_REGISTRY, |c, id| c.template_pack.left_sidebar_variant = id.into()),
+            (SIDEBAR_RIGHT_REGISTRY, |c, id| c.template_pack.right_sidebar_variant = id.into()),
+            (FOOTER_REGISTRY, |c, id| c.template_pack.footer_variant = id.into()),
+        ];
+        for (registry, set) in dims {
+            for m in registry {
+                let mut cfg = ThemeConfig::default();
+                set(&mut cfg, m.id);
+                let xml = crate::render::theme::render_theme(&cfg, &HashMap::new());
+                let diag = crate::diagnostics::check_integrity(&xml, &cfg.template_pack);
+                assert!(
+                    diag.is_valid && diag.warnings.is_empty(),
+                    "variant '{}' has diagnostics:\n{}",
+                    m.id,
+                    diag.warnings.iter().map(|w| w.format_line()).collect::<Vec<_>>().join("\n")
+                );
             }
         }
     }

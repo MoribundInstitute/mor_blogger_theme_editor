@@ -9,6 +9,7 @@ pub fn ColorsPanel(
     bg_base: Signal<String>,
     bg_panel: Signal<SurfaceFill>,
     bg_elevated: Signal<SurfaceFill>,
+    header_fill: Signal<SurfaceFill>,
     fg_base: Signal<String>,
     fg_muted: Signal<String>,
     accent: Signal<String>,
@@ -44,6 +45,12 @@ pub fn ColorsPanel(
                 label: "Elevated Background".to_string(),
                 value: bg_elevated,
                 default_color: "#1a1a1a".to_string(),
+            }
+
+            SurfaceFillEditor {
+                label: "Header Background".to_string(),
+                value: header_fill,
+                default_color: "#141414".to_string(),
             }
 
             EditorInput {

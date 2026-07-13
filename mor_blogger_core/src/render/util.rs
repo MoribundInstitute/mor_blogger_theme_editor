@@ -41,6 +41,23 @@ pub fn unescape_for_style(s: &str) -> String {
         .replace("&amp;", "&")
 }
 
+/// Escapes a value for use inside a double-quoted JS string literal.
+/// `/` becomes `\/` so a value containing `</script>` cannot close the tag.
+pub(super) fn escape_js_string(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for c in value.chars() {
+        match c {
+            '\\' => out.push_str(r"\\"),
+            '"' => out.push_str(r#"\""#),
+            '\n' => out.push_str(r"\n"),
+            '\r' => out.push_str(r"\r"),
+            '/' => out.push_str(r"\/"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 /// Returns the primary string if it contains text, otherwise returns the fallback.
 pub fn first_non_empty<'a>(primary: &'a str, fallback: &'a str) -> &'a str {
     if primary.trim().is_empty() {

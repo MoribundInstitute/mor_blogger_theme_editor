@@ -1,6 +1,6 @@
 ## 📦 The Compendiums
 
-The Architect doesn't bake every preset, widget, and layout into the binary — that would bloat the app and bottleneck the whole ecosystem on one person's taste. Instead, the heavy stuff lives in community **compendiums**: open repositories that build themselves into browsable Blogger galleries ([RuneLite plugin-hub](https://github.com/runelite/plugin-hub) style). Browse the live gallery, copy a link or snippet, and paste it straight into the GUI.
+MorBlogger doesn't bake every preset, widget, and layout into the binary — that would bloat the app and bottleneck the whole ecosystem on one person's taste. Instead, the heavy stuff lives in community **compendiums**: open repositories that build themselves into browsable Blogger galleries ([RuneLite plugin-hub](https://github.com/runelite/plugin-hub) style). Browse the live gallery, copy a link or snippet, and paste it straight into the GUI.
 
 Each compendium is a matched pair: a **GitHub repo** (the source of truth) and a **Blogger frontend** (the gallery you browse).
 

@@ -82,13 +82,7 @@ fn module_display_path(slot: &str, variant_id: &str) -> String {
         _ => "modules",
     };
 
-    if slot == "content" {
-        format!(
-            "templates/modules/content_variant.xml (compiled: template_parts/{category}/{filename})"
-        )
-    } else {
-        format!("template_parts/{category}/{filename}")
-    }
+    format!("template_parts/{category}/{filename}")
 }
 
 fn check_module_source(module: ActiveModule<'_>, out: &mut Vec<Warning>) {

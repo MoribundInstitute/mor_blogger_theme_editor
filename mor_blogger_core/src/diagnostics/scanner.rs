@@ -12,6 +12,11 @@ const INVALID_ENTITIES: &[(&str, &str)] = &[
 ];
 
 pub fn run_text_checks(source: &str, out: &mut Vec<Warning>) {
+    // XML comments are prose: `{{...}}`, `<script>` or `&&` inside one is legal
+    // XML and never reaches the page, so no check should fire on it (the
+    // MegaGno footer's own header comment used to trip two false errors).
+    let source = &mask_comments(source);
+
     // 1. Catch HTML entities that crash the strict XML parser
     for (entity, fix) in INVALID_ENTITIES {
         if source.contains(entity) {
@@ -173,6 +178,24 @@ fn has_raw_lt(body: &str) -> bool {
         c == b'<'
             && !matches!(b.get(i + 1), Some(n) if n.is_ascii_alphabetic() || matches!(n, b'/' | b'!' | b'?' | b'_'))
     })
+}
+
+/// Blank out every `<!-- … -->` region (spaces, keeping newlines) so comment
+/// prose never registers with any text check.
+fn mask_comments(source: &str) -> String {
+    let mut out = String::with_capacity(source.len());
+    let mut rest = source;
+    while let Some(start) = rest.find("<!--") {
+        out.push_str(&rest[..start]);
+        let after = &rest[start..];
+        let end = after.find("-->").map(|e| e + 3).unwrap_or(after.len());
+        for ch in after[..end].chars() {
+            out.push(if ch == '\n' { '\n' } else { ' ' });
+        }
+        rest = &after[end..];
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Blank out every `<![CDATA[ … ]]>` region (replace with spaces, keeping newlines)

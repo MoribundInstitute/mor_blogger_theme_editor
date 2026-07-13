@@ -80,6 +80,11 @@ const WIDGET_BLUEPRINTS: &[(&str, &str, &str)] = &[
         "safe-script.xml",
         include_str!("../template_parts/widget_blueprints/gadgets/safe-script.xml"),
     ),
+    (
+        "gadgets",
+        "music-player.xml",
+        include_str!("../template_parts/widget_blueprints/gadgets/music-player.xml"),
+    ),
 ];
 
 /// Default modules seeded on first run. Tuple: (category, filename, content).
@@ -336,7 +341,7 @@ pub fn save_custom_module(category: &str, name: &str, content: &str) -> std::io:
     })?;
     std::fs::create_dir_all(&dir)?;
 
-    let safe_name = sanitize_filename(name);
+    let safe_name = sanitize(name, ".xml", "custom_module");
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
     log::info!(
@@ -465,7 +470,7 @@ pub fn save_widget_blueprint(group: &str, name: &str, content: &str) -> std::io:
         .join(safe_group);
     std::fs::create_dir_all(&dir)?;
 
-    let safe_name = sanitize_filename(name);
+    let safe_name = sanitize(name, ".xml", "custom_module");
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
     log::info!("[fs_bridge] Saved widget blueprint: {}", dest.display());
@@ -475,7 +480,7 @@ pub fn save_widget_blueprint(group: &str, name: &str, content: &str) -> std::io:
 /// Delete a saved module override (`templates/<category>/<name>.xml`), e.g. on
 /// Revert. Missing file is treated as success.
 pub fn delete_custom_module(category: &str, name: &str) -> std::io::Result<()> {
-    let Some(path) = category_dir(category).map(|d| d.join(sanitize_filename(name))) else {
+    let Some(path) = category_dir(category).map(|d| d.join(sanitize(name, ".xml", "custom_module"))) else {
         return Ok(());
     };
     match std::fs::remove_file(&path) {
@@ -507,7 +512,7 @@ pub fn delete_widget_blueprint(group: &str, name: &str) -> std::io::Result<()> {
             )
         })?
         .join(safe_group)
-        .join(sanitize_filename(name));
+        .join(sanitize(name, ".xml", "custom_module"));
     match std::fs::remove_file(&path) {
         Ok(()) => {
             log::info!("[fs_bridge] Deleted widget blueprint: {}", path.display());
@@ -556,29 +561,7 @@ pub fn open_templates_folder() -> std::io::Result<()> {
             "Cannot determine system data directory",
         )
     })?;
-
-    // Ensure the directory exists before asking the OS to open it.
-    std::fs::create_dir_all(&path)?;
-
-    #[cfg(target_os = "linux")]
-    std::process::Command::new("xdg-open")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    #[cfg(target_os = "macos")]
-    std::process::Command::new("open")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    #[cfg(target_os = "windows")]
-    std::process::Command::new("explorer")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    Ok(())
+    open_dir(path)
 }
 
 /// Spawn the platform-native file manager focused on the widgets-blueprint root.
@@ -590,63 +573,20 @@ pub fn open_widgets_folder() -> std::io::Result<()> {
             "Cannot determine system data directory",
         )
     })?;
-
-    std::fs::create_dir_all(&path)?;
-
-    #[cfg(target_os = "linux")]
-    std::process::Command::new("xdg-open")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    #[cfg(target_os = "macos")]
-    std::process::Command::new("open")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    #[cfg(target_os = "windows")]
-    std::process::Command::new("explorer")
-        .arg(&path)
-        .spawn()
-        .map(|_| ())?;
-
-    Ok(())
+    open_dir(path)
 }
 
 /// Spawn the platform-native file manager focused on the icons root.
 /// Creates the directory first if it does not yet exist.
 pub fn open_icons_folder() -> Result<(), String> {
     let path = icons_root().ok_or_else(|| "Cannot determine system data directory".to_string())?;
-
-    // Ensure the directory exists before asking the OS to open it.
-    std::fs::create_dir_all(&path).map_err(|e| e.to_string())?;
-
-    #[cfg(target_os = "linux")]
-    std::process::Command::new("xdg-open")
-        .arg(&path)
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    #[cfg(target_os = "macos")]
-    std::process::Command::new("open")
-        .arg(&path)
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    #[cfg(target_os = "windows")]
-    std::process::Command::new("explorer")
-        .arg(&path)
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
+    open_dir(path).map_err(|e| e.to_string())
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-/// Strip path-traversal characters and ensure an `.xml` extension.
-fn sanitize_filename(name: &str) -> String {
+/// Strip path-traversal characters and ensure the given extension.
+fn sanitize(name: &str, ext: &str, fallback: &str) -> String {
     let cleaned: String = name
         .chars()
         .map(|c| match c {
@@ -657,39 +597,15 @@ fn sanitize_filename(name: &str) -> String {
 
     let cleaned = cleaned.trim_start_matches('.').to_string();
     let cleaned = if cleaned.is_empty() {
-        "custom_module".to_string()
+        fallback.to_string()
     } else {
         cleaned
     };
 
-    if cleaned.to_lowercase().ends_with(".xml") {
+    if cleaned.to_lowercase().ends_with(ext) {
         cleaned
     } else {
-        format!("{}.xml", cleaned)
-    }
-}
-
-/// Strip path-traversal characters and ensure a `.css` extension.
-fn sanitize_css_filename(name: &str) -> String {
-    let cleaned: String = name
-        .chars()
-        .map(|c| match c {
-            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => '_',
-            c => c,
-        })
-        .collect();
-
-    let cleaned = cleaned.trim_start_matches('.').to_string();
-    let cleaned = if cleaned.is_empty() {
-        "custom_css".to_string()
-    } else {
-        cleaned
-    };
-
-    if cleaned.to_lowercase().ends_with(".css") {
-        cleaned
-    } else {
-        format!("{}.css", cleaned)
+        format!("{}{}", cleaned, ext)
     }
 }
 
@@ -705,7 +621,7 @@ pub fn save_custom_css(filename: &str, content: &str) -> std::io::Result<PathBuf
     })?;
     std::fs::create_dir_all(&dir)?;
 
-    let safe_name = sanitize_css_filename(filename);
+    let safe_name = sanitize(filename, ".css", "custom_css");
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
     log::info!("[fs_bridge] Saved custom CSS: {}", safe_name);
@@ -740,30 +656,6 @@ pub fn load_all_custom_css() -> std::io::Result<std::collections::HashMap<String
     Ok(css_files)
 }
 
-/// Strip path-traversal characters and ensure a `.js` extension.
-fn sanitize_js_filename(name: &str) -> String {
-    let cleaned: String = name
-        .chars()
-        .map(|c| match c {
-            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => '_',
-            c => c,
-        })
-        .collect();
-
-    let cleaned = cleaned.trim_start_matches('.').to_string();
-    let cleaned = if cleaned.is_empty() {
-        "custom_js".to_string()
-    } else {
-        cleaned
-    };
-
-    if cleaned.to_lowercase().ends_with(".js") {
-        cleaned
-    } else {
-        format!("{}.js", cleaned)
-    }
-}
-
 /// Write a JS buffer (e.g. from the VFS) into the js folder.
 /// Creates the folder if absent.
 /// Returns the path the file was written to.
@@ -776,7 +668,7 @@ pub fn save_custom_js(filename: &str, content: &str) -> std::io::Result<PathBuf>
     })?;
     std::fs::create_dir_all(&dir)?;
 
-    let safe_name = sanitize_js_filename(filename);
+    let safe_name = sanitize(filename, ".js", "custom_js");
     let dest = dir.join(&safe_name);
     std::fs::write(&dest, content)?;
     log::info!("[fs_bridge] Saved custom JS: {}", safe_name);
@@ -786,7 +678,7 @@ pub fn save_custom_js(filename: &str, content: &str) -> std::io::Result<PathBuf>
 /// Delete a persisted CSS override (`css/<name>.css`), e.g. on Reset to
 /// default. Missing file is treated as success.
 pub fn delete_custom_css(filename: &str) -> std::io::Result<()> {
-    let Some(path) = css_root().map(|d| d.join(sanitize_css_filename(filename))) else {
+    let Some(path) = css_root().map(|d| d.join(sanitize(filename, ".css", "custom_css"))) else {
         return Ok(());
     };
     match std::fs::remove_file(&path) {
@@ -802,7 +694,7 @@ pub fn delete_custom_css(filename: &str) -> std::io::Result<()> {
 /// Delete a persisted JS override (`js/<name>.js`), e.g. on Reset to default.
 /// Missing file is treated as success.
 pub fn delete_custom_js(filename: &str) -> std::io::Result<()> {
-    let Some(path) = js_root().map(|d| d.join(sanitize_js_filename(filename))) else {
+    let Some(path) = js_root().map(|d| d.join(sanitize(filename, ".js", "custom_js"))) else {
         return Ok(());
     };
     match std::fs::remove_file(&path) {

@@ -4,7 +4,6 @@
 
 use super::tracking::{menu_link_anchor, widget_title_h2};
 use super::util::{escape_attr, escape_html, unescape_for_style};
-use crate::config::prefs::RenderPrefs;
 use crate::config::{BackgroundMode, BlogPost, ThemeConfig};
 use std::collections::HashMap;
 
@@ -31,12 +30,12 @@ impl PreviewTemplateMode {
 fn get_default_posts() -> Vec<BlogPost> {
     vec![
         BlogPost {
-            title: "WYSIWYG: The Tier 3 Architecture".to_string(),
+            title: "Welcome to Your Live Preview".to_string(),
             date: "24 Oct, 2026".to_string(),
-            tags: vec!["Preview".to_string(), "Architecture".to_string()],
-            snippet: "This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.".to_string(),
+            tags: vec!["Preview".to_string(), "Getting Started".to_string()],
+            snippet: "This preview shows exactly how your blog will look once your theme is published to Blogger: the same layout, fonts, and colors your readers will see. No surprises after export.".to_string(),
             featured_image: None,
-            body: "<p>This is a 100% accurate representation of your exported Blogger XML. It maps the exact CSS class hooks, variables, and DOM structures used by the Blogger engine, completely eliminating visual guesswork.</p>\n<p>Furthermore, Dioxus now runs a <strong>Two-Way DOM Morpher</strong> inside the iframe. Modifying colors, fonts, and text fields in the left/right docks will update the preview instantly without causing destructive iframe reloads or scroll-jumping.</p>\n<blockquote>\"WYSIWYG means What You See Is What You Get. No more making up shite.\"</blockquote>\n<p>Shift+Click on any text, background, or <code data-edit-target=\"typography.mono_font_stack\">code block</code> to instantly jump to the relevant editor panel via the JS interop bridge.</p>".to_string(),
+            body: "<p>This preview shows exactly how your blog will look once your theme is published to Blogger: the same layout, fonts, and colors your readers will see. No surprises after export.</p>\n<p><strong>Try it now:</strong> pick a different color or font in the side panels and watch this page update instantly. Nothing reloads and you never lose your place on the page.</p>\n<blockquote>\"What you see here is what your readers get. This preview is built from the very same theme file you upload to Blogger.\"</blockquote>\n<p>Handy shortcut: turn on <strong>X-Ray</strong> (the skeleton button in the toolbar), then click any text, background, or <code data-edit-target=\"typography.mono_font_stack\">code snippet</code> to jump straight to the setting that controls it. Hold <strong>Shift</strong> and click any icon to swap it.</p>".to_string(),
             url: "#".to_string(),
             author_name: "Moribund Engine".to_string(),
         }
@@ -379,7 +378,7 @@ pub fn preview_right_panel_html(config: &ThemeConfig) -> String {
             <button class="panel-toggle" data-target="panel-right" data-edit-target="icons.panel_close"><span class="visually-hidden">Close</span></button>
         </div>
         <div class="panel-content sidebar-section">
-            <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">WYSIWYG: The Tier 3 Architecture</a></li><li><a href="#">Hot-swapping Variables</a></li></ul></div></div>
+            <div class="widget HTML" id="HTML1" data-block-id="HTML1">{toc_title}<div class="widget-content" data-edit-target="typography.body_font_stack"><ul><li><a href="#">Welcome to Your Live Preview</a></li><li><a href="#">Editing with Shift+Click</a></li></ul></div></div>
         </div>
     </aside>"##
     )
@@ -477,8 +476,8 @@ pub fn preview_widget_html(
         "Wikipedia" => r#"<form class="wikipedia-search-form" onsubmit="return false;" style="display:flex;gap:6px;align-items:center;"><img class="wikipedia-icon" src="https://resources.blogblog.com/img/widgets/icon_wikipedia_w.png" style="width:24px;height:24px;flex:0 0 auto;"/><input class="wikipedia-search-input" type="text" placeholder="Search Wikipedia…" style="flex:1;min-width:0;"/><input class="wikipedia-search-button" type="submit" value="Go"/></form>"#.to_string(),
         "Translate" => r#"<div id="google_translate_element"><label style="display:flex;gap:6px;align-items:center;">🌐 <select><option>Select language</option><option>English</option><option>Español</option><option>Français</option><option>Deutsch</option></select></label></div>"#.to_string(),
         "ContactForm" => r#"<form><input type="text" placeholder="Name"><input type="email" placeholder="Email"><textarea placeholder="Message"></textarea><button type="button">Send</button></form>"#.to_string(),
-        "HTML" => r#"<p>Custom HTML gadget — add markup in the Code tab to see it rendered here.</p>"#.to_string(),
-        _ => format!("<p>{} widget — renders live on Blogger.</p>", escape_html(w_type)),
+        "HTML" => r#"<p>Custom HTML gadget. Add markup in the Code tab to see it rendered here.</p>"#.to_string(),
+        _ => format!("<p>{} widget renders live on Blogger.</p>", escape_html(w_type)),
     };
 
     format!(
@@ -551,27 +550,7 @@ pub fn render_preview_html(
     );
 
     // Wire up the Plugin Pipeline for the Preview
-    let mut active_plugins: Vec<Box<dyn crate::render::plugins::MorBloggerPlugin>> = Vec::new();
-    if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
-        if let Ok(prefs) = toml::from_str::<RenderPrefs>(&toml_str) {
-            for p in prefs.plugins {
-                if p.enabled {
-                    match p.id.as_str() {
-                        "os_chameleon" => {
-                            active_plugins.push(Box::new(crate::render::plugins::OsChameleonPlugin))
-                        }
-                        "dewey_indexer" => active_plugins
-                            .push(Box::new(crate::render::plugins::DeweyIndexerPlugin)),
-                        "workspace_docks" => active_plugins
-                            .push(Box::new(crate::render::plugins::WorkspaceDocksPlugin)),
-                        "notification_bell" => active_plugins
-                            .push(Box::new(crate::render::plugins::NotificationBellPlugin)),
-                        _ => {}
-                    }
-                }
-            }
-        }
-    }
+    let active_plugins = crate::render::plugins::load_active_plugins();
 
     let mut plugin_javascript = String::new();
     for plugin in active_plugins {

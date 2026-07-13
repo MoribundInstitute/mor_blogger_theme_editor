@@ -746,13 +746,6 @@ const PAGE_OPTIONS: &[(&str, &str)] = &[
     ("LMS", "Courses"),
 ];
 
-/// Minimal escaping for a value placed inside a double-quoted JSON string.
-/// ponytail: covers backslash/quote/newline — enough for widget names/types, which
-/// don't carry control chars; widen if richer values ever flow through.
-fn json_escape(s: &str) -> String {
-    s.replace('\\', "\\\\").replace('"', "\\\"").replace('\n', " ")
-}
-
 #[component]
 fn ExportResultView(
     export_xml: Memo<String>,
@@ -913,8 +906,10 @@ fn ExportResultView(
                             let (w_type, title) = slots.first().map(|s| (s.w_type.clone(), s.title.clone())).unwrap_or_default();
                             let name = if title.trim().is_empty() { bp.name.clone() } else { title };
                             let manifest = format!(
-                                "{{\n  \"name\": \"{}\",\n  \"type\": \"{}\",\n  \"group\": \"{}\",\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
-                                json_escape(&name), json_escape(&w_type), json_escape(&bp.group)
+                                "{{\n  \"name\": {},\n  \"type\": {},\n  \"group\": {},\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
+                                serde_json::Value::from(name.clone()),
+                                serde_json::Value::from(w_type),
+                                serde_json::Value::from(bp.group.clone())
                             );
                             let readme = format!(
                                 "# {name}\n\nA custom Blogger widget for the MorBlogger Theme Editor.\n\n## Install\n- Editor: Widgets dock → + New Widget → paste `widget.xml` into the Code tab.\n- Blogger: Layout → Add a Gadget → HTML/JavaScript, or include in your theme XML.\n\n## Customize\nValues marked `data-mor-field` are editable in the Widget Workbench Settings form.\n"
@@ -964,8 +959,9 @@ fn ExportResultView(
                                 return;
                             };
                             let manifest = format!(
-                                "{{\n  \"name\": \"{}\",\n  \"kind\": \"module\",\n  \"category\": \"{}\",\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
-                                json_escape(&m.name), json_escape(&m.category)
+                                "{{\n  \"name\": {},\n  \"kind\": \"module\",\n  \"category\": {},\n  \"description\": \"\",\n  \"author\": \"\",\n  \"version\": \"1.0.0\",\n  \"tags\": []\n}}\n",
+                                serde_json::Value::from(m.name.clone()),
+                                serde_json::Value::from(m.category.clone())
                             );
                             let readme = format!(
                                 "# {}\n\nA custom Blogger template module ({}) for the MorBlogger Theme Editor.\n\n## Install\nOpen the editor's Module Workbench and import `module.xml`, or drop it into your `workspace/{}/` folder.\n",

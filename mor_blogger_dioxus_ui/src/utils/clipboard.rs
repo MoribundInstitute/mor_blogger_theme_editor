@@ -1,11 +1,25 @@
-// Native desktop clipboard handler.
+// Webview clipboard handler.
 
 pub fn copy_to_clipboard(text: String) {
-    // arboard wraps the OS clipboard APIs (Win32 / NSPasteboard / X11 / Wayland).
-    match arboard::Clipboard::new() {
-        Ok(mut clipboard) => {
-            let _ = clipboard.set_text(text);
-        }
-        Err(e) => log::error!("Failed to initialize native clipboard: {e}"),
-    }
+    let payload = serde_json::Value::from(text).to_string();
+    let js = format!(
+        r#"(function (t) {{
+    function fallback(t) {{
+        var ta = document.createElement('textarea');
+        ta.value = t;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {{ document.execCommand('copy'); }} catch (e) {{}}
+        document.body.removeChild(ta);
+    }}
+    if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(t).catch(function () {{ fallback(t); }});
+    }} else {{
+        fallback(t);
+    }}
+}})({payload});"#
+    );
+    let _ = dioxus::document::eval(&js);
 }

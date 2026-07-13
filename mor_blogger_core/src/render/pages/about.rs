@@ -1,5 +1,5 @@
 use crate::config::AboutPageConfig;
-use crate::render::pages::escape_html;
+use crate::render::util::escape_attr as escape_html;
 
 /// Emits the About page as pure layout.
 /// Upgraded to a 2-Column "Instructor / Author Profile" aesthetic.

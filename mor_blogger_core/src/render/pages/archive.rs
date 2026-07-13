@@ -1,12 +1,11 @@
 use crate::config::ArchivePageConfig;
-use crate::render::pages::escape_html;
+use crate::render::util::escape_attr as escape_html;
 
 /// Emits the Archive page as pure layout. This stencil inherits both its tokens
 /// and its layout classes (`.archive-year`, `.post-grid`, ...) from the Mor
 /// theme skin it is pasted inside, so it emits no `<style>` block of its own.
-/// For an offline color override, wrap the output with `apply_stencil_colors` in
-/// the parent module. See the portability caveat in the README if you ship this
-/// as a standalone compendium stencil.
+/// See the portability caveat in the README if you ship this as a standalone
+/// compendium stencil.
 pub fn generate_archive_html(config: &ArchivePageConfig) -> String {
     let mut html = String::new();
 

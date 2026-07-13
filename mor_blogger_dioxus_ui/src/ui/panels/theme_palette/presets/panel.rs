@@ -1,12 +1,11 @@
-use dioxus::html::HasFileData;
 use dioxus::prelude::*;
 
 use mor_blogger_core::config::ThemeConfig;
 use mor_blogger_core::presets::{all_presets, Preset};
-use mor_blogger_core::utils::rehydration::extract_and_decode;
 
 use super::importers::{
-    fetch_remote_theme, normalize_preset_url, parse_theme_text, save_imported_gtk_preset,
+    fetch_remote_theme, normalize_preset_url, parse_theme_text, register_imported_preset,
+    save_imported_gtk_preset, COMPENDIUM_REPO_URL, COMPENDIUM_SITE_URL,
 };
 use super::morph_preview_from_preset;
 use crate::app::state::{DockPosition, LayoutState, ThemeState};
@@ -62,6 +61,35 @@ const PRESET_FLOATING_DRAG_JS: &str = r#"
 })();
 "#;
 
+/// Land an imported theme as a first-class preset: saved to disk, applied
+/// through the same visual-only path as built-ins, and selected in the list.
+fn apply_imported_theme(
+    signals: ThemeSignals,
+    mut active: Signal<Option<&'static str>>,
+    mut theme: ThemeState,
+    config: &ThemeConfig,
+) {
+    match register_imported_preset(config) {
+        Ok(preset) => {
+            // Imports carry one authored palette; the opposite slot is derived.
+            // Switch the editor to the authored mode so the first thing shown
+            // is the design as intended, not the auto-inverted guess.
+            let is_dark = preset.dark.colors == config.colors;
+            signals.is_dark_mode.clone().set(is_dark);
+            signals.apply_preset(&preset);
+            active.set(Some(preset.id));
+            theme.active_variant.set(None);
+            theme.commit();
+            theme.last_imported_gtk.set(None);
+            theme
+                .import_status
+                .set(format!("Imported '{}' — added to preset list.", preset.name));
+            morph_preview_from_preset(&preset, is_dark);
+        }
+        Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
+    }
+}
+
 #[derive(Props, Clone, PartialEq)]
 pub struct PresetsPanelProps {
     pub signals: ThemeSignals,
@@ -78,7 +106,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut theme = use_context::<ThemeState>();
     let mut layout = use_context::<LayoutState>();
     let presets = all_presets();
-    let mut active = props.active_preset;
+    let active = props.active_preset;
 
     let mut show_import = use_signal(|| false);
     let mut remote_url = use_signal(String::new);
@@ -151,6 +179,25 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
 
             p { class: "preset-panel-copy", "One click to swap the entire theme. Edit any field afterward to customize." }
 
+            div { class: "editor-row", style: "margin-bottom: 12px; gap: 6px; flex-wrap: wrap;",
+                button {
+                    class: "editor-button editor-button-small",
+                    title: "Browse community theme presets in the online gallery",
+                    onclick: move |_| {
+                        let _ = std::process::Command::new("xdg-open").arg(COMPENDIUM_SITE_URL).spawn();
+                    },
+                    "Browse Preset Compendium ↗"
+                }
+                button {
+                    class: "editor-button editor-button-small",
+                    title: "View the Preset Compendium source on GitHub",
+                    onclick: move |_| {
+                        let _ = std::process::Command::new("xdg-open").arg(COMPENDIUM_REPO_URL).spawn();
+                    },
+                    "Source on GitHub ↗"
+                }
+            }
+
             div { class: "editor-note", style: "margin-bottom: 12px;",
                 div { class: "editor-note-body", "Active preset: {active_label} — {active_scheme}" }
                 div { class: "editor-note-body", "Preset CSS bytes: {preset_css_bytes}" }
@@ -183,7 +230,17 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             if show_import() {
                 div { class: "editor-note",
                     h4 { class: "editor-note-title", "Import Compendium Theme" }
-                    p { class: "editor-note-body", "Paste remote URL or local file below." }
+                    p { class: "editor-note-body",
+                        "Browse the "
+                        a {
+                            href: "{COMPENDIUM_SITE_URL}",
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            style: "color: var(--editor-accent, #e8a04c);",
+                            "Preset Compendium"
+                        }
+                        " for import URLs, then paste a remote JSON URL or local file below."
+                    }
 
                     div { class: "editor-field-group",
                         label { class: "editor-field-label", "Remote JSON URL" }
@@ -200,7 +257,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                     async move {
                                         if url.trim().is_empty() { theme.import_status.set("Paste URL first.".to_string()); return; }
                                         match fetch_remote_theme(&url).await {
-                                            Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported remote theme.".to_string()); }
+                                            Ok(config) => apply_imported_theme(signals, active, theme, &config),
                                             Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                         }
                                     }
@@ -221,7 +278,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                         if let Some(file) = evt.files().first() {
                                             if let Ok(bytes) = file.read_bytes().await {
                                                 match parse_theme_text(&String::from_utf8_lossy(&bytes)) {
-                                                    Ok(config) => { signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported local theme file.".to_string()); }
+                                                    Ok(config) => apply_imported_theme(signals, active, theme, &config),
                                                     Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                                 }
                                             }
@@ -243,7 +300,7 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                                 class: "editor-button",
                                 onclick: move |_| {
                                     match parse_theme_text(&pasted_theme()) {
-                                        Ok(config) => { props.signals.apply_config(&config); active.set(None); theme.commit(); theme.last_imported_gtk.set(None); theme.import_status.set("Imported pasted theme.".to_string()); }
+                                        Ok(config) => apply_imported_theme(props.signals, active, theme, &config),
                                         Err(err) => theme.import_status.set(format!("Import failed: {}", err)),
                                     }
                                 },
@@ -522,87 +579,6 @@ pub fn PresetFloatingWindow(props: PresetFloatingWindowProps) -> Element {
                     }
                 }
             }
-        }
-    }
-}
-
-#[component]
-pub fn ThemeRestoreDropZone(
-    on_restore: EventHandler<ThemeConfig>,
-    on_close: EventHandler<()>,
-) -> Element {
-    let mut is_hovered = use_signal(|| false);
-    let mut import_text = use_signal(|| "".to_string());
-    let mut import_status = use_signal(|| "".to_string());
-
-    let restore_from_xml = move |contents: String, source_label: String| {
-        import_text.set(contents.clone());
-        match extract_and_decode(&contents) {
-            Ok(config) => {
-                on_restore.call(config);
-                import_status.set(format!("Workspace restored from {}!", source_label));
-                import_text.set("".to_string());
-            }
-            Err(err) => import_status.set(format!("Error restoring {}: {}", source_label, err)),
-        }
-    };
-
-    rsx! {
-        div {
-            class: if is_hovered() { "restore-workspace-drawer hovered" } else { "restore-workspace-drawer" },
-            ondragover: move |evt| { evt.prevent_default(); is_hovered.set(true); import_status.set("Drop XML file to restore.".to_string()); },
-            ondragenter: move |evt| { evt.prevent_default(); is_hovered.set(true); },
-            ondragleave: move |_| is_hovered.set(false),
-            ondrop: {
-                let mut restore_from_xml = restore_from_xml.clone();
-                move |evt| {
-                    async move {
-                        evt.prevent_default(); is_hovered.set(false); import_status.set("Reading file...".to_string());
-                        if let Some(file) = evt.files().first() {
-                            if let Ok(bytes) = file.read_bytes().await {
-                                restore_from_xml(String::from_utf8_lossy(&bytes).into_owned(), file.name());
-                            }
-                        }
-                    }
-                }
-            },
-            div { class: "restore-header",
-                h4 { class: "restore-title", "Restore Workspace from Blogger XML" }
-                button { class: "editor-mini-button", onclick: move |_| on_close.call(()), "Close" }
-            }
-            p { class: "restore-copy", "Paste exported Blogger XML, drag and drop an .xml file, or use Choose XML." }
-            div { class: "editor-row-stretch",
-                textarea { class: "editor-textarea restore-textarea", placeholder: "Paste Blogger XML here...", value: "{import_text}", oninput: move |evt| { import_text.set(evt.value()); import_status.set(String::new()); } }
-                div { class: "restore-button-stack",
-                    label { class: "editor-button restore-button", "Choose XML"
-                        input {
-                            r#type: "file", accept: ".xml", style: "display: none;",
-                            onchange: {
-                                let mut restore_from_xml = restore_from_xml.clone();
-                                move |evt| async move {
-                                    if let Some(file) = evt.files().first() {
-                                        if let Ok(bytes) = file.read_bytes().await {
-                                            restore_from_xml(String::from_utf8_lossy(&bytes).into_owned(), file.name());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    button {
-                        class: "editor-button restore-button",
-                        onclick: {
-                            let mut restore_from_xml = restore_from_xml.clone();
-                            move |_| {
-                                if import_text().trim().is_empty() { import_status.set("Paste XML first.".to_string()); return; }
-                                restore_from_xml(import_text(), "pasted XML".to_string());
-                            }
-                        },
-                        "Rehydrate"
-                    }
-                }
-            }
-            if !import_status().is_empty() { div { class: "restore-status", "{import_status}" } }
         }
     }
 }

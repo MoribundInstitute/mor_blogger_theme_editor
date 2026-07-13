@@ -7,6 +7,9 @@ pub struct ColorConfig {
     pub bg_base: String,
     pub bg_panel: SurfaceFill,
     pub bg_elevated: SurfaceFill,
+    /// Header band surface. Defaults to transparent (page background shows
+    /// through) so pre-existing themes keep their look.
+    pub header_fill: SurfaceFill,
     pub fg_base: String,
     pub fg_muted: String,
     pub accent: String,
@@ -55,6 +58,7 @@ impl Default for ColorConfig {
             bg_base: "#222129".to_string(),
             bg_panel: default_bg.clone(),
             bg_elevated: default_bg,
+            header_fill: SurfaceFill::solid("transparent"),
             fg_base: "#f2eadf".to_string(),
             fg_muted: "#bc8d6b".to_string(),
             accent: "#a9aae2".to_string(),
@@ -474,10 +478,10 @@ const ICON_SEARCH_PATH: &str = "M15.5 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0
 const ICON_MENU_PATH: &str = "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z";
 
 // New standard blog action icon paths (minimal Lucide/Feather style)
-const ICON_ARCHIVE_PATH: &str = "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
-const ICON_LABEL_PATH: &str =
+pub(crate) const ICON_ARCHIVE_PATH: &str = "M5 8v12h14V8 M10 12h4 M3 4h18v4H3z";
+pub(crate) const ICON_LABEL_PATH: &str =
     "M20 13 12 21 3 12V3h9l8 8z M7.5 7.5A1.5 1.5 0 107.5 4a1.5 1.5 0 000 3.5z";
-const ICON_TOC_PATH: &str = "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01";
+pub(crate) const ICON_TOC_PATH: &str = "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01";
 const ICON_SHARE_PATH: &str = "M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8 M16 6l-4-4-4 4 M12 2v13";
 const ICON_USER_PATH: &str =
     "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8";

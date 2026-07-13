@@ -16,7 +16,7 @@ enum ThemeReloadMsg {
 
 static THEME_RELOAD_TX: OnceLock<UnboundedSender<ThemeReloadMsg>> = OnceLock::new();
 
-pub fn register_theme_reload_sender(tx: UnboundedSender<ThemeReloadMsg>) {
+fn register_theme_reload_sender(tx: UnboundedSender<ThemeReloadMsg>) {
     let _ = THEME_RELOAD_TX.set(tx);
 }
 
@@ -28,7 +28,7 @@ fn send_reload(msg: ThemeReloadMsg) {
     }
 }
 
-pub fn spawn_editor_prefs_watcher() {
+fn spawn_editor_prefs_watcher() {
     static WATCHER_STARTED: OnceLock<()> = OnceLock::new();
     if WATCHER_STARTED.set(()).is_err() {
         return;
@@ -111,7 +111,7 @@ pub fn spawn_editor_prefs_watcher() {
     });
 }
 
-pub fn spawn_theme_presets_watcher() {
+fn spawn_theme_presets_watcher() {
     static WATCHER_STARTED: OnceLock<()> = OnceLock::new();
     if WATCHER_STARTED.set(()).is_err() {
         return;

@@ -1,5 +1,5 @@
 use crate::config::CategoriesPageConfig;
-use crate::render::pages::escape_html;
+use crate::render::util::escape_attr as escape_html;
 
 /// Emits the Directory/Categories page as pure layout.
 /// Inherits colors and fonts directly from the active theme's CSS variables.

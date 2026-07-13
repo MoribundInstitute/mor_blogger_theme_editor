@@ -201,8 +201,22 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
 
     let light_bg_css = generate_background_css(&light_palette.background.mode);
     let dark_bg_css = generate_background_css(&dark_palette.background.mode);
-    let light_bg_workspace = generate_background_value(&light_palette.background.mode);
-    let dark_bg_workspace = generate_background_value(&dark_palette.background.mode);
+    // `--bg-workspace` is a surface color panels paint themselves with. A Tile
+    // background must NOT flow into it: `url(...)` as a panel background makes
+    // every panel re-tile the image from its own origin instead of sitting
+    // opaque over the page tile. Panels fall back to the palette's base color.
+    let workspace_value = |mode: &BackgroundMode, bg_base: &str| match mode {
+        BackgroundMode::Tile { .. } => escape_attr(bg_base),
+        other => generate_background_value(other),
+    };
+    let light_bg_workspace = workspace_value(
+        &light_palette.background.mode,
+        &light_palette.colors.bg_base,
+    );
+    let dark_bg_workspace = workspace_value(
+        &dark_palette.background.mode,
+        &dark_palette.colors.bg_base,
+    );
     let background_tile_url = match &config.background.mode {
         BackgroundMode::Tile { url } => url.clone(),
         _ => String::new(),
@@ -293,6 +307,10 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         &escape_attr(&light_palette.colors.bg_elevated.to_css()),
     );
     xml = xml.replace(
+        "{{LIGHT_HEADER_SURFACE}}",
+        &escape_attr(&light_palette.colors.header_fill.to_css()),
+    );
+    xml = xml.replace(
         "{{LIGHT_FG_BASE}}",
         &escape_attr(&light_palette.colors.fg_base),
     );
@@ -360,6 +378,10 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
     xml = xml.replace(
         "{{DARK_BG_ELEVATED}}",
         &escape_attr(&dark_palette.colors.bg_elevated.to_css()),
+    );
+    xml = xml.replace(
+        "{{DARK_HEADER_SURFACE}}",
+        &escape_attr(&dark_palette.colors.header_fill.to_css()),
     );
     xml = xml.replace(
         "{{DARK_FG_BASE}}",
@@ -538,6 +560,19 @@ pub fn render_css_sockets(mut xml: String, config: &ThemeConfig) -> String {
         "{{BACKGROUND_TILE_URL}}",
         &escape_attr(&background_tile_url),
     );
+
+    // A tiled page background sits directly behind post text (the canvas is
+    // transparent by design), so reading surfaces get a translucent scrim of
+    // the base color — legible text, tile still visible around and faintly
+    // through the edges. Emitted only when a tile is actually set.
+    let tile_scrim = if background_tile_url.trim().is_empty() {
+        String::new()
+    } else {
+        "/* Tile background: reading scrim over posts (see css_generator) */\n\
+         .mor-post, .post-outer-container { background: color-mix(in srgb, var(--bg-base) 92%, transparent); }"
+            .to_string()
+    };
+    xml = xml.replace("{{TILE_READING_SCRIM_CSS}}", &tile_scrim);
 
     xml = xml.replace(
         "{{ICON_SIDEBAR_LEFT}}",

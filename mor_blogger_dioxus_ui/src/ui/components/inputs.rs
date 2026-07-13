@@ -71,6 +71,50 @@ pub fn EditorSelect(
     }
 }
 
+/// Callback-flavored text field for state that lives inside a struct signal
+/// (where [`EditorInput`]'s `Signal<String>` binding can't reach).
+#[component]
+pub fn EditorTextField(
+    label: String,
+    value: String,
+    placeholder: String,
+    oninput: EventHandler<String>,
+) -> Element {
+    rsx! {
+        div {
+            class: "editor-field-group",
+
+            label {
+                class: "editor-field-label",
+                "{label}"
+            }
+
+            input {
+                r#type: "text",
+                value: "{value}",
+                placeholder: "{placeholder}",
+                class: "editor-field",
+                oninput: move |e| oninput.call(e.value())
+            }
+        }
+    }
+}
+
+#[component]
+pub fn EditorCheckbox(label: String, checked: bool, onchange: EventHandler<bool>) -> Element {
+    rsx! {
+        label {
+            style: "display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--fg-base); cursor: pointer;",
+            input {
+                r#type: "checkbox",
+                checked: checked,
+                onchange: move |e| onchange.call(e.checked()),
+            }
+            "{label}"
+        }
+    }
+}
+
 #[component]
 pub fn SectionTitle(title: String) -> Element {
     rsx! {

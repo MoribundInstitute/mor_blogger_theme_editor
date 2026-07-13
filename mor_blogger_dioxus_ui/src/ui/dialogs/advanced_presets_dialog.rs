@@ -1,6 +1,8 @@
 use crate::app::state::{RenderState, ThemeState};
 use crate::ui::dialogs::modal::Modal;
-use crate::ui::panels::theme_palette::presets::importers::choose_gtk_theme;
+use crate::ui::panels::theme_palette::presets::importers::{
+    choose_gtk_theme, COMPENDIUM_REPO_URL, COMPENDIUM_SITE_URL,
+};
 use dioxus::prelude::*;
 
 #[component]
@@ -64,6 +66,26 @@ pub fn AdvancedPresetsDialog(mut open: Signal<bool>) -> Element {
                     "Get GTK4 Themes..."
                 }
 
+                h4 { style: "color: var(--fg-muted); margin-top: 8px; margin-bottom: 4px;", "Theme Preset Compendium" }
+                button {
+                    class: "mor-btn",
+                    onclick: move |_| {
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg(COMPENDIUM_SITE_URL)
+                            .spawn();
+                    },
+                    "Browse Preset Compendium ↗"
+                }
+                button {
+                    class: "mor-btn-outline",
+                    onclick: move |_| {
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg(COMPENDIUM_REPO_URL)
+                            .spawn();
+                    },
+                    "Source on GitHub ↗"
+                }
+
                 h4 { style: "color: var(--fg-muted); margin-top: 8px; margin-bottom: 4px;", "Developer Tools" }
                 button {
                     class: "mor-btn",
@@ -73,15 +95,6 @@ pub fn AdvancedPresetsDialog(mut open: Signal<bool>) -> Element {
                             .spawn();
                     },
                     "Edit Presets (.toml)"
-                }
-                button {
-                    class: "mor-btn-outline",
-                    onclick: move |_| {
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg("https://github.com/MoribundInstitute/mor-blogger-theme-preset-compendium")
-                            .spawn();
-                    },
-                    "Theme Compendium (GitHub)"
                 }
             }
         }

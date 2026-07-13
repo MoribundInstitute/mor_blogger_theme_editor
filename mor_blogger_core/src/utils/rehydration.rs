@@ -77,16 +77,6 @@ pub fn inject_workspace_state(
     inject_marker(xml, &injection)
 }
 
-/// Injects only the theme config (legacy call sites without VFS context).
-pub fn inject_state(xml: &str, config: &ThemeConfig) -> Result<String, String> {
-    let config_toml = toml::to_string_pretty(config)
-        .map_err(|e| format!("Failed to serialize theme config to TOML: {}", e))?;
-    inject_workspace_state(
-        xml,
-        &RehydrationPayload::from_config(config.clone()).with_config_toml(config_toml),
-    )
-}
-
 /// Extracts the embedded workspace payload from exported Blogger XML.
 pub fn extract_workspace_state(pasted_xml: &str) -> Result<RehydrationPayload, String> {
     let payload = find_state_payload(pasted_xml)?;
@@ -219,7 +209,8 @@ fn encode_state_marker(payload: &RehydrationPayload) -> Result<String, String> {
     let binary_data =
         to_allocvec(&blob).map_err(|e| format!("Serialization failed: {}", e))?;
 
-    let compressed_data = zstd::encode_all(binary_data.as_slice(), 3)
+    // ponytail: level 19 — payload is ~1-2KB so encode cost is negligible; decode is level-agnostic
+    let compressed_data = zstd::encode_all(binary_data.as_slice(), 19)
         .map_err(|e| format!("Compression failed: {}", e))?;
 
     let encoded = STANDARD.encode(&compressed_data);
@@ -466,17 +457,5 @@ mod tests {
 
         assert_eq!(restored.config_toml, config_toml);
         assert_eq!(restored.vfs, vfs);
-    }
-
-    #[test]
-    fn inject_state_without_vfs_still_restores_config() {
-        let config = complex_config();
-        let rendered = crate::render::render_theme(&config, &HashMap::new());
-        let exported = inject_state(&rendered, &config).expect("inject legacy state");
-        let restored = extract_workspace_state(&exported).expect("extract legacy state");
-
-        assert_eq!(restored.config, config);
-        assert!(restored.vfs.is_empty());
-        assert!(!restored.config_toml.is_empty());
     }
 }

@@ -4,15 +4,16 @@
 //! This completely detaches aesthetic definitions from the compiled Rust binary.
 
 use crate::config::{BackgroundConfig, ColorConfig, ThemeConfig, TypographyConfig};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::OnceLock;
+use std::sync::RwLock;
 
-// Ensure UI compatibility by leaking strings safely only once at boot
-static LOADED_PRESETS: OnceLock<Vec<Preset>> = OnceLock::new();
+// Cached preset list; `None` means "reload from disk on next access" so
+// presets saved at runtime (imports, GTK saves) appear without a restart.
+static LOADED_PRESETS: RwLock<Option<Vec<Preset>>> = RwLock::new(None);
 
-#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PresetPalette {
     #[serde(default)]
     pub colors: ColorConfig,
@@ -94,7 +95,7 @@ struct TomlVariant {
 
 /// Optional `[scrollbars]` table. Each field overrides the corresponding
 /// ThemeConfig default only when present, so a preset can tune any subset.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct TomlScrollbars {
     width: Option<String>,
     track_color: Option<String>,
@@ -228,39 +229,115 @@ pub fn get_canonical_presets_dir() -> PathBuf {
 }
 
 pub fn all_presets() -> Vec<Preset> {
-    LOADED_PRESETS
-        .get_or_init(|| {
-            let mut presets = Vec::new();
+    if let Some(presets) = LOADED_PRESETS.read().unwrap().as_ref() {
+        return presets.clone();
+    }
+    let presets = load_presets_from_disk();
+    *LOADED_PRESETS.write().unwrap() = Some(presets.clone());
+    presets
+}
 
-            let preset_dir = get_canonical_presets_dir();
+/// Drop the cached preset list so the next [`all_presets`] call re-reads the
+/// presets directory. Call after writing a new preset file at runtime.
+pub fn reload_presets() {
+    *LOADED_PRESETS.write().unwrap() = None;
+}
 
-            if !preset_dir.exists() {
-                let _ = fs::create_dir_all(&preset_dir);
-                return presets;
-            }
+fn load_presets_from_disk() -> Vec<Preset> {
+    let mut presets = Vec::new();
 
-            if let Ok(entries) = fs::read_dir(&preset_dir) {
-                for entry in entries.flatten() {
-                    let path = entry.path();
-                    if path.extension().and_then(|s| s.to_str()) == Some("toml") {
-                        if let Ok(contents) = fs::read_to_string(&path) {
-                            match toml::from_str::<TomlPreset>(&contents) {
-                                Ok(toml_preset) => {
-                                    let id =
-                                        path.file_stem().unwrap().to_str().unwrap().to_string();
-                                    presets.push(toml_preset.into_preset(id));
-                                }
-                                Err(e) => eprintln!("Failed to parse preset {:?}: {}", path, e),
-                            }
+    let preset_dir = get_canonical_presets_dir();
+
+    if !preset_dir.exists() {
+        let _ = fs::create_dir_all(&preset_dir);
+        return presets;
+    }
+
+    if let Ok(entries) = fs::read_dir(&preset_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|s| s.to_str()) == Some("toml") {
+                if let Ok(contents) = fs::read_to_string(&path) {
+                    match toml::from_str::<TomlPreset>(&contents) {
+                        Ok(toml_preset) => {
+                            let id = path.file_stem().unwrap().to_str().unwrap().to_string();
+                            presets.push(toml_preset.into_preset(id));
                         }
+                        Err(e) => eprintln!("Failed to parse preset {:?}: {}", path, e),
                     }
                 }
             }
+        }
+    }
 
-            presets.sort_by(|a, b| a.name.cmp(b.name));
-            presets
-        })
-        .clone()
+    presets.sort_by(|a, b| a.name.cmp(b.name));
+    presets
+}
+
+/// Preset TOML written for themes saved at runtime (compendium imports, GTK
+/// saves). Same shape `TomlPreset` reads back: explicit dark/light palettes
+/// so the mode toggle restores the authored look instead of a generated one.
+#[derive(Serialize)]
+struct TomlPresetExport<'a> {
+    name: &'a str,
+    description: &'a str,
+    colors: &'a ColorConfig,
+    background: &'a BackgroundConfig,
+    typography: &'a TypographyConfig,
+    buttons: &'a crate::config::ButtonConfig,
+    dark: PresetPalette,
+    light: PresetPalette,
+    scrollbars: TomlScrollbars,
+    preset_css: &'a str,
+}
+
+fn build_preset_toml(name: &str, description: &str, config: &ThemeConfig) -> Result<String, String> {
+    // Same luminance classification the dark-mode toggle uses: the config's
+    // palette lands in its true slot, the opposite slot gets the derived pair.
+    let (light, dark) = resolve_palette_pair(None, None, config);
+
+    let export = TomlPresetExport {
+        name,
+        description,
+        colors: &config.colors,
+        background: &config.background,
+        typography: &config.typography,
+        buttons: &config.buttons,
+        dark,
+        light,
+        scrollbars: TomlScrollbars {
+            width: Some(config.scrollbar_width.clone()),
+            track_color: Some(config.scrollbar_track_color.clone()),
+            thumb_color: Some(config.scrollbar_thumb_color.clone()),
+            thumb_hover_color: Some(config.scrollbar_thumb_hover_color.clone()),
+        },
+        preset_css: &config.preset_css,
+    };
+
+    toml::to_string_pretty(&export).map_err(|e| e.to_string())
+}
+
+/// Save a `ThemeConfig` as a reusable preset TOML in the presets directory
+/// and refresh the preset list. Only the visual theme is captured — site
+/// content (title, menus, SEO…) stays out, matching what applying a preset
+/// touches. Overwrites an existing preset with the same id.
+pub fn save_theme_config_as_preset(
+    id: &str,
+    name: &str,
+    description: &str,
+    config: &ThemeConfig,
+) -> Result<PathBuf, String> {
+    let toml_str = build_preset_toml(name, description, config)?;
+
+    let preset_dir = get_canonical_presets_dir();
+    if !preset_dir.exists() {
+        fs::create_dir_all(&preset_dir).map_err(|e| e.to_string())?;
+    }
+
+    let file_path = preset_dir.join(format!("{}.toml", id));
+    fs::write(&file_path, toml_str).map_err(|e| e.to_string())?;
+    reload_presets();
+    Ok(file_path)
 }
 
 pub fn resolve_palette_pair(
@@ -275,23 +352,20 @@ pub fn resolve_palette_pair(
         }
     }
 
-    // Default theme canonical pair logic
-    // Heuristic: Is the current fallback_config representing a dark or light mode?
-    let is_currently_dark = match &fallback_config.background.mode {
-        crate::config::BackgroundMode::Gradient { from, .. } => {
-            // Default dark purple workspace gradient
-            from == "#1e1a4d"
-        }
-        crate::config::BackgroundMode::Solid { color } => {
-            // Default dark background color
-            color == "#0f1026" || color == "#222129"
-        }
-        _ => {
-            // Fallback: check bg_base directly
-            fallback_config.colors.bg_base == "#0f1026"
-                || fallback_config.colors.bg_base == "#222129"
-        }
+    // Default theme canonical pair logic.
+    // Measure the canvas: a theme is "dark" when its background is actually
+    // dark, not when it equals one of our own default hex strings — imported
+    // themes (e.g. compendium JSON with bg_base #080808) never matched those,
+    // got classified light, and wore a garbage inverted dark palette.
+    let bg_probe = match &fallback_config.background.mode {
+        crate::config::BackgroundMode::Gradient { from, .. } => from.as_str(),
+        crate::config::BackgroundMode::Solid { color } => color.as_str(),
+        _ => fallback_config.colors.bg_base.as_str(),
     };
+    let is_currently_dark = perceived_luminance(bg_probe)
+        .or_else(|| perceived_luminance(&fallback_config.colors.bg_base))
+        .map(|l| l < 0.5)
+        .unwrap_or(false);
 
     if is_currently_dark {
         // Fallback is dark: assign current to dark slot, and invert for light slot
@@ -318,26 +392,24 @@ pub fn resolve_palette_pair(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Shared font stacks & Helpers
-// ---------------------------------------------------------------------------
-
-pub const STACK_MONO: &str = "'Courier New', Courier, monospace";
-pub const STACK_SERIF: &str = "Georgia, 'Times New Roman', Times, serif";
-pub const STACK_SANS: &str =
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
-pub const STACK_NEWSPAPER: &str = "'Times New Roman', Times, Georgia, serif";
-pub const STACK_SYSTEM_UI: &str = "system-ui, -apple-system, sans-serif";
-pub const STACK_WIN95: &str = "'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif";
-
-pub fn gradient(from: &str, to: &str, angle_deg: u16) -> crate::config::SurfaceFill {
-    crate::config::SurfaceFill {
-        mode: crate::config::SurfaceMode::Gradient,
-        color: from.to_string(),
-        gradient_from: from.to_string(),
-        gradient_to: to.to_string(),
-        gradient_angle_deg: angle_deg,
-    }
+/// Perceived luminance (0.0 black – 1.0 white) of a `#rgb`/`#rrggbb` color.
+/// None for anything unparseable (var(), gradients, named colors).
+fn perceived_luminance(color: &str) -> Option<f32> {
+    let hex = color.trim().strip_prefix('#')?;
+    let (r, g, b) = match hex.len() {
+        3 => (
+            u8::from_str_radix(&hex[0..1].repeat(2), 16).ok()?,
+            u8::from_str_radix(&hex[1..2].repeat(2), 16).ok()?,
+            u8::from_str_radix(&hex[2..3].repeat(2), 16).ok()?,
+        ),
+        6 => (
+            u8::from_str_radix(&hex[0..2], 16).ok()?,
+            u8::from_str_radix(&hex[2..4], 16).ok()?,
+            u8::from_str_radix(&hex[4..6], 16).ok()?,
+        ),
+        _ => return None,
+    };
+    Some((0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0)
 }
 
 #[cfg(test)]
@@ -346,6 +418,50 @@ mod tests {
 
     // The preset format must carry scrollbar settings into base_config; overrides
     // are per-field, unspecified fields keep the ThemeConfig default.
+    #[test]
+    fn imported_dark_theme_lands_in_dark_palette_slot() {
+        // Compendium import regression: no active preset + a near-black canvas
+        // that matches none of our default hex strings must still classify as
+        // dark, keeping the imported colors in the dark slot (the old
+        // equality heuristic called it light and derived a garbage dark pair).
+        let mut cfg = crate::config::ThemeConfig::default();
+        cfg.colors.bg_base = "#080808".into();
+        cfg.colors.fg_base = "#ECECEB".into();
+        cfg.background.mode = crate::config::BackgroundMode::Solid { color: "#080808".into() };
+        let (light, dark) = resolve_palette_pair(None, None, &cfg);
+        assert_eq!(dark.colors.bg_base, "#080808", "imported colors must own the dark slot");
+        assert_ne!(light.colors.bg_base, "#080808", "light slot must be the derived pair");
+
+        // And a genuinely light import stays light.
+        cfg.colors.bg_base = "#f5f2ea".into();
+        cfg.background.mode = crate::config::BackgroundMode::Solid { color: "#f5f2ea".into() };
+        let (light, dark) = resolve_palette_pair(None, None, &cfg);
+        assert_eq!(light.colors.bg_base, "#f5f2ea");
+        assert_ne!(dark.colors.bg_base, "#f5f2ea");
+    }
+
+    #[test]
+    fn saved_preset_toml_round_trips_with_correct_palette_slots() {
+        let mut config = crate::config::defaults::default_theme_config();
+        config.colors.bg_base = "#0a0a0a".to_string();
+        config.colors.fg_base = "#eeeeee".to_string();
+        config.background.mode = crate::config::BackgroundMode::Solid {
+            color: "#0a0a0a".into(),
+        };
+        config.preset_css = ".x { color: red; }".to_string();
+        config.scrollbar_width = "13px".to_string();
+
+        let toml_str = build_preset_toml("Imported", "test", &config).unwrap();
+        let parsed: TomlPreset = toml::from_str(&toml_str).unwrap();
+        let preset = parsed.into_preset("imported".to_string());
+
+        // Dark-authored palette lands in the dark slot; light is derived.
+        assert_eq!(preset.dark.colors.bg_base, "#0a0a0a");
+        assert_ne!(preset.light.colors.bg_base, "#0a0a0a");
+        assert_eq!(preset.preset_css, ".x { color: red; }");
+        assert_eq!(preset.base_config.scrollbar_width, "13px");
+    }
+
     #[test]
     fn toml_scrollbars_map_into_base_config() {
         let src = "name = \"T\"\n[scrollbars]\nwidth = \"13px\"\nthumb_color = \"#abcdef\"\n";

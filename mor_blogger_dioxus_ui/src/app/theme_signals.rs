@@ -19,6 +19,7 @@ pub struct ThemeSignals {
     pub bg_base: Signal<String>,
     pub bg_panel: Signal<SurfaceFill>,
     pub bg_elevated: Signal<SurfaceFill>,
+    pub header_fill: Signal<SurfaceFill>,
     pub fg_base: Signal<String>,
     pub fg_muted: Signal<String>,
     pub accent: Signal<String>,
@@ -122,6 +123,7 @@ impl ThemeSignals {
             bg_base: Signal::new(config.colors.bg_base.clone()),
             bg_panel: Signal::new(config.colors.bg_panel.clone()),
             bg_elevated: Signal::new(config.colors.bg_elevated.clone()),
+            header_fill: Signal::new(config.colors.header_fill.clone()),
             fg_base: Signal::new(config.colors.fg_base.clone()),
             fg_muted: Signal::new(config.colors.fg_muted.clone()),
             accent: Signal::new(config.colors.accent.clone()),
@@ -225,6 +227,7 @@ impl ThemeSignals {
                 bg_base: self.bg_base.read().clone(),
                 bg_panel: self.bg_panel.read().clone(),
                 bg_elevated: self.bg_elevated.read().clone(),
+                header_fill: self.header_fill.read().clone(),
                 fg_base: self.fg_base.read().clone(),
                 fg_muted: self.fg_muted.read().clone(),
                 accent: self.accent.read().clone(),
@@ -405,6 +408,9 @@ impl ThemeSignals {
         self.bg_elevated
             .clone()
             .set(palette.colors.bg_elevated.clone());
+        self.header_fill
+            .clone()
+            .set(palette.colors.header_fill.clone());
         self.fg_base.clone().set(palette.colors.fg_base.clone());
         self.fg_muted.clone().set(palette.colors.fg_muted.clone());
         self.accent.clone().set(palette.colors.accent.clone());
@@ -463,6 +469,7 @@ impl ThemeSignals {
         self.bg_base.clone().set(c.bg_base.clone());
         self.bg_panel.clone().set(c.bg_panel.clone());
         self.bg_elevated.clone().set(c.bg_elevated.clone());
+        self.header_fill.clone().set(c.header_fill.clone());
         self.fg_base.clone().set(c.fg_base.clone());
         self.fg_muted.clone().set(c.fg_muted.clone());
         self.accent.clone().set(c.accent.clone());

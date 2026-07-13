@@ -6,13 +6,13 @@ Google Blogger only allows you to upload CSS code to your theme file. It does no
 
 Because of this, if you want to use a custom font, your theme has to load it from an external website link.
 
-![Blogger font constraints](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/blogger_font_constraints.drawio.png)
+![Blogger font constraints](docs/diagrams/blogger_font_constraints.drawio.png)
 
 ### The Privacy Alternative
 
 Many people use Google Fonts, but those can track your readers. Instead, we recommend using [fonts.bunny.net](https://fonts.bunny.net). It has the exact same font catalog as Google, but it strips out the tracking pixels and IP logging, keeping your readers' privacy safe.
 
-![Privacy-friendly font path via fonts.bunny.net](https://raw.githubusercontent.com/MoribundMurdoch/mor_blogger_theme_editor_atlas/main/diagrams/shared/fonts_bunny_privacy_path.drawio.png)
+![Privacy-friendly font path via fonts.bunny.net](docs/diagrams/fonts_bunny_privacy_path.drawio.png)
 
 1. Pick your font family at [fonts.bunny.net](https://fonts.bunny.net).
 2. Copy the generated `@import` rule.
@@ -28,7 +28,9 @@ Many people use Google Fonts, but those can track your readers. Instead, we reco
 
 When you export your theme, the app automatically drops this code into the final file. No Google tracking requests will ever hit your readers' browsers.
 
-All fonts you put into the app automatically pass through our internal engine to ensure they are formatted correctly — see DECISIONS.md.
+Custom font rules pass through the internal normalization pipeline before export — see [DECISIONS.md](DECISIONS.md).
+
+![Font normalization funnel](docs/diagrams/font_normalization_funnel.drawio.png)
 
 ### Hosting Your Own Fonts
 

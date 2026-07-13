@@ -96,54 +96,96 @@ pub async fn install_plugin_from_github(repo_path: &str) -> Result<String, Strin
     Ok(file_name)
 }
 
-pub async fn fetch_and_install_from_github() -> Result<(), String> {
-    let plugin_dir = core_plugins_dir();
-    fs::create_dir_all(&plugin_dir).map_err(|e| e.to_string())?;
-
-    let download_url = if cfg!(target_os = "linux") {
-        "https://github.com/MoribundInstitute/mor-blogger-theme-editor-mcp/releases/latest/download/mor-blogger-mcp-linux"
-    } else if cfg!(target_os = "windows") {
-        "https://github.com/MoribundInstitute/mor-blogger-theme-editor-mcp/releases/latest/download/mor-blogger-mcp.exe"
-    } else {
-        return Err("OS not supported for auto-install yet.".to_string());
-    };
-
-    let binary_name = if cfg!(target_os = "windows") {
-        "mor-blogger-mcp.exe"
-    } else {
-        "mor-blogger-mcp"
-    };
-    let binary_path = plugin_dir.join(binary_name);
-
-    println!("Downloading AI Bridge from GitHub...");
-    let response = reqwest::get(download_url)
-        .await
-        .map_err(|e| e.to_string())?;
-    if !response.status().is_success() {
-        return Err(format!(
-            "Download failed with status: {}",
-            response.status()
-        ));
-    }
-    let bytes = response.bytes().await.map_err(|e| e.to_string())?;
-    fs::write(&binary_path, bytes).map_err(|e| e.to_string())?;
-
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let mut perms = fs::metadata(&binary_path)
-            .map_err(|e| e.to_string())?
-            .permissions();
-        perms.set_mode(0o755);
-        fs::set_permissions(&binary_path, perms).map_err(|e| e.to_string())?;
-    }
-
-    core_install_mcp_to_claude(&binary_path, "mor_blogger_engine")?;
-    Ok(())
-}
-
 pub fn install_mcp_to_claude(binary_path: &PathBuf) -> Result<(), String> {
     core_install_mcp_to_claude(binary_path, "mor_blogger_engine").map(|_| ())
+}
+
+/// Open a terminal running an AI CLI (Claude Code) with this MCP server
+/// attached, so the user can drive it in plain English instead of JSON-RPC.
+pub fn spawn_chat_in_terminal(
+    server_key: &str,
+    command: &str,
+    display_name: &str,
+    system_prompt: &str,
+) -> Result<(), String> {
+    // Write the MCP config to a file instead of inlining JSON — sidesteps
+    // shell/cmd quoting entirely.
+    let cfg_dir = mcp_daemon_registry_path()
+        .parent()
+        .map(std::path::Path::to_path_buf)
+        .ok_or("Could not resolve MCP config directory")?;
+    fs::create_dir_all(&cfg_dir).map_err(|e| e.to_string())?;
+    let cfg_path = cfg_dir.join(format!("{server_key}.claude_mcp.json"));
+    let cfg_json = serde_json::json!({
+        "mcpServers": { server_key: { "command": command, "args": [] } }
+    });
+    fs::write(&cfg_path, cfg_json.to_string()).map_err(|e| e.to_string())?;
+    let cfg = cfg_path.to_string_lossy();
+
+    #[cfg(target_os = "windows")]
+    {
+        return std::process::Command::new("cmd")
+            .args(["/C", "start", "cmd", "/K"])
+            .arg(format!("claude --mcp-config \"{cfg}\""))
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| format!("Failed to open terminal: {e}"));
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let name = display_name.replace('\'', "");
+        let prompt_arg = if system_prompt.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " --append-system-prompt '{}'",
+                system_prompt.replace('\'', "'\\''")
+            )
+        };
+        // ponytail: claude only; add grok/gemini branches when their MCP flags are known.
+        let wrapped = format!(
+            "echo '=== {name} — plain-English chat ==='; \
+             if command -v claude >/dev/null 2>&1; then \
+               claude --mcp-config '{cfg}'{prompt_arg}; \
+             else \
+               echo 'No AI CLI found. Install Claude Code:'; \
+               echo '  npm install -g @anthropic-ai/claude-code'; \
+             fi; echo; echo '[chat ended]'; read -r _"
+        );
+        spawn_shell_in_terminal(&wrapped)
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn spawn_shell_in_terminal(wrapped: &str) -> Result<(), String> {
+    // ponytail: fixed candidate list; $TERMINAL env var is the escape hatch.
+    let mut candidates: Vec<(String, Vec<&str>)> = Vec::new();
+    if let Ok(term) = std::env::var("TERMINAL") {
+        candidates.push((term, vec![]));
+    }
+    for (bin, pre) in [
+        ("gnome-terminal", vec!["--"]),
+        ("konsole", vec!["-e"]),
+        ("alacritty", vec!["-e"]),
+        ("kitty", vec![]),
+        ("foot", vec![]),
+        ("xterm", vec!["-e"]),
+    ] {
+        candidates.push((bin.to_string(), pre));
+    }
+
+    for (bin, pre) in candidates {
+        if std::process::Command::new(&bin)
+            .args(pre)
+            .args(["sh", "-c", wrapped])
+            .spawn()
+            .is_ok()
+        {
+            return Ok(());
+        }
+    }
+    Err("No terminal emulator found. Set the $TERMINAL environment variable.".to_string())
 }
 
 #[cfg(test)]

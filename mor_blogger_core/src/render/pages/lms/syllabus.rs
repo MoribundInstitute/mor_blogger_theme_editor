@@ -1,9 +1,8 @@
 use crate::config::pages::LmsConfig;
-use crate::render::pages::escape_html;
+use crate::render::util::escape_attr as escape_html;
 
 /// Emits the Syllabus page as pure layout. Colors resolve from inherited theme
-/// tokens; the `<style>` block carries structure only. For an offline color
-/// override, wrap the output with `apply_stencil_colors` in the parent module.
+/// tokens; the `<style>` block carries structure only.
 pub fn generate_syllabus_html(config: &LmsConfig) -> String {
     let mut html = String::new();
 

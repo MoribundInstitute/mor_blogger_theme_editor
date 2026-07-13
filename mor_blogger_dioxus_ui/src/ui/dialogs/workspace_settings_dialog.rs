@@ -1,5 +1,4 @@
 use crate::app::config_bridge::EditorPrefs;
-use crate::ui::dialogs::modal::Modal;
 use crate::ui::layout::theme::{
     get_native_os_theme, MorTheme, DARK_MODE_TOML, LIGHT_MODE_TOML, MOR_STUDIO_TOML,
 };
@@ -85,34 +84,6 @@ pub fn WorkspaceAppearancePanel(active_theme_toml: Signal<String>) -> Element {
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-#[derive(Props, Clone, PartialEq)]
-pub struct WorkspaceSettingsDialogProps {
-    pub open: Signal<bool>,
-    pub active_theme_toml: Signal<String>,
-}
-
-/// Standalone modal wrapper — prefer `EditorSettingsDialog` in the shell.
-#[component]
-pub fn WorkspaceSettingsDialog(props: WorkspaceSettingsDialogProps) -> Element {
-    let mut open = props.open;
-    let active_theme_toml = props.active_theme_toml;
-
-    rsx! {
-        Modal {
-            open,
-            title: "Workspace Editor Settings".to_string(),
-            style: "min-width: 520px; max-width: 640px;".to_string(),
-            on_close: move |_| open.set(false),
-
-            div {
-                style: "display: flex; flex-direction: column; gap: 16px; overflow-y: auto; max-height: 520px; padding-right: 4px;",
-                WorkspaceThemePresets { active_theme_toml }
-                WorkspaceAppearancePanel { active_theme_toml }
             }
         }
     }

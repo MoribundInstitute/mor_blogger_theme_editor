@@ -37,13 +37,8 @@ build/proof/
 build/*.xml
 build/restored_vfs/
 
-# graphify knowledge graph: ignore caches & machine-local state, keep shareable outputs
-# (graph.json, graph.html, GRAPH_REPORT.md stay tracked)
-graphify-out/cache/
-graphify-out/.graphify_*
-graphify-out/cost.json
-graphify-out/manifest.json
-graphify-out/*.bak
+# graphify knowledge graph output (machine-generated, kept on disk only)
+graphify-out/
 mor_blogger_dioxus_ui/assets/js/cm6/node_modules/
 
 # editor / agent tooling configs (machine-local)

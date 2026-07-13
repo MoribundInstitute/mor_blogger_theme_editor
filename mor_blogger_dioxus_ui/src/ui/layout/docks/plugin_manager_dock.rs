@@ -59,7 +59,12 @@ pub fn PluginManagerDock() -> Element {
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_string();
-                (key.clone(), display_name, prompt)
+                let command = entry
+                    .get("command")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                (key.clone(), display_name, prompt, command)
             })
             .collect::<Vec<_>>()
     });
@@ -140,7 +145,7 @@ pub fn PluginManagerDock() -> Element {
                 style: "flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;",
                 match active_tab() {
                     ManagerTab::Installed => rsx! {
-                        for (server_key, display_name, prompt) in mcp_daemon_cards().into_iter() {
+                        for (server_key, display_name, prompt, command) in mcp_daemon_cards().into_iter() {
                             div {
                                 key: "mcp-{server_key}",
                                 style: "display: flex; flex-direction: column; padding: 10px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; gap: 6px;",
@@ -150,6 +155,25 @@ pub fn PluginManagerDock() -> Element {
                                         "MCP"
                                     }
                                     span { style: "font-weight: 600; color: var(--fg-base);", "{display_name}" }
+                                    if !command.is_empty() {
+                                        button {
+                                            class: "mor-btn-primary",
+                                            style: "margin-left: auto; padding: 2px 8px; font-size: 0.72rem; flex-shrink: 0;",
+                                            title: "Talk to this MCP server in plain English via Claude in a terminal",
+                                            onclick: {
+                                                let key = server_key.clone();
+                                                let cmd = command.clone();
+                                                let name = display_name.clone();
+                                                let sys_prompt = prompt.clone();
+                                                move |_| {
+                                                    if let Err(e) = crate::utils::mcp_installer::spawn_chat_in_terminal(&key, &cmd, &name, &sys_prompt) {
+                                                        install_status.set(Some(Err(e)));
+                                                    }
+                                                }
+                                            },
+                                            "Chat"
+                                        }
+                                    }
                                 }
                                 div { style: "font-family: monospace; font-size: 0.7rem; color: var(--fg-muted);", "{server_key}" }
                                 if !prompt.is_empty() {

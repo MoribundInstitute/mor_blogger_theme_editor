@@ -17,6 +17,7 @@ use mor_blogger_core::utils::fs_bridge;
 use crate::app::shell::WorkbenchEditState;
 use crate::app::vfs::VfsDictionary;
 use crate::ui::components::code_editor::CodeEditor;
+use crate::ui::components::dock_chrome::WorkbenchPaneHeader;
 use crate::ui::components::icons::{
     IconChevronDown, IconChevronUp, IconEye, IconEyeOff, IconTrash,
 };
@@ -158,7 +159,7 @@ pub fn WidgetWorkbench(config_toml: ReadSignal<String>) -> Element {
     let mut active_widget: Signal<Option<(String, String)>> = use_signal(|| None);
     let mut edited_xml: Signal<String> = use_signal(String::new);
     let mut status: Signal<String> = use_signal(String::new);
-    let mut layout_view = use_signal(|| true);
+    let layout_view = use_signal(|| true);
 
     let mut preview_viewport: Signal<PreviewViewport> = use_signal(|| PreviewViewport::Fit);
     let mut preview_width: Signal<u32> = use_signal(|| 1200u32);
@@ -221,46 +222,21 @@ pub fn WidgetWorkbench(config_toml: ReadSignal<String>) -> Element {
                     class: "editor-pane",
                     style: "display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--bg-base); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);",
 
-                    div {
-                        class: "editor-pane-header",
-                        style: "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); flex-shrink: 0;",
-                        div {
-                            style: "display: flex; align-items: center; gap: 8px;",
-                            span {
-                                style: "font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--fg-base);",
-                                { active_widget().map(|(g, n)| format!("{g}/{n}.xml")).unwrap_or_else(|| "no widget selected".to_string()) }
-                            }
-                            span {
-                                style: "font-size: 0.7rem; font-weight: 600; color: var(--editor-accent); background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--editor-border-soft);",
-                                "Blogger Widget · Live"
-                            }
+                    WorkbenchPaneHeader {
+                        filename: active_widget().map(|(g, n)| format!("{g}/{n}.xml")).unwrap_or_else(|| "no widget selected".to_string()),
+                        badge: "Blogger Widget · Live",
+                        layout_view,
+                        button {
+                            class: if active_widget().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                            title: "Reload the saved version (drops session edits)",
+                            onclick: revert,
+                            "Revert"
                         }
-                        div {
-                            style: "display: flex; align-items: center; gap: 6px;",
-                            button {
-                                class: if layout_view() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                                title: "Visual widget layout",
-                                onclick: move |_| layout_view.set(true),
-                                "Layout"
-                            }
-                            button {
-                                class: if !layout_view() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
-                                title: "Raw Blogger XML",
-                                onclick: move |_| layout_view.set(false),
-                                "Code"
-                            }
-                            button {
-                                class: if active_widget().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                                title: "Reload the saved version (drops session edits)",
-                                onclick: revert,
-                                "Revert"
-                            }
-                            button {
-                                class: if active_widget().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
-                                title: "Save this widget blueprint",
-                                onclick: save_widget,
-                                "Save Widget"
-                            }
+                        button {
+                            class: if active_widget().is_some() { "editor-mini-button" } else { "editor-mini-button editor-mini-button-disabled" },
+                            title: "Save this widget blueprint",
+                            onclick: save_widget,
+                            "Save Widget"
                         }
                     }
 

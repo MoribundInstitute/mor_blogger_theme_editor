@@ -125,6 +125,7 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                             bg_base: signals.bg_base,
                             bg_panel: signals.bg_panel,
                             bg_elevated: signals.bg_elevated,
+                            header_fill: signals.header_fill,
                             fg_base: signals.fg_base,
                             fg_muted: signals.fg_muted,
                             accent: signals.accent,

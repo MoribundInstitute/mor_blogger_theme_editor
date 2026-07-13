@@ -1,12 +1,17 @@
 use crate::app::state::ThemeState;
+use crate::ui::components::inputs::{EditorCheckbox, EditorSelect, EditorTextField};
 use crate::ui::dialogs::modal::Modal;
 use crate::ui::dialogs::toml_quick_edit::TomlQuickEdit;
 use dioxus::prelude::*;
 use mor_blogger_core::render::xml_parts::css_generator::render_button_styles;
 
-const FIELD: &str = "width: 100%; background: #2C2C2E; border: 1px solid #3A3A3C; color: #E5E5EA; padding: 6px; border-radius: 4px; font-size: 12px;";
 const LBL: &str = "font-size: 11px; color: #8e8e93;";
 const H3: &str = "color: var(--editor-accent, #a9aae2); margin: 10px 0 0 0; font-size: 16px; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 8px;";
+
+/// Shape shim: static option literals → the owned pairs [`EditorSelect`] takes.
+fn opts(o: &[(&str, &str)]) -> Vec<(String, String)> {
+    o.iter().map(|(v, l)| (v.to_string(), l.to_string())).collect()
+}
 
 #[component]
 pub fn AdvancedButtonsDialog(mut open_signal: Signal<bool>) -> Element {
@@ -88,103 +93,107 @@ pub fn AdvancedButtonsDialog(mut open_signal: Signal<bool>) -> Element {
 
                 h3 { style: "{H3}", "Geometry" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;",
-                    Field { label: "Radius", value: b.radius.clone(), placeholder: "8px",
+                    EditorTextField { label: "Radius", value: b.radius.clone(), placeholder: "8px",
                         oninput: move |v| { buttons.write().radius = v; } }
-                    Field { label: "Padding X", value: b.padding_x.clone(), placeholder: "14px",
+                    EditorTextField { label: "Padding X", value: b.padding_x.clone(), placeholder: "14px",
                         oninput: move |v| { buttons.write().padding_x = v; } }
-                    Field { label: "Padding Y", value: b.padding_y.clone(), placeholder: "6px",
+                    EditorTextField { label: "Padding Y", value: b.padding_y.clone(), placeholder: "6px",
                         oninput: move |v| { buttons.write().padding_y = v; } }
-                    Field { label: "Border Width", value: b.border_width.clone(), placeholder: "1px",
+                    EditorTextField { label: "Border Width", value: b.border_width.clone(), placeholder: "1px",
                         oninput: move |v| { buttons.write().border_width = v; } }
-                    Pick { label: "Border Style", value: b.border_style.clone(),
-                        options: vec![("solid","Solid"),("dashed","Dashed"),("none","None"),("outset","Outset (3D)"),("inset","Inset (3D)"),("ridge","Ridge"),("groove","Groove")],
-                        oninput: move |v| { buttons.write().border_style = v; } }
-                    Check { label: "Full width", checked: b.full_width,
-                        onchange: move |v| { buttons.write().full_width = v; } }
+                    EditorSelect { label: "Border Style", value: b.border_style.clone(),
+                        options: opts(&[("solid","Solid"),("dashed","Dashed"),("none","None"),("outset","Outset (3D)"),("inset","Inset (3D)"),("ridge","Ridge"),("groove","Groove")]),
+                        onchange: move |e: Event<FormData>| { buttons.write().border_style = e.value(); } }
+                    div { style: "margin-top: 18px;",
+                        EditorCheckbox { label: "Full width", checked: b.full_width,
+                            onchange: move |v| { buttons.write().full_width = v; } }
+                    }
                 }
 
                 h3 { style: "{H3}", "Type" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Pick { label: "Font Weight", value: b.font_weight.clone(),
-                        options: vec![("","Inherit"),("400","Normal (400)"),("500","Medium (500)"),("600","Semibold (600)"),("700","Bold (700)")],
-                        oninput: move |v| { buttons.write().font_weight = v; } }
-                    Field { label: "Letter Spacing", value: b.letter_spacing.clone(), placeholder: "0.02em",
+                    EditorSelect { label: "Font Weight", value: b.font_weight.clone(),
+                        options: opts(&[("","Inherit"),("400","Normal (400)"),("500","Medium (500)"),("600","Semibold (600)"),("700","Bold (700)")]),
+                        onchange: move |e: Event<FormData>| { buttons.write().font_weight = e.value(); } }
+                    EditorTextField { label: "Letter Spacing", value: b.letter_spacing.clone(), placeholder: "0.02em",
                         oninput: move |v| { buttons.write().letter_spacing = v; } }
                 }
 
                 h3 { style: "{H3}", "Interaction & Motion" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Pick { label: "Hover Effect", value: b.hover_effect.clone(),
-                        options: vec![("none","None"),("lift","Lift"),("grow","Grow"),("brighten","Brighten"),("glow","Glow"),("invert","Invert (neon fill)")],
-                        oninput: move |v| { buttons.write().hover_effect = v; } }
-                    Field { label: "Transition", value: b.transition_ms.clone(), placeholder: "150ms",
+                    EditorSelect { label: "Hover Effect", value: b.hover_effect.clone(),
+                        options: opts(&[("none","None"),("lift","Lift"),("grow","Grow"),("brighten","Brighten"),("glow","Glow"),("invert","Invert (neon fill)")]),
+                        onchange: move |e: Event<FormData>| { buttons.write().hover_effect = e.value(); } }
+                    EditorTextField { label: "Transition", value: b.transition_ms.clone(), placeholder: "150ms",
                         oninput: move |v| { buttons.write().transition_ms = v; } }
-                    Pick { label: "Easing", value: b.easing.clone(),
-                        options: vec![
+                    EditorSelect { label: "Easing", value: b.easing.clone(),
+                        options: opts(&[
                             ("ease","Ease (default)"),("linear","Linear"),
                             ("ease-in","Ease In"),("ease-out","Ease Out"),("ease-in-out","Ease In-Out"),
                             ("cubic-bezier(0.22,1,0.36,1)","Snappy (expo out)"),
                             ("cubic-bezier(0.83,0,0.17,1)","Dramatic (expo in-out)"),
                             ("cubic-bezier(0.34,1.56,0.64,1)","Back (overshoot)"),
                             ("cubic-bezier(0.68,-0.55,0.27,1.55)","Anticipate"),
-                        ],
-                        oninput: move |v| { buttons.write().easing = v; } }
-                    Check { label: "Pressed feedback", checked: b.pressed_feedback,
-                        onchange: move |v| { buttons.write().pressed_feedback = v; } }
+                        ]),
+                        onchange: move |e: Event<FormData>| { buttons.write().easing = e.value(); } }
+                    div { style: "margin-top: 18px;",
+                        EditorCheckbox { label: "Pressed feedback", checked: b.pressed_feedback,
+                            onchange: move |v| { buttons.write().pressed_feedback = v; } }
+                    }
                 }
 
                 h3 { style: "{H3}", "Effects" }
                 p { style: "{LBL} margin: 0;", "Glass = frosted blur · Neon = glowing edge · Glossy/Gradient = sheen. Glow params also drive the Glow hover." }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Pick { label: "Fill / Effect", value: b.fill.clone(),
-                        options: vec![("outline","Outline"),("solid","Solid"),("soft","Soft"),("ghost","Ghost"),("glass","Glass"),("neon","Neon"),("glossy","Glossy"),("gradient","Gradient")],
-                        oninput: move |v| { buttons.write().fill = v; } }
-                    Field { label: "Glow Color", value: b.glow_color.clone(), placeholder: "auto (accent)",
+                    EditorSelect { label: "Fill / Effect", value: b.fill.clone(),
+                        options: opts(&[("outline","Outline"),("solid","Solid"),("soft","Soft"),("ghost","Ghost"),("glass","Glass"),("neon","Neon"),("glossy","Glossy"),("gradient","Gradient")]),
+                        onchange: move |e: Event<FormData>| { buttons.write().fill = e.value(); } }
+                    EditorTextField { label: "Glow Color", value: b.glow_color.clone(), placeholder: "auto (accent)",
                         oninput: move |v| { buttons.write().glow_color = v; } }
-                    Field { label: "Glow Strength", value: b.glow_strength.clone(), placeholder: "12px",
+                    EditorTextField { label: "Glow Strength", value: b.glow_strength.clone(), placeholder: "12px",
                         oninput: move |v| { buttons.write().glow_strength = v; } }
-                    Field { label: "Glass Blur", value: b.glass_blur.clone(), placeholder: "12px",
+                    EditorTextField { label: "Glass Blur", value: b.glass_blur.clone(), placeholder: "12px",
                         oninput: move |v| { buttons.write().glass_blur = v; } }
-                    Field { label: "Glass Opacity (0-1)", value: b.glass_opacity.clone(), placeholder: "0.4",
+                    EditorTextField { label: "Glass Opacity (0-1)", value: b.glass_opacity.clone(), placeholder: "0.4",
                         oninput: move |v| { buttons.write().glass_opacity = v; } }
                 }
                 p { style: "{LBL} margin: 8px 0 0;", "Gradient fill (from → to). Accepts colors or CSS like color-mix()/var()." }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;",
-                    Field { label: "Gradient From", value: b.gradient_from.clone(), placeholder: "var(--bg-panel)",
+                    EditorTextField { label: "Gradient From", value: b.gradient_from.clone(), placeholder: "var(--bg-panel)",
                         oninput: move |v| { buttons.write().gradient_from = v; } }
-                    Field { label: "Gradient To", value: b.gradient_to.clone(), placeholder: "var(--bg-base)",
+                    EditorTextField { label: "Gradient To", value: b.gradient_to.clone(), placeholder: "var(--bg-base)",
                         oninput: move |v| { buttons.write().gradient_to = v; } }
-                    Field { label: "Angle", value: b.gradient_angle.clone(), placeholder: "180deg",
+                    EditorTextField { label: "Angle", value: b.gradient_angle.clone(), placeholder: "180deg",
                         oninput: move |v| { buttons.write().gradient_angle = v; } }
                 }
 
                 h3 { style: "{H3}", "Elevation" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Pick { label: "Shadow Depth", value: b.elevation.clone(),
-                        options: vec![("flat","Flat"),("subtle","Subtle"),("raised","Raised")],
-                        oninput: move |v| { buttons.write().elevation = v; } }
-                    Field { label: "Custom Shadow (overrides depth)", value: b.box_shadow.clone(), placeholder: "e.g. inset 0 1px 0 #fff",
+                    EditorSelect { label: "Shadow Depth", value: b.elevation.clone(),
+                        options: opts(&[("flat","Flat"),("subtle","Subtle"),("raised","Raised")]),
+                        onchange: move |e: Event<FormData>| { buttons.write().elevation = e.value(); } }
+                    EditorTextField { label: "Custom Shadow (overrides depth)", value: b.box_shadow.clone(), placeholder: "e.g. inset 0 1px 0 #fff",
                         oninput: move |v| { buttons.write().box_shadow = v; } }
                 }
 
                 h3 { style: "{H3}", "Color Overrides" }
                 p { style: "{LBL} margin: 0;", "Leave blank to derive from the theme accent." }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Field { label: "Fill", value: b.bg_color.clone(), placeholder: "#c2622a",
+                    EditorTextField { label: "Fill", value: b.bg_color.clone(), placeholder: "#c2622a",
                         oninput: move |v| { buttons.write().bg_color = v; } }
-                    Field { label: "Text", value: b.text_color.clone(), placeholder: "#ffffff",
+                    EditorTextField { label: "Text", value: b.text_color.clone(), placeholder: "#ffffff",
                         oninput: move |v| { buttons.write().text_color = v; } }
-                    Field { label: "Border", value: b.border_color.clone(), placeholder: "auto",
+                    EditorTextField { label: "Border", value: b.border_color.clone(), placeholder: "auto",
                         oninput: move |v| { buttons.write().border_color = v; } }
-                    Field { label: "Hover Fill", value: b.hover_bg_color.clone(), placeholder: "auto",
+                    EditorTextField { label: "Hover Fill", value: b.hover_bg_color.clone(), placeholder: "auto",
                         oninput: move |v| { buttons.write().hover_bg_color = v; } }
                 }
 
                 h3 { style: "{H3}", "Focus Ring" }
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 12px;",
-                    Field { label: "Color", value: b.focus_ring_color.clone(), placeholder: "auto",
+                    EditorTextField { label: "Color", value: b.focus_ring_color.clone(), placeholder: "auto",
                         oninput: move |v| { buttons.write().focus_ring_color = v; } }
-                    Field { label: "Width", value: b.focus_ring_width.clone(), placeholder: "2px",
+                    EditorTextField { label: "Width", value: b.focus_ring_width.clone(), placeholder: "2px",
                         oninput: move |v| { buttons.write().focus_ring_width = v; } }
                 }
 
@@ -199,43 +208,6 @@ pub fn AdvancedButtonsDialog(mut open_signal: Signal<bool>) -> Element {
                     }
                 }
             }
-        }
-    }
-}
-
-#[component]
-fn Field(label: String, value: String, placeholder: String, oninput: EventHandler<String>) -> Element {
-    rsx! {
-        div { style: "display: flex; flex-direction: column; gap: 6px;",
-            label { style: "{LBL}", "{label}" }
-            input { r#type: "text", value: "{value}", placeholder: "{placeholder}", style: "{FIELD}",
-                oninput: move |e| oninput.call(e.value()) }
-        }
-    }
-}
-
-#[component]
-fn Pick(label: String, value: String, options: Vec<(&'static str, &'static str)>, oninput: EventHandler<String>) -> Element {
-    rsx! {
-        div { style: "display: flex; flex-direction: column; gap: 6px;",
-            label { style: "{LBL}", "{label}" }
-            select { class: "editor-select", value: "{value}",
-                onchange: move |e| oninput.call(e.value()),
-                for (v, lbl) in options {
-                    option { value: "{v}", selected: v == value, "{lbl}" }
-                }
-            }
-        }
-    }
-}
-
-#[component]
-fn Check(label: String, checked: bool, onchange: EventHandler<bool>) -> Element {
-    rsx! {
-        label { style: "display: flex; align-items: center; gap: 8px; font-size: 12px; color: #E5E5EA; margin-top: 18px;",
-            input { r#type: "checkbox", checked: checked,
-                onchange: move |e| onchange.call(e.checked()) }
-            "{label}"
         }
     }
 }

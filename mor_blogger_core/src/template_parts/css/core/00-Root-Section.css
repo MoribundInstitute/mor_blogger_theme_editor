@@ -5,6 +5,7 @@
   --bg-highlight: {{DARK_BG_ELEVATED}};
   --bg-soft: {{DARK_BG_PANEL}};
   --bg-elevated: {{DARK_BG_ELEVATED}};
+  --header-surface: {{DARK_HEADER_SURFACE}};
   --bg-workspace: {{DARK_BG_WORKSPACE}};
 
   --fg-base: {{DARK_FG_BASE}};
@@ -64,6 +65,7 @@ html[data-theme="light"] {
   --bg-highlight: {{LIGHT_BG_ELEVATED}};
   --bg-soft: {{LIGHT_BG_PANEL}};
   --bg-elevated: {{LIGHT_BG_ELEVATED}};
+  --header-surface: {{LIGHT_HEADER_SURFACE}};
   --bg-workspace: {{LIGHT_BG_WORKSPACE}};
 
   --fg-base: {{LIGHT_FG_BASE}};
@@ -87,3 +89,5 @@ html[data-theme="light"] {
 
   {{LIGHT_BACKGROUND_TILE_CSS}}
 }
+
+{{TILE_READING_SCRIM_CSS}}

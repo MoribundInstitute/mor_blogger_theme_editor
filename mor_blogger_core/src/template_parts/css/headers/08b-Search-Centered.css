@@ -27,7 +27,7 @@
   grid-column: 2;
   justify-self: center;
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   min-width: 0;
   flex: none;
 }
@@ -43,7 +43,10 @@
   }
 }
 
-/* Rounded pill wrapper around the input + icon button. */
+/* Rounded pill wrapper around the input + icon button. At rest the pill
+   wears a soft glow ring — the MorDictionary "come touch me" invitation —
+   which extinguishes on hover/focus while the pill deepens toward the page
+   background, so interaction reads as the tube dimming under your hand. */
 .search-centered .mor-search form {
   display: flex;
   align-items: center;
@@ -52,13 +55,26 @@
   padding: 4px 6px 4px 18px;
   border: 1px solid var(--border-color);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-base) 40%, transparent);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  background: var(--bg-elevated);
+  box-shadow: 0 0 4px 4px color-mix(in srgb, var(--glow, var(--accent)) 45%, transparent);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
+.search-centered .mor-search form:hover {
+  box-shadow: none;
+  background: var(--bg-base);
+}
+
+/* Focus still needs a visible indicator: the big glow goes out, a crisp
+   accent ring takes its place. */
 .search-centered .mor-search form:focus-within {
   border-color: var(--fg-base);
+  background: var(--bg-base);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.search-centered .mor-search input::placeholder {
+  color: var(--fg-muted);
 }
 
 /* The command-line prompt has no place in the clean centered look. */

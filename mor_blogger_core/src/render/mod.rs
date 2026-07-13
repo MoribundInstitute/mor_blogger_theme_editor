@@ -1,6 +1,5 @@
 pub mod ads;
 pub mod css_builder;
-pub mod cursors;
 pub mod js_behaviors;
 pub mod pages;
 pub mod plugins;

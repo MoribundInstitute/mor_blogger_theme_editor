@@ -10,7 +10,7 @@ use crate::ui::layout::docks::{
     CodeNavDock, StaticPagesDock, WidgetsDock,
 };
 use crate::ui::panels::quick_launch_bar::LaunchButton;
-use crate::ui::panels::theme_palette::effects_panel_2::AdvancedGlowWindow;
+use crate::ui::panels::theme_palette::effects_panel::AdvancedGlowWindow;
 use crate::ui::panels::theme_palette::presets::{PresetFloatingWindow, PresetsPanel};
 use crate::ui::panels::theme_palette::static_pages_panel::StaticPagesFloatingWindow;
 use crate::ui::workspace::blogger_workspace::BloggerWorkspace;
@@ -115,6 +115,7 @@ pub fn ActivityBarButton(props: ActivityBarButtonProps) -> Element {
                         y: coords.y,
                         kind: "dock".to_string(),
                         target_id: props.dock_id.to_string(),
+                        preview: None,
                     }));
                 },
                 {render_dock_icon(icon_override, props.icon_kind)}

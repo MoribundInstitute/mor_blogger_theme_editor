@@ -138,14 +138,14 @@ pub fn BloggerWorkspace(
     let is_valid = render.diag.read().is_valid;
     let error_count = render.diag.read().errors.len();
     let mut active_icon_picker = layout.active_icon_picker;
-    let is_xray_active = use_signal(|| false);
-    let mut active_xray_target = use_signal(|| None::<String>);
+    let is_xray_active = layout.is_xray_active;
+    let mut active_xray_target = layout.active_xray_target;
 
     let mut is_fullscreen = use_signal(|| false);
     let vfs = use_context::<VfsDictionary>().0;
 
     let export_xml = use_memo(move || {
-        match crate::app::services::workspace_service::build_fresh_export_xml(
+        match crate::app::workspace_ops::build_fresh_export_xml(
             &config_toml(),
             &*vfs.read(),
         ) {
@@ -161,7 +161,7 @@ pub fn BloggerWorkspace(
         let restore = on_restore.clone();
         move |target: String, val: String, cfg: String| {
             if let Some(config) =
-                crate::app::services::workspace_service::handle_text_edit(&target, val, &cfg)
+                crate::app::workspace_ops::handle_text_edit(&target, val, &cfg)
             {
                 restore.call(config);
             }
@@ -172,7 +172,7 @@ pub fn BloggerWorkspace(
         let restore = on_restore.clone();
         move |id: String, dest: String, cfg: String| {
             if let Some(config) =
-                crate::app::services::workspace_service::handle_widget_move(&id, &dest, &cfg)
+                crate::app::workspace_ops::handle_widget_move(&id, &dest, &cfg)
             {
                 restore.call(config);
             }
@@ -183,7 +183,7 @@ pub fn BloggerWorkspace(
         let restore = on_restore.clone();
         move |(target, content): (String, String), cfg: String| {
             if let Some(config) =
-                crate::app::services::workspace_service::handle_drop_svg(&target, &content, &cfg)
+                crate::app::workspace_ops::handle_drop_svg(&target, &content, &cfg)
             {
                 restore.call(config);
             }
@@ -793,21 +793,21 @@ fn ExportResultView(
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                crate::app::services::workspace_service::handle_copy_xml(export_xml(), status_msg);
+                                crate::app::workspace_ops::handle_copy_xml(export_xml(), status_msg);
                             },
                             "Copy XML"
                         }
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                crate::app::services::workspace_service::handle_xml_export(export_xml(), status_msg);
+                                crate::app::workspace_ops::handle_xml_export(export_xml(), status_msg);
                             },
                             "Export XML to Disk"
                         }
                         button {
                             class: "editor-button editor-button-good",
                             onclick: move |_| {
-                                crate::app::services::workspace_service::handle_zip_export(export_xml(), config_toml(), status_msg);
+                                crate::app::workspace_ops::handle_zip_export(export_xml(), config_toml(), status_msg);
                             },
                             "Export Theme Bundle (.zip)"
                         }

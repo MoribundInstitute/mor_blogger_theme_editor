@@ -76,8 +76,32 @@ pub enum DockPosition {
 pub struct ContextMenuPayload {
     pub x: f64,
     pub y: f64,
-    pub kind: String, // e.g., "svg", "ui_typography", "preview_typography"
+    pub kind: String, // e.g., "preview", "svg", "dock", "ui_typography"
     pub target_id: String,
+    /// Rich click context for `kind == "preview"` (everything under the cursor).
+    pub preview: Option<PreviewContextInfo>,
+}
+
+/// What sits under a right-click inside the preview iframe. All the `closest()`
+/// ancestors at once, so the menu can offer every applicable action.
+#[derive(Clone, PartialEq, Debug, Default)]
+pub struct PreviewContextInfo {
+    /// Nearest `data-edit-target` ancestor (theme token; `icons.*` = swappable icon).
+    pub edit_target: Option<String>,
+    /// Nearest `data-field-path` ancestor (inline-editable text).
+    pub field_path: Option<String>,
+    /// Nearest `data-block-id` ancestor (widget block).
+    pub block_id: Option<String>,
+    /// Page region: Header / Left / Right / Main / Footer / Layout.
+    pub region: String,
+    /// Tag name of the clicked element, lowercase.
+    pub tag: String,
+    /// href of the nearest enclosing link.
+    pub link: Option<String>,
+    /// Computed text color at the click point (#rrggbb).
+    pub color: Option<String>,
+    /// Effective (nearest non-transparent) background color (#rrggbb).
+    pub bg: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -131,6 +155,10 @@ pub struct LayoutState {
     /// zone falls back to its first dock when the focused id isn't present.
     pub left_dock_focus: Signal<String>,
     pub right_dock_focus: Signal<String>,
+    /// X-ray inspect overlay on the preview.
+    pub is_xray_active: Signal<bool>,
+    /// One-shot "reveal this token" request consumed by the code editor dock.
+    pub active_xray_target: Signal<Option<String>>,
 }
 
 impl LayoutState {
@@ -191,6 +219,8 @@ impl LayoutState {
             active_activity_icon_picker: use_signal(|| None::<String>),
             left_dock_focus: use_signal(String::new),
             right_dock_focus: use_signal(String::new),
+            is_xray_active: use_signal(|| false),
+            active_xray_target: use_signal(|| None),
         }
     }
 

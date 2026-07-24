@@ -131,12 +131,12 @@ fn ColorInput(props: ColorInputProps) -> Element {
             label { class: "editor-field-label", "{props.label}" }
             div {
                 style: "display: flex; align-items: center; gap: 8px; width: 100%;",
-                input {
-                    r#type: "color",
+                crate::ui::components::inputs::ColorInput {
                     class: "editor-color-field",
                     style: "width: 38px; height: 32px; border: 1px solid var(--editor-border); border-radius: var(--radius-sm); cursor: pointer; background: transparent; padding: 0;",
-                    value: "{props.value}",
-                    oninput: move |evt| props.on_change.call(evt.value()),
+                    value: props.value.clone(),
+                    swatches: false,
+                    oninput: move |v: String| props.on_change.call(v),
                 }
                 input {
                     r#type: "text",

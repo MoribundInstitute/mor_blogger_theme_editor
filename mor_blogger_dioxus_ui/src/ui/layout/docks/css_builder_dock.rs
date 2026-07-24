@@ -129,12 +129,11 @@ pub fn CssBuilderDock() -> Element {
                                             "{label}"
                                         }
                                         if is_color {
-                                            input {
-                                                r#type: "color",
-                                                class: "editor-field editor-color-field",
+                                            crate::ui::components::inputs::ColorInput {
                                                 style: "width: 36px; flex: none;",
-                                                value: "{swatch}",
-                                                oninput: move |e| { values.with_mut(|m| { m.insert(key_color.clone(), e.value()); }); },
+                                                value: swatch.clone(),
+                                                swatches: false,
+                                                oninput: move |v: String| { values.with_mut(|m| { m.insert(key_color.clone(), v); }); },
                                             }
                                         }
                                         input {

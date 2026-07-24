@@ -101,12 +101,12 @@ pub fn AdvancedGlowWindow(props: AdvancedGlowWindowProps) -> Element {
 
                         span { style: "font-size: 12px; color: var(--fg-base);", "{label_text}" }
                         div { style: "display: flex; gap: 10px; align-items: center;",
-                            input {
-                                r#type: "color",
+                            crate::ui::components::inputs::ColorInput {
+                                class: "",
                                 style: "width: 22px; height: 22px; padding: 0; border: none; background: transparent; cursor: pointer;",
                                 value: color_sig(),
-                                onclick: move |e| e.stop_propagation(),
-                                oninput: move |evt| color_sig.set(evt.value()),
+                                swatches: false,
+                                oninput: move |v: String| color_sig.set(v),
                             }
                             span {
                                 style: format!(

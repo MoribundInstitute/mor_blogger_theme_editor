@@ -18,7 +18,7 @@ pub fn SmartCodeDock(
 
     // Compiled export XML, recomputed from the live config (mirrors the Export tab).
     let export_xml = use_memo(move || {
-        match crate::app::services::workspace_service::build_fresh_export_xml(
+        match crate::app::workspace_ops::build_fresh_export_xml(
             &config_toml(),
             &*vfs.read(),
         ) {

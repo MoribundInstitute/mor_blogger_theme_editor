@@ -43,13 +43,11 @@ pub fn BackgroundPanel(mut background: Signal<BackgroundConfig>) -> Element {
                     div {
                         class: "editor-field-group",
                         label { class: "editor-field-label", "Color" }
-                        input {
-                            r#type: "color",
-                            value: "{color}",
-                            class: "editor-field editor-color-field",
-                            oninput: move |e| {
+                        crate::ui::components::inputs::ColorInput {
+                            value: color,
+                            oninput: move |v: String| {
                                 if matches!(background.read().mode, BackgroundMode::Solid { .. }) {
-                                    background.write().mode = BackgroundMode::Solid { color: e.value() };
+                                    background.write().mode = BackgroundMode::Solid { color: v };
                                 }
                             }
                         }
@@ -62,17 +60,15 @@ pub fn BackgroundPanel(mut background: Signal<BackgroundConfig>) -> Element {
                         div {
                             class: "editor-flex-1 editor-stack",
                             label { class: "editor-mini-label", "From" }
-                            input {
-                                r#type: "color",
-                                value: "{from}",
-                                class: "editor-field editor-color-field",
-                                oninput: move |e| {
+                            crate::ui::components::inputs::ColorInput {
+                                value: from,
+                                oninput: move |v: String| {
                                     let state = match &background.read().mode {
                                         BackgroundMode::Gradient { to, angle_deg, .. } => Some((to.clone(), *angle_deg)),
                                         _ => None,
                                     };
                                     if let Some((to, angle_deg)) = state {
-                                        background.write().mode = BackgroundMode::Gradient { from: e.value(), to, angle_deg };
+                                        background.write().mode = BackgroundMode::Gradient { from: v, to, angle_deg };
                                     }
                                 }
                             }
@@ -81,17 +77,15 @@ pub fn BackgroundPanel(mut background: Signal<BackgroundConfig>) -> Element {
                         div {
                             class: "editor-flex-1 editor-stack",
                             label { class: "editor-mini-label", "To" }
-                            input {
-                                r#type: "color",
-                                value: "{to}",
-                                class: "editor-field editor-color-field",
-                                oninput: move |e| {
+                            crate::ui::components::inputs::ColorInput {
+                                value: to,
+                                oninput: move |v: String| {
                                     let state = match &background.read().mode {
                                         BackgroundMode::Gradient { from, angle_deg, .. } => Some((from.clone(), *angle_deg)),
                                         _ => None,
                                     };
                                     if let Some((from, angle_deg)) = state {
-                                        background.write().mode = BackgroundMode::Gradient { from, to: e.value(), angle_deg };
+                                        background.write().mode = BackgroundMode::Gradient { from, to: v, angle_deg };
                                     }
                                 }
                             }

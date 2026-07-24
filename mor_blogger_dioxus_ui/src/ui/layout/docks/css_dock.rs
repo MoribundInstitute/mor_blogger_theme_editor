@@ -33,7 +33,7 @@ pub(super) fn asset_editor_panel(
             on_save: move |_| {
                 let vfs = use_context::<VfsDictionary>().0;
                 let current_vfs = vfs.read().clone();
-                crate::app::services::workspace_service::persist_asset_editor(theme, &current_vfs, persist_kind);
+                crate::app::workspace_ops::persist_asset_editor(theme, &current_vfs, persist_kind);
             },
             on_close: move |_| {
                 let mut pos = dock_position;

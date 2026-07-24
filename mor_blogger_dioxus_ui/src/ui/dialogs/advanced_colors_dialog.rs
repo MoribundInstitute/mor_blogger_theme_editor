@@ -53,29 +53,29 @@ pub fn AdvancedColorsDialog(mut open_signal: Signal<bool>) -> Element {
 
                         div { style: "display: flex; flex-direction: column; gap: 6px;",
                             label { style: "font-size: 11px; color: #8e8e93;", "Track Color" }
-                            input {
-                                r#type: "color",
-                                value: "{signals.scrollbar_track_color}",
+                            crate::ui::components::inputs::ColorInput {
+                                class: "",
+                                value: signals.scrollbar_track_color.read().clone(),
                                 style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
-                                oninput: move |e| signals.scrollbar_track_color.set(e.value()),
+                                oninput: move |v: String| signals.scrollbar_track_color.set(v),
                             }
                         }
                         div { style: "display: flex; flex-direction: column; gap: 6px;",
                             label { style: "font-size: 11px; color: #8e8e93;", "Thumb Color" }
-                            input {
-                                r#type: "color",
-                                value: "{signals.scrollbar_thumb_color}",
+                            crate::ui::components::inputs::ColorInput {
+                                class: "",
+                                value: signals.scrollbar_thumb_color.read().clone(),
                                 style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
-                                oninput: move |e| signals.scrollbar_thumb_color.set(e.value()),
+                                oninput: move |v: String| signals.scrollbar_thumb_color.set(v),
                             }
                         }
                         div { style: "display: flex; flex-direction: column; gap: 6px;",
                             label { style: "font-size: 11px; color: #8e8e93;", "Thumb Hover Color" }
-                            input {
-                                r#type: "color",
-                                value: "{signals.scrollbar_thumb_hover_color}",
+                            crate::ui::components::inputs::ColorInput {
+                                class: "",
+                                value: signals.scrollbar_thumb_hover_color.read().clone(),
                                 style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
-                                oninput: move |e| signals.scrollbar_thumb_hover_color.set(e.value()),
+                                oninput: move |v: String| signals.scrollbar_thumb_hover_color.set(v),
                             }
                         }
                     }
@@ -159,21 +159,21 @@ fn SurfaceFillEditor(value: Signal<SurfaceFill>, default_color: String) -> Eleme
         value.set(next);
     };
 
-    let on_solid_color = move |e: Event<FormData>| {
+    let on_solid_color = move |v: String| {
         let mut next = value.read().clone();
-        next.color = e.value();
+        next.color = v;
         value.set(next);
     };
 
-    let on_grad_from = move |e: Event<FormData>| {
+    let on_grad_from = move |v: String| {
         let mut next = value.read().clone();
-        next.gradient_from = e.value();
+        next.gradient_from = v;
         value.set(next);
     };
 
-    let on_grad_to = move |e: Event<FormData>| {
+    let on_grad_to = move |v: String| {
         let mut next = value.read().clone();
-        next.gradient_to = e.value();
+        next.gradient_to = v;
         value.set(next);
     };
 
@@ -207,10 +207,9 @@ fn SurfaceFillEditor(value: Signal<SurfaceFill>, default_color: String) -> Eleme
                     div {
                         style: "display: flex; flex-direction: column; gap: 4px;",
                         label { style: "font-size: 11px; color: #8e8e93;", "Color" }
-                        input {
-                            r#type: "color",
-                            value: "{current.color}",
-                            placeholder: "{default_color}",
+                        crate::ui::components::inputs::ColorInput {
+                            class: "",
+                            value: current.color.clone(),
                             style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
                             oninput: on_solid_color,
                         }
@@ -224,9 +223,9 @@ fn SurfaceFillEditor(value: Signal<SurfaceFill>, default_color: String) -> Eleme
                             div {
                                 style: "display: flex; flex-direction: column; gap: 4px;",
                                 label { style: "font-size: 10px; color: #8e8e93;", "From" }
-                                input {
-                                    r#type: "color",
-                                    value: "{current.gradient_from}",
+                                crate::ui::components::inputs::ColorInput {
+                                    class: "",
+                                    value: current.gradient_from.clone(),
                                     style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
                                     oninput: on_grad_from,
                                 }
@@ -234,9 +233,9 @@ fn SurfaceFillEditor(value: Signal<SurfaceFill>, default_color: String) -> Eleme
                             div {
                                 style: "display: flex; flex-direction: column; gap: 4px;",
                                 label { style: "font-size: 10px; color: #8e8e93;", "To" }
-                                input {
-                                    r#type: "color",
-                                    value: "{current.gradient_to}",
+                                crate::ui::components::inputs::ColorInput {
+                                    class: "",
+                                    value: current.gradient_to.clone(),
                                     style: "width: 100%; height: 28px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 4px; cursor: pointer; padding: 2px;",
                                     oninput: on_grad_to,
                                 }

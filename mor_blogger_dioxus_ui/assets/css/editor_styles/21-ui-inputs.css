@@ -63,6 +63,28 @@
   cursor: pointer;
 }
 
+/* Penpot-style recent-color strip under color fields */
+.recent-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.recent-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--editor-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.recent-swatch:hover {
+  border-color: var(--editor-accent);
+  transform: scale(1.2);
+}
+
 .editor-button {
   padding: 8px 16px;
   background: var(--editor-panel-raised);

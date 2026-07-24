@@ -5,7 +5,7 @@ pub mod theme_state;
 
 pub use layout_state::{
     dock_display_name, normalize_dock_key, CenterView, ContextMenuPayload, DockPosition,
-    LayoutState, PluginManagerContext,
+    LayoutState, PluginManagerContext, PreviewContextInfo,
 };
 pub use render_state::RenderState;
 pub use site_data::SiteData;

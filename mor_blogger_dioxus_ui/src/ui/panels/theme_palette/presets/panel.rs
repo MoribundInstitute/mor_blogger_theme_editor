@@ -120,6 +120,8 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
     let mut show_import = use_signal(|| false);
     let mut remote_url = use_signal(String::new);
     let mut pasted_theme = use_signal(String::new);
+    let mut show_save_preset = use_signal(|| false);
+    let mut save_preset_name = use_signal(String::new);
 
     let active_label = active()
         .and_then(|active_id| presets.iter().find(|preset| preset.id == active_id))
@@ -154,6 +156,13 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
                         title: "Import JSON",
                         onclick: move |_| show_import.set(!show_import()),
                         "⤓"
+                    }
+
+                    button {
+                        class: if show_save_preset() { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                        title: "Save current theme as a named preset",
+                        onclick: move |_| show_save_preset.set(!show_save_preset()),
+                        "💾"
                     }
 
                     button {
@@ -235,6 +244,54 @@ pub fn PresetsPanel(props: PresetsPanelProps) -> Element {
             }
 
             if !(theme.import_status)().is_empty() { div { class: "restore-status", style: "margin-bottom: 12px;", "{theme.import_status}" } }
+
+            if show_save_preset() {
+                div { class: "editor-note",
+                    h4 { class: "editor-note-title", "Save Current Theme as Preset" }
+                    p { class: "editor-note-body",
+                        "Snapshots everything — palette, typography, modules, CSS — as a reusable preset in your preset list."
+                    }
+                    div { class: "editor-field-group",
+                        label { class: "editor-field-label", "Preset name" }
+                        div { class: "editor-row-stretch",
+                            input {
+                                class: "editor-field editor-flex-1", r#type: "text", placeholder: "My Orchard Theme", value: "{save_preset_name}",
+                                oninput: move |evt| save_preset_name.set(evt.value()),
+                            }
+                            button {
+                                class: "editor-button",
+                                onclick: {
+                                    let signals = props.signals;
+                                    move |_| {
+                                        let name = save_preset_name().trim().to_string();
+                                        if name.is_empty() {
+                                            theme.import_status.set("Give the preset a name first.".to_string());
+                                            return;
+                                        }
+                                        let id: String = name
+                                            .to_lowercase()
+                                            .chars()
+                                            .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+                                            .collect();
+                                        let config = signals.to_config();
+                                        match mor_blogger_core::presets::save_theme_config_as_preset(
+                                            &id, &name, "Saved from the editor", &config,
+                                        ) {
+                                            Ok(path) => {
+                                                theme.import_status.set(format!("Saved preset '{}' → {}", name, path.display()));
+                                                show_save_preset.set(false);
+                                                save_preset_name.set(String::new());
+                                            }
+                                            Err(err) => theme.import_status.set(format!("Could not save preset: {}", err)),
+                                        }
+                                    }
+                                },
+                                "Save"
+                            }
+                        }
+                    }
+                }
+            }
 
             if show_import() {
                 div { class: "editor-note",

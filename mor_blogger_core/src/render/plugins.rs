@@ -1,56 +1,38 @@
-//! Native plugins: each contributes CSS, XML widgets, and/or JS to the
-//! rendered Blogger layout. Disabled plugins are simply not added to the
-//! active list, so they cost nothing during rendering.
+//! Built-in render plugins. Enabled plugins contribute JS and/or XML widgets.
+//! Four hard-coded plugins matched by prefs id — no trait object.
 
 use crate::render::xml_generator::XmlNode;
 
-/// Reads the editor prefs and returns the enabled plugins, boxed and ready
-/// for the render pipeline.
-pub fn load_active_plugins() -> Vec<Box<dyn MorBloggerPlugin>> {
-    let mut active: Vec<Box<dyn MorBloggerPlugin>> = Vec::new();
-    if let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) {
-        if let Ok(prefs) = toml::from_str::<crate::config::prefs::RenderPrefs>(&toml_str) {
-            for p in prefs.plugins {
-                if p.enabled {
-                    match p.id.as_str() {
-                        "os_chameleon" => active.push(Box::new(OsChameleonPlugin)),
-                        "dewey_indexer" => active.push(Box::new(DeweyIndexerPlugin)),
-                        "workspace_docks" => active.push(Box::new(WorkspaceDocksPlugin)),
-                        "notification_bell" => active.push(Box::new(NotificationBellPlugin)),
-                        _ => {}
-                    }
-                }
+/// One enabled plugin's contributions.
+#[derive(Clone)]
+pub struct ActivePlugin {
+    pub js: Option<&'static str>,
+    pub widgets: Vec<XmlNode>,
+}
+
+/// Read editor prefs and return enabled plugins.
+pub fn load_active_plugins() -> Vec<ActivePlugin> {
+    let mut active = Vec::new();
+    let Ok(toml_str) = std::fs::read_to_string(crate::config::prefs::editor_prefs_path()) else {
+        return active;
+    };
+    let Ok(prefs) = toml::from_str::<crate::config::prefs::RenderPrefs>(&toml_str) else {
+        return active;
+    };
+    for p in prefs.plugins {
+        if p.enabled {
+            if let Some(plugin) = plugin_by_id(&p.id) {
+                active.push(plugin);
             }
         }
     }
     active
 }
 
-/// The contract every renderable plugin implements. All hooks are optional;
-/// a plugin overrides only the ones it needs.
-pub trait MorBloggerPlugin: Send + Sync {
-    /// Optional: Generates native Blogger XML widgets to insert into the structure.
-    fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
-        None
-    }
-
-    /// Optional: Returns the exact Vanilla JS required for this feature to work.
-    fn inject_js(&self) -> Option<&'static str> {
-        None
-    }
-}
-
-// =========================================================================
-// ISOLATED PLUGIN IMPLEMENTATIONS
-// =========================================================================
-
-/// Injects the Dark Mode toggle logic and local storage memory.
-pub struct OsChameleonPlugin;
-
-impl MorBloggerPlugin for OsChameleonPlugin {
-    fn inject_js(&self) -> Option<&'static str> {
-        Some(
-            r##"
+fn plugin_by_id(id: &str) -> Option<ActivePlugin> {
+    match id {
+        "os_chameleon" => Some(ActivePlugin {
+            js: Some(r##"
             const themeToggle = document.getElementById('mor-theme-toggle');
             const body = document.body;
             const currentTheme = localStorage.getItem('mor-theme') || 
@@ -65,18 +47,11 @@ impl MorBloggerPlugin for OsChameleonPlugin {
                     localStorage.setItem('mor-theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
                 });
             }
-        "##,
-        )
-    }
-}
-
-/// Dynamically generates a Table of Contents based on document headers.
-pub struct DeweyIndexerPlugin;
-
-impl MorBloggerPlugin for DeweyIndexerPlugin {
-    fn inject_js(&self) -> Option<&'static str> {
-        Some(
-            r##"
+        "##),
+            widgets: vec![],
+        }),
+        "dewey_indexer" => Some(ActivePlugin {
+            js: Some(r##"
             const tocContainer = document.querySelector('.mor-toc-container');
             const postBody = document.querySelector('.mor-post-body');
             
@@ -107,24 +82,11 @@ impl MorBloggerPlugin for DeweyIndexerPlugin {
                     tocContainer.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No document anchors found.</p>';
                 }
             }
-        "##,
-        )
-    }
-
-    fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
-        Some(vec![XmlNode::new(
-            "{{PLUGIN_WIDGET_SIDEBAR_RIGHT}}",
-            "<div class='mor-toc-container'></div>",
-        )])
-    }
-}
-/// Adds collapsible left/right sidebar ("dock") toggles with persisted state.
-pub struct WorkspaceDocksPlugin;
-
-impl MorBloggerPlugin for WorkspaceDocksPlugin {
-    fn inject_js(&self) -> Option<&'static str> {
-        Some(
-            r##"
+        "##),
+            widgets: vec![XmlNode::new("{{PLUGIN_WIDGET_SIDEBAR_RIGHT}}", "<div class='mor-toc-container'></div>")],
+        }),
+        "workspace_docks" => Some(ActivePlugin {
+            js: Some(r##"
             (function() {
                 const body = document.body;
                 const leftToggle  = document.getElementById('mor-dock-left-toggle');
@@ -148,22 +110,36 @@ impl MorBloggerPlugin for WorkspaceDocksPlugin {
                 bindToggle(leftToggle,  'mor-dock-left-collapsed',  'mor-dock-left');
                 bindToggle(rightToggle, 'mor-dock-right-collapsed', 'mor-dock-right');
             })();
-        "##,
-        )
-    }
-}
-
-/// "Notification Bell" — a header bell that opens a dropdown showing the newest
-/// post (via a native `FeaturedPost` widget). Colors follow the active theme via
-/// CSS custom properties (no hardcoded palette). Injects its widget into the
-/// `{{PLUGIN_WIDGET_HEADER}}` socket and the toggle JS into the page.
-pub struct NotificationBellPlugin;
-
-impl MorBloggerPlugin for NotificationBellPlugin {
-    fn inject_xml_widgets(&self) -> Option<Vec<XmlNode>> {
-        Some(vec![XmlNode::new(
-            "{{PLUGIN_WIDGET_HEADER}}",
-            r##"<nav class='mor-notif-container'>
+        "##),
+            widgets: vec![],
+        }),
+        "notification_bell" => Some(ActivePlugin {
+            js: Some(r##"
+            (function () {
+                if (window.__morNotifBellInit) return;
+                window.__morNotifBellInit = true;
+                document.addEventListener('click', function (e) {
+                    var menu = document.querySelector('.mor-notif-container .mor-notif-dropdown');
+                    if (!menu) return;
+                    if (e.target.closest('.mor-notif-bell')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        menu.classList.toggle('open');
+                        return;
+                    }
+                    if (!e.target.closest('.mor-notif-dropdown')) {
+                        menu.classList.remove('open');
+                    }
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        var m = document.querySelector('.mor-notif-container .mor-notif-dropdown.open');
+                        if (m) m.classList.remove('open');
+                    }
+                });
+            })();
+        "##),
+            widgets: vec![XmlNode::new("{{PLUGIN_WIDGET_HEADER}}", r##"<nav class='mor-notif-container'>
   <span class='mor-notif-bell' role='button' tabindex='0' aria-label='Newest post'>
     <svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/><path d='M13.73 21a2 2 0 0 1-3.46 0'/></svg>
   </span>
@@ -209,37 +185,8 @@ impl MorBloggerPlugin for NotificationBellPlugin {
 .mor-notif-link:hover .mor-notif-title { color: var(--accent, #fff); text-shadow: 0 0 8px var(--glow, rgba(255,255,255,.4)); }
 .mor-notif-snippet { margin: 6px 0 0; font-size: .85rem; line-height: 1.4; color: var(--fg-muted, #b9b9b8); }
 .mor-notif-img { width: 100%; height: auto; border-radius: 6px; margin-top: 8px; }
-</style>"##,
-        )])
-    }
-
-    fn inject_js(&self) -> Option<&'static str> {
-        Some(
-            r##"
-            (function () {
-                if (window.__morNotifBellInit) return;
-                window.__morNotifBellInit = true;
-                document.addEventListener('click', function (e) {
-                    var menu = document.querySelector('.mor-notif-container .mor-notif-dropdown');
-                    if (!menu) return;
-                    if (e.target.closest('.mor-notif-bell')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        menu.classList.toggle('open');
-                        return;
-                    }
-                    if (!e.target.closest('.mor-notif-dropdown')) {
-                        menu.classList.remove('open');
-                    }
-                });
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') {
-                        var m = document.querySelector('.mor-notif-container .mor-notif-dropdown.open');
-                        if (m) m.classList.remove('open');
-                    }
-                });
-            })();
-        "##,
-        )
+</style>"##)],
+        }),
+        _ => None,
     }
 }

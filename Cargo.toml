@@ -2,7 +2,8 @@
 members = [
     "mor_blogger_core",
     "mor_blogger_dioxus_ui",
-    "mor_blogger_cli"
+    "mor_blogger_cli",
+    "mor_blogger_mobile"
 ]
 resolver = "2"
 default-members = ["mor_blogger_dioxus_ui"]

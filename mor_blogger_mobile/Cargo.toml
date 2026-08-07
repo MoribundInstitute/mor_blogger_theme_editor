@@ -1,0 +1,16 @@
+[package]
+name = "mor_blogger_mobile"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+
+[dependencies]
+# Headless engine — the only crate shared with desktop. No rfd/arboard/notify:
+# those pull desktop windowing/FS APIs that break the Android NDK build.
+mor_blogger_core = { path = "../mor_blogger_core" }
+
+dioxus = { version = "0.7", features = ["mobile"] }
+
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true

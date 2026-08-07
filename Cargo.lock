@@ -3163,6 +3163,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "mor_blogger_mobile"
+version = "0.1.0"
+dependencies = [
+ "dioxus",
+ "log",
+ "mor_blogger_core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "moxcms"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

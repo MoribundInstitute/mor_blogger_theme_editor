@@ -10,8 +10,3 @@ publisher = "Moribund"
 
 [web.app]
 title = "MorBlogger"
-
-# Android webview: lock viewport to device width, no pinch-zoom on the editor UI.
-[web.resource]
-style = []
-script = []

@@ -60,22 +60,22 @@ jobs:
             echo "version=0.0.0-dev.${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
+      # dx must run from the workspace root: dioxus-cli 0.7 resolves the root
+      # manifest's default-members relative to cwd and panics from a subdir.
       - name: Bundle desktop (Linux)
         if: runner.os == 'Linux'
-        working-directory: mor_blogger_dioxus_ui
-        run: dx bundle --release --package-types deb --package-types rpm --package-types appimage
+        run: dx bundle --release --package mor_blogger_dioxus_ui --package-types deb --package-types rpm --package-types appimage
 
       - name: Bundle desktop (Windows)
         if: runner.os == 'Windows'
-        working-directory: mor_blogger_dioxus_ui
         shell: bash
-        run: dx bundle --release --package-types msi --package-types nsis
+        run: dx bundle --release --package mor_blogger_dioxus_ui --package-types msi --package-types nsis
 
       - name: Bundle desktop (macOS, ad-hoc signed)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          (cd mor_blogger_dioxus_ui && dx bundle --release --package-types macos)
+          dx bundle --release --package mor_blogger_dioxus_ui --package-types macos
           APP=$(find target/dx -name '*.app' -type d | head -n1)
           # ponytail: ad-hoc signature (-) — no Apple Developer cert in CI. Swap for
           # a real identity + notarization when distributing outside pre-releases.
@@ -175,11 +175,11 @@ jobs:
           fi
 
       - name: Build APK
-        working-directory: mor_blogger_mobile
         run: |
           # Runners preinstall the NDK; dx reads ANDROID_NDK_HOME.
+          # Run from the workspace root — see default-members note above.
           export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
-          dx build --platform android --release
+          dx build --platform android --release --package mor_blogger_mobile
 
       - name: Sign APK (CI keystore)
         shell: bash

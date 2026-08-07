@@ -33,34 +33,28 @@ pub fn ScrollbarPanel() -> Element {
             div { class: "editor-row",
                 div { class: "editor-field-group",
                     label { class: "editor-field-label", "Track Color" }
-                    input {
-                        r#type: "color",
-                        value: "{state.signals.scrollbar_track_color.read()}",
-                        class: "editor-field editor-color-field",
-                        oninput: move |e| {
-                            *state.signals.scrollbar_track_color.write() = e.value();
+                    crate::ui::components::inputs::ColorInput {
+                        value: state.signals.scrollbar_track_color.read().clone(),
+                        oninput: move |v: String| {
+                            *state.signals.scrollbar_track_color.write() = v;
                         },
                     }
                 }
                 div { class: "editor-field-group",
                     label { class: "editor-field-label", "Thumb Color" }
-                    input {
-                        r#type: "color",
-                        value: "{state.signals.scrollbar_thumb_color.read()}",
-                        class: "editor-field editor-color-field",
-                        oninput: move |e| {
-                            *state.signals.scrollbar_thumb_color.write() = e.value();
+                    crate::ui::components::inputs::ColorInput {
+                        value: state.signals.scrollbar_thumb_color.read().clone(),
+                        oninput: move |v: String| {
+                            *state.signals.scrollbar_thumb_color.write() = v;
                         },
                     }
                 }
                 div { class: "editor-field-group",
                     label { class: "editor-field-label", "Thumb Hover" }
-                    input {
-                        r#type: "color",
-                        value: "{state.signals.scrollbar_thumb_hover_color.read()}",
-                        class: "editor-field editor-color-field",
-                        oninput: move |e| {
-                            *state.signals.scrollbar_thumb_hover_color.write() = e.value();
+                    crate::ui::components::inputs::ColorInput {
+                        value: state.signals.scrollbar_thumb_hover_color.read().clone(),
+                        oninput: move |v: String| {
+                            *state.signals.scrollbar_thumb_hover_color.write() = v;
                         },
                     }
                 }

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::ui::components::code_editor::CodeEditor;
 use crate::ui::components::dock_chrome::WorkbenchPaneHeader;
 use crate::ui::components::icons::{
-    IconChevronDown, IconChevronUp, IconEye, IconEyeOff, IconGrip, IconPencil, IconTrash,
+    IconChevronDown, IconChevronUp, IconCopy, IconEye, IconEyeOff, IconGrip, IconPencil, IconTrash,
 };
 use dioxus::prelude::*;
 use mor_blogger_core::config::ThemeConfig;
@@ -106,6 +106,32 @@ html, body {{ overflow: hidden; margin: 0; }}
 </body>
 </html>"#
     )
+}
+
+/// Penpot-style panel→preview highlight sync: outline the widget with this id
+/// in the module preview iframe (None clears). Matches by `data-block-id` or
+/// the widget's DOM id; silently does nothing when the preview lacks a match.
+fn highlight_preview_widget(id: Option<&str>) {
+    let target = serde_json::Value::from(id.unwrap_or("")).to_string();
+    let js = format!(
+        r##"(function() {{
+            const frm = document.getElementById('mor-preview-frame');
+            const doc = frm && (frm.contentDocument || frm.contentWindow.document);
+            if (!doc || !doc.body) return;
+            if (!doc.getElementById('mor-hl-style')) {{
+                const st = doc.createElement('style');
+                st.id = 'mor-hl-style';
+                st.textContent = '.mor-hl-target{{outline:2px solid #3b82f6 !important;outline-offset:2px;}}';
+                doc.head.appendChild(st);
+            }}
+            doc.querySelectorAll('.mor-hl-target').forEach(el => el.classList.remove('mor-hl-target'));
+            const id = {target};
+            if (!id) return;
+            const el = doc.querySelector('[data-block-id="' + id + '"]') || doc.getElementById(id);
+            if (el) {{ el.classList.add('mor-hl-target'); el.scrollIntoView({{block: 'nearest'}}); }}
+        }})();"##
+    );
+    let _ = dioxus::document::eval(&js);
 }
 
 /// Route a module file (dropped on the workspace) into the matching slot's editor
@@ -312,7 +338,7 @@ pub fn ModuleWorkbench(
 
     // ── Socket editing ─ widgets in a `{{SOCKET_*}}` live in config.widget_map ──
     // Mutate the live config and re-apply it via on_load_theme (same path the
-    // preview's drag-reorder uses through workspace_service::handle_widget_move).
+    // preview's drag-reorder uses through workspace_ops::handle_widget_move).
     let mutate_pack = move |edit: Box<dyn FnOnce(&mut mor_blogger_core::config::TemplatePackConfig)>| {
         let mut cfg = toml::from_str::<ThemeConfig>(&config_toml()).unwrap_or_default();
         edit(&mut cfg.template_pack);
@@ -363,6 +389,9 @@ pub fn ModuleWorkbench(
     let mut over_widget: Signal<Option<usize>> = use_signal(|| None);
     let mut drag_socket: Signal<Option<(String, usize)>> = use_signal(|| None);
     let mut over_socket: Signal<Option<usize>> = use_signal(|| None);
+
+    // Which widget card has its schema property sheet expanded (one at a time).
+    let mut props_slot: Signal<Option<usize>> = use_signal(|| None);
 
     // Consume "add this gadget" requests from the Widgets dock: route into the
     // current target socket (config widget_map) or append to the module buffer.
@@ -676,6 +705,7 @@ pub fn ModuleWorkbench(
                                     onmouseleave: move |_| {
                                         drag_widget.set(None); over_widget.set(None);
                                         drag_socket.set(None); over_socket.set(None);
+                                        highlight_preview_widget(None);
                                     },
                                     {
                                         let xml = display_xml();
@@ -708,16 +738,30 @@ pub fn ModuleWorkbench(
                                             rsx! {
                                                 for (idx, part) in structural.into_iter().enumerate() {
                                                     { match part {
-                                                        widget_layout::Part::Widget { slot, id, w_type, title, visible } => rsx! {
+                                                        widget_layout::Part::Widget { slot, id, w_type, title, visible } => {
+                                                            // Penpot-style drop indicator: an accent line on the edge
+                                                            // where the dragged card will land, not a whole-card border.
+                                                            let drop_edge = match (drag_widget(), over_widget()) {
+                                                                (Some(from), Some(over)) if over == slot && from != slot => {
+                                                                    if slot < from { "box-shadow: 0 -2px 0 0 var(--editor-accent-warm);" }
+                                                                    else { "box-shadow: 0 2px 0 0 var(--editor-accent-warm);" }
+                                                                }
+                                                                _ => "",
+                                                            };
+                                                            let id_hl = id.clone();
+                                                            rsx! {
                                                             div {
                                                                 key: "w{slot}-{id}",
                                                                 class: "layout-card",
-                                                                onmouseenter: move |_| { if drag_widget().is_some() { over_widget.set(Some(slot)); } },
+                                                                onmouseenter: move |_| {
+                                                                    if drag_widget().is_some() { over_widget.set(Some(slot)); }
+                                                                    else { highlight_preview_widget(Some(&id_hl)); }
+                                                                },
+                                                                onmouseleave: move |_| highlight_preview_widget(None),
                                                                 style: format!(
-                                                                    "display: flex; align-items: stretch; gap: 8px; padding: 8px 10px; border-radius: 6px; background: var(--bg-elevated); opacity: {}; border: 1px solid {};",
+                                                                    "display: flex; align-items: stretch; gap: 8px; padding: 8px 10px; border-radius: 6px; background: var(--bg-elevated); opacity: {}; border: 1px solid {}; {drop_edge}",
                                                                     if visible { "1" } else { "0.55" },
                                                                     if drag_widget() == Some(slot) { "var(--editor-accent)" }
-                                                                    else if drag_widget().is_some() && over_widget() == Some(slot) { "var(--editor-accent-warm)" }
                                                                     else { "var(--editor-border-soft)" }
                                                                 ),
                                                                 // Drag grip (mouse-based reorder); ↑/↓ remain as a fallback.
@@ -775,6 +819,27 @@ pub fn ModuleWorkbench(
                                                                 button {
                                                                     class: "editor-mini-button",
                                                                     style: "padding: 4px 6px; line-height: 0; align-self: center;",
+                                                                    title: "Duplicate widget",
+                                                                    onclick: move |_| {
+                                                                        let mut f = apply_buffer;
+                                                                        f(widget_layout::duplicate(&display_xml(), slot));
+                                                                    },
+                                                                    IconCopy {}
+                                                                }
+                                                                if mor_blogger_core::schema::schema_for(&w_type).is_some() {
+                                                                    button {
+                                                                        class: if props_slot() == Some(slot) { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                                                                        style: "padding: 4px 6px; align-self: center;",
+                                                                        title: "Widget settings",
+                                                                        onclick: move |_| {
+                                                                            props_slot.set(if props_slot() == Some(slot) { None } else { Some(slot) });
+                                                                        },
+                                                                        "⚙"
+                                                                    }
+                                                                }
+                                                                button {
+                                                                    class: "editor-mini-button",
+                                                                    style: "padding: 4px 6px; line-height: 0; align-self: center;",
                                                                     title: "Remove widget from module",
                                                                     onclick: move |_| {
                                                                         let mut f = apply_buffer;
@@ -783,7 +848,28 @@ pub fn ModuleWorkbench(
                                                                     IconTrash {}
                                                                 }
                                                             }
-                                                        },
+                                                            // Schema-driven property sheet (C5): edits stay local to the
+                                                            // form; Apply patches this block via core surgery and drops the
+                                                            // result back into the module buffer.
+                                                            if props_slot() == Some(slot) {
+                                                                if let (Some(schema), Some(block)) = (
+                                                                    mor_blogger_core::schema::schema_for(&w_type),
+                                                                    widget_layout::widget_block(&display_xml(), slot),
+                                                                ) {
+                                                                    div {
+                                                                        style: "margin: -4px 0 0 24px; border: 1px solid var(--editor-border-soft); border-top: none; border-radius: 0 0 6px 6px; background: rgba(0,0,0,0.15);",
+                                                                        crate::ui::components::widget_form::WidgetPropertyForm {
+                                                                            schema: schema.clone(),
+                                                                            xml: block,
+                                                                            on_apply: move |patched: String| {
+                                                                                let mut f = apply_buffer;
+                                                                                f(widget_layout::replace_widget_block(&display_xml(), slot, &patched));
+                                                                            },
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }},
                                                         widget_layout::Part::Section { id } => rsx! {
                                                             div {
                                                                 key: "s{idx}-{id}",
@@ -831,10 +917,15 @@ pub fn ModuleWorkbench(
                                                                             let dragging_here = drag_socket().as_ref().map(|(k, _)| k == &key).unwrap_or(false);
                                                                             let is_src = drag_socket() == Some((key.clone(), wi));
                                                                             let wid_rm = wid.clone();
+                                                                            let wid_hl = wid.clone();
                                                                             rsx! {
                                                                                 div {
                                                                                     key: "{key}-{wi}-{wid}",
-                                                                                    onmouseenter: move |_| { if dragging_here { over_socket.set(Some(wi)); } },
+                                                                                    onmouseenter: move |_| {
+                                                                                        if dragging_here { over_socket.set(Some(wi)); }
+                                                                                        else { highlight_preview_widget(Some(&wid_hl)); }
+                                                                                    },
+                                                                                    onmouseleave: move |_| highlight_preview_widget(None),
                                                                                     style: format!(
                                                                                         "display: flex; align-items: stretch; gap: 8px; padding: 6px 12px; font-size: 0.76rem; border-top: 1px solid {};",
                                                                                         if is_src { "var(--editor-accent)" }

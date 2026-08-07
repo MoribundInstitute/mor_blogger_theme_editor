@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::time::Duration;
+
 use dioxus::prelude::*;
 
 use crate::app::state::layout_state::LayoutState;
@@ -12,12 +15,36 @@ use mor_blogger_core::render::template_resolver::{
 };
 use mor_blogger_core::render::{render_preview_html, render_theme};
 
+/// How long a burst of config edits must go quiet before the cold pipeline
+/// (full export XML + diagnostics) recomputes.
+const COLD_DEBOUNCE_MS: u64 = 200;
+
+/// Cold-path build: full theme render plus the zstd/base64 rehydration inject.
+/// Shared by the debounced background pipeline and the on-demand export.
+fn build_export_xml(config: &ThemeConfig, vfs: &HashMap<String, String>) -> String {
+    let rendered_xml = render_theme(config, vfs);
+    let payload =
+        mor_blogger_core::utils::rehydration::RehydrationPayload::from_config(config.clone())
+            .with_vfs(vfs.clone());
+    match mor_blogger_core::utils::rehydration::inject_workspace_state(&rendered_xml, &payload) {
+        Ok(xml) => xml,
+        Err(err) => {
+            log::error!("Failed to inject rehydration state: {}", err);
+            rendered_xml
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct RenderState {
     pub current_config: Memo<ThemeConfig>,
-    pub generated_xml: Memo<String>,
+    /// Debounced, computed off the UI thread. May lag the config by up to
+    /// [`COLD_DEBOUNCE_MS`] + build time; use [`Self::export_xml_now`] when
+    /// freshness matters (file exports).
+    pub generated_xml: Signal<String>,
     pub preview_html: Memo<String>,
     pub diag: Signal<DiagnosticResult>,
+    vfs: Signal<HashMap<String, String>>,
 }
 
 impl RenderState {
@@ -33,27 +60,7 @@ impl RenderState {
             config
         });
 
-        let current_config_for_xml = current_config;
         let vfs = use_context::<VfsDictionary>().0;
-
-        let generated_xml = use_memo(move || {
-            let config = current_config_for_xml();
-            let rendered_xml = render_theme(&config, &*vfs.read());
-            let payload = mor_blogger_core::utils::rehydration::RehydrationPayload::from_config(
-                config.clone(),
-            )
-            .with_vfs(vfs.read().clone());
-            match mor_blogger_core::utils::rehydration::inject_workspace_state(
-                &rendered_xml,
-                &payload,
-            ) {
-                Ok(xml) => xml,
-                Err(err) => {
-                    log::error!("Failed to inject rehydration state: {}", err);
-                    rendered_xml
-                }
-            }
-        });
 
         let current_config_for_preview = current_config;
         let preview_template_mode = layout.preview_template_mode;
@@ -69,23 +76,46 @@ impl RenderState {
             )
         });
 
-        let current_config_for_diag_init = current_config;
-        let current_config_for_diag_effect = current_config;
+        let mut generated_xml = use_signal(String::new);
+        let mut diag = use_signal(DiagnosticResult::default);
 
-        let generated_xml_for_diag_init = generated_xml;
-        let generated_xml_for_diag_effect = generated_xml;
-
-        let mut diag = use_signal(move || {
-            let config = current_config_for_diag_init();
-            check_integrity(&generated_xml_for_diag_init(), &config.template_pack)
+        // Generation counter: bumped on every real config/vfs change. The cold
+        // pipeline subscribes to it (not to the config itself, so the expensive
+        // clones happen after the debounce, not on every tick) and uses it to
+        // discard results that were overtaken while spawn_blocking ran.
+        let mut cold_generation = use_signal(|| 0u64);
+        use_effect(move || {
+            let _ = current_config.read();
+            let _ = vfs.read();
+            cold_generation += 1;
         });
 
-        use_effect(move || {
-            let config = current_config_for_diag_effect();
-            diag.set(check_integrity(
-                &generated_xml_for_diag_effect(),
-                &config.template_pack,
-            ));
+        // Cold pipeline: debounce -> snapshot -> full export XML + integrity
+        // check on a blocking thread. use_resource cancels the in-flight run at
+        // the sleep/join await points whenever the generation bumps again.
+        let _cold_pipeline = use_resource(move || {
+            let generation = cold_generation();
+            async move {
+                // Skip the debounce for the very first build so the app doesn't
+                // sit on an empty export at startup.
+                if !generated_xml.peek().is_empty() {
+                    tokio::time::sleep(Duration::from_millis(COLD_DEBOUNCE_MS)).await;
+                }
+                let config = current_config.peek().clone();
+                let vfs_snapshot = vfs.peek().clone();
+                let built = tokio::task::spawn_blocking(move || {
+                    let xml = build_export_xml(&config, &vfs_snapshot);
+                    let diag = check_integrity(&xml, &config.template_pack);
+                    (xml, diag)
+                })
+                .await;
+                if let Ok((xml, diag_result)) = built {
+                    if generation == *cold_generation.peek() {
+                        generated_xml.set(xml);
+                        diag.set(diag_result);
+                    }
+                }
+            }
         });
 
         Self {
@@ -93,7 +123,15 @@ impl RenderState {
             generated_xml,
             preview_html,
             diag,
+            vfs,
         }
+    }
+
+    /// Synchronous, always-fresh export build for user-initiated actions.
+    /// Bypasses the debounced pipeline so a click right after an edit can never
+    /// export stale XML. Blocks briefly; fine for a rare explicit click.
+    pub fn export_xml_now(&self) -> String {
+        build_export_xml(&self.current_config.read(), &self.vfs.read())
     }
 
     pub fn get_manifest(&self, registry_type: &str, id: &str) -> Option<ComponentManifest> {

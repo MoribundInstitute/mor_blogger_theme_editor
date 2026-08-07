@@ -38,19 +38,16 @@ pub fn ColorsPanel(
             SurfaceFillEditor {
                 label: "Panel Background".to_string(),
                 value: bg_panel,
-                default_color: "#111111".to_string(),
             }
 
             SurfaceFillEditor {
                 label: "Elevated Background".to_string(),
                 value: bg_elevated,
-                default_color: "#1a1a1a".to_string(),
             }
 
             SurfaceFillEditor {
                 label: "Header Background".to_string(),
                 value: header_fill,
-                default_color: "#141414".to_string(),
             }
 
             EditorInput {
@@ -89,15 +86,9 @@ pub fn ColorsPanel(
 // ---------------------------------------------------------------------------
 
 #[component]
-fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>, default_color: String) -> Element {
+fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>) -> Element {
     let mut value = value;
     let current = value.read().clone();
-
-    let on_solid_color = move |e: Event<FormData>| {
-        let mut next = value.read().clone();
-        next.color = e.value();
-        value.set(next);
-    };
 
     rsx! {
         div {
@@ -108,12 +99,13 @@ fn SurfaceFillEditor(label: String, value: Signal<SurfaceFill>, default_color: S
                 "{label}"
             }
 
-            input {
-                r#type: "color",
-                value: "{current.color}",
-                placeholder: "{default_color}",
-                class: "editor-field editor-color-field",
-                oninput: on_solid_color,
+            crate::ui::components::inputs::ColorInput {
+                value: current.color.clone(),
+                oninput: move |v: String| {
+                    let mut next = value.read().clone();
+                    next.color = v;
+                    value.set(next);
+                },
             }
         }
     }

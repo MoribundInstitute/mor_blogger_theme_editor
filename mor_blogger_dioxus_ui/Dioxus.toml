@@ -20,6 +20,7 @@ identifier = "com.moribundinstitute.morblogger-theme-editor"
 publisher = "Moribund Institute"
 icon = [
     "assets/icon.png",
+    "icons/icon.ico",
 ]
 category = "DeveloperTool"
 short_description = "A visual Blogger theme editor."

@@ -128,6 +128,7 @@ pub fn PreviewCanvas(
                     span { class: "preview-xray-chip preview-xray-chip-text", "Text · dbl-click" }
                     span { class: "preview-xray-chip preview-xray-chip-token", "Theme token" }
                     span { class: "preview-xray-chip preview-xray-chip-icon", "Icon · shift-click" }
+                    span { class: "preview-xray-chip", "Right-click · actions" }
                 }
             }
 
@@ -338,36 +339,54 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                                 const el = e.target.closest('[data-field-path]');
                                                 if (el) { el.contentEditable = true; el.focus(); }
                                             });
+                                            // rgb()/rgba() → #rrggbb (null for fully transparent).
+                                            function cssHex(c) {
+                                                const m = c && c.match(/rgba?\(([^)]+)\)/);
+                                                if (!m) return c || null;
+                                                const p = m[1].split(',').map(s => parseFloat(s));
+                                                if (p.length >= 4 && p[3] === 0) return null;
+                                                return '#' + p.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+                                            }
+                                            function regionOf(el) {
+                                                if (el.closest('.main-header')) return 'Header';
+                                                if (el.closest('.mor-footer')) return 'Footer';
+                                                return widgetRegion(el);
+                                            }
                                             doc.addEventListener('contextmenu', e => {
-                                                const targetEl = e.target.closest("[data-edit-target^='icons.']");
-                                                const textTarget = e.target.closest('h1, h2, h3, h4, h5, h6, p, span, a');
-                                                if (targetEl || textTarget) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const frm = document.getElementById(FID);
-                                                    const rect = frm ? frm.getBoundingClientRect() : { left: 0, top: 0 };
-                                                    const wrapper = document.querySelector('.preview-scale-wrapper');
-                                                    const scale = wrapper ? parseFloat(getComputedStyle(wrapper).getPropertyValue('--preview-scale')) || 1 : 1;
-                                                    const x = rect.left + e.clientX * scale;
-                                                    const y = rect.top + e.clientY * scale;
-                                                    if (targetEl) {
-                                                        dioxus.send({
-                                                            action: "svg_context_menu",
-                                                            kind: "svg",
-                                                            target_id: targetEl.getAttribute("data-edit-target"),
-                                                            x: x,
-                                                            y: y
-                                                        });
-                                                    } else if (textTarget) {
-                                                        dioxus.send({
-                                                            action: "svg_context_menu",
-                                                            kind: "preview_typography",
-                                                            target_id: textTarget.tagName.toLowerCase(),
-                                                            x: x,
-                                                            y: y
-                                                        });
-                                                    }
+                                                // Inline text editing keeps the native menu (paste, spellcheck).
+                                                if (e.target.isContentEditable) return;
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const frm = document.getElementById(FID);
+                                                const rect = frm ? frm.getBoundingClientRect() : { left: 0, top: 0 };
+                                                const wrapper = document.querySelector('.preview-scale-wrapper');
+                                                const scale = wrapper ? parseFloat(getComputedStyle(wrapper).getPropertyValue('--preview-scale')) || 1 : 1;
+                                                const t = e.target;
+                                                const win = doc.defaultView;
+                                                const editEl = t.closest('[data-edit-target]');
+                                                const fieldEl = t.closest('[data-field-path]');
+                                                const blockEl = t.closest('[data-block-id]');
+                                                const linkEl = t.closest('a[href]');
+                                                // Effective background: walk up to the first non-transparent layer.
+                                                let bgEl = t, bg = null;
+                                                while (bgEl && bgEl.nodeType === 1) {
+                                                    const b = cssHex(win.getComputedStyle(bgEl).backgroundColor);
+                                                    if (b) { bg = b; break; }
+                                                    bgEl = bgEl.parentElement;
                                                 }
+                                                dioxus.send({
+                                                    action: "PREVIEW_CONTEXT_MENU",
+                                                    x: rect.left + e.clientX * scale,
+                                                    y: rect.top + e.clientY * scale,
+                                                    edit_target: editEl ? editEl.getAttribute('data-edit-target') : null,
+                                                    field_path: fieldEl ? fieldEl.getAttribute('data-field-path') : null,
+                                                    block_id: blockEl ? blockEl.getAttribute('data-block-id') : null,
+                                                    region: regionOf(t),
+                                                    tag: (t.tagName || '').toLowerCase(),
+                                                    link: linkEl ? linkEl.getAttribute('href') : null,
+                                                    color: cssHex(win.getComputedStyle(t).color),
+                                                    bg: bg
+                                                });
                                             });
                                             doc.addEventListener('blur', e => {
                                                 const el = e.target.closest('[data-field-path]');
@@ -510,19 +529,35 @@ html.mor-xray-on [data-edit-target]:not([data-field-path]):not([data-block-id]):
                                                     if let Some(handler) = on_drop_svg.as_ref() { handler.call((target.to_string(), content.to_string())); }
                                                 }
                                             }
-                                            "svg_context_menu" | "ICON_CONTEXT_MENU" => {
-                                                if let (Some(target), Some(x_val), Some(y_val)) = (
-                                                    json.get("target_id").or_else(|| json.get("target")).and_then(|t| t.as_str()),
+                                            "PREVIEW_CONTEXT_MENU" => {
+                                                if let (Some(x_val), Some(y_val)) = (
                                                     json.get("x").and_then(|x| x.as_f64()),
                                                     json.get("y").and_then(|y| y.as_f64()),
                                                 ) {
-                                                    let kind_str = json.get("kind").and_then(|k| k.as_str()).unwrap_or("svg").to_string();
+                                                    let opt = |key: &str| json.get(key).and_then(|v| v.as_str()).map(str::to_string);
+                                                    let info = crate::app::state::PreviewContextInfo {
+                                                        edit_target: opt("edit_target"),
+                                                        field_path: opt("field_path"),
+                                                        block_id: opt("block_id"),
+                                                        region: opt("region").unwrap_or_default(),
+                                                        tag: opt("tag").unwrap_or_default(),
+                                                        link: opt("link"),
+                                                        color: opt("color"),
+                                                        bg: opt("bg"),
+                                                    };
+                                                    let target_id = info
+                                                        .field_path
+                                                        .clone()
+                                                        .or_else(|| info.edit_target.clone())
+                                                        .or_else(|| info.block_id.clone())
+                                                        .unwrap_or_else(|| info.tag.clone());
                                                     if let Some(handler) = on_icon_context_menu.as_ref() {
                                                         handler.call(ContextMenuPayload {
                                                             x: x_val,
                                                             y: y_val,
-                                                            kind: kind_str,
-                                                            target_id: target.to_string(),
+                                                            kind: "preview".to_string(),
+                                                            target_id,
+                                                            preview: Some(info),
                                                         });
                                                     }
                                                 }

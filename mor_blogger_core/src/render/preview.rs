@@ -578,7 +578,7 @@ pub fn render_preview_html(
 
     let mut plugin_javascript = String::new();
     for plugin in active_plugins {
-        if let Some(js) = plugin.inject_js() {
+        if let Some(js) = plugin.js {
             plugin_javascript.push_str(js);
             plugin_javascript.push('\n');
         }

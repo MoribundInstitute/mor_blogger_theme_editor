@@ -410,10 +410,10 @@ pub fn render_app_shell(
                         shell_file_actions::save_data(current_config());
                     },
                     on_export_xml: move |_| {
-                        shell_file_actions::export_xml(&(render.generated_xml)());
+                        shell_file_actions::export_xml(&render.export_xml_now());
                     },
                     on_export_zip: move |_| {
-                        shell_file_actions::export_zip(&(render.generated_xml)(), &config_toml_signal());
+                        shell_file_actions::export_zip(&render.export_xml_now(), &config_toml_signal());
                     },
                     on_copy_xml: move |_| {
                         shell_file_actions::copy_xml();

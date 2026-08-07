@@ -1,0 +1,226 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  DX_VERSION: 0.7.9
+
+jobs:
+  build-desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-linux
+          - os: windows-latest
+            target: x86_64-windows
+          - os: macos-latest
+            target: aarch64-macos
+          - os: macos-13
+            target: x86_64-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-${{ matrix.target }}
+
+      - name: Install Linux system deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev libwebkit2gtk-4.1-dev libxdo-dev \
+            squashfs-tools libfuse2 libarchive-tools zstd
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Install dioxus-cli
+        shell: bash
+        run: cargo binstall -y dioxus-cli@${DX_VERSION}
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-dev.${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bundle desktop (Linux)
+        if: runner.os == 'Linux'
+        working-directory: mor_blogger_dioxus_ui
+        run: dx bundle --release --package-types deb --package-types rpm --package-types appimage
+
+      - name: Bundle desktop (Windows)
+        if: runner.os == 'Windows'
+        working-directory: mor_blogger_dioxus_ui
+        shell: bash
+        run: dx bundle --release --package-types msi --package-types nsis
+
+      - name: Bundle desktop (macOS, ad-hoc signed)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          (cd mor_blogger_dioxus_ui && dx bundle --release --package-types macos)
+          APP=$(find target/dx -name '*.app' -type d | head -n1)
+          # ponytail: ad-hoc signature (-) — no Apple Developer cert in CI. Swap for
+          # a real identity + notarization when distributing outside pre-releases.
+          codesign --force --deep --sign - "$APP"
+          hdiutil create -volname "MorBlogger Theme Editor" -srcfolder "$APP" \
+            -ov -format UDZO "mor-blogger-theme-editor.dmg"
+
+      - name: Build Arch package from deb (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          DEB=$(find target/dx -name '*.deb' | head -n1)
+          mkdir -p pkgroot out
+          dpkg-deb -x "$DEB" pkgroot
+          cd pkgroot
+          # ponytail: hand-rolled pacman package (no makepkg on ubuntu runners).
+          # .PKGINFO + tar.zst is all pacman needs; move to an arch container job
+          # if we ever need install scripts or .MTREE verification.
+          cat > .PKGINFO <<EOF
+          pkgname = mor-blogger-theme-editor
+          pkgver = ${V//-/_}-1
+          pkgdesc = A visual Blogger theme editor.
+          url = https://github.com/MoribundInstitute/mor_blogger_theme_editor
+          arch = x86_64
+          size = $(du -sb usr | cut -f1)
+          license = custom
+          depend = webkit2gtk-4.1
+          depend = gtk3
+          depend = xdotool
+          EOF
+          bsdtar -cf - .PKGINFO usr | zstd -c \
+            > "../out/mor-blogger-theme-editor-${V}-x86_64-linux.pkg.tar.zst"
+
+      - name: Build CLI (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          cargo build --release -p mor_blogger_cli
+          mkdir -p out
+          tar -C target/release -czf "out/mor-blogger-cli-${V}-x86_64-linux.tar.gz" mbt
+
+      - name: Collect and rename artifacts
+        shell: bash
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          T="${{ matrix.target }}"
+          mkdir -p out
+          find target/dx . -maxdepth 6 \
+            \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \
+               -o -name '*.msi' -o -name '*setup.exe' -o -name '*.dmg' \) \
+            -not -path './out/*' -print0 |
+          while IFS= read -r -d '' f; do
+            ext="${f##*.}"
+            mv "$f" "out/mor-blogger-theme-editor-${V}-${T}.${ext}"
+          done
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.target }}
+          path: out/*
+          if-no-files-found: error
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: android
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Install dioxus-cli
+        run: cargo binstall -y dioxus-cli@${DX_VERSION}
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-dev.${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build APK
+        working-directory: mor_blogger_mobile
+        run: |
+          # Runners preinstall the NDK; dx reads ANDROID_NDK_HOME.
+          export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          dx build --platform android --release
+
+      - name: Sign APK (CI keystore)
+        shell: bash
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          APK=$(find target/dx -name '*.apk' | head -n1)
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n1)
+          mkdir -p out
+          # ponytail: throwaway CI keystore — installable pre-release builds only.
+          # Move to a repo-secret keystore before shipping updates users must
+          # install over an existing version (Android requires a stable key).
+          keytool -genkeypair -keystore ci.jks -storepass morblogger -alias ci \
+            -keyalg RSA -validity 3650 -dname "CN=MorBlogger CI"
+          "$BT/zipalign" -f 4 "$APK" aligned.apk
+          "$BT/apksigner" sign --ks ci.jks --ks-pass pass:morblogger \
+            --out "out/mor-blogger-mobile-${V}-aarch64-android.apk" aligned.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-aarch64
+          path: out/*
+          if-no-files-found: error
+
+  publish-release:
+    needs: [build-desktop, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS.txt
+        working-directory: dist
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          generate_release_notes: true
+          files: dist/*

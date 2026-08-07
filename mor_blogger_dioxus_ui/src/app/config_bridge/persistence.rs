@@ -100,6 +100,12 @@ impl EditorPrefs {
         let _ = prefs.save();
     }
 
+    pub fn update_recent_colors(colors: Vec<String>) {
+        let mut prefs = Self::load();
+        prefs.recent_colors = colors;
+        let _ = prefs.save();
+    }
+
     pub fn update_default_template_pack(pack: mor_blogger_core::config::TemplatePackConfig) {
         let mut prefs = Self::load();
         prefs.default_template_pack = Some(pack);

@@ -141,4 +141,8 @@ pub struct EditorPrefs {
     /// Per-workspace word-wrap overrides, same keying as `minimap_overrides`.
     #[serde(default)]
     pub wrap_overrides: HashMap<String, bool>,
+    /// Recently committed theme colors, newest first (penpot-style: dedupe on
+    /// insert, capped at 15). Shared by every color field's swatch strip.
+    #[serde(default)]
+    pub recent_colors: Vec<String>,
 }

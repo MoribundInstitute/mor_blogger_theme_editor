@@ -113,6 +113,58 @@ pub fn set_visible(xml: &str, index: usize, visible: bool) -> String {
     format!("{}{}{}", &xml[..s.start], new_tag, &xml[te..])
 }
 
+/// Duplicate a widget block, inserting the copy right after the original with
+/// a fresh unique id (the numeric tail bumped past every existing id).
+pub fn duplicate(xml: &str, index: usize) -> String {
+    let slots = parse_slots(xml);
+    let Some(s) = slots.get(index) else {
+        return xml.to_string();
+    };
+    let old_id = &s.id;
+    // "HTML12" → stem "HTML", counter 12; no numeric tail → counter 1.
+    let split = old_id.len()
+        - old_id
+            .chars()
+            .rev()
+            .take_while(|c| c.is_ascii_digit())
+            .count();
+    let stem = &old_id[..split];
+    let mut n = old_id[split..].parse::<u64>().unwrap_or(1) + 1;
+    while slots.iter().any(|s| s.id == format!("{stem}{n}")) {
+        n += 1;
+    }
+    let new_id = format!("{stem}{n}");
+
+    let te = tag_end(xml, s.start, s.end);
+    // Leading space anchors the match to the real id attribute (not e.g. a
+    // hypothetical instanceId=), mirroring how Blogger writes widget tags.
+    let new_tag = xml[s.start..te]
+        .replacen(&format!(" id='{old_id}'"), &format!(" id='{new_id}'"), 1)
+        .replacen(&format!(" id=\"{old_id}\""), &format!(" id=\"{new_id}\""), 1);
+    format!(
+        "{}\n{new_tag}{}{}",
+        &xml[..s.end],
+        &xml[te..s.end],
+        &xml[s.end..]
+    )
+}
+
+/// The raw XML of one widget block (input for the property sheet / surgery).
+pub fn widget_block(xml: &str, index: usize) -> Option<String> {
+    parse_slots(xml)
+        .get(index)
+        .map(|s| xml[s.start..s.end].to_string())
+}
+
+/// Splice a rewritten widget block back over the original.
+pub fn replace_widget_block(xml: &str, index: usize, new_block: &str) -> String {
+    let slots = parse_slots(xml);
+    let Some(s) = slots.get(index) else {
+        return xml.to_string();
+    };
+    format!("{}{new_block}{}", &xml[..s.start], &xml[s.end..])
+}
+
 /// Remove a widget block from the buffer.
 pub fn remove(xml: &str, index: usize) -> String {
     let slots = parse_slots(xml);
@@ -546,6 +598,21 @@ mod tests {
     fn toggle_visibility_flips_attr() {
         let out = set_visible(&doc(), 0, false);
         assert!(parse_slots(&out)[0].visible == false);
+    }
+
+    #[test]
+    fn duplicate_inserts_copy_with_fresh_id() {
+        let out = duplicate(&doc(), 0);
+        let s = parse_slots(&out);
+        assert_eq!(s.len(), 3);
+        assert_eq!(s[0].id, "A1");
+        assert_eq!(s[1].id, "A2"); // copy lands right after, id bumped
+        assert_eq!(s[1].title, "Alpha");
+        assert_eq!(s[2].id, "B1");
+
+        // bumping skips ids that already exist
+        let again = duplicate(&out, 0);
+        assert_eq!(parse_slots(&again)[1].id, "A3");
     }
 
     #[test]

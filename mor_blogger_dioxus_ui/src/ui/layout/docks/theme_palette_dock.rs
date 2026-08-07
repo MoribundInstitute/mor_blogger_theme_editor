@@ -8,7 +8,7 @@ use crate::ui::panels::theme_palette::background_panel::BackgroundPanel;
 use crate::ui::panels::theme_palette::buttons_panel::ButtonsPanel;
 use crate::ui::panels::theme_palette::colors_panel::ColorsPanel;
 use crate::ui::panels::theme_palette::cursor_panel::CursorPanel;
-use crate::ui::panels::theme_palette::effects_panel_2::EffectsPanel;
+use crate::ui::panels::theme_palette::effects_panel::EffectsPanel;
 use crate::ui::panels::theme_palette::frames_panel::SvgFramesPanel;
 use crate::ui::panels::theme_palette::logo_panel::LogoPanel;
 use crate::ui::panels::theme_palette::presets;
@@ -92,6 +92,7 @@ pub fn ThemePaletteDock(props: ThemePaletteDockProps) -> Element {
                             y: coords.y,
                             kind: "ui_typography".to_string(),
                             target_id: "ui-header".to_string(),
+                            preview: None,
                         }));
                     },
                     EditorAccordion { id: "Presets", title: "Theme Presets", active: active_tab,

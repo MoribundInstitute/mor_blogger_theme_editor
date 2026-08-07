@@ -57,18 +57,16 @@ pub(super) fn render_template(
         std::collections::HashMap::new();
 
     for plugin in active_plugins {
-        if let Some(js) = plugin.inject_js() {
-            plugin_javascript.push_str(&js);
+        if let Some(js) = plugin.js {
+            plugin_javascript.push_str(js);
             plugin_javascript.push('\n');
         }
-        if let Some(widgets) = plugin.inject_xml_widgets() {
-            for widget in widgets {
-                let current = plugin_widgets
-                    .entry(widget.target_socket)
-                    .or_insert_with(String::new);
-                current.push_str(&widget.content);
-                current.push('\n');
-            }
+        for widget in plugin.widgets {
+            let current = plugin_widgets
+                .entry(widget.target_socket)
+                .or_insert_with(String::new);
+            current.push_str(&widget.content);
+            current.push('\n');
         }
     }
 

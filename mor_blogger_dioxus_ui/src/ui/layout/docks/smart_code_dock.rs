@@ -18,7 +18,7 @@ pub fn SmartCodeDock(
 
     // Compiled export XML, recomputed from the live config (mirrors the Export tab).
     let export_xml = use_memo(move || {
-        match crate::app::services::workspace_service::build_fresh_export_xml(
+        match crate::app::workspace_ops::build_fresh_export_xml(
             &config_toml(),
             &*vfs.read(),
         ) {
@@ -27,9 +27,30 @@ pub fn SmartCodeDock(
         }
     });
 
+    // D3 isolation: debounced keystrokes land in this local draft only. The
+    // global config — and the whole compile pipeline behind on_load_theme —
+    // is touched only on commit (Ctrl+S in the editor, or the Apply button).
+    // None = editor buffer matches the applied config.
+    let mut draft_toml: Signal<Option<String>> = use_signal(|| None);
+
+    // External config change (preset apply, file load, commit) wins over a
+    // stale draft: the editor buffer gets overwritten by CodeEditor's value
+    // push anyway, so keep the dirty flag consistent with it.
+    use_effect(move || {
+        let _ = config_toml();
+        draft_toml.set(None);
+    });
+
+    let mut commit = move |text: String| {
+        draft_toml.set(None);
+        on_load_theme.call(text);
+    };
+
     // Save the live theme config buffer to disk (opens a save-as dialog).
+    // Saves what the editor shows, committed or not.
     let save_config = move |_: Event<MouseData>| {
-        crate::utils::io::save_toml(&config_toml());
+        let text = draft_toml().unwrap_or_else(|| config_toml());
+        crate::utils::io::save_toml(&text);
     };
 
     // X-Ray targets config sections, so it always reveals in the editable TOML.
@@ -59,7 +80,8 @@ pub fn SmartCodeDock(
                 id: Some(CODE_EDITOR_ID.to_string()),
                 value: (config_toml)(),
                 mode: "toml".to_string(),
-                on_change: move |new_val| { on_load_theme.call(new_val); }
+                on_change: move |new_val| draft_toml.set(Some(new_val)),
+                on_save: move |new_val| commit(new_val),
             }
         }
     };
@@ -88,6 +110,18 @@ pub fn SmartCodeDock(
                 "Takeover"
             }
             if !show_xml() {
+                if draft_toml().is_some() {
+                    button {
+                        class: "editor-mini-button editor-mini-button-active",
+                        title: "Apply changes to the live theme (Ctrl+S in the editor)",
+                        onclick: move |_| {
+                            if let Some(text) = draft_toml() {
+                                commit(text);
+                            }
+                        },
+                        "Apply"
+                    }
+                }
                 button {
                     class: "editor-mini-button",
                     title: "Save the live theme config to disk",
@@ -99,7 +133,13 @@ pub fn SmartCodeDock(
     };
 
     let filename = if show_xml() { "exported_theme.xml" } else { "theme_config.toml" };
-    let badge = if show_xml() { "Compiled · Read-only" } else { "Live Reload Active" };
+    let badge = if show_xml() {
+        "Compiled · Read-only"
+    } else if draft_toml().is_some() {
+        "Draft · Ctrl+S applies"
+    } else {
+        "Applied"
+    };
 
     rsx! {
         if is_takeover() {

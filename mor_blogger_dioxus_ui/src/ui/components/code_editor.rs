@@ -35,7 +35,14 @@ fn resolve_minimap(
 pub struct CodeEditorProps {
     pub value: String,
     pub mode: String,
+    /// Debounced (~150ms, in JS) buffer edits. Wire this to *local* draft state,
+    /// not the global `ThemeConfig` — commits belong in `on_save`.
     pub on_change: EventHandler<String>,
+    /// Ctrl+S / Cmd+S inside the editor. Sent immediately with the current doc
+    /// (pending debounce cancelled), so it never carries stale text. Falls back
+    /// to `on_change` when not provided.
+    #[props(default = None)]
+    pub on_save: Option<EventHandler<String>>,
     #[props(default = None)]
     pub id: Option<String>,
     #[props(default = false)]
@@ -168,6 +175,7 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
     let wrap = props.wrap;
     let minimap = minimap_on;
     let on_change = props.on_change;
+    let on_save = props.on_save;
     let wrap_border = if wrap_on() {
         "var(--editor-accent, #c2622a)"
     } else {
@@ -244,14 +252,24 @@ pub fn CodeEditor(props: CodeEditorProps) -> Element {
                         ready(() => window.morCM.mount(cfg.id, {
                             doc: cfg.doc, lang: cfg.lang, readOnly: cfg.readOnly, wrap: cfg.wrap,
                             minimap: cfg.minimap,
-                            onChange: (v) => dioxus.send(v),
+                            onChange: (t) => dioxus.send({ kind: "change", text: t }),
+                            onSave: (t) => dioxus.send({ kind: "save", text: t }),
                         }));
                         "#,
                     );
                     let _ = eval.send(cfg);
-                    while let Ok(v) = eval.recv::<String>().await {
-                        last_synced.set(v.clone());
-                        on_change.call(v);
+                    while let Ok(msg) = eval.recv::<serde_json::Value>().await {
+                        let text = msg
+                            .get("text")
+                            .and_then(|t| t.as_str())
+                            .unwrap_or_default()
+                            .to_string();
+                        let is_save = msg.get("kind").and_then(|k| k.as_str()) == Some("save");
+                        last_synced.set(text.clone());
+                        match (is_save, on_save) {
+                            (true, Some(save)) => save.call(text),
+                            _ => on_change.call(text),
+                        }
                     }
                 });
             },

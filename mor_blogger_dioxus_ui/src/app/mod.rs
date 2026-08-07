@@ -10,7 +10,7 @@ pub mod config_bridge;
 pub mod hotswap;
 pub mod keyboard;
 mod restore_drop;
-pub mod services;
+pub mod workspace_ops;
 pub mod shell;
 pub mod shell_dialogs;
 pub mod shell_file_actions;

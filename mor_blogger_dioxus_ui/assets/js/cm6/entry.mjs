@@ -164,11 +164,19 @@ const hostTheme = EditorView.theme({
 });
 
 const registry = new Map(); // id -> EditorView
+// id -> pending debounce timer for the change listener. Kept separate from the
+// registry so destroy() can cancel it — a timer firing after destroy would send
+// into a dead Dioxus eval channel (and leak on remount).
+const changeTimers = new Map();
+
+// Full-document echo over the webview IPC bridge is expensive; only send after
+// the user goes quiet.
+const CHANGE_DEBOUNCE_MS = 150;
 
 function mount(id, opts) {
   const parent = document.getElementById(id);
   if (!parent) return;
-  destroy(id); // idempotent: replace any existing view at this id
+  destroy(id); // idempotent: replace any existing view at this id (also cancels timers)
 
   const extensions = [
     basicSetup,
@@ -182,12 +190,39 @@ function mount(id, opts) {
   ];
   extensions.push(wrapComp.of(opts.wrap ? EditorView.lineWrapping : []));
   extensions.push(minimapComp.of(opts.minimap ? minimapExt() : []));
+  if (typeof opts.onSave === "function") {
+    // Highest precedence (first in the list) so nothing shadows Mod-s. Cancels
+    // any pending debounced change and sends the *current* doc, so a save right
+    // after a keystroke can never commit stale text.
+    extensions.unshift(
+      keymap.of([
+        {
+          key: "Mod-s",
+          preventDefault: true,
+          run: (view) => {
+            clearTimeout(changeTimers.get(id));
+            changeTimers.delete(id);
+            opts.onSave(view.state.doc.toString());
+            return true;
+          },
+        },
+      ])
+    );
+  }
   if (typeof opts.onChange === "function") {
     extensions.push(
       EditorView.updateListener.of((u) => {
         if (!u.docChanged) return;
         if (u.transactions.some((tr) => tr.annotation(External))) return; // ours, skip
-        opts.onChange(u.state.doc.toString());
+        clearTimeout(changeTimers.get(id));
+        changeTimers.set(
+          id,
+          setTimeout(() => {
+            changeTimers.delete(id);
+            const view = registry.get(id);
+            if (view) opts.onChange(view.state.doc.toString()); // doc read at fire time, not schedule time
+          }, CHANGE_DEBOUNCE_MS)
+        );
       })
     );
   }
@@ -245,6 +280,8 @@ function setWrap(id, on) {
 }
 
 function destroy(id) {
+  clearTimeout(changeTimers.get(id));
+  changeTimers.delete(id);
   const view = registry.get(id);
   if (view) {
     view.destroy();

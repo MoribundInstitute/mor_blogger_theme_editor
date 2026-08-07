@@ -27,7 +27,7 @@ zip.workspace = true
 # Native desktop runtime (file watching, async).
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 notify = "6.1"
-tokio = { version = "1.0", features = ["sync"] }
+tokio = { version = "1.0", features = ["sync", "rt", "time"] }
 
 # Sets the GTK program name so Wayland reports a stable app_id for the .desktop
 # icon mapping. Pinned to the version already pulled in transitively via gtk/tao.

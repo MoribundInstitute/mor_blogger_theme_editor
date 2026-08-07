@@ -390,6 +390,9 @@ pub fn ModuleWorkbench(
     let mut drag_socket: Signal<Option<(String, usize)>> = use_signal(|| None);
     let mut over_socket: Signal<Option<usize>> = use_signal(|| None);
 
+    // Which widget card has its schema property sheet expanded (one at a time).
+    let mut props_slot: Signal<Option<usize>> = use_signal(|| None);
+
     // Consume "add this gadget" requests from the Widgets dock: route into the
     // current target socket (config widget_map) or append to the module buffer.
     {
@@ -823,6 +826,17 @@ pub fn ModuleWorkbench(
                                                                     },
                                                                     IconCopy {}
                                                                 }
+                                                                if mor_blogger_core::schema::schema_for(&w_type).is_some() {
+                                                                    button {
+                                                                        class: if props_slot() == Some(slot) { "editor-mini-button editor-mini-button-active" } else { "editor-mini-button" },
+                                                                        style: "padding: 4px 6px; align-self: center;",
+                                                                        title: "Widget settings",
+                                                                        onclick: move |_| {
+                                                                            props_slot.set(if props_slot() == Some(slot) { None } else { Some(slot) });
+                                                                        },
+                                                                        "⚙"
+                                                                    }
+                                                                }
                                                                 button {
                                                                     class: "editor-mini-button",
                                                                     style: "padding: 4px 6px; line-height: 0; align-self: center;",
@@ -832,6 +846,27 @@ pub fn ModuleWorkbench(
                                                                         f(widget_layout::remove(&display_xml(), slot));
                                                                     },
                                                                     IconTrash {}
+                                                                }
+                                                            }
+                                                            // Schema-driven property sheet (C5): edits stay local to the
+                                                            // form; Apply patches this block via core surgery and drops the
+                                                            // result back into the module buffer.
+                                                            if props_slot() == Some(slot) {
+                                                                if let (Some(schema), Some(block)) = (
+                                                                    mor_blogger_core::schema::schema_for(&w_type),
+                                                                    widget_layout::widget_block(&display_xml(), slot),
+                                                                ) {
+                                                                    div {
+                                                                        style: "margin: -4px 0 0 24px; border: 1px solid var(--editor-border-soft); border-top: none; border-radius: 0 0 6px 6px; background: rgba(0,0,0,0.15);",
+                                                                        crate::ui::components::widget_form::WidgetPropertyForm {
+                                                                            schema: schema.clone(),
+                                                                            xml: block,
+                                                                            on_apply: move |patched: String| {
+                                                                                let mut f = apply_buffer;
+                                                                                f(widget_layout::replace_widget_block(&display_xml(), slot, &patched));
+                                                                            },
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         }},

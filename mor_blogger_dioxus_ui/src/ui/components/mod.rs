@@ -7,3 +7,4 @@ pub mod icon_context_menu;
 pub mod icons;
 pub mod inputs;
 pub mod slider;
+pub mod widget_form;

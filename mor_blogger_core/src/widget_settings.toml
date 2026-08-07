@@ -1,0 +1,111 @@
+# Curated per-type <b:widget-setting> catalogs driving the widget property
+# sheets. Names/defaults mirror what a fresh Blogger layout emits; this is the
+# subset theme authors actually touch, not an exhaustive dump.
+
+[[widget]]
+type = "Blog"
+
+[[widget.setting]]
+name = "showDateHeader"
+type = "boolean"
+default = true
+label = "Show Date Header"
+
+[[widget.setting]]
+name = "showShareButtons"
+type = "boolean"
+default = true
+label = "Show Share Buttons"
+
+[[widget.setting]]
+name = "showCommentLink"
+type = "boolean"
+default = true
+label = "Show Comment Link"
+
+[[widget.setting]]
+name = "showAuthor"
+type = "boolean"
+default = true
+label = "Show Author"
+
+[[widget.setting]]
+name = "showTimestamp"
+type = "boolean"
+default = true
+label = "Show Timestamp"
+
+[[widget.setting]]
+name = "showLabels"
+type = "boolean"
+default = true
+label = "Show Labels"
+
+[[widget.setting]]
+name = "showLocation"
+type = "boolean"
+default = false
+label = "Show Location"
+
+[[widget.setting]]
+name = "commentLabel"
+type = "string"
+default = "comments"
+label = "Comment Label"
+
+[[widget.setting]]
+name = "timestampLabel"
+type = "string"
+default = "at"
+label = "Timestamp Label"
+
+[[widget.setting]]
+name = "postLabelsLabel"
+type = "string"
+default = "Labels:"
+label = "Post Labels Label"
+
+[[widget.setting]]
+name = "style.textcolor"
+type = "color"
+default = "#000000"
+label = "Text Color"
+
+[[widget]]
+type = "HTML"
+
+[[widget.setting]]
+name = "content"
+type = "string"
+default = ""
+label = "Content (HTML)"
+
+[[widget]]
+type = "Label"
+
+[[widget.setting]]
+name = "display"
+type = "select"
+default = "LIST"
+label = "Display"
+options = [["LIST", "List"], ["CLOUD", "Cloud"]]
+
+[[widget.setting]]
+name = "sorting"
+type = "select"
+default = "ALPHA"
+label = "Sort By"
+options = [["ALPHA", "Alphabetically"], ["FREQUENCY", "By Frequency"]]
+
+[[widget.setting]]
+name = "showType"
+type = "select"
+default = "ALL"
+label = "Show"
+options = [["ALL", "All Labels"], ["SELECTED", "Selected Labels"]]
+
+[[widget.setting]]
+name = "showFreqNumbers"
+type = "boolean"
+default = false
+label = "Show Post Counts"

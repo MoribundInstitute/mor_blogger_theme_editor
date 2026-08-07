@@ -149,6 +149,22 @@ pub fn duplicate(xml: &str, index: usize) -> String {
     )
 }
 
+/// The raw XML of one widget block (input for the property sheet / surgery).
+pub fn widget_block(xml: &str, index: usize) -> Option<String> {
+    parse_slots(xml)
+        .get(index)
+        .map(|s| xml[s.start..s.end].to_string())
+}
+
+/// Splice a rewritten widget block back over the original.
+pub fn replace_widget_block(xml: &str, index: usize, new_block: &str) -> String {
+    let slots = parse_slots(xml);
+    let Some(s) = slots.get(index) else {
+        return xml.to_string();
+    };
+    format!("{}{new_block}{}", &xml[..s.start], &xml[s.end..])
+}
+
 /// Remove a widget block from the buffer.
 pub fn remove(xml: &str, index: usize) -> String {
     let slots = parse_slots(xml);
